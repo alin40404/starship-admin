@@ -1,16 +1,16 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\System\App\Http\Controllers\AdminUserController;
-use Modules\System\App\Http\Controllers\AttachmentController;
-use Modules\System\App\Http\Controllers\Auth\AuthController;
-use Modules\System\App\Http\Controllers\ConfigController;
-use Modules\System\App\Http\Controllers\DepartmentController;
-use Modules\System\App\Http\Controllers\DictItemController;
-use Modules\System\App\Http\Controllers\DictTypeController;
-use Modules\System\App\Http\Controllers\MenuController;
-use Modules\System\App\Http\Controllers\PostController;
-use Modules\System\App\Http\Controllers\RoleController;
+use Modules\System\App\Http\Controllers\Admin\AdminUserController;
+use Modules\System\App\Http\Controllers\Admin\AttachmentController;
+use Modules\System\App\Http\Controllers\Admin\AuthController;
+use Modules\System\App\Http\Controllers\Admin\ConfigController;
+use Modules\System\App\Http\Controllers\Admin\DepartmentController;
+use Modules\System\App\Http\Controllers\Admin\DictItemController;
+use Modules\System\App\Http\Controllers\Admin\DictTypeController;
+use Modules\System\App\Http\Controllers\Admin\MenuController;
+use Modules\System\App\Http\Controllers\Admin\PostController;
+use Modules\System\App\Http\Controllers\Admin\RoleController;
 
 Route::middleware('api')->prefix('admin-api')->group(function () {
     Route::prefix('auth')->group(function () {

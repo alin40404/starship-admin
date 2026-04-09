@@ -1,18 +1,18 @@
 <?php
 
-namespace Modules\System\App\Http\Controllers;
+namespace Modules\System\App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Modules\System\App\Models\Department;
+use Modules\System\App\Models\Menu;
 
-class DepartmentController extends Controller
+class MenuController extends Controller
 {
     public function tree(): JsonResponse
     {
-        $rows = Department::query()
+        $rows = Menu::query()
             ->orderBy('sort')
             ->orderBy('id')
             ->get();
@@ -22,7 +22,7 @@ class DepartmentController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = Department::query()->orderBy('sort')->orderBy('id');
+        $query = Menu::query()->orderBy('sort')->orderBy('id');
 
         return ApiResponse::success($query->paginate((int) $request->get('per_page', 15)));
     }
@@ -31,48 +31,56 @@ class DepartmentController extends Controller
     {
         $data = $request->validate([
             'parent_id' => ['sometimes', 'integer', 'min:0'],
+            'type' => ['required', 'integer', 'in:1,2,3'],
             'name' => ['required', 'string', 'max:100'],
-            'leader' => ['nullable', 'string', 'max:100'],
-            'phone' => ['nullable', 'string', 'max:20'],
-            'email' => ['nullable', 'string', 'max:100'],
+            'path' => ['nullable', 'string', 'max:255'],
+            'component' => ['nullable', 'string', 'max:255'],
+            'permission' => ['nullable', 'string', 'max:150'],
+            'icon' => ['nullable', 'string', 'max:100'],
             'sort' => ['sometimes', 'integer'],
+            'visible' => ['sometimes', 'integer', 'in:0,1'],
+            'keep_alive' => ['sometimes', 'integer', 'in:0,1'],
             'status' => ['sometimes', 'integer', 'in:0,1'],
             'remark' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $dept = Department::query()->create($data);
+        $menu = Menu::query()->create($data);
 
-        return ApiResponse::success($dept, '创建成功');
+        return ApiResponse::success($menu, '创建成功');
     }
 
     public function update(Request $request, int $id): JsonResponse
     {
-        $dept = Department::query()->findOrFail($id);
+        $menu = Menu::query()->findOrFail($id);
         $data = $request->validate([
             'parent_id' => ['sometimes', 'integer', 'min:0'],
+            'type' => ['sometimes', 'integer', 'in:1,2,3'],
             'name' => ['sometimes', 'string', 'max:100'],
-            'leader' => ['nullable', 'string', 'max:100'],
-            'phone' => ['nullable', 'string', 'max:20'],
-            'email' => ['nullable', 'string', 'max:100'],
+            'path' => ['nullable', 'string', 'max:255'],
+            'component' => ['nullable', 'string', 'max:255'],
+            'permission' => ['nullable', 'string', 'max:150'],
+            'icon' => ['nullable', 'string', 'max:100'],
             'sort' => ['sometimes', 'integer'],
+            'visible' => ['sometimes', 'integer', 'in:0,1'],
+            'keep_alive' => ['sometimes', 'integer', 'in:0,1'],
             'status' => ['sometimes', 'integer', 'in:0,1'],
             'remark' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $dept->update($data);
+        $menu->update($data);
 
-        return ApiResponse::success($dept->fresh(), '更新成功');
+        return ApiResponse::success($menu->fresh(), '更新成功');
     }
 
     public function destroy(int $id): JsonResponse
     {
-        Department::query()->whereKey($id)->firstOrFail()->delete();
+        Menu::query()->whereKey($id)->firstOrFail()->delete();
 
         return ApiResponse::success(null, '已删除');
     }
 
     /**
-     * @param  \Illuminate\Support\Collection<int, Department>  $rows
+     * @param  \Illuminate\Support\Collection<int, Menu>  $rows
      * @return array<int, mixed>
      */
     private function buildTree($rows, int $parentId = 0): array
@@ -83,11 +91,15 @@ class DepartmentController extends Controller
             $branch[] = [
                 'id' => $item->id,
                 'parent_id' => $item->parent_id,
+                'type' => $item->type,
                 'name' => $item->name,
-                'leader' => $item->leader,
-                'phone' => $item->phone,
-                'email' => $item->email,
+                'path' => $item->path,
+                'component' => $item->component,
+                'permission' => $item->permission,
+                'icon' => $item->icon,
                 'sort' => $item->sort,
+                'visible' => $item->visible,
+                'keep_alive' => $item->keep_alive,
                 'status' => $item->status,
                 'remark' => $item->remark,
                 'children' => $this->buildTree($rows, (int) $item->id),
