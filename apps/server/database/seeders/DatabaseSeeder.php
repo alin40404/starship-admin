@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            SystemAdminSeeder::class,
+            StarshipFoundationSeeder::class,
         ]);
     }
 }

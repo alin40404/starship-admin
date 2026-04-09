@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Modules\System\App\Models\Admin;
+use Modules\System\App\Services\AdminPermissionService;
 
 class AuthController extends Controller
 {
@@ -31,10 +32,14 @@ class AuthController extends Controller
 
         $token = $admin->createToken('admin')->plainTextToken;
 
+        $permission = app(AdminPermissionService::class);
+
         return ApiResponse::success([
             'token' => $token,
             'token_type' => 'Bearer',
             'admin' => $this->formatAdmin($admin),
+            'permissions' => $permission->permissionCodes($admin),
+            'menus' => $permission->menuTreeForAdmin($admin),
         ], '登录成功');
     }
 
@@ -45,12 +50,41 @@ class AuthController extends Controller
         return ApiResponse::success(null, '已退出');
     }
 
-    public function me(Request $request): JsonResponse
+    public function me(Request $request, AdminPermissionService $permission): JsonResponse
     {
         $admin = $request->user();
-        $admin?->load(['roles', 'posts', 'department']);
+        if (! $admin instanceof Admin) {
+            return ApiResponse::success(null);
+        }
 
-        return ApiResponse::success($admin ? $this->formatAdmin($admin) : null);
+        $admin->load(['roles', 'posts', 'department']);
+
+        $data = $this->formatAdmin($admin);
+        $data['permissions'] = $permission->permissionCodes($admin);
+
+        return ApiResponse::success($data);
+    }
+
+    public function menus(Request $request, AdminPermissionService $permission): JsonResponse
+    {
+        $admin = $request->user();
+        if (! $admin instanceof Admin) {
+            return ApiResponse::error('未登录', 401);
+        }
+
+        return ApiResponse::success($permission->menuTreeForAdmin($admin));
+    }
+
+    public function permissions(Request $request, AdminPermissionService $permission): JsonResponse
+    {
+        $admin = $request->user();
+        if (! $admin instanceof Admin) {
+            return ApiResponse::error('未登录', 401);
+        }
+
+        return ApiResponse::success([
+            'permissions' => $permission->permissionCodes($admin),
+        ]);
     }
 
     /**
