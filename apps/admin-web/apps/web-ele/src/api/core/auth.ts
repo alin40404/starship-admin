@@ -29,9 +29,13 @@ interface LaravelLoginData {
 
 /**
  * 登录（Starship：`POST /admin-api/auth/login`）
+ * 仅提交账号密码，忽略表单中的滑块等前端校验字段。
  */
 export async function loginApi(data: AuthApi.LoginParams) {
-  const result = await requestClient.post<LaravelLoginData>('/auth/login', data);
+  const result = await requestClient.post<LaravelLoginData>('/auth/login', {
+    username: data.username,
+    password: data.password,
+  });
   return { accessToken: result.token } as AuthApi.LoginResult;
 }
 
