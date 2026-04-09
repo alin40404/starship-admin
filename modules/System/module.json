@@ -1,0 +1,9 @@
+{
+  "name": "system",
+  "title": "系统管理",
+  "version": "0.1.0",
+  "enabled": true,
+  "providers": [
+    "Modules\\System\\App\\Providers\\SystemServiceProvider"
+  ]
+}
