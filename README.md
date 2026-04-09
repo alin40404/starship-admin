@@ -216,19 +216,19 @@ starship-admin/
 │
 ├─ modules/                           # 系统功能模块目录
 │  ├─ System/                         # 系统基础模块
-│  │  ├─ module.json                  # 模块说明文件
-│  │  ├─ backend/                     # 模块后端代码
-│  │  └─ web/                         # 模块后台前端代码
+│  │  ├─ module.json                  # 模块说明与 Provider 注册
+│  │  ├─ app/                         # 后端业务代码（Models / Http / Providers）
+│  │  ├─ routes/                     # 模块路由（如 admin-api）
+│  │  ├─ database/migrations/        # 模块迁移（sa_* 表）
+│  │  └─ config/、resources/、web/    # 配置、资源、模块专属前端（可选）
 │  │
 │  ├─ Monitor/                        # 日志/监控模块
 │  │  ├─ module.json
-│  │  ├─ backend/
-│  │  └─ web/
+│  │  └─ …
 │  │
 │  └─ Generator/                      # CRUD 代码生成器模块
 │     ├─ module.json
-│     ├─ backend/
-│     └─ web/
+│     └─ …
 │
 ├─ themes/                            # Blade 主题预留目录
 │  ├─ default/                        # 默认主题

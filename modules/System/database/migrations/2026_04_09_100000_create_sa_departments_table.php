@@ -3,12 +3,13 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use App\Support\StarshipTables;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('sa_departments', function (Blueprint $table) {
+        Schema::create(StarshipTables::table('departments'), function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('parent_id')->default(0)->comment('父级ID');
             $table->string('name', 100)->comment('部门名称');
@@ -29,6 +30,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('sa_departments');
+        Schema::dropIfExists(StarshipTables::table('departments'));
     }
 };

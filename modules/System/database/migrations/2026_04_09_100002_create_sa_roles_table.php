@@ -3,12 +3,13 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use App\Support\StarshipTables;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('sa_roles', function (Blueprint $table) {
+        Schema::create(StarshipTables::table('roles'), function (Blueprint $table) {
             $table->id();
             $table->string('name', 100)->comment('角色名称');
             $table->string('code', 100)->comment('角色编码');
@@ -27,6 +28,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('sa_roles');
+        Schema::dropIfExists(StarshipTables::table('roles'));
     }
 };

@@ -3,12 +3,13 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use App\Support\StarshipTables;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('sa_role_menu', function (Blueprint $table) {
+        Schema::create(StarshipTables::table('role_menu'), function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('role_id')->comment('角色ID');
             $table->unsignedBigInteger('menu_id')->comment('菜单ID');
@@ -20,6 +21,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('sa_role_menu');
+        Schema::dropIfExists(StarshipTables::table('role_menu'));
     }
 };

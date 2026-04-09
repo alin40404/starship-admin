@@ -3,12 +3,13 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use App\Support\StarshipTables;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('sa_attachments', function (Blueprint $table) {
+        Schema::create(StarshipTables::table('attachments'), function (Blueprint $table) {
             $table->id();
             $table->string('storage', 50)->default('local')->comment('存储驱动');
             $table->string('file_name', 255)->comment('原始文件名');
@@ -29,6 +30,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('sa_attachments');
+        Schema::dropIfExists(StarshipTables::table('attachments'));
     }
 };
