@@ -205,7 +205,7 @@ starship-admin/
 │  │  ├─ vite.config.ts               # Vite 配置
 │  │  └─ .env.example                 # 前端环境变量模板
 │  │
-│  └─ web/                            # 可选前台前端
+│  └─ front/                          # 可选前台前端
 │     ├─ src/                         # 前台源码
 │     ├─ public/                      # 公共静态资源
 │     ├─ scripts/                     # 构建/发布脚本
@@ -220,7 +220,7 @@ starship-admin/
 │  │  ├─ app/                         # 后端业务代码（Models / Http / Providers）
 │  │  ├─ routes/                     # 模块路由（如 admin-api）
 │  │  ├─ database/migrations/        # 模块迁移（sa_* 表）
-│  │  └─ config/、resources/、web/    # 配置、资源、模块专属前端（可选）
+│  │  └─ config/、resources/、front/  # 配置、资源、模块专属前台（可选）
 │  │
 │  ├─ Monitor/                        # 日志/监控模块
 │  │  ├─ module.json
