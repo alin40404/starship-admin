@@ -9,7 +9,7 @@ class ModuleServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $manager = new ModuleManager(base_path('../../modules'));
+        $manager = new ModuleManager(base_path('../modules'));
 
         foreach ($manager->enabled() as $module) {
             foreach ($module->providers() as $provider) {

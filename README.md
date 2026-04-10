@@ -181,22 +181,22 @@ Starship Admin 本身是后台开发框架，不直接预置完整业务，但�
 
 ```text
 starship-admin/
-├─ apps/
-│  ├─ server/                         # Laravel 宿主应用
-│  │  ├─ app/                         # 应用核心代码
-│  │  ├─ bootstrap/                   # Laravel 启动引导
-│  │  ├─ config/                      # 全局配置
-│  │  ├─ database/                    # 数据库迁移与填充
-│  │  ├─ public/                      # Web 根目录与静态资源
-│  │  ├─ resources/                   # Blade、语言包、前端资源
-│  │  ├─ routes/                      # 路由入口
-│  │  ├─ storage/                     # 运行时存储
-│  │  ├─ tests/                       # 测试
-│  │  ├─ artisan                      # Laravel CLI
-│  │  ├─ composer.json                # PHP 依赖配置
-│  │  └─ .env.example                 # 环境变量模板
-│  │
-│  ├─ admin-web/                      # 基于 Vben Admin 5.x 改造的后台前端
+├─ backend/                           # Laravel 宿主应用（后端主应用）
+│  ├─ app/                            # 应用核心代码
+│  ├─ bootstrap/                      # Laravel 启动引导
+│  ├─ config/                         # 全局配置
+│  ├─ database/                       # 数据库迁移与填充
+│  ├─ public/                         # Web 根目录与静态资源
+│  ├─ resources/                      # Blade、语言包、前端资源
+│  ├─ routes/                         # 路由入口
+│  ├─ storage/                        # 运行时存储
+│  ├─ tests/                          # 测试
+│  ├─ artisan                         # Laravel CLI
+│  ├─ composer.json                   # PHP 依赖配置
+│  └─ .env.example                    # 环境变量模板
+│
+├─ apps/                              # 前端应用集合
+│  ├─ admin/                          # 后台前端（基于 Vben Admin 5.x 改造）
 │  │  ├─ src/                         # 前端源码
 │  │  ├─ public/                      # 公共静态资源
 │  │  ├─ scripts/                     # 构建/发布脚本
@@ -205,7 +205,7 @@ starship-admin/
 │  │  ├─ vite.config.ts               # Vite 配置
 │  │  └─ .env.example                 # 前端环境变量模板
 │  │
-│  └─ front/                          # 可选前台前端
+│  └─ web/                            # 前台前端（用户端站点）
 │     ├─ src/                         # 前台源码
 │     ├─ public/                      # 公共静态资源
 │     ├─ scripts/                     # 构建/发布脚本
@@ -234,20 +234,20 @@ starship-admin/
 │  ├─ default/                        # 默认主题
 │  └─ corporate/                      # 企业主题示例
 │
-├─ packages/                          # 共享能力目录
+├─ packages/                          # 共享能力目录（代码级）
 │  ├─ contracts/                      # 扩展契约
 │  │  ├─ backend/                     # 后端契约接口
 │  │  └─ frontend/                    # 前端契约定义
 │  │
-│  ├─ shared/                         # 共享常量/枚举/协议
-│  │  ├─ constants/                   # 常量
-│  │  ├─ enums/                       # 枚举
-│  │  └─ schemas/                     # 协议/结构定义
-│  │
-│  └─ docs/                           # 架构设计文档
-│     ├─ architecture/                # 架构设计
-│     ├─ modules/                     # 模块规范
-│     └─ generator/                   # 生成器设计
+│  └─ shared/                         # 共享常量/枚举/协议
+│     ├─ constants/                   # 常量
+│     ├─ enums/                       # 枚举
+│     └─ schemas/                     # 协议/结构定义
+│
+├─ docs/                              # 架构与规范文档（文档资产）
+│  ├─ architecture/                   # 架构设计
+│  ├─ modules/                        # 模块规范
+│  └─ generator/                      # 生成器设计
 │
 ├─ README.md
 ├─ README.en.md
