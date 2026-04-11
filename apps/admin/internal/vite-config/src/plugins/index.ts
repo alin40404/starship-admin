@@ -199,7 +199,17 @@ async function loadApplicationPlugins(
     },
     {
       condition: !!html,
-      plugins: () => [viteHtmlPlugin({ minify: true })],
+      plugins: () => [
+        viteHtmlPlugin({
+          inject: {
+            data: {
+              ...env,
+              VITE_APP_TITLE: env.VITE_APP_TITLE ?? 'Starship Admin',
+            },
+          },
+          minify: true,
+        }),
+      ],
     },
     {
       condition: isBuild && importmap,

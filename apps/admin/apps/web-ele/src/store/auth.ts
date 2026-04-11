@@ -80,7 +80,11 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function logout(redirect: boolean = true) {
     try {
-      await logoutApi();
+      // 无 token 时不要请求远端退出：401 拦截器会先清空 token 再调本函数，
+      // 否则会 POST /auth/logout → 401 → 再次进入「重新认证」→ 死循环。
+      if (accessStore.accessToken) {
+        await logoutApi();
+      }
     } catch {
       // 不做任何处理
     }
