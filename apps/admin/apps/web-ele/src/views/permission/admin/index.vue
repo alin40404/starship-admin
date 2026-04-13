@@ -199,6 +199,10 @@ const [Grid, gridApiInstance] = useVbenVxeGrid({
             sort_field: sort?.field,
             sort_order:
               order === 'asc' || order === 'desc' ? order : undefined,
+            dept_name: formValues?.dept_name || undefined,
+            email: formValues?.email || undefined,
+            mobile: formValues?.mobile || undefined,
+            name: formValues?.name || undefined,
             username: formValues?.username || undefined,
           });
         },

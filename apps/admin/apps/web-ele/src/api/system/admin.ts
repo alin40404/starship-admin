@@ -39,6 +39,10 @@ export interface AdminSavePayload {
 export async function fetchAdminPage(params: {
   page?: number;
   per_page?: number;
+  dept_name?: string;
+  email?: string;
+  mobile?: string;
+  name?: string;
   username?: string;
   sort_field?: string;
   sort_order?: 'asc' | 'desc';

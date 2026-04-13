@@ -12,10 +12,42 @@ export function useGridFormSchema(): VbenFormSchema[] {
     {
       component: 'Input',
       componentProps: {
-        placeholder: '模糊搜索用户名',
+        placeholder: '搜索用户名',
       },
       fieldName: 'username',
       label: '用户名',
+    },
+    {
+      component: 'Input',
+      componentProps: {
+        placeholder: '搜索真实姓名/昵称',
+      },
+      fieldName: 'name',
+      label: '姓名',
+    },
+    {
+      component: 'Input',
+      componentProps: {
+        placeholder: '搜索邮箱',
+      },
+      fieldName: 'email',
+      label: '邮箱',
+    },
+    {
+      component: 'Input',
+      componentProps: {
+        placeholder: '搜索手机',
+      },
+      fieldName: 'mobile',
+      label: '手机',
+    },
+    {
+      component: 'Input',
+      componentProps: {
+        placeholder: '搜索部门',
+      },
+      fieldName: 'dept_name',
+      label: '部门',
     },
   ];
 }
@@ -33,7 +65,16 @@ export function useColumns(
     },
     { field: 'id', sortable: true, title: 'ID', width: 70 },
     { field: 'username', minWidth: 120, sortable: true, title: '用户名' },
+    { field: 'real_name', minWidth: 120, sortable: true, title: '真实姓名' },
     { field: 'nickname', minWidth: 100, sortable: true, title: '昵称' },
+    { field: 'mobile', minWidth: 130, sortable: true, title: '手机' },
+    {
+      field: 'email',
+      minWidth: 180,
+      sortable: true,
+      title: '邮箱',
+      visible: false,
+    },
     {
       field: 'dept_id',
       formatter: ({ row }) =>
@@ -177,6 +218,7 @@ export function buildAdminFormSchema(params: {
       component: 'RadioGroup',
       componentProps: {
         disabled: lockRoles,
+        isButton: true,
         options: [
           { label: '启用', value: 1 },
           { label: '禁用', value: 0 },

@@ -23,6 +23,25 @@ class AdminUserController extends Controller
         if ($request->filled('username')) {
             $query->where('username', 'like', '%'.$request->get('username').'%');
         }
+        if ($request->filled('name')) {
+            $keyword = (string) $request->get('name');
+            $query->where(function ($q) use ($keyword): void {
+                $q->where('real_name', 'like', '%'.$keyword.'%')
+                    ->orWhere('nickname', 'like', '%'.$keyword.'%');
+            });
+        }
+        if ($request->filled('email')) {
+            $query->where('email', 'like', '%'.$request->get('email').'%');
+        }
+        if ($request->filled('mobile')) {
+            $query->where('mobile', 'like', '%'.$request->get('mobile').'%');
+        }
+        if ($request->filled('dept_name')) {
+            $keyword = (string) $request->get('dept_name');
+            $query->whereHas('department', function ($dept) use ($keyword): void {
+                $dept->where('name', 'like', '%'.$keyword.'%');
+            });
+        }
 
         $sortField = $request->get('sort_field');
         $sortOrder = strtolower((string) $request->get('sort_order', 'asc')) === 'desc' ? 'desc' : 'asc';
