@@ -77,6 +77,7 @@ const roleFormSchema = computed(() =>
 const [Form, formApi] = useVbenForm({
   schema: roleFormSchema as any,
   showDefaultActions: false,
+  wrapperClass: 'grid-cols-2',
 });
 
 const [Drawer, drawerApi] = useVbenDrawer({

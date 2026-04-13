@@ -7,6 +7,7 @@ use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Modules\System\App\Models\Menu;
 use Modules\System\App\Models\Role;
 
 class RoleController extends Controller
@@ -50,6 +51,11 @@ class RoleController extends Controller
     {
         $role = Role::query()->findOrFail($id);
         $role->load('menus');
+        $isSuperAdminRole = $role->code === 'super_admin';
+
+        $menuIds = $isSuperAdminRole
+            ? Menu::query()->pluck('id')->values()->all()
+            : $role->menus->pluck('id')->values()->all();
 
         return ApiResponse::success([
             'id' => $role->id,
@@ -59,7 +65,7 @@ class RoleController extends Controller
             'sort' => $role->sort,
             'status' => $role->status,
             'remark' => $role->remark,
-            'menu_ids' => $role->menus->pluck('id')->values()->all(),
+            'menu_ids' => $menuIds,
         ]);
     }
 

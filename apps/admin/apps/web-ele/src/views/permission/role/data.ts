@@ -108,7 +108,7 @@ export function buildRoleFormSchema(params: {
         disabled: ro,
       },
       fieldName: 'menu_ids',
-      formItemClass: 'items-start',
+      formItemClass: 'col-span-2 items-start',
       label: '授权',
       modelPropName: 'modelValue',
     },
@@ -120,6 +120,7 @@ export function buildRoleFormSchema(params: {
         type: 'textarea',
       },
       fieldName: 'remark',
+      formItemClass: 'col-span-2',
       label: '备注',
     },
   ];
