@@ -18,6 +18,23 @@ class RoleController extends Controller
         return ApiResponse::success($query->paginate((int) $request->get('per_page', 15)));
     }
 
+    public function show(int $id): JsonResponse
+    {
+        $role = Role::query()->findOrFail($id);
+        $role->load('menus');
+
+        return ApiResponse::success([
+            'id' => $role->id,
+            'name' => $role->name,
+            'code' => $role->code,
+            'data_scope' => $role->data_scope,
+            'sort' => $role->sort,
+            'status' => $role->status,
+            'remark' => $role->remark,
+            'menu_ids' => $role->menus->pluck('id')->values()->all(),
+        ]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([

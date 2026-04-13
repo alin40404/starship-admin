@@ -37,6 +37,7 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
 
         Route::get('roles', [RoleController::class, 'index']);
         Route::post('roles', [RoleController::class, 'store']);
+        Route::get('roles/{id}', [RoleController::class, 'show']);
         Route::put('roles/{id}', [RoleController::class, 'update']);
         Route::delete('roles/{id}', [RoleController::class, 'destroy']);
         Route::put('roles/{id}/menus', [RoleController::class, 'syncMenus']);

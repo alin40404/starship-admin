@@ -24,6 +24,10 @@ class MenuController extends Controller
     {
         $query = Menu::query()->orderBy('sort')->orderBy('id');
 
+        if ($request->filled('type')) {
+            $query->where('type', (int) $request->get('type'));
+        }
+
         return ApiResponse::success($query->paginate((int) $request->get('per_page', 15)));
     }
 
