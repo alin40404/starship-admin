@@ -6,6 +6,19 @@ import type {
 } from '#/adapter/vxe-table';
 
 import type { AdminRow } from '#/api/system/admin';
+import type { DeptNode } from '#/api/system/department';
+
+import { fetchDepartmentTree } from '#/api/system/department';
+
+function mapDeptForTreeSelect(
+  nodes: DeptNode[],
+): { label: string; value: number; children?: any[] }[] {
+  return nodes.map((n) => ({
+    label: n.name,
+    value: n.id,
+    children: n.children?.length ? mapDeptForTreeSelect(n.children) : undefined,
+  }));
+}
 
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
@@ -42,12 +55,20 @@ export function useGridFormSchema(): VbenFormSchema[] {
       label: '手机',
     },
     {
-      component: 'Input',
+      component: 'ApiTreeSelect',
       componentProps: {
-        placeholder: '搜索部门',
+        api: async () => mapDeptForTreeSelect(await fetchDepartmentTree()),
+        checkStrictly: true,
+        clearable: true,
+        placeholder: '请选择部门',
       },
-      fieldName: 'dept_name',
+      fieldName: 'dept_id',
       label: '部门',
+    },
+    {
+      component: 'RangePicker',
+      fieldName: 'updatedTime',
+      label: '更新时间',
     },
   ];
 }
@@ -65,7 +86,13 @@ export function useColumns(
     },
     { field: 'id', sortable: true, title: 'ID', width: 70 },
     { field: 'username', minWidth: 120, sortable: true, title: '用户名' },
-    { field: 'real_name', minWidth: 120, sortable: true, title: '真实姓名' },
+    {
+      field: 'real_name',
+      minWidth: 120,
+      sortable: true,
+      title: '真实姓名',
+      visible: false,
+    },
     { field: 'nickname', minWidth: 100, sortable: true, title: '昵称' },
     { field: 'mobile', minWidth: 130, sortable: true, title: '手机' },
     {
@@ -92,6 +119,19 @@ export function useColumns(
       minWidth: 160,
       sortable: false,
       title: '角色',
+    },
+    {
+      field: 'updated_at',
+      minWidth: 170,
+      sortable: true,
+      title: '更新时间',
+    },
+    {
+      field: 'created_at',
+      minWidth: 170,
+      sortable: true,
+      title: '创建时间',
+      visible: false,
     },
     statusSwitchListColumn<AdminRow>({
       lockPredicate: 'admin.is_super',

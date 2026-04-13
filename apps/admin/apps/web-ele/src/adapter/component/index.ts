@@ -186,6 +186,7 @@ export type ComponentType =
   | 'IconPicker'
   | 'Input'
   | 'InputNumber'
+  | 'RangePicker'
   | 'RadioGroup'
   | 'Select'
   | 'Space'
@@ -208,6 +209,7 @@ export interface ComponentPropsMap {
   IconPicker: IconPickerProps;
   Input: InputProps;
   InputNumber: InputNumberProps;
+  RangePicker: DatePickerProps;
   RadioGroup: RadioGroupProps;
   Select: SelectV2Props;
   Space: SpaceProps;
@@ -346,6 +348,29 @@ async function initComponentAdapter() {
         {
           ...props,
           ...attrs,
+          ...extraProps,
+        },
+        slots,
+      );
+    },
+    RangePicker: (props, { attrs, slots }) => {
+      const pickerType =
+        (attrs as Recordable<any>)?.type ??
+        (props as Recordable<any>)?.type ??
+        'daterange';
+      const mergedProps = { ...props, ...attrs, type: pickerType };
+      const { name, id } = mergedProps as Recordable<any>;
+      const extraProps: Recordable<any> = {};
+      if (name && !Array.isArray(name)) {
+        extraProps.name = [name, `${name}_end`];
+      }
+      if (id && !Array.isArray(id)) {
+        extraProps.id = [id, `${id}_end`];
+      }
+      return h(
+        ElDatePicker,
+        {
+          ...mergedProps,
           ...extraProps,
         },
         slots,

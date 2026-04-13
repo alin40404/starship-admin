@@ -9,10 +9,12 @@ export interface AdminRow {
   username: string;
   nickname: string | null;
   real_name: string | null;
+  created_at?: string | null;
   email: string | null;
   mobile: string | null;
   dept_id: number | null;
   status: number;
+  updated_at?: string | null;
   is_super: number;
   remark: string | null;
   department?: { id: number; name: string } | null;
@@ -39,10 +41,13 @@ export interface AdminSavePayload {
 export async function fetchAdminPage(params: {
   page?: number;
   per_page?: number;
+  dept_id?: number;
   dept_name?: string;
   email?: string;
   mobile?: string;
   name?: string;
+  updated_end?: string;
+  updated_start?: string;
   username?: string;
   sort_field?: string;
   sort_order?: 'asc' | 'desc';

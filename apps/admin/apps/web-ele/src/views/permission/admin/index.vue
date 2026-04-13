@@ -171,8 +171,9 @@ async function onBatchDelete() {
 
 const [Grid, gridApiInstance] = useVbenVxeGrid({
   formOptions: {
+    fieldMappingTime: [['updatedTime', ['updated_start', 'updated_end']]],
     schema: useGridFormSchema(),
-    submitOnChange: false,
+    submitOnChange: true,
     submitButtonOptions: {
       content: '查询',
     },
@@ -199,10 +200,12 @@ const [Grid, gridApiInstance] = useVbenVxeGrid({
             sort_field: sort?.field,
             sort_order:
               order === 'asc' || order === 'desc' ? order : undefined,
-            dept_name: formValues?.dept_name || undefined,
+            dept_id: formValues?.dept_id,
             email: formValues?.email || undefined,
             mobile: formValues?.mobile || undefined,
             name: formValues?.name || undefined,
+            updated_end: formValues?.updated_end || undefined,
+            updated_start: formValues?.updated_start || undefined,
             username: formValues?.username || undefined,
           });
         },

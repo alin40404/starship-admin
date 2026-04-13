@@ -36,11 +36,20 @@ class AdminUserController extends Controller
         if ($request->filled('mobile')) {
             $query->where('mobile', 'like', '%'.$request->get('mobile').'%');
         }
+        if ($request->filled('dept_id')) {
+            $query->where('dept_id', (int) $request->get('dept_id'));
+        }
         if ($request->filled('dept_name')) {
             $keyword = (string) $request->get('dept_name');
             $query->whereHas('department', function ($dept) use ($keyword): void {
                 $dept->where('name', 'like', '%'.$keyword.'%');
             });
+        }
+        if ($request->filled('updated_start')) {
+            $query->where('updated_at', '>=', (string) $request->get('updated_start'));
+        }
+        if ($request->filled('updated_end')) {
+            $query->where('updated_at', '<=', (string) $request->get('updated_end'));
         }
 
         $sortField = $request->get('sort_field');
@@ -52,6 +61,8 @@ class AdminUserController extends Controller
             'nickname' => 'nickname',
             'status' => 'status',
             'dept_id' => 'dept_id',
+            'updated_at' => 'updated_at',
+            'created_at' => 'created_at',
         ];
 
         if (is_string($sortField) && isset($allowedSorts[$sortField])) {
