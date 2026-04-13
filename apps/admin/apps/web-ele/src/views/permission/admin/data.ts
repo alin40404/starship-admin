@@ -67,6 +67,9 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       component: 'RangePicker',
+      componentProps: {
+        clearable: true,
+      },
       fieldName: 'updatedTime',
       label: '更新时间',
     },

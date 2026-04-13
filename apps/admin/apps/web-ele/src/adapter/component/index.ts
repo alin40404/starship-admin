@@ -354,11 +354,7 @@ async function initComponentAdapter() {
       );
     },
     RangePicker: (props, { attrs, slots }) => {
-      const pickerType =
-        (attrs as Recordable<any>)?.type ??
-        (props as Recordable<any>)?.type ??
-        'daterange';
-      const mergedProps = { ...props, ...attrs, type: pickerType };
+      const mergedProps = { ...props, ...attrs, type: 'daterange' };
       const { name, id } = mergedProps as Recordable<any>;
       const extraProps: Recordable<any> = {};
       if (name && !Array.isArray(name)) {
