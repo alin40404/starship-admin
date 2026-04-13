@@ -8,9 +8,11 @@ import '@vben/styles';
 import '@vben/styles/ele';
 
 import { useTitle } from '@vueuse/core';
-import { ElLoading } from 'element-plus';
+import ElementPlus from 'element-plus';
 
 import { $t, setupI18n } from '#/locales';
+
+import 'element-plus/dist/index.css';
 
 import { initComponentAdapter } from './adapter/component';
 import { initSetupVbenForm } from './adapter/form';
@@ -34,8 +36,8 @@ async function bootstrap(namespace: string) {
   // });
   const app = createApp(App);
 
-  // 注册Element Plus提供的v-loading指令
-  app.directive('loading', ElLoading.directive);
+  // 业务页直接使用 el-* 组件时需全局注册（Vben 表单适配器内为按需异步组件，不会注册到模板）
+  app.use(ElementPlus);
 
   // 注册Vben提供的v-loading和v-spinning指令
   registerLoadingDirective(app, {

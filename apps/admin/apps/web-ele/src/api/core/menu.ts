@@ -24,6 +24,15 @@ const DASHBOARD_VIEW = 'views/dashboard/workspace/index.vue';
 const DASHBOARD_ANALYTICS_VIEW = 'views/dashboard/analytics/index.vue';
 const PLACEHOLDER_VIEW = 'views/_core/fallback/coming-soon.vue';
 
+/** 权限中心：后端菜单 path → 页面组件 */
+const PERMISSION_PAGE_BY_PATH: Record<string, string> = {
+  '/permission/admins': 'views/permission/admin/index.vue',
+  '/permission/roles': 'views/permission/role/index.vue',
+  '/permission/menus': 'views/permission/menu/index.vue',
+  '/permission/permission-points': 'views/permission/permission-point/index.vue',
+  '/permission/data-permission': 'views/permission/data-scope/index.vue',
+};
+
 const ICON_MAP: Record<string, string> = {
   HomeFilled: 'ep:home-filled',
   Setting: 'ep:setting',
@@ -76,6 +85,9 @@ function resolvePageComponent(path: string | null): string {
   }
   if (path === '/dashboard/overview') {
     return DASHBOARD_ANALYTICS_VIEW;
+  }
+  if (path && PERMISSION_PAGE_BY_PATH[path]) {
+    return PERMISSION_PAGE_BY_PATH[path]!;
   }
   return PLACEHOLDER_VIEW;
 }
