@@ -92,6 +92,7 @@ export function buildRoleFormSchema(params: {
       component: 'RadioGroup',
       componentProps: {
         disabled: ro,
+        isButton: true,
         options: [
           { label: '启用', value: 1 },
           { label: '禁用', value: 0 },
@@ -100,6 +101,16 @@ export function buildRoleFormSchema(params: {
       defaultValue: 1,
       fieldName: 'status',
       label: '状态',
+    },
+    {
+      component: 'Input',
+      componentProps: {
+        disabled: ro,
+      },
+      fieldName: 'menu_ids',
+      formItemClass: 'items-start',
+      label: '授权',
+      modelPropName: 'modelValue',
     },
     {
       component: 'Input',

@@ -9,10 +9,10 @@ import type { RoleRow, RoleSavePayload } from '#/api/system/role';
 
 import { computed, nextTick, ref } from 'vue';
 
-import { Page, useVbenDrawer } from '@vben/common-ui';
+import { Page, Tree, useVbenDrawer } from '@vben/common-ui';
+import { IconifyIcon } from '@vben/icons';
 
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { ElScrollbar, ElTree } from 'element-plus';
 
 import { useVbenForm } from '#/adapter/form';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -33,31 +33,39 @@ const editingId = ref<number | null>(null);
 const drawerMode = ref<'create' | 'edit' | 'view'>('create');
 
 const menuTree = ref<MenuNode[]>([]);
-const menuTreeRef = ref<InstanceType<typeof ElTree>>();
-const treeRenderKey = ref(0);
+const loadingPermissions = ref(false);
 
-function typeLabel(t: number) {
-  if (t === 1) return '目录';
-  if (t === 2) return '菜单';
-  if (t === 3) return '按钮';
-  return String(t);
+function normalizeMenuIcon(icon?: string | null) {
+  if (!icon) return '';
+  // 已是 iconify 格式或远程图片，直接使用
+  if (icon.includes(':') || icon.startsWith('http')) return icon;
+  // 兼容后端存储的 Element Plus 图标名（如 UserFilled -> ep:user-filled）
+  const kebab = icon
+    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+    .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')
+    .toLowerCase();
+  return `ep:${kebab}`;
 }
 
 function toElTree(
   nodes: MenuNode[],
-  treeDisabled: boolean,
-): { id: number; label: string; disabled?: boolean; children?: any[] }[] {
+): {
+  id: number;
+  meta: { icon: string; title: string; type: 'button' | 'directory' | 'menu' };
+  children?: any[];
+}[] {
   return nodes.map((n) => ({
     id: n.id,
-    label: `${n.name} (${typeLabel(n.type)})`,
-    disabled: treeDisabled,
-    children: n.children?.length ? toElTree(n.children, treeDisabled) : undefined,
+    meta: {
+      icon: normalizeMenuIcon(n.icon),
+      title: n.name,
+      type: n.type === 3 ? 'button' : n.type === 1 ? 'directory' : 'menu',
+    },
+    children: n.children?.length ? toElTree(n.children) : undefined,
   }));
 }
 
-const menuTreeData = computed(() =>
-  toElTree(menuTree.value, drawerMode.value === 'view'),
-);
+const menuTreeData = computed(() => toElTree(menuTree.value));
 
 const roleFormSchema = computed(() =>
   buildRoleFormSchema({
@@ -71,19 +79,6 @@ const [Form, formApi] = useVbenForm({
   showDefaultActions: false,
 });
 
-function collectMenuIdsFromTree(): number[] {
-  const tree = menuTreeRef.value as undefined | {
-    getCheckedKeys: (leafOnly?: boolean) => number[];
-    getHalfCheckedKeys: () => number[];
-  };
-  if (!tree) {
-    return [];
-  }
-  const checked = tree.getCheckedKeys(false) as number[];
-  const half = tree.getHalfCheckedKeys() as number[];
-  return [...new Set([...checked, ...half])];
-}
-
 const [Drawer, drawerApi] = useVbenDrawer({
   async onConfirm() {
     if (drawerMode.value === 'view') {
@@ -93,16 +88,19 @@ const [Drawer, drawerApi] = useVbenDrawer({
     if (!valid) {
       return;
     }
-    const values = (await formApi.getValues()) as RoleSavePayload;
+    const values = (await formApi.getValues()) as RoleSavePayload & {
+      menu_ids?: number[];
+    };
+    const menuIds = values.menu_ids ?? [];
+    const { menu_ids: _menuIds, ...payload } = values;
     drawerApi.lock();
     try {
-      const menuIds = collectMenuIdsFromTree();
       if (!editingId.value) {
-        const created = await createRole(values);
+        const created = await createRole(payload);
         await syncRoleMenus(created.id, menuIds);
         ElMessage.success('创建成功');
       } else {
-        await updateRole(editingId.value, values);
+        await updateRole(editingId.value, payload);
         await syncRoleMenus(editingId.value, menuIds);
         ElMessage.success('已保存');
       }
@@ -151,20 +149,20 @@ async function openCreate() {
   drawerApi.open();
   formApi.resetForm();
   try {
+    loadingPermissions.value = true;
     menuTree.value = await fetchMenuTree();
-    treeRenderKey.value += 1;
     await nextTick();
     formApi.setValues({
       code: '',
       data_scope: 1,
+      menu_ids: [],
       name: '',
       remark: '',
       sort: 0,
       status: 1,
     });
-    await nextTick();
-    menuTreeRef.value?.setCheckedKeys([], false);
   } finally {
+    loadingPermissions.value = false;
     drawerApi.setState({ loading: false });
   }
 }
@@ -180,21 +178,21 @@ async function openEdit(row: RoleRow) {
   drawerApi.open();
   formApi.resetForm();
   try {
+    loadingPermissions.value = true;
     menuTree.value = await fetchMenuTree();
     const detail = await fetchRoleDetail(row.id);
-    treeRenderKey.value += 1;
     await nextTick();
     formApi.setValues({
       code: detail.code,
       data_scope: detail.data_scope,
+      menu_ids: detail.menu_ids,
       name: detail.name,
       remark: detail.remark ?? '',
       sort: detail.sort,
       status: detail.status,
     });
-    await nextTick();
-    menuTreeRef.value?.setCheckedKeys(detail.menu_ids, false);
   } finally {
+    loadingPermissions.value = false;
     drawerApi.setState({ loading: false });
   }
 }
@@ -210,23 +208,30 @@ async function openView(row: RoleRow) {
   drawerApi.open();
   formApi.resetForm();
   try {
+    loadingPermissions.value = true;
     menuTree.value = await fetchMenuTree();
     const detail = await fetchRoleDetail(row.id);
-    treeRenderKey.value += 1;
     await nextTick();
     formApi.setValues({
       code: detail.code,
       data_scope: detail.data_scope,
+      menu_ids: detail.menu_ids,
       name: detail.name,
       remark: detail.remark ?? '',
       sort: detail.sort,
       status: detail.status,
     });
-    await nextTick();
-    menuTreeRef.value?.setCheckedKeys(detail.menu_ids, false);
   } finally {
+    loadingPermissions.value = false;
     drawerApi.setState({ loading: false });
   }
+}
+
+function getNodeClass(node: { value?: { meta?: { type?: string } } }) {
+  if (node.value?.meta?.type === 'button') {
+    return 'inline-flex';
+  }
+  return '';
 }
 
 async function onDelete(row: RoleRow) {
@@ -288,23 +293,29 @@ gridApi = gridApiInstance;
 <template>
   <Page auto-content-height>
     <Drawer class="w-[640px]">
-      <div class="flex min-h-0 flex-1 flex-col gap-4">
-        <Form class="shrink-0" />
-        <div class="border-border flex min-h-0 flex-1 flex-col border-t pt-4">
-          <div class="text-foreground mb-2 text-sm font-medium">授权</div>
-          <ElScrollbar class="min-h-[280px]" max-height="420px">
-            <ElTree
-              :key="treeRenderKey"
-              ref="menuTreeRef"
-              :data="menuTreeData"
-              show-checkbox
-              node-key="id"
-              default-expand-all
-              highlight-current
-            />
-          </ElScrollbar>
-        </div>
-      </div>
+      <Form>
+        <template #menu_ids="slotProps">
+          <Tree
+            class="permission-tree w-full"
+            :tree-data="menuTreeData"
+            :disabled="drawerMode === 'view'"
+            :default-expanded-level="2"
+            :get-node-class="getNodeClass"
+            :loading="loadingPermissions"
+            value-field="id"
+            label-field="meta.title"
+            icon-field="meta.icon"
+            multiple
+            bordered
+            v-bind="slotProps"
+          >
+            <template #node="{ value }">
+              <IconifyIcon v-if="value.meta?.icon" :icon="value.meta.icon" />
+              {{ value.meta?.title }}
+            </template>
+          </Tree>
+        </template>
+      </Form>
     </Drawer>
 
     <Grid>
@@ -314,3 +325,40 @@ gridApi = gridApiInstance;
     </Grid>
   </Page>
 </template>
+
+<style lang="css" scoped>
+:deep(.permission-tree.ant-tree) {
+  min-height: 260px;
+  width: 100%;
+}
+
+:deep(.permission-tree .ant-tree-treenode) {
+  width: 100%;
+}
+
+:deep(.permission-tree .ant-tree-node-content-wrapper) {
+  width: calc(100% - 24px);
+}
+
+:deep(.ant-tree-title) {
+  .tree-actions {
+    margin-left: 1.25rem;
+    display: none;
+  }
+}
+
+:deep(.ant-tree-title:hover) {
+  .tree-actions {
+    margin-left: 1.25rem;
+    display: flex;
+    flex: 1 1 auto;
+    justify-content: flex-end;
+  }
+}
+
+:deep(.inline-flex) {
+  margin-right: 1.25rem;
+  display: inline-flex;
+  min-width: 6rem;
+}
+</style>
