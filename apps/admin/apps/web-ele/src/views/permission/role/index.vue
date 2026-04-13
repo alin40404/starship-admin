@@ -9,7 +9,7 @@ import type { RoleRow, RoleSavePayload } from '#/api/system/role';
 
 import { computed, nextTick, ref } from 'vue';
 
-import { Page, useVbenDrawer, useVbenModal } from '@vben/common-ui';
+import { Page, useVbenDrawer } from '@vben/common-ui';
 
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { ElScrollbar, ElTree } from 'element-plus';
@@ -29,19 +29,12 @@ import { fetchMenuTree } from '#/api/system/menu';
 import { buildRoleFormSchema, useColumns, useGridFormSchema } from './data';
 
 const editingId = ref<number | null>(null);
+/** 抽屉：新增 / 编辑 / 仅查看（超级管理员） */
+const drawerMode = ref<'create' | 'edit' | 'view'>('create');
 
 const menuTree = ref<MenuNode[]>([]);
 const menuTreeRef = ref<InstanceType<typeof ElTree>>();
-const assignRoleId = ref<number | null>(null);
 const treeRenderKey = ref(0);
-
-function toElTree(nodes: MenuNode[]): { id: number; label: string; children?: any[] }[] {
-  return nodes.map((n) => ({
-    id: n.id,
-    label: `${n.name} (${typeLabel(n.type)})`,
-    children: n.children?.length ? toElTree(n.children) : undefined,
-  }));
-}
 
 function typeLabel(t: number) {
   if (t === 1) return '目录';
@@ -50,8 +43,27 @@ function typeLabel(t: number) {
   return String(t);
 }
 
+function toElTree(
+  nodes: MenuNode[],
+  treeDisabled: boolean,
+): { id: number; label: string; disabled?: boolean; children?: any[] }[] {
+  return nodes.map((n) => ({
+    id: n.id,
+    label: `${n.name} (${typeLabel(n.type)})`,
+    disabled: treeDisabled,
+    children: n.children?.length ? toElTree(n.children, treeDisabled) : undefined,
+  }));
+}
+
+const menuTreeData = computed(() =>
+  toElTree(menuTree.value, drawerMode.value === 'view'),
+);
+
 const roleFormSchema = computed(() =>
-  buildRoleFormSchema(editingId.value !== null),
+  buildRoleFormSchema({
+    isEdit: editingId.value !== null,
+    readonly: drawerMode.value === 'view',
+  }),
 );
 
 const [Form, formApi] = useVbenForm({
@@ -59,8 +71,24 @@ const [Form, formApi] = useVbenForm({
   showDefaultActions: false,
 });
 
+function collectMenuIdsFromTree(): number[] {
+  const tree = menuTreeRef.value as undefined | {
+    getCheckedKeys: (leafOnly?: boolean) => number[];
+    getHalfCheckedKeys: () => number[];
+  };
+  if (!tree) {
+    return [];
+  }
+  const checked = tree.getCheckedKeys(false) as number[];
+  const half = tree.getHalfCheckedKeys() as number[];
+  return [...new Set([...checked, ...half])];
+}
+
 const [Drawer, drawerApi] = useVbenDrawer({
   async onConfirm() {
+    if (drawerMode.value === 'view') {
+      return;
+    }
     const { valid } = await formApi.validate();
     if (!valid) {
       return;
@@ -68,11 +96,14 @@ const [Drawer, drawerApi] = useVbenDrawer({
     const values = (await formApi.getValues()) as RoleSavePayload;
     drawerApi.lock();
     try {
+      const menuIds = collectMenuIdsFromTree();
       if (!editingId.value) {
-        await createRole(values);
+        const created = await createRole(values);
+        await syncRoleMenus(created.id, menuIds);
         ElMessage.success('创建成功');
       } else {
         await updateRole(editingId.value, values);
+        await syncRoleMenus(editingId.value, menuIds);
         ElMessage.success('已保存');
       }
       drawerApi.close();
@@ -85,31 +116,13 @@ const [Drawer, drawerApi] = useVbenDrawer({
   },
 });
 
-const [MenuModal, menuModalApi] = useVbenModal({
-  async onConfirm() {
-    if (!assignRoleId.value || !menuTreeRef.value) {
-      return;
-    }
-    const tree = menuTreeRef.value as {
-      getCheckedKeys: (leafOnly?: boolean) => number[];
-      getHalfCheckedKeys: () => number[];
-    };
-    const checked = tree.getCheckedKeys(false) as number[];
-    const half = tree.getHalfCheckedKeys() as number[];
-    const menuIds = [...new Set([...checked, ...half])];
-    await syncRoleMenus(assignRoleId.value, menuIds);
-    ElMessage.success('菜单权限已更新');
-    menuModalApi.close();
-  },
-});
-
 let gridApi: ExtendedVxeGridApi<RoleRow>;
 
 function onActionClick({ code, row }: OnActionClickParams<RoleRow>) {
-  if (code === 'edit') {
-    openEdit(row);
-  } else if (code === 'menus') {
-    openAssignMenus(row);
+  if (code === 'view') {
+    void openView(row);
+  } else if (code === 'edit') {
+    void openEdit(row);
   } else if (code === 'delete') {
     onDelete(row);
   }
@@ -127,11 +140,20 @@ async function onRoleStatusToggle(row: RoleRow, nextStatus: number) {
   gridApi.query();
 }
 
-function openCreate() {
+async function openCreate() {
+  drawerMode.value = 'create';
   editingId.value = null;
+  drawerApi.setState({
+    loading: true,
+    showConfirmButton: true,
+    title: '新增角色',
+  });
+  drawerApi.open();
   formApi.resetForm();
-  drawerApi.setState({ title: '新增角色' }).open();
-  nextTick(() => {
+  try {
+    menuTree.value = await fetchMenuTree();
+    treeRenderKey.value += 1;
+    await nextTick();
     formApi.setValues({
       code: '',
       data_scope: 1,
@@ -140,33 +162,71 @@ function openCreate() {
       sort: 0,
       status: 1,
     });
-  });
+    await nextTick();
+    menuTreeRef.value?.setCheckedKeys([], false);
+  } finally {
+    drawerApi.setState({ loading: false });
+  }
 }
 
-function openEdit(row: RoleRow) {
+async function openEdit(row: RoleRow) {
+  drawerMode.value = 'edit';
   editingId.value = row.id;
-  formApi.resetForm();
-  drawerApi.setState({ title: '编辑角色' }).open();
-  nextTick(() => {
-    formApi.setValues({
-      code: row.code,
-      data_scope: row.data_scope,
-      name: row.name,
-      remark: row.remark ?? '',
-      sort: row.sort,
-      status: row.status,
-    });
+  drawerApi.setState({
+    loading: true,
+    showConfirmButton: true,
+    title: '编辑角色',
   });
+  drawerApi.open();
+  formApi.resetForm();
+  try {
+    menuTree.value = await fetchMenuTree();
+    const detail = await fetchRoleDetail(row.id);
+    treeRenderKey.value += 1;
+    await nextTick();
+    formApi.setValues({
+      code: detail.code,
+      data_scope: detail.data_scope,
+      name: detail.name,
+      remark: detail.remark ?? '',
+      sort: detail.sort,
+      status: detail.status,
+    });
+    await nextTick();
+    menuTreeRef.value?.setCheckedKeys(detail.menu_ids, false);
+  } finally {
+    drawerApi.setState({ loading: false });
+  }
 }
 
-async function openAssignMenus(row: RoleRow) {
-  assignRoleId.value = row.id;
-  menuTree.value = await fetchMenuTree();
-  const detail = await fetchRoleDetail(row.id);
-  treeRenderKey.value += 1;
-  menuModalApi.setState({ title: `分配菜单 — ${row.name}` }).open();
-  await nextTick();
-  menuTreeRef.value?.setCheckedKeys(detail.menu_ids, false);
+async function openView(row: RoleRow) {
+  drawerMode.value = 'view';
+  editingId.value = row.id;
+  drawerApi.setState({
+    loading: true,
+    showConfirmButton: false,
+    title: '查看角色',
+  });
+  drawerApi.open();
+  formApi.resetForm();
+  try {
+    menuTree.value = await fetchMenuTree();
+    const detail = await fetchRoleDetail(row.id);
+    treeRenderKey.value += 1;
+    await nextTick();
+    formApi.setValues({
+      code: detail.code,
+      data_scope: detail.data_scope,
+      name: detail.name,
+      remark: detail.remark ?? '',
+      sort: detail.sort,
+      status: detail.status,
+    });
+    await nextTick();
+    menuTreeRef.value?.setCheckedKeys(detail.menu_ids, false);
+  } finally {
+    drawerApi.setState({ loading: false });
+  }
 }
 
 async function onDelete(row: RoleRow) {
@@ -227,23 +287,25 @@ gridApi = gridApiInstance;
 
 <template>
   <Page auto-content-height>
-    <Drawer class="w-[520px]">
-      <Form />
+    <Drawer class="w-[640px]">
+      <div class="flex min-h-0 flex-1 flex-col gap-4">
+        <Form class="shrink-0" />
+        <div class="border-border flex min-h-0 flex-1 flex-col border-t pt-4">
+          <div class="text-foreground mb-2 text-sm font-medium">授权</div>
+          <ElScrollbar class="min-h-[280px]" max-height="420px">
+            <ElTree
+              :key="treeRenderKey"
+              ref="menuTreeRef"
+              :data="menuTreeData"
+              show-checkbox
+              node-key="id"
+              default-expand-all
+              highlight-current
+            />
+          </ElScrollbar>
+        </div>
+      </div>
     </Drawer>
-
-    <MenuModal class="w-[520px]">
-      <ElScrollbar max-height="420px">
-        <ElTree
-          :key="treeRenderKey"
-          ref="menuTreeRef"
-          :data="toElTree(menuTree)"
-          show-checkbox
-          node-key="id"
-          default-expand-all
-          highlight-current
-        />
-      </ElScrollbar>
-    </MenuModal>
 
     <Grid>
       <template #toolbar-actions>

@@ -49,10 +49,15 @@ export function useGridFormSchema(): VbenFormSchema[] {
   ];
 }
 
-export function buildRoleFormSchema(isEdit: boolean): VbenFormSchema[] {
+export function buildRoleFormSchema(params: {
+  isEdit: boolean;
+  readonly: boolean;
+}): VbenFormSchema[] {
+  const { isEdit, readonly: ro } = params;
   return [
     {
       component: 'Input',
+      componentProps: { disabled: ro },
       fieldName: 'name',
       label: '名称',
       rules: 'required',
@@ -60,7 +65,7 @@ export function buildRoleFormSchema(isEdit: boolean): VbenFormSchema[] {
     {
       component: 'Input',
       componentProps: {
-        disabled: isEdit,
+        disabled: isEdit || ro,
       },
       fieldName: 'code',
       label: '编码',
@@ -69,6 +74,7 @@ export function buildRoleFormSchema(isEdit: boolean): VbenFormSchema[] {
     {
       component: 'Select',
       componentProps: {
+        disabled: ro,
         options: dataScopeOptions,
       },
       defaultValue: 1,
@@ -77,7 +83,7 @@ export function buildRoleFormSchema(isEdit: boolean): VbenFormSchema[] {
     },
     {
       component: 'InputNumber',
-      componentProps: { min: 0 },
+      componentProps: { disabled: ro, min: 0 },
       defaultValue: 0,
       fieldName: 'sort',
       label: '排序',
@@ -85,6 +91,7 @@ export function buildRoleFormSchema(isEdit: boolean): VbenFormSchema[] {
     {
       component: 'RadioGroup',
       componentProps: {
+        disabled: ro,
         options: [
           { label: '启用', value: 1 },
           { label: '禁用', value: 0 },
@@ -97,6 +104,7 @@ export function buildRoleFormSchema(isEdit: boolean): VbenFormSchema[] {
     {
       component: 'Input',
       componentProps: {
+        disabled: ro,
         rows: 2,
         type: 'textarea',
       },
@@ -140,12 +148,17 @@ export function useColumns(
         name: 'CellOperation',
         options: [
           {
+            code: 'view',
+            show: (row: RoleRow) => isSuperAdminRole(row),
+            text: '查看',
+            type: 'primary',
+          },
+          {
             code: 'edit',
             show: (row: RoleRow) => !isSuperAdminRole(row),
             text: '编辑',
             type: 'primary',
           },
-          { code: 'menus', text: '分配菜单', type: 'primary' },
           {
             code: 'delete',
             show: (row: RoleRow) => !isSuperAdminRole(row),
@@ -156,7 +169,7 @@ export function useColumns(
       },
       fixed: 'right',
       title: '操作',
-      width: 260,
+      width: 200,
     },
   ];
 }
