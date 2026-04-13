@@ -31,6 +31,8 @@ import { fetchRolePage } from '#/api/system/role';
 import { buildAdminFormSchema, useColumns, useGridFormSchema } from './data';
 
 const editingId = ref<number | null>(null);
+/** 当前编辑的是超级管理员时，禁止改角色 */
+const editingIsSuperAdmin = ref(false);
 const metaReady = ref(false);
 
 const deptTree = ref<DeptNode[]>([]);
@@ -61,6 +63,7 @@ const adminFormSchema = computed(() =>
   buildAdminFormSchema({
     deptTreeData: deptTreeSelectData.value,
     isEdit: editingId.value !== null,
+    lockRoles: editingIsSuperAdmin.value,
     postOptions: postSelectOptions.value,
     roleOptions: roleSelectOptions.value,
   }),
@@ -106,12 +109,26 @@ const [Drawer, drawerApi] = useVbenDrawer({
   },
 });
 
+let gridApi: ExtendedVxeGridApi<AdminRow>;
+
 function onActionClick({ code, row }: OnActionClickParams<AdminRow>) {
   if (code === 'edit') {
     openEdit(row);
   } else if (code === 'delete') {
     onDelete(row);
   }
+}
+
+async function onAdminStatusToggle(row: AdminRow, nextStatus: number) {
+  const label = nextStatus === 1 ? '启用' : '禁用';
+  await ElMessageBox.confirm(
+    `确定将「${row.username}」的状态切换为【${label}】吗？`,
+    '切换状态',
+    { type: 'warning' },
+  );
+  await updateAdmin(row.id, { status: nextStatus });
+  ElMessage.success('状态已更新');
+  gridApi.query();
 }
 
 async function onDelete(row: AdminRow) {
@@ -125,8 +142,6 @@ async function onDelete(row: AdminRow) {
 }
 
 const selectedRows = ref<AdminRow[]>([]);
-
-let gridApi: ExtendedVxeGridApi<AdminRow>;
 
 function syncSelection() {
   const records = gridApi?.grid?.getCheckboxRecords?.() ?? [];
@@ -167,7 +182,7 @@ const [Grid, gridApiInstance] = useVbenVxeGrid({
       checkMethod: ({ row }) => (row as AdminRow).is_super !== 1,
       highlight: true,
     },
-    columns: useColumns(onActionClick),
+    columns: useColumns(onActionClick, onAdminStatusToggle),
     gridEvents: {
       checkboxAll: syncSelection,
       checkboxChange: syncSelection,
@@ -228,6 +243,7 @@ async function ensureMetaLoaded() {
 function openCreate() {
   void (async () => {
     await ensureMetaLoaded();
+    editingIsSuperAdmin.value = false;
     editingId.value = null;
     formApi.resetForm();
     drawerApi.setState({ title: '新增管理员' }).open();
@@ -249,6 +265,7 @@ function openCreate() {
 function openEdit(row: AdminRow) {
   void (async () => {
     await ensureMetaLoaded();
+    editingIsSuperAdmin.value = row.is_super === 1;
     editingId.value = row.id;
     formApi.resetForm();
     drawerApi.setState({ title: '编辑管理员' }).open();

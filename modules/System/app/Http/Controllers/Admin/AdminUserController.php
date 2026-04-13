@@ -58,7 +58,7 @@ class AdminUserController extends Controller
             'status' => ['sometimes', 'integer', 'in:0,1'],
             'is_super' => ['sometimes', 'integer', 'in:0,1'],
             'remark' => ['nullable', 'string', 'max:255'],
-            'role_ids' => ['sometimes', 'array'],
+            'role_ids' => ['required', 'array', 'min:1'],
             'role_ids.*' => ['integer', Rule::exists(Role::class, 'id')],
             'post_ids' => ['sometimes', 'array'],
             'post_ids.*' => ['integer', Rule::exists(Post::class, 'id')],
@@ -70,9 +70,7 @@ class AdminUserController extends Controller
 
         $admin = Admin::query()->create($data);
 
-        if ($roleIds !== []) {
-            $admin->roles()->sync($roleIds);
-        }
+        $admin->roles()->sync($roleIds);
         if ($postIds !== []) {
             $admin->posts()->sync($postIds);
         }
@@ -85,6 +83,7 @@ class AdminUserController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $admin = Admin::query()->findOrFail($id);
+        $isSuper = (int) $admin->is_super === 1;
 
         $data = $request->validate([
             'password' => ['nullable', 'string', Password::defaults()],
@@ -97,7 +96,9 @@ class AdminUserController extends Controller
             'status' => ['sometimes', 'integer', 'in:0,1'],
             'is_super' => ['sometimes', 'integer', 'in:0,1'],
             'remark' => ['nullable', 'string', 'max:255'],
-            'role_ids' => ['sometimes', 'array'],
+            'role_ids' => $isSuper
+                ? ['sometimes', 'array']
+                : ['required', 'array', 'min:1'],
             'role_ids.*' => ['integer', Rule::exists(Role::class, 'id')],
             'post_ids' => ['sometimes', 'array'],
             'post_ids.*' => ['integer', Rule::exists(Post::class, 'id')],
@@ -107,6 +108,10 @@ class AdminUserController extends Controller
         $postIds = $data['post_ids'] ?? null;
         unset($data['role_ids'], $data['post_ids']);
 
+        if ($isSuper) {
+            unset($data['status']);
+        }
+
         if (! empty($data['password'])) {
             $admin->password = $data['password'];
         }
@@ -115,7 +120,7 @@ class AdminUserController extends Controller
         $admin->fill($data);
         $admin->save();
 
-        if (is_array($roleIds)) {
+        if (is_array($roleIds) && ! $isSuper) {
             $admin->roles()->sync($roleIds);
         }
         if (is_array($postIds)) {

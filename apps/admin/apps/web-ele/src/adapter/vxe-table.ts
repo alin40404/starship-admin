@@ -13,7 +13,7 @@ import {
 
 import { get } from '@vben/utils';
 
-import { ElButton, ElImage, ElTag } from 'element-plus';
+import { ElButton, ElImage, ElSwitch, ElTag } from 'element-plus';
 
 import { useVbenForm } from './form';
 
@@ -71,6 +71,53 @@ setupVbenVxeTable({
           ElButton,
           { size: 'small', link: true },
           { default: () => props?.text },
+        );
+      },
+    });
+
+    /** 管理员列表状态：开关 + 文案，attrs.onToggle(row, nextStatus) 内做确认与接口 */
+    vxeUI.renderer.add('CellAdminStatusSwitch', {
+      renderTableDefault({ attrs, props }, { column, row }) {
+        const onToggle = attrs?.onToggle as
+          | ((row: Recordable<any>, nextStatus: number) => Promise<void>)
+          | undefined;
+        const status = get(row, column.field) as number;
+        const isSuper = (row as Recordable<any>).is_super === 1;
+        const disabled = isSuper || !onToggle;
+
+        const pillClass =
+          status === 1
+            ? 'border-[var(--el-color-primary-light-5)] bg-[var(--el-color-primary-light-9)] text-[var(--el-color-primary)]'
+            : 'border-[var(--el-border-color)] bg-[var(--el-fill-color-light)] text-[var(--el-text-color-secondary)]';
+
+        return h(
+          'div',
+          {
+            class: `inline-flex max-w-full items-center gap-2 rounded-full border px-2.5 py-0.5 text-xs ${pillClass}`,
+            ...props,
+          },
+          [
+            h('span', { class: 'shrink-0' }, status === 1 ? '已启用' : '已禁用'),
+            h(ElSwitch, {
+              activeValue: 1,
+              beforeChange: async () => {
+                if (isSuper || !onToggle) {
+                  return false;
+                }
+                const next = status === 1 ? 0 : 1;
+                try {
+                  await onToggle(row, next);
+                  return true;
+                } catch {
+                  return false;
+                }
+              },
+              disabled,
+              inactiveValue: 0,
+              modelValue: status,
+              size: 'small',
+            }),
+          ],
         );
       },
     });

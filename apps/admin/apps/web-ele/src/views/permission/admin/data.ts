@@ -21,6 +21,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
 
 export function useColumns(
   onActionClick: OnActionClickFn<AdminRow>,
+  onStatusToggle: (row: AdminRow, nextStatus: number) => Promise<void>,
 ): VxeTableGridColumns {
   return [
     {
@@ -51,17 +52,17 @@ export function useColumns(
       title: '角色',
     },
     {
+      align: 'center',
       cellRender: {
-        name: 'CellTag',
-        options: [
-          { label: '启用', type: 'success', value: 1 },
-          { label: '禁用', type: 'info', value: 0 },
-        ],
+        attrs: {
+          onToggle: onStatusToggle,
+        },
+        name: 'CellAdminStatusSwitch',
       },
       field: 'status',
       sortable: true,
       title: '状态',
-      width: 90,
+      width: 148,
     },
     {
       align: 'center',
@@ -72,7 +73,12 @@ export function useColumns(
         },
         name: 'CellOperation',
         options: [
-          'edit',
+          {
+            code: 'edit',
+            show: (row: AdminRow) => row.is_super !== 1,
+            text: '编辑',
+            type: 'primary',
+          },
           {
             code: 'delete',
             show: (row: AdminRow) => row.is_super !== 1,
@@ -90,11 +96,13 @@ export function useColumns(
 
 export function buildAdminFormSchema(params: {
   deptTreeData: { label: string; value: number; children?: any[] }[];
+  lockRoles?: boolean;
   roleOptions: { label: string; value: number }[];
   postOptions: { label: string; value: number }[];
   isEdit: boolean;
 }): VbenFormSchema[] {
-  const { deptTreeData, roleOptions, postOptions, isEdit } = params;
+  const { deptTreeData, lockRoles = false, roleOptions, postOptions, isEdit } =
+    params;
   return [
     {
       component: 'Input',
@@ -150,13 +158,15 @@ export function buildAdminFormSchema(params: {
     {
       component: 'Select',
       componentProps: {
-        clearable: true,
+        clearable: !lockRoles,
+        disabled: lockRoles,
         multiple: true,
         options: roleOptions,
         placeholder: '选择角色',
       },
       fieldName: 'role_ids',
       label: '角色',
+      rules: 'required',
     },
     {
       component: 'Select',
@@ -172,6 +182,7 @@ export function buildAdminFormSchema(params: {
     {
       component: 'RadioGroup',
       componentProps: {
+        disabled: lockRoles,
         options: [
           { label: '启用', value: 1 },
           { label: '禁用', value: 0 },
