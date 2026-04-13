@@ -104,9 +104,6 @@ export function buildRoleFormSchema(params: {
     },
     {
       component: 'Input',
-      componentProps: {
-        disabled: ro,
-      },
       fieldName: 'menu_ids',
       formItemClass: 'col-span-2 items-start',
       label: '授权',

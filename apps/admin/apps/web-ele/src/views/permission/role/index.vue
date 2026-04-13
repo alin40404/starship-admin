@@ -297,9 +297,11 @@ gridApi = gridApiInstance;
       <Form>
         <template #menu_ids="slotProps">
           <Tree
-            class="permission-tree w-full"
+            :class="[
+              'permission-tree w-full',
+              { 'permission-tree--readonly': drawerMode === 'view' },
+            ]"
             :tree-data="menuTreeData"
-            :disabled="drawerMode === 'view'"
             :default-expanded-level="2"
             :get-node-class="getNodeClass"
             :loading="loadingPermissions"
@@ -339,6 +341,25 @@ gridApi = gridApiInstance;
 
 :deep(.permission-tree .ant-tree-node-content-wrapper) {
   width: calc(100% - 24px);
+}
+
+:deep(.permission-tree--readonly .tree-node) {
+  pointer-events: none;
+}
+
+:deep(.permission-tree--readonly [data-state='checked']) {
+  background-color: var(--muted) !important;
+  border-color: var(--border) !important;
+  color: var(--muted-foreground) !important;
+}
+
+:deep(.permission-tree--readonly [data-state='unchecked']) {
+  border-color: var(--border) !important;
+}
+
+:deep(.permission-tree--readonly .tree-node .text-foreground\/80),
+:deep(.permission-tree--readonly .tree-node .text-foreground) {
+  color: var(--muted-foreground) !important;
 }
 
 :deep(.ant-tree-title) {
