@@ -11,7 +11,7 @@ export const overridesPreferences = defineOverridesPreferences({
     name: import.meta.env.VITE_APP_TITLE,
     /** 与 Starship 后端菜单、路由一致：由接口返回动态路由 */
     accessMode: 'backend',
-    /** 与种子菜单「工作台」路径一致 */
-    defaultHomePath: '/dashboard',
+    /** 与种子菜单「工作台 / 控制台」路径一致 */
+    defaultHomePath: '/dashboard/console',
   },
 });

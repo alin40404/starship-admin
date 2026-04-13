@@ -21,6 +21,7 @@ interface StarshipMenuNode {
 }
 
 const DASHBOARD_VIEW = 'views/dashboard/workspace/index.vue';
+const DASHBOARD_ANALYTICS_VIEW = 'views/dashboard/analytics/index.vue';
 const PLACEHOLDER_VIEW = 'views/_core/fallback/coming-soon.vue';
 
 const ICON_MAP: Record<string, string> = {
@@ -34,6 +35,32 @@ const ICON_MAP: Record<string, string> = {
   Collection: 'ep:collection',
   Tools: 'ep:setting',
   Paperclip: 'ep:paperclip',
+  Lock: 'ep:lock',
+  Key: 'ep:key',
+  Share: 'ep:share',
+  Avatar: 'ep:avatar',
+  TrendCharts: 'ep:trend-charts',
+  Operation: 'ep:operation',
+  Location: 'ep:location',
+  Bell: 'ep:bell',
+  FolderOpened: 'ep:folder-opened',
+  Files: 'ep:files',
+  Coin: 'ep:coin',
+  Monitor: 'ep:monitor',
+  Document: 'ep:document',
+  Notebook: 'ep:notebook',
+  WarningFilled: 'ep:warning-filled',
+  View: 'ep:view',
+  Timer: 'ep:timer',
+  Cpu: 'ep:cpu',
+  MagicStick: 'ep:magic-stick',
+  Grid: 'ep:grid',
+  Link: 'ep:link',
+  Odometer: 'ep:odometer',
+  Histogram: 'ep:histogram',
+  List: 'ep:list',
+  Promotion: 'ep:promotion',
+  StarFilled: 'ep:star-filled',
 };
 
 function mapIcon(icon: string | null | undefined): string {
@@ -44,8 +71,11 @@ function mapIcon(icon: string | null | undefined): string {
 }
 
 function resolvePageComponent(path: string | null): string {
-  if (path === '/dashboard') {
+  if (path === '/dashboard' || path === '/dashboard/console') {
     return DASHBOARD_VIEW;
+  }
+  if (path === '/dashboard/overview') {
+    return DASHBOARD_ANALYTICS_VIEW;
   }
   return PLACEHOLDER_VIEW;
 }

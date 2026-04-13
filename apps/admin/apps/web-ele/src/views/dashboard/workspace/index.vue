@@ -97,7 +97,7 @@ const quickNavItems: WorkbenchQuickNavItem[] = [
     color: '#bf0c2c',
     icon: 'ion:grid-outline',
     title: '仪表盘',
-    url: '/dashboard',
+    url: '/dashboard/console',
   },
   {
     color: '#e18525',

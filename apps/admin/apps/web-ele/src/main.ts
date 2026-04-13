@@ -25,7 +25,7 @@ async function initApplication() {
   updatePreferences({
     app: {
       accessMode: overridesPreferences.app?.accessMode ?? 'backend',
-      defaultHomePath: overridesPreferences.app?.defaultHomePath ?? '/dashboard',
+      defaultHomePath: overridesPreferences.app?.defaultHomePath ?? '/dashboard/console',
     },
   });
 
