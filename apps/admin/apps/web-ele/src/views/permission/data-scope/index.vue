@@ -22,7 +22,6 @@ const [Form, formApi] = useVbenForm({
 });
 
 const [Drawer, drawerApi] = useVbenDrawer({
-  appendToMain: true,
   async onConfirm() {
     const { valid } = await formApi.validate();
     if (!valid) {

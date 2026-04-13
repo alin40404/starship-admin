@@ -127,7 +127,13 @@ setupVbenVxeTable({
             }
             return { ...defaultProps, ...presets[opt.code], ...opt };
           })
-          .filter((opt: Recordable<any>) => opt.show !== false);
+          .filter((opt: Recordable<any>) => {
+            const { show } = opt;
+            if (typeof show === 'function') {
+              return show(row) !== false;
+            }
+            return show !== false;
+          });
 
         return h(
           'div',
@@ -135,20 +141,21 @@ setupVbenVxeTable({
             class: 'flex flex-wrap items-center gap-1',
             style: { justifyContent: justify },
           },
-          operations.map((opt) =>
-            h(
+          operations.map((opt) => {
+            const { show: _show, text, ...btnProps } = opt;
+            return h(
               ElButton,
               {
-                ...opt,
+                ...btnProps,
                 onClick: () =>
                   attrs?.onClick?.({
                     code: opt.code,
                     row,
                   }),
               },
-              { default: () => opt.text },
-            ),
-          ),
+              { default: () => text },
+            );
+          }),
         );
       },
     });

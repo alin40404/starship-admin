@@ -23,14 +23,21 @@ export function useColumns(
   onActionClick: OnActionClickFn<AdminRow>,
 ): VxeTableGridColumns {
   return [
-    { field: 'id', title: 'ID', width: 70 },
-    { field: 'username', minWidth: 120, title: '用户名' },
-    { field: 'nickname', minWidth: 100, title: '昵称' },
     {
-      field: 'department',
+      align: 'center',
+      fixed: 'left',
+      type: 'checkbox',
+      width: 48,
+    },
+    { field: 'id', sortable: true, title: 'ID', width: 70 },
+    { field: 'username', minWidth: 120, sortable: true, title: '用户名' },
+    { field: 'nickname', minWidth: 100, sortable: true, title: '昵称' },
+    {
+      field: 'dept_id',
       formatter: ({ row }) =>
         (row as AdminRow).department?.name ?? '—',
       minWidth: 120,
+      sortable: true,
       title: '部门',
     },
     {
@@ -40,6 +47,7 @@ export function useColumns(
           .map((r) => r.name)
           .join('、') || '—',
       minWidth: 160,
+      sortable: false,
       title: '角色',
     },
     {
@@ -51,6 +59,7 @@ export function useColumns(
         ],
       },
       field: 'status',
+      sortable: true,
       title: '状态',
       width: 90,
     },
@@ -62,6 +71,15 @@ export function useColumns(
           onClick: onActionClick,
         },
         name: 'CellOperation',
+        options: [
+          'edit',
+          {
+            code: 'delete',
+            show: (row: AdminRow) => row.is_super !== 1,
+            text: '删除',
+            type: 'danger',
+          },
+        ],
       },
       fixed: 'right',
       title: '操作',

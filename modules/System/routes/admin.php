@@ -49,6 +49,7 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
         Route::delete('menus/{id}', [MenuController::class, 'destroy']);
 
         Route::get('admins', [AdminUserController::class, 'index']);
+        Route::post('admins/batch-destroy', [AdminUserController::class, 'batchDestroy']);
         Route::post('admins', [AdminUserController::class, 'store']);
         Route::put('admins/{id}', [AdminUserController::class, 'update']);
         Route::delete('admins/{id}', [AdminUserController::class, 'destroy']);

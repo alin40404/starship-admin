@@ -56,7 +56,6 @@ const [Form, formApi] = useVbenForm({
 });
 
 const [Drawer, drawerApi] = useVbenDrawer({
-  appendToMain: true,
   async onConfirm() {
     const { valid } = await formApi.validate();
     if (!valid) {
@@ -217,7 +216,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
     </MenuModal>
 
     <Grid>
-      <template #toolbar-tools>
+      <template #toolbar-actions>
         <ElButton type="primary" @click="openCreate">新增角色</ElButton>
       </template>
     </Grid>

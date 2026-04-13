@@ -18,11 +18,27 @@ class AdminUserController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = Admin::query()
-            ->with(['department', 'roles', 'posts'])
-            ->orderByDesc('id');
+            ->with(['department', 'roles', 'posts']);
 
         if ($request->filled('username')) {
             $query->where('username', 'like', '%'.$request->get('username').'%');
+        }
+
+        $sortField = $request->get('sort_field');
+        $sortOrder = strtolower((string) $request->get('sort_order', 'asc')) === 'desc' ? 'desc' : 'asc';
+
+        $allowedSorts = [
+            'id' => 'id',
+            'username' => 'username',
+            'nickname' => 'nickname',
+            'status' => 'status',
+            'dept_id' => 'dept_id',
+        ];
+
+        if (is_string($sortField) && isset($allowedSorts[$sortField])) {
+            $query->orderBy($allowedSorts[$sortField], $sortOrder);
+        } else {
+            $query->orderByDesc('id');
         }
 
         return ApiResponse::success($query->paginate((int) $request->get('per_page', 15)));
@@ -113,8 +129,38 @@ class AdminUserController extends Controller
 
     public function destroy(int $id): JsonResponse
     {
-        Admin::query()->whereKey($id)->firstOrFail()->delete();
+        $admin = Admin::query()->whereKey($id)->firstOrFail();
+
+        if ((int) $admin->is_super === 1) {
+            return ApiResponse::error('超级管理员不允许删除', 422);
+        }
+
+        $admin->delete();
 
         return ApiResponse::success(null, '已删除');
+    }
+
+    public function batchDestroy(Request $request): JsonResponse
+    {
+        $ids = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+        ])['ids'];
+
+        $hasSuper = Admin::query()
+            ->whereIn('id', $ids)
+            ->where('is_super', 1)
+            ->exists();
+
+        if ($hasSuper) {
+            return ApiResponse::error('所选记录中包含超级管理员，无法删除', 422);
+        }
+
+        $deleted = Admin::query()
+            ->whereIn('id', $ids)
+            ->where('is_super', 0)
+            ->delete();
+
+        return ApiResponse::success(['deleted' => $deleted], '已批量删除');
     }
 }

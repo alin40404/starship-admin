@@ -40,6 +40,8 @@ export async function fetchAdminPage(params: {
   page?: number;
   per_page?: number;
   username?: string;
+  sort_field?: string;
+  sort_order?: 'asc' | 'desc';
 }) {
   const page = await requestClient.get<LaravelPage<AdminRow>>('/system/admins', {
     params,
@@ -57,4 +59,10 @@ export function updateAdmin(id: number, data: AdminSavePayload) {
 
 export function deleteAdmin(id: number) {
   return requestClient.delete(`/system/admins/${id}`);
+}
+
+export function batchDeleteAdmins(ids: number[]) {
+  return requestClient.post<{ deleted: number }>('/system/admins/batch-destroy', {
+    ids,
+  });
 }

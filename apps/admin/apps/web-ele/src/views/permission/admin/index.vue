@@ -1,5 +1,9 @@
 <script lang="ts" setup>
-import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
+import type {
+  ExtendedVxeGridApi,
+  OnActionClickParams,
+  VxeTableGridOptions,
+} from '#/adapter/vxe-table';
 import type { AdminRow, AdminSavePayload } from '#/api/system/admin';
 import type { DeptNode } from '#/api/system/department';
 import type { PostRow } from '#/api/system/post';
@@ -14,6 +18,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { useVbenForm } from '#/adapter/form';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
+  batchDeleteAdmins,
   createAdmin,
   deleteAdmin,
   fetchAdminPage,
@@ -68,7 +73,6 @@ const [Form, formApi] = useVbenForm({
 });
 
 const [Drawer, drawerApi] = useVbenDrawer({
-  appendToMain: true,
   async onConfirm() {
     const { valid } = await formApi.validate();
     if (!valid) {
@@ -117,9 +121,40 @@ async function onDelete(row: AdminRow) {
   await deleteAdmin(row.id);
   ElMessage.success('已删除');
   gridApi.query();
+  clearSelection();
 }
 
-const [Grid, gridApi] = useVbenVxeGrid({
+const selectedRows = ref<AdminRow[]>([]);
+
+let gridApi: ExtendedVxeGridApi<AdminRow>;
+
+function syncSelection() {
+  const records = gridApi?.grid?.getCheckboxRecords?.() ?? [];
+  selectedRows.value = records as AdminRow[];
+}
+
+function clearSelection() {
+  gridApi?.grid?.clearCheckboxRow?.();
+  selectedRows.value = [];
+}
+
+async function onBatchDelete() {
+  const ids = selectedRows.value.map((r) => r.id);
+  if (ids.length === 0) {
+    return;
+  }
+  await ElMessageBox.confirm(
+    `确定删除选中的 ${ids.length} 条管理员？删除后不可恢复。`,
+    '批量删除',
+    { type: 'warning' },
+  );
+  await batchDeleteAdmins(ids);
+  ElMessage.success('已批量删除');
+  clearSelection();
+  gridApi.query();
+}
+
+const [Grid, gridApiInstance] = useVbenVxeGrid({
   formOptions: {
     schema: useGridFormSchema(),
     submitOnChange: false,
@@ -128,22 +163,38 @@ const [Grid, gridApi] = useVbenVxeGrid({
     },
   },
   gridOptions: {
+    checkboxConfig: {
+      checkMethod: ({ row }) => (row as AdminRow).is_super !== 1,
+      highlight: true,
+    },
     columns: useColumns(onActionClick),
+    gridEvents: {
+      checkboxAll: syncSelection,
+      checkboxChange: syncSelection,
+    },
     height: 'auto',
     keepSource: true,
     proxyConfig: {
       ajax: {
-        query: async ({ page }, formValues) => {
+        query: async ({ page, sort }, formValues) => {
+          const order = sort?.order;
           return await fetchAdminPage({
             page: page.currentPage,
             per_page: page.pageSize,
+            sort_field: sort?.field,
+            sort_order:
+              order === 'asc' || order === 'desc' ? order : undefined,
             username: formValues?.username || undefined,
           });
         },
       },
+      sort: true,
     },
     rowConfig: {
       keyField: 'id',
+    },
+    sortConfig: {
+      remote: true,
     },
     toolbarConfig: {
       custom: true,
@@ -153,6 +204,8 @@ const [Grid, gridApi] = useVbenVxeGrid({
     },
   } as VxeTableGridOptions<AdminRow>,
 });
+
+gridApi = gridApiInstance;
 
 async function loadMeta() {
   const [dept, roles, posts] = await Promise.all([
@@ -226,8 +279,14 @@ onMounted(loadMeta);
       <Form />
     </Drawer>
     <Grid>
-      <template #toolbar-tools>
-        <ElButton type="primary" @click="openCreate">新增</ElButton>
+      <template #toolbar-actions>
+        <template v-if="selectedRows.length > 0">
+          <ElButton type="danger" @click="onBatchDelete">
+            批量删除（{{ selectedRows.length }}）
+          </ElButton>
+          <ElButton @click="clearSelection">取消选择</ElButton>
+        </template>
+        <ElButton v-else type="primary" @click="openCreate">新增</ElButton>
       </template>
     </Grid>
   </Page>

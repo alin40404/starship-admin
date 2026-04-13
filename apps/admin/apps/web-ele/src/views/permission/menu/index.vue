@@ -75,7 +75,6 @@ const [Form, formApi] = useVbenForm({
 });
 
 const [Drawer, drawerApi] = useVbenDrawer({
-  appendToMain: true,
   async onConfirm() {
     const { valid } = await formApi.validate();
     if (!valid) {
@@ -210,7 +209,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       <Form />
     </Drawer>
     <Grid>
-      <template #toolbar-tools>
+      <template #toolbar-actions>
         <ElButton type="primary" @click="() => openCreate()">新增根菜单</ElButton>
       </template>
     </Grid>
