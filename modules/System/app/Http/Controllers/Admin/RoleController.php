@@ -15,6 +15,16 @@ class RoleController extends Controller
     {
         $query = Role::query()->orderBy('sort')->orderBy('id');
 
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%'.$request->get('name').'%');
+        }
+        if ($request->filled('code')) {
+            $query->where('code', 'like', '%'.$request->get('code').'%');
+        }
+        if ($request->filled('status')) {
+            $query->where('status', (int) $request->get('status'));
+        }
+
         return ApiResponse::success($query->paginate((int) $request->get('per_page', 15)));
     }
 

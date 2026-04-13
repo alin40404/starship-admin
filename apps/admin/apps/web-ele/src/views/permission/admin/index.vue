@@ -1,15 +1,18 @@
 <script lang="ts" setup>
+import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { AdminRow, AdminSavePayload } from '#/api/system/admin';
 import type { DeptNode } from '#/api/system/department';
 import type { PostRow } from '#/api/system/post';
 import type { RoleRow } from '#/api/system/role';
 
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
 
-import { Page } from '@vben/common-ui';
+import { Page, useVbenDrawer } from '@vben/common-ui';
 
 import { ElMessage, ElMessageBox } from 'element-plus';
 
+import { useVbenForm } from '#/adapter/form';
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   createAdmin,
   deleteAdmin,
@@ -20,38 +23,28 @@ import { fetchDepartmentTree } from '#/api/system/department';
 import { fetchPostPage } from '#/api/system/post';
 import { fetchRolePage } from '#/api/system/role';
 
-const loading = ref(false);
-const tableData = ref<AdminRow[]>([]);
-const total = ref(0);
-const page = ref(1);
-const perPage = ref(15);
-const usernameQ = ref('');
+import { buildAdminFormSchema, useColumns, useGridFormSchema } from './data';
 
-const dialogVisible = ref(false);
-const dialogTitle = ref('新增管理员');
 const editingId = ref<number | null>(null);
-
-const form = reactive<AdminSavePayload>({
-  username: '',
-  password: '',
-  nickname: '',
-  real_name: '',
-  email: '',
-  mobile: '',
-  dept_id: undefined,
-  status: 1,
-  is_super: 0,
-  remark: '',
-  role_ids: [],
-  post_ids: [],
-});
+const metaReady = ref(false);
 
 const deptTree = ref<DeptNode[]>([]);
-const deptTreeSelectData = computed(() => mapDeptForTreeSelect(deptTree.value));
 const roleOptions = ref<RoleRow[]>([]);
 const postOptions = ref<PostRow[]>([]);
 
-function mapDeptForTreeSelect(nodes: DeptNode[]): { label: string; value: number; children?: any[] }[] {
+const deptTreeSelectData = computed(() =>
+  mapDeptForTreeSelect(deptTree.value),
+);
+const roleSelectOptions = computed(() =>
+  roleOptions.value.map((r) => ({ label: r.name, value: r.id })),
+);
+const postSelectOptions = computed(() =>
+  postOptions.value.map((p) => ({ label: p.name, value: p.id })),
+);
+
+function mapDeptForTreeSelect(
+  nodes: DeptNode[],
+): { label: string; value: number; children?: any[] }[] {
   return nodes.map((n) => ({
     label: n.name,
     value: n.id,
@@ -59,20 +52,107 @@ function mapDeptForTreeSelect(nodes: DeptNode[]): { label: string; value: number
   }));
 }
 
-async function loadTable() {
-  loading.value = true;
-  try {
-    const { items, total: t } = await fetchAdminPage({
-        page: page.value,
-        per_page: perPage.value,
-        username: usernameQ.value || undefined,
-      });
-    tableData.value = items;
-    total.value = t;
-  } finally {
-    loading.value = false;
+const adminFormSchema = computed(() =>
+  buildAdminFormSchema({
+    deptTreeData: deptTreeSelectData.value,
+    isEdit: editingId.value !== null,
+    postOptions: postSelectOptions.value,
+    roleOptions: roleSelectOptions.value,
+  }),
+);
+
+const [Form, formApi] = useVbenForm({
+  // useVbenForm 内部会对 schema 做响应式处理，类型声明未包含 ComputedRef
+  schema: adminFormSchema as any,
+  showDefaultActions: false,
+});
+
+const [Drawer, drawerApi] = useVbenDrawer({
+  appendToMain: true,
+  async onConfirm() {
+    const { valid } = await formApi.validate();
+    if (!valid) {
+      return;
+    }
+    const values = (await formApi.getValues()) as AdminSavePayload;
+    if (!editingId.value && !String(values.password ?? '').trim()) {
+      ElMessage.warning('请填写密码');
+      return;
+    }
+    drawerApi.lock();
+    try {
+      const payload = { ...values };
+      if (editingId.value && !payload.password) {
+        delete payload.password;
+      }
+      if (!editingId.value) {
+        await createAdmin(payload);
+        ElMessage.success('创建成功');
+      } else {
+        await updateAdmin(editingId.value, payload);
+        ElMessage.success('已保存');
+      }
+      drawerApi.close();
+      gridApi.query();
+    } catch {
+      drawerApi.unlock();
+    } finally {
+      drawerApi.unlock();
+    }
+  },
+});
+
+function onActionClick({ code, row }: OnActionClickParams<AdminRow>) {
+  if (code === 'edit') {
+    openEdit(row);
+  } else if (code === 'delete') {
+    onDelete(row);
   }
 }
+
+async function onDelete(row: AdminRow) {
+  await ElMessageBox.confirm(`确定删除管理员「${row.username}」？`, '提示', {
+    type: 'warning',
+  });
+  await deleteAdmin(row.id);
+  ElMessage.success('已删除');
+  gridApi.query();
+}
+
+const [Grid, gridApi] = useVbenVxeGrid({
+  formOptions: {
+    schema: useGridFormSchema(),
+    submitOnChange: false,
+    submitButtonOptions: {
+      content: '查询',
+    },
+  },
+  gridOptions: {
+    columns: useColumns(onActionClick),
+    height: 'auto',
+    keepSource: true,
+    proxyConfig: {
+      ajax: {
+        query: async ({ page }, formValues) => {
+          return await fetchAdminPage({
+            page: page.currentPage,
+            per_page: page.pageSize,
+            username: formValues?.username || undefined,
+          });
+        },
+      },
+    },
+    rowConfig: {
+      keyField: 'id',
+    },
+    toolbarConfig: {
+      custom: true,
+      refresh: true,
+      search: true,
+      zoom: true,
+    },
+  } as VxeTableGridOptions<AdminRow>,
+});
 
 async function loadMeta() {
   const [dept, roles, posts] = await Promise.all([
@@ -83,211 +163,72 @@ async function loadMeta() {
   deptTree.value = dept;
   roleOptions.value = roles.items;
   postOptions.value = posts.items;
+  metaReady.value = true;
+}
+
+async function ensureMetaLoaded() {
+  if (!metaReady.value) {
+    await loadMeta();
+  }
 }
 
 function openCreate() {
-  editingId.value = null;
-  dialogTitle.value = '新增管理员';
-  Object.assign(form, {
-    username: '',
-    password: '',
-    nickname: '',
-    real_name: '',
-    email: '',
-    mobile: '',
-    dept_id: undefined,
-    status: 1,
-    is_super: 0,
-    remark: '',
-    role_ids: [],
-    post_ids: [],
-  });
-  dialogVisible.value = true;
+  void (async () => {
+    await ensureMetaLoaded();
+    editingId.value = null;
+    formApi.resetForm();
+    drawerApi.setState({ title: '新增管理员' }).open();
+    nextTick(() => {
+      formApi.setValues({
+        nickname: '',
+        password: '',
+        post_ids: [],
+        real_name: '',
+        remark: '',
+        role_ids: [],
+        status: 1,
+        username: '',
+      });
+    });
+  })();
 }
 
 function openEdit(row: AdminRow) {
-  editingId.value = row.id;
-  dialogTitle.value = '编辑管理员';
-  Object.assign(form, {
-    username: row.username,
-    password: '',
-    nickname: row.nickname ?? '',
-    real_name: row.real_name ?? '',
-    email: row.email ?? '',
-    mobile: row.mobile ?? '',
-    dept_id: row.dept_id ?? undefined,
-    status: row.status,
-    is_super: row.is_super,
-    remark: row.remark ?? '',
-    role_ids: row.roles?.map((r) => r.id) ?? [],
-    post_ids: row.posts?.map((p) => p.id) ?? [],
-  });
-  dialogVisible.value = true;
+  void (async () => {
+    await ensureMetaLoaded();
+    editingId.value = row.id;
+    formApi.resetForm();
+    drawerApi.setState({ title: '编辑管理员' }).open();
+    nextTick(() => {
+      formApi.setValues({
+        dept_id: row.dept_id ?? undefined,
+        email: row.email ?? '',
+        mobile: row.mobile ?? '',
+        nickname: row.nickname ?? '',
+        password: '',
+        post_ids: row.posts?.map((p) => p.id) ?? [],
+        real_name: row.real_name ?? '',
+        remark: row.remark ?? '',
+        role_ids: row.roles?.map((r) => r.id) ?? [],
+        status: row.status,
+        username: row.username,
+      });
+    });
+  })();
 }
 
-async function submitForm() {
-  if (!editingId.value) {
-    if (!form.username || !form.password) {
-      ElMessage.warning('请填写用户名与密码');
-      return;
-    }
-    await createAdmin(form as AdminSavePayload);
-    ElMessage.success('创建成功');
-  } else {
-    const payload = { ...form };
-    if (!payload.password) {
-      delete payload.password;
-    }
-    await updateAdmin(editingId.value, payload);
-    ElMessage.success('已保存');
-  }
-  dialogVisible.value = false;
-  await loadTable();
-}
-
-async function onDelete(row: AdminRow) {
-  await ElMessageBox.confirm(`确定删除管理员「${row.username}」？`, '提示', {
-    type: 'warning',
-  });
-  await deleteAdmin(row.id);
-  ElMessage.success('已删除');
-  await loadTable();
-}
-
-function statusLabel(v: number) {
-  return v === 1 ? '启用' : '禁用';
-}
-
-function onSearch() {
-  page.value = 1;
-  loadTable();
-}
-
-function onPageSizeChange() {
-  page.value = 1;
-  loadTable();
-}
-
-onMounted(async () => {
-  await loadMeta();
-  await loadTable();
-});
+onMounted(loadMeta);
 </script>
 
 <template>
   <Page auto-content-height>
-    <div class="flex flex-col gap-4 p-4">
-      <el-form :inline="true" @submit.prevent>
-        <el-form-item label="用户名">
-          <el-input v-model="usernameQ" clearable placeholder="模糊搜索" style="width: 200px" />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="onSearch">查询</el-button>
-          <el-button @click="openCreate">新增</el-button>
-        </el-form-item>
-      </el-form>
-
-      <el-table v-loading="loading" :data="tableData" border row-key="id" stripe>
-        <el-table-column prop="id" label="ID" width="70" />
-        <el-table-column prop="username" label="用户名" min-width="120" />
-        <el-table-column prop="nickname" label="昵称" min-width="100" />
-        <el-table-column label="部门" min-width="120">
-          <template #default="scope">
-            {{ scope?.row?.department?.name ?? '—' }}
-          </template>
-        </el-table-column>
-        <el-table-column label="角色" min-width="160">
-          <template #default="scope">
-            <template v-if="scope?.row">
-              <el-tag
-                v-for="r in scope.row.roles ?? []"
-                :key="r.id"
-                class="mr-1"
-                size="small"
-              >
-                {{ r.name }}
-              </el-tag>
-              <span v-if="!(scope.row.roles?.length)">—</span>
-            </template>
-          </template>
-        </el-table-column>
-        <el-table-column label="状态" width="90">
-          <template #default="scope">
-            <el-tag
-              v-if="scope?.row"
-              :type="scope.row.status === 1 ? 'success' : 'info'"
-              size="small"
-            >
-              {{ statusLabel(scope.row.status) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" fixed="right" width="160">
-          <template #default="scope">
-            <template v-if="scope?.row">
-              <el-button link type="primary" @click="openEdit(scope.row)">编辑</el-button>
-              <el-button link type="danger" @click="onDelete(scope.row)">删除</el-button>
-            </template>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <el-pagination
-        v-model:current-page="page"
-        v-model:page-size="perPage"
-        :total="total"
-        background
-        layout="total, sizes, prev, pager, next"
-        @current-change="loadTable"
-        @size-change="onPageSizeChange"
-      />
-    </div>
-
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="560px" destroy-on-close>
-      <el-form label-width="96px">
-        <el-form-item label="用户名" required>
-          <el-input v-model="form.username" :disabled="!!editingId" />
-        </el-form-item>
-        <el-form-item :label="editingId ? '新密码' : '密码'" :required="!editingId">
-          <el-input v-model="form.password" type="password" show-password placeholder="编辑时可留空不改" />
-        </el-form-item>
-        <el-form-item label="昵称">
-          <el-input v-model="form.nickname" />
-        </el-form-item>
-        <el-form-item label="部门">
-          <el-tree-select
-            v-model="form.dept_id"
-            :data="deptTreeSelectData"
-            check-strictly
-            clearable
-            placeholder="选择部门"
-            style="width: 100%"
-          />
-        </el-form-item>
-        <el-form-item label="角色">
-          <el-select v-model="form.role_ids" multiple clearable placeholder="选择角色" style="width: 100%">
-            <el-option v-for="r in roleOptions" :key="r.id" :label="r.name" :value="r.id" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="岗位">
-          <el-select v-model="form.post_ids" multiple clearable placeholder="可选" style="width: 100%">
-            <el-option v-for="p in postOptions" :key="p.id" :label="p.name" :value="p.id" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-radio-group v-model="form.status">
-            <el-radio :value="1">启用</el-radio>
-            <el-radio :value="0">禁用</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="备注">
-          <el-input v-model="form.remark" type="textarea" rows="2" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitForm">确定</el-button>
+    <Drawer class="w-[560px]">
+      <Form />
+    </Drawer>
+    <Grid>
+      <template #toolbar-tools>
+        <ElButton type="primary" @click="openCreate">新增</ElButton>
       </template>
-    </el-dialog>
+    </Grid>
   </Page>
 </template>
