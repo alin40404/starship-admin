@@ -6,6 +6,13 @@ import type {
 
 import type { RoleRow } from '#/api/system/role';
 
+/** 与种子数据一致：内置超级管理员角色 */
+export const SUPER_ADMIN_ROLE_CODE = 'super_admin';
+
+export function isSuperAdminRole(row: RoleRow): boolean {
+  return row.code === SUPER_ADMIN_ROLE_CODE;
+}
+
 const dataScopeOptions = [
   { label: '全部数据', value: 1 },
   { label: '本部门', value: 2 },
@@ -135,9 +142,19 @@ export function useColumns(
         },
         name: 'CellOperation',
         options: [
-          'edit',
+          {
+            code: 'edit',
+            show: (row: RoleRow) => !isSuperAdminRole(row),
+            text: '编辑',
+            type: 'primary',
+          },
           { code: 'menus', text: '分配菜单', type: 'primary' },
-          'delete',
+          {
+            code: 'delete',
+            show: (row: RoleRow) => !isSuperAdminRole(row),
+            text: '删除',
+            type: 'danger',
+          },
         ],
       },
       fixed: 'right',

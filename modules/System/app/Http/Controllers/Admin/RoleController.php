@@ -64,6 +64,11 @@ class RoleController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $role = Role::query()->findOrFail($id);
+
+        if ($role->code === 'super_admin') {
+            return ApiResponse::error('系统内置角色不允许修改', 422);
+        }
+
         $data = $request->validate([
             'name' => ['sometimes', 'string', 'max:100'],
             'code' => ['sometimes', 'string', 'max:100', Rule::unique(Role::class, 'code')->ignore($role->id)],
@@ -80,7 +85,13 @@ class RoleController extends Controller
 
     public function destroy(int $id): JsonResponse
     {
-        Role::query()->whereKey($id)->firstOrFail()->delete();
+        $role = Role::query()->whereKey($id)->firstOrFail();
+
+        if ($role->code === 'super_admin') {
+            return ApiResponse::error('系统内置角色不允许删除', 422);
+        }
+
+        $role->delete();
 
         return ApiResponse::success(null, '已删除');
     }
