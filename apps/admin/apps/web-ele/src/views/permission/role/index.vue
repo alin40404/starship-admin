@@ -1,6 +1,10 @@
 <script lang="ts" setup>
 import type { MenuNode } from '#/api/system/menu';
-import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
+import type {
+  ExtendedVxeGridApi,
+  OnActionClickParams,
+  VxeTableGridOptions,
+} from '#/adapter/vxe-table';
 import type { RoleRow, RoleSavePayload } from '#/api/system/role';
 
 import { computed, nextTick, ref } from 'vue';
@@ -99,6 +103,8 @@ const [MenuModal, menuModalApi] = useVbenModal({
   },
 });
 
+let gridApi: ExtendedVxeGridApi<RoleRow>;
+
 function onActionClick({ code, row }: OnActionClickParams<RoleRow>) {
   if (code === 'edit') {
     openEdit(row);
@@ -107,6 +113,18 @@ function onActionClick({ code, row }: OnActionClickParams<RoleRow>) {
   } else if (code === 'delete') {
     onDelete(row);
   }
+}
+
+async function onRoleStatusToggle(row: RoleRow, nextStatus: number) {
+  const label = nextStatus === 1 ? '启用' : '禁用';
+  await ElMessageBox.confirm(
+    `确定将角色「${row.name}」的状态切换为【${label}】吗？`,
+    '切换状态',
+    { type: 'warning' },
+  );
+  await updateRole(row.id, { status: nextStatus });
+  ElMessage.success('状态已更新');
+  gridApi.query();
 }
 
 function openCreate() {
@@ -160,29 +178,39 @@ async function onDelete(row: RoleRow) {
   gridApi.query();
 }
 
-const [Grid, gridApi] = useVbenVxeGrid({
+const [Grid, gridApiInstance] = useVbenVxeGrid({
   formOptions: {
     schema: useGridFormSchema(),
     submitButtonOptions: { content: '查询' },
     submitOnChange: false,
   },
   gridOptions: {
-    columns: useColumns(onActionClick),
+    columns: useColumns(onActionClick, onRoleStatusToggle),
     height: 'auto',
     keepSource: true,
     proxyConfig: {
       ajax: {
-        query: async ({ page }, formValues) => {
+        query: async ({ page, sort }, formValues) => {
+          const order = sort?.order;
           return await fetchRolePage({
             page: page.currentPage,
             per_page: page.pageSize,
-            ...formValues,
+            sort_field: sort?.field,
+            sort_order:
+              order === 'asc' || order === 'desc' ? order : undefined,
+            name: formValues?.name || undefined,
+            code: formValues?.code || undefined,
+            status: formValues?.status,
           });
         },
       },
+      sort: true,
     },
     rowConfig: {
       keyField: 'id',
+    },
+    sortConfig: {
+      remote: true,
     },
     toolbarConfig: {
       custom: true,
@@ -192,6 +220,8 @@ const [Grid, gridApi] = useVbenVxeGrid({
     },
   } as VxeTableGridOptions<RoleRow>,
 });
+
+gridApi = gridApiInstance;
 
 </script>
 

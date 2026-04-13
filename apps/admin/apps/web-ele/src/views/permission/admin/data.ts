@@ -1,4 +1,5 @@
 import type { VbenFormSchema } from '#/adapter/form';
+import { statusSwitchListColumn } from '#/adapter/crud-table';
 import type {
   OnActionClickFn,
   VxeTableGridColumns,
@@ -51,19 +52,12 @@ export function useColumns(
       sortable: false,
       title: '角色',
     },
-    {
-      align: 'center',
-      cellRender: {
-        attrs: {
-          onToggle: onStatusToggle,
-        },
-        name: 'CellAdminStatusSwitch',
-      },
-      field: 'status',
+    statusSwitchListColumn<AdminRow>({
+      lockPredicate: 'admin.is_super',
+      onToggle: onStatusToggle,
       sortable: true,
       title: '状态',
-      width: 148,
-    },
+    }),
     {
       align: 'center',
       cellRender: {

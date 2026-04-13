@@ -75,15 +75,18 @@ setupVbenVxeTable({
       },
     });
 
-    /** 管理员列表状态：开关 + 文案，attrs.onToggle(row, nextStatus) 内做确认与接口 */
-    vxeUI.renderer.add('CellAdminStatusSwitch', {
-      renderTableDefault({ attrs, props }, { column, row }) {
+    /** 列表状态开关：attrs.onToggle；attrs.lockStatusSwitch(row) 为真则禁用（未传时默认管理员 is_super） */
+    const cellStatusSwitchRenderer = {
+      renderTableDefault({ attrs, props }: any, { column, row }: any) {
         const onToggle = attrs?.onToggle as
           | ((row: Recordable<any>, nextStatus: number) => Promise<void>)
           | undefined;
         const status = get(row, column.field) as number;
-        const isSuper = (row as Recordable<any>).is_super === 1;
-        const disabled = isSuper || !onToggle;
+        const locked =
+          typeof attrs?.lockStatusSwitch === 'function'
+            ? attrs.lockStatusSwitch(row) === true
+            : (row as Recordable<any>).is_super === 1;
+        const disabled = locked || !onToggle;
 
         const pillClass =
           status === 1
@@ -101,7 +104,7 @@ setupVbenVxeTable({
             h(ElSwitch, {
               activeValue: 1,
               beforeChange: async () => {
-                if (isSuper || !onToggle) {
+                if (locked || !onToggle) {
                   return false;
                 }
                 const next = status === 1 ? 0 : 1;
@@ -118,6 +121,31 @@ setupVbenVxeTable({
               size: 'small',
             }),
           ],
+        );
+      },
+    };
+    vxeUI.renderer.add('CellStatusSwitch', cellStatusSwitchRenderer);
+    vxeUI.renderer.add('CellAdminStatusSwitch', cellStatusSwitchRenderer);
+
+    /** 只读强调：attrs.isLocked(row)、attrs.lockedTitle */
+    vxeUI.renderer.add('CellLockedField', {
+      renderTableDefault({ attrs, props }: any, { column, row }: any) {
+        const value = get(row, column.field);
+        const locked = attrs?.isLocked?.(row) === true;
+        const text =
+          value === null || value === undefined ? '—' : String(value);
+        return h(
+          'span',
+          {
+            class: locked
+              ? 'cursor-not-allowed text-[var(--el-text-color-placeholder)]'
+              : '',
+            title: locked
+              ? (attrs?.lockedTitle as string) || '不可修改'
+              : undefined,
+            ...props,
+          },
+          text,
         );
       },
     });

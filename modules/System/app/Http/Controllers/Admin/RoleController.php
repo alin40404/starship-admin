@@ -13,7 +13,7 @@ class RoleController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = Role::query()->orderBy('sort')->orderBy('id');
+        $query = Role::query();
 
         if ($request->filled('name')) {
             $query->where('name', 'like', '%'.$request->get('name').'%');
@@ -23,6 +23,24 @@ class RoleController extends Controller
         }
         if ($request->filled('status')) {
             $query->where('status', (int) $request->get('status'));
+        }
+
+        $sortField = $request->get('sort_field');
+        $sortOrder = strtolower((string) $request->get('sort_order', 'asc')) === 'desc' ? 'desc' : 'asc';
+
+        $allowedSorts = [
+            'id' => 'id',
+            'name' => 'name',
+            'code' => 'code',
+            'data_scope' => 'data_scope',
+            'sort' => 'sort',
+            'status' => 'status',
+        ];
+
+        if (is_string($sortField) && isset($allowedSorts[$sortField])) {
+            $query->orderBy($allowedSorts[$sortField], $sortOrder)->orderBy('id');
+        } else {
+            $query->orderBy('sort')->orderBy('id');
         }
 
         return ApiResponse::success($query->paginate((int) $request->get('per_page', 15)));

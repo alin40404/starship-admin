@@ -1,4 +1,5 @@
 import type { VbenFormSchema } from '#/adapter/form';
+import { statusSwitchListColumn } from '#/adapter/crud-table';
 import type {
   OnActionClickFn,
   VxeTableGridColumns,
@@ -107,32 +108,28 @@ export function buildRoleFormSchema(isEdit: boolean): VbenFormSchema[] {
 
 export function useColumns(
   onActionClick: OnActionClickFn<RoleRow>,
+  onStatusToggle: (row: RoleRow, nextStatus: number) => Promise<void>,
 ): VxeTableGridColumns {
   return [
-    { field: 'id', title: 'ID', width: 70 },
-    { field: 'name', minWidth: 140, title: '名称' },
-    { field: 'code', minWidth: 140, title: '编码' },
+    { field: 'id', sortable: true, title: 'ID', width: 70 },
+    { field: 'name', minWidth: 140, sortable: true, title: '名称' },
+    { field: 'code', minWidth: 140, sortable: true, title: '编码' },
     {
       field: 'data_scope',
       formatter: ({ cellValue }) =>
         dataScopeOptions.find((o) => o.value === cellValue)?.label ??
         String(cellValue ?? ''),
       minWidth: 140,
+      sortable: true,
       title: '数据范围',
     },
-    { field: 'sort', title: '排序', width: 80 },
-    {
-      cellRender: {
-        name: 'CellTag',
-        options: [
-          { label: '启用', type: 'success', value: 1 },
-          { label: '禁用', type: 'info', value: 0 },
-        ],
-      },
-      field: 'status',
+    { field: 'sort', sortable: true, title: '排序', width: 88 },
+    statusSwitchListColumn<RoleRow>({
+      lockPredicate: 'role.code_super_admin',
+      onToggle: onStatusToggle,
+      sortable: true,
       title: '状态',
-      width: 90,
-    },
+    }),
     {
       align: 'center',
       cellRender: {

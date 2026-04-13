@@ -27,7 +27,15 @@ export interface RoleSavePayload {
   remark?: string | null;
 }
 
-export async function fetchRolePage(params: { page?: number; per_page?: number }) {
+export async function fetchRolePage(params: {
+  page?: number;
+  per_page?: number;
+  name?: string;
+  code?: string;
+  status?: number;
+  sort_field?: string;
+  sort_order?: 'asc' | 'desc';
+}) {
   const page = await requestClient.get<LaravelPage<RoleRow>>('/system/roles', {
     params,
   });
