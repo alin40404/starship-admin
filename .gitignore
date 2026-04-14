@@ -12,9 +12,6 @@ out/
 .turbo/
 *.tsbuildinfo
 
-# Environment & secrets
-.env
-!.env.example
 
 # Logs
 logs/
