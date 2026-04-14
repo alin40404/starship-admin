@@ -91,7 +91,7 @@ class MenuController extends Controller
             : ['sometimes', 'integer', 'in:1,2,3,4,5'];
 
         return [
-            'parent_id' => ['sometimes', 'integer', 'min:0'],
+            'parent_id' => ['sometimes', 'integer', 'min:0', $this->parentMenuRule($existing)],
             'type' => $typeRule,
             'name' => $isCreate
                 ? ['required', 'string', 'max:100']
@@ -119,6 +119,37 @@ class MenuController extends Controller
             'other_settings.affix_tab' => ['sometimes', 'integer', 'in:0,1'],
             'other_settings.keep_alive' => ['sometimes', 'integer', 'in:0,1'],
         ];
+    }
+
+    /**
+     * parent_id > 0 时要求父菜单存在且不能为按钮(type=3)；更新时禁止指向自身。
+     */
+    private function parentMenuRule(?Menu $existing = null): \Closure
+    {
+        return function (string $attribute, mixed $value, \Closure $fail) use ($existing): void {
+            if ($value === null) {
+                return;
+            }
+            $parentId = (int) $value;
+            if ($parentId <= 0) {
+                return;
+            }
+            if ($existing !== null && $parentId === (int) $existing->id) {
+                $fail('上级菜单不能选择自己');
+
+                return;
+            }
+
+            $parent = Menu::query()->find($parentId);
+            if ($parent === null) {
+                $fail('上级菜单不存在');
+
+                return;
+            }
+            if ((int) $parent->type === 3) {
+                $fail('上级菜单不能选择按钮类型');
+            }
+        };
     }
 
     /**

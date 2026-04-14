@@ -100,7 +100,9 @@ export function mapMenuTreeForApiSelect(
     title: string;
   };
 }> {
-  return nodes.map((n) => ({
+  return nodes
+    .filter((n) => n.type !== 3)
+    .map((n) => ({
     id: n.id,
     meta: {
       title: menuDisplayLabel(n),
@@ -111,7 +113,7 @@ export function mapMenuTreeForApiSelect(
     children: n.children?.length
       ? mapMenuTreeForApiSelect(n.children)
       : undefined,
-  }));
+    }));
 }
 
 function renderParentMenuTitleSlot({
@@ -216,6 +218,7 @@ export function useColumns(
         options: [
           {
             code: 'append',
+            show: (row: MenuTreeNode) => row.type !== 3,
             text: '新增下级',
             type: 'link',
           },
