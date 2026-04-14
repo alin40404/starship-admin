@@ -115,6 +115,34 @@ class StarshipFoundationSeeder extends Seeder
             'status' => 1,
         ]);
 
+        Menu::query()->create([
+            'parent_id' => $access->id,
+            'type' => 2,
+            'name' => '菜单管理',
+            'path' => '/permission/menus',
+            'component' => null,
+            'permission' => 'system.menus',
+            'icon' => 'Menu',
+            'sort' => 101,
+            'visible' => 1,
+            'keep_alive' => 1,
+            'status' => 1,
+        ]);
+
+        Menu::query()->create([
+            'parent_id' => $access->id,
+            'type' => 2,
+            'name' => '角色管理',
+            'path' => '/permission/roles',
+            'component' => null,
+            'permission' => 'system.roles',
+            'icon' => 'UserFilled',
+            'sort' => 102,
+            'visible' => 1,
+            'keep_alive' => 1,
+            'status' => 1,
+        ]);
+
         $adminMenu = Menu::query()->create([
             'parent_id' => $access->id,
             'type' => 2,
@@ -123,7 +151,7 @@ class StarshipFoundationSeeder extends Seeder
             'component' => null,
             'permission' => 'system.admins',
             'icon' => 'User',
-            'sort' => 101,
+            'sort' => 103,
             'visible' => 1,
             'keep_alive' => 1,
             'status' => 1,
@@ -152,28 +180,33 @@ class StarshipFoundationSeeder extends Seeder
             ]);
         }
 
-        foreach (
-            [
-                ['name' => '角色管理', 'path' => '/permission/roles', 'permission' => 'system.roles', 'sort' => 102, 'icon' => 'UserFilled'],
-                ['name' => '菜单管理', 'path' => '/permission/menus', 'permission' => 'system.menus', 'sort' => 103, 'icon' => 'Menu'],
-                ['name' => '权限点管理', 'path' => '/permission/permission-points', 'permission' => 'system.permission_points', 'sort' => 104, 'icon' => 'Key'],
-                ['name' => '数据权限', 'path' => '/permission/data-permission', 'permission' => 'system.data_permission', 'sort' => 105, 'icon' => 'TrendCharts'],
-            ] as $m
-        ) {
-            Menu::query()->create([
-                'parent_id' => $access->id,
-                'type' => 2,
-                'name' => $m['name'],
-                'path' => $m['path'],
-                'component' => null,
-                'permission' => $m['permission'],
-                'icon' => $m['icon'],
-                'sort' => $m['sort'],
-                'visible' => 1,
-                'keep_alive' => 1,
-                'status' => 1,
-            ]);
-        }
+        Menu::query()->create([
+            'parent_id' => $access->id,
+            'type' => 2,
+            'name' => '权限点管理',
+            'path' => '/permission/permission-points',
+            'component' => null,
+            'permission' => 'system.permission_points',
+            'icon' => 'Key',
+            'sort' => 104,
+            'visible' => 1,
+            'keep_alive' => 1,
+            'status' => 1,
+        ]);
+
+        Menu::query()->create([
+            'parent_id' => $access->id,
+            'type' => 2,
+            'name' => '数据权限',
+            'path' => '/permission/data-permission',
+            'component' => null,
+            'permission' => 'system.data_permission',
+            'icon' => 'TrendCharts',
+            'sort' => 105,
+            'visible' => 1,
+            'keep_alive' => 1,
+            'status' => 1,
+        ]);
 
         $org = Menu::query()->create([
             'parent_id' => 0,
