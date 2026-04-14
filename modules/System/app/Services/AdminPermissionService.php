@@ -72,7 +72,9 @@ class AdminPermissionService
      */
     public function menuTreeForAdmin(Admin $admin): array
     {
-        $rows = $this->accessibleMenus($admin)->filter(fn (Menu $m) => (int) $m->visible === 1);
+        $rows = $this->accessibleMenus($admin)->filter(
+            fn (Menu $m) => (int) data_get($m->mergedOtherSettings(), 'hide_menu', 0) !== 1
+        );
 
         return $this->buildTree($rows, 0);
     }
@@ -86,6 +88,7 @@ class AdminPermissionService
         $branch = [];
 
         foreach ($rows->where('parent_id', $parentId) as $item) {
+            $os = Menu::expandOtherSettingsForApi($item);
             $branch[] = [
                 'id' => $item->id,
                 'parent_id' => $item->parent_id,
@@ -103,13 +106,14 @@ class AdminPermissionService
                 'link_url' => $item->link_url,
                 'iframe_src' => $item->iframe_src,
                 'sort' => $item->sort,
-                'visible' => $item->visible,
-                'keep_alive' => $item->keep_alive,
+                'visible' => $os['visible'],
+                'keep_alive' => $os['keep_alive'],
+                'affix_tab' => $os['affix_tab'],
                 'status' => $item->status,
                 'remark' => $item->remark,
-                'hide_submenu' => $item->hide_submenu,
-                'hide_in_breadcrumb' => $item->hide_in_breadcrumb,
-                'hide_in_tab' => $item->hide_in_tab,
+                'hide_submenu' => $os['hide_submenu'],
+                'hide_in_breadcrumb' => $os['hide_in_breadcrumb'],
+                'hide_in_tab' => $os['hide_in_tab'],
                 'children' => $this->buildTree($rows, (int) $item->id),
             ];
         }

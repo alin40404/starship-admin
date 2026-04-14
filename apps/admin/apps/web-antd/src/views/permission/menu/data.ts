@@ -42,9 +42,7 @@ export const BADGE_VARIANT_OPTIONS = [
   { label: 'warning', value: 'warning' },
 ];
 
-/**
- * 与 playground 菜单表单 ApiTreeSelect 一致：`labelField: meta.title`，图标在 `meta.icon`。
- */
+/** 供 ApiTreeSelect：`labelField: meta.title`，图标在 `meta.icon`。 */
 export function mapMenuTreeForApiSelect(
   nodes: MenuTreeNode[],
 ): Array<{
@@ -199,15 +197,11 @@ function typeIn(
 }
 
 export function buildMenuFormSchema(params: {
-  /** 拉取可选上级菜单树（已按需排除当前编辑分支） */
   parentTreeLoader: () => Promise<MenuTreeNode[]>;
-  /**
-   * 随编辑目标变化；ApiComponent 只监听 params / immediate，不监听 api 函数引用，
-   * 需用该字段触发重新拉树（勿用 alwaysLoad 反复清空 treeData，否则已选标签会丢失）。
-   */
-  parentTreeParams?: Record<string, unknown>;
+  /** 随编辑目标变化，驱动 ApiTreeSelect 随 params 重新请求（api 引用变化不会触发）。 */
+  parentTreeRefreshKey?: string | number;
 }): VbenFormSchema[] {
-  const { parentTreeLoader, parentTreeParams = {} } = params;
+  const { parentTreeLoader, parentTreeRefreshKey = 'new' } = params;
   return [
     {
       component: 'RadioGroup',
@@ -241,7 +235,7 @@ export function buildMenuFormSchema(params: {
           mapMenuTreeForApiSelect(await parentTreeLoader()),
         childrenField: 'children',
         class: 'w-full',
-        params: parentTreeParams,
+        params: { editingKey: parentTreeRefreshKey },
         filterTreeNode(input: string, node: Recordable<any>) {
           if (!input?.length) {
             return true;
@@ -445,28 +439,23 @@ export function buildMenuFormSchema(params: {
       label: '排序',
     },
     {
-      component: 'RadioGroup',
+      component: 'Textarea',
       componentProps: {
-        buttonStyle: 'solid',
         class: 'w-full',
-        optionType: 'button',
-        options: [
-          { label: '缓存', value: 1 },
-          { label: '不缓存', value: 0 },
-        ],
+        rows: 2,
       },
-      defaultValue: 0,
-      dependencies: {
-        show: (values) => typeIn(values, [2]),
-        triggerFields: ['type'],
-      },
-      fieldName: 'keep_alive',
-      label: '页面缓存',
+      fieldName: 'remark',
+      formItemClass: 'col-span-2 md:col-span-2 items-start',
+      label: '备注',
     },
     {
       component: 'Divider',
+      dependencies: {
+        show: (values) => !typeIn(values, [3]),
+        triggerFields: ['type'],
+      },
       fieldName: '_divider_other',
-      formItemClass: 'col-span-2 md:col-span-2 !mb-0 mt-2',
+      formItemClass: 'col-span-2 md:col-span-2 pb-0 mt-3',
       hideLabel: true,
       renderComponentContent() {
         return {
@@ -478,39 +467,103 @@ export function buildMenuFormSchema(params: {
       component: 'Checkbox',
       componentProps: {},
       defaultValue: false,
-      fieldName: 'hide_menu',
-      label: '隐藏菜单',
-    },
-    {
-      component: 'Checkbox',
-      componentProps: {},
-      defaultValue: false,
-      fieldName: 'hide_submenu',
-      label: '隐藏子菜单',
-    },
-    {
-      component: 'Checkbox',
-      componentProps: {},
-      defaultValue: false,
-      fieldName: 'hide_in_breadcrumb',
-      label: '在面包屑中隐藏',
-    },
-    {
-      component: 'Checkbox',
-      componentProps: {},
-      defaultValue: false,
-      fieldName: 'hide_in_tab',
-      label: '在标签栏中隐藏',
-    },
-    {
-      component: 'Textarea',
-      componentProps: {
-        class: 'w-full',
-        rows: 2,
+      dependencies: {
+        show: (values) => !typeIn(values, [3]),
+        triggerFields: ['type'],
       },
-      fieldName: 'remark',
-      formItemClass: 'col-span-2 md:col-span-2 items-start',
-      label: '备注',
+      fieldName: 'hide_menu',
+      formItemClass: 'col-span-2 md:col-span-1',
+      hideLabel: true,
+      renderComponentContent() {
+        return {
+          default: () => '隐藏菜单',
+        };
+      },
+    },
+    {
+      component: 'Checkbox',
+      componentProps: {},
+      defaultValue: false,
+      dependencies: {
+        show: (values) => typeIn(values, [1, 2, 4, 5]),
+        triggerFields: ['type'],
+      },
+      fieldName: 'hide_submenu',
+      formItemClass: 'col-span-2 md:col-span-1',
+      hideLabel: true,
+      renderComponentContent() {
+        return {
+          default: () => '隐藏子菜单',
+        };
+      },
+    },
+    {
+      component: 'Checkbox',
+      componentProps: {},
+      defaultValue: false,
+      dependencies: {
+        show: (values) => typeIn(values, [1, 2, 4, 5]),
+        triggerFields: ['type'],
+      },
+      fieldName: 'hide_in_breadcrumb',
+      formItemClass: 'col-span-2 md:col-span-1',
+      hideLabel: true,
+      renderComponentContent() {
+        return {
+          default: () => '在面包屑中隐藏',
+        };
+      },
+    },
+    {
+      component: 'Checkbox',
+      componentProps: {},
+      defaultValue: false,
+      dependencies: {
+        show: (values) => typeIn(values, [1, 2, 4, 5]),
+        triggerFields: ['type'],
+      },
+      fieldName: 'hide_in_tab',
+      formItemClass: 'col-span-2 md:col-span-1',
+      hideLabel: true,
+      renderComponentContent() {
+        return {
+          default: () => '在标签栏中隐藏',
+        };
+      },
+    },
+    {
+      component: 'Checkbox',
+      componentProps: {},
+      defaultValue: false,
+      dependencies: {
+        show: (values) => typeIn(values, [2, 4]),
+        triggerFields: ['type'],
+      },
+      fieldName: 'keep_alive',
+      formItemClass: 'col-span-2 md:col-span-1',
+      hideLabel: true,
+      renderComponentContent() {
+        return {
+          default: () => '页面缓存',
+        };
+      },
+    },
+    {
+      component: 'Checkbox',
+      componentProps: {},
+      defaultValue: false,
+      dependencies: {
+        show: (values) => typeIn(values, [2, 4]),
+        triggerFields: ['type'],
+      },
+      fieldName: 'affix_tab',
+      formItemClass: 'col-span-2 md:col-span-1',
+      hideLabel: true,
+      renderComponentContent() {
+        return {
+          default: () => '固定在标签栏',
+        };
+      },
     },
   ];
 }

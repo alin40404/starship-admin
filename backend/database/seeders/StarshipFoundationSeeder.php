@@ -57,6 +57,18 @@ class StarshipFoundationSeeder extends Seeder
         $this->seedConfigBasics();
     }
 
+    /**
+     * @param  int  $legacyVisible  1=侧栏显示 0=侧栏隐藏（对应旧 visible）
+     */
+    private function menuOther(int $legacyVisible, int $keepAlive = 0, int $affix = 0): array
+    {
+        return Menu::normalizeOtherSettings([
+            'hide_menu' => $legacyVisible === 0 ? 1 : 0,
+            'keep_alive' => $keepAlive,
+            'affix_tab' => $affix,
+        ]);
+    }
+
     private function seedMenus(): void
     {
         if (Menu::query()->exists()) {
@@ -72,8 +84,7 @@ class StarshipFoundationSeeder extends Seeder
             'permission' => null,
             'icon' => 'ep:home-filled',
             'sort' => 10,
-            'visible' => 1,
-            'keep_alive' => 0,
+            'other_settings' => $this->menuOther(1),
             'status' => 1,
         ]);
 
@@ -95,8 +106,7 @@ class StarshipFoundationSeeder extends Seeder
                 'permission' => $m['permission'],
                 'icon' => $m['icon'],
                 'sort' => $m['sort'],
-                'visible' => 1,
-                'keep_alive' => $m['keep_alive'],
+                'other_settings' => $this->menuOther(1, $m['keep_alive']),
                 'status' => 1,
             ]);
         }
@@ -110,8 +120,7 @@ class StarshipFoundationSeeder extends Seeder
             'permission' => null,
             'icon' => 'ep:lock',
             'sort' => 100,
-            'visible' => 1,
-            'keep_alive' => 0,
+            'other_settings' => $this->menuOther(1),
             'status' => 1,
         ]);
 
@@ -124,8 +133,7 @@ class StarshipFoundationSeeder extends Seeder
             'permission' => 'system.menus',
             'icon' => 'ep:menu',
             'sort' => 101,
-            'visible' => 1,
-            'keep_alive' => 1,
+            'other_settings' => $this->menuOther(1, 1),
             'status' => 1,
         ]);
 
@@ -138,8 +146,7 @@ class StarshipFoundationSeeder extends Seeder
             'permission' => 'system.roles',
             'icon' => 'ep:user-filled',
             'sort' => 102,
-            'visible' => 1,
-            'keep_alive' => 1,
+            'other_settings' => $this->menuOther(1, 1),
             'status' => 1,
         ]);
 
@@ -152,8 +159,7 @@ class StarshipFoundationSeeder extends Seeder
             'permission' => 'system.admins',
             'icon' => 'ep:user',
             'sort' => 103,
-            'visible' => 1,
-            'keep_alive' => 1,
+            'other_settings' => $this->menuOther(1, 1),
             'status' => 1,
         ]);
 
@@ -174,8 +180,7 @@ class StarshipFoundationSeeder extends Seeder
                 'permission' => $btn['permission'],
                 'icon' => null,
                 'sort' => $btn['sort'],
-                'visible' => 0,
-                'keep_alive' => 0,
+            'other_settings' => $this->menuOther(0),
                 'status' => 1,
             ]);
         }
@@ -189,8 +194,7 @@ class StarshipFoundationSeeder extends Seeder
             'permission' => 'system.permission_points',
             'icon' => 'ep:key',
             'sort' => 104,
-            'visible' => 1,
-            'keep_alive' => 1,
+            'other_settings' => $this->menuOther(1, 1),
             'status' => 1,
         ]);
 
@@ -203,8 +207,7 @@ class StarshipFoundationSeeder extends Seeder
             'permission' => 'system.data_permission',
             'icon' => 'ep:trend-charts',
             'sort' => 105,
-            'visible' => 1,
-            'keep_alive' => 1,
+            'other_settings' => $this->menuOther(1, 1),
             'status' => 1,
         ]);
 
@@ -217,8 +220,7 @@ class StarshipFoundationSeeder extends Seeder
             'permission' => null,
             'icon' => 'ep:share',
             'sort' => 200,
-            'visible' => 1,
-            'keep_alive' => 0,
+            'other_settings' => $this->menuOther(1),
             'status' => 1,
         ]);
 
@@ -238,8 +240,7 @@ class StarshipFoundationSeeder extends Seeder
                 'permission' => $m['permission'],
                 'icon' => $m['icon'],
                 'sort' => $m['sort'],
-                'visible' => 1,
-                'keep_alive' => 1,
+                'other_settings' => $this->menuOther(1, 1),
                 'status' => 1,
             ]);
         }
@@ -253,8 +254,7 @@ class StarshipFoundationSeeder extends Seeder
             'permission' => null,
             'icon' => 'ep:operation',
             'sort' => 300,
-            'visible' => 1,
-            'keep_alive' => 0,
+            'other_settings' => $this->menuOther(1),
             'status' => 1,
         ]);
 
@@ -276,8 +276,7 @@ class StarshipFoundationSeeder extends Seeder
                 'permission' => $m['permission'],
                 'icon' => $m['icon'],
                 'sort' => $m['sort'],
-                'visible' => 1,
-                'keep_alive' => 1,
+                'other_settings' => $this->menuOther(1, 1),
                 'status' => 1,
             ]);
         }
@@ -291,8 +290,7 @@ class StarshipFoundationSeeder extends Seeder
             'permission' => null,
             'icon' => 'ep:folder-opened',
             'sort' => 400,
-            'visible' => 1,
-            'keep_alive' => 0,
+            'other_settings' => $this->menuOther(1),
             'status' => 1,
         ]);
 
@@ -312,8 +310,7 @@ class StarshipFoundationSeeder extends Seeder
                 'permission' => $m['permission'],
                 'icon' => $m['icon'],
                 'sort' => $m['sort'],
-                'visible' => 1,
-                'keep_alive' => 1,
+                'other_settings' => $this->menuOther(1, 1),
                 'status' => 1,
             ]);
         }
@@ -327,8 +324,7 @@ class StarshipFoundationSeeder extends Seeder
             'permission' => null,
             'icon' => 'ep:monitor',
             'sort' => 500,
-            'visible' => 1,
-            'keep_alive' => 0,
+            'other_settings' => $this->menuOther(1),
             'status' => 1,
         ]);
 
@@ -350,8 +346,7 @@ class StarshipFoundationSeeder extends Seeder
                 'permission' => $m['permission'],
                 'icon' => $m['icon'],
                 'sort' => $m['sort'],
-                'visible' => 1,
-                'keep_alive' => 1,
+                'other_settings' => $this->menuOther(1, 1),
                 'status' => 1,
             ]);
         }
@@ -365,8 +360,7 @@ class StarshipFoundationSeeder extends Seeder
             'permission' => null,
             'icon' => 'ep:cpu',
             'sort' => 600,
-            'visible' => 1,
-            'keep_alive' => 0,
+            'other_settings' => $this->menuOther(1),
             'status' => 1,
         ]);
 
@@ -386,8 +380,7 @@ class StarshipFoundationSeeder extends Seeder
                 'permission' => $m['permission'],
                 'icon' => $m['icon'],
                 'sort' => $m['sort'],
-                'visible' => 1,
-                'keep_alive' => 1,
+                'other_settings' => $this->menuOther(1, 1),
                 'status' => 1,
             ]);
         }

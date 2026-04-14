@@ -23,6 +23,7 @@ interface StarshipMenuNode {
   sort: number;
   visible: number;
   keep_alive: number;
+  affix_tab: number;
   status: number;
   remark: string | null;
   hide_submenu: number;
@@ -93,6 +94,7 @@ function buildRouteMeta(
     hideChildrenInMenu: node.hide_submenu === 1,
     hideInBreadcrumb: node.hide_in_breadcrumb === 1,
     hideInTab: node.hide_in_tab === 1,
+    ...(node.affix_tab === 1 ? { affix: true } : {}),
     ...extra,
   };
 }

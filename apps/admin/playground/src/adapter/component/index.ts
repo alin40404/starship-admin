@@ -688,7 +688,7 @@ async function initComponentAdapter() {
       loadingSlot: 'suffixIcon',
       modelPropName: 'value',
       optionsPropName: 'treeData',
-      /** ant-design-vue 4 TreeSelect 使用 vc-tree-select，展开回调为 onDropdownVisibleChange，而非 Select 的 onVisibleChange */
+      // TreeSelect(vc-tree-select) 下拉显隐为 onDropdownVisibleChange，与 Select 的 onVisibleChange 不同
       visibleEvent: 'onDropdownVisibleChange',
     }),
     AutoComplete,

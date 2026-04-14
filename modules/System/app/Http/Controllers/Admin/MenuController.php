@@ -34,6 +34,7 @@ class MenuController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate($this->menuRules(true));
+        $data['other_settings'] = Menu::normalizeOtherSettings($data['other_settings'] ?? null);
 
         $menu = Menu::query()->create($data);
 
@@ -44,6 +45,9 @@ class MenuController extends Controller
     {
         $menu = Menu::query()->findOrFail($id);
         $data = $request->validate($this->menuRules(false));
+        if (array_key_exists('other_settings', $data)) {
+            $data['other_settings'] = Menu::normalizeOtherSettings($data['other_settings']);
+        }
 
         $menu->update($data);
 
@@ -84,13 +88,15 @@ class MenuController extends Controller
             'link_url' => ['nullable', 'string', 'max:500'],
             'iframe_src' => ['nullable', 'string', 'max:500'],
             'sort' => ['sometimes', 'integer'],
-            'visible' => ['sometimes', 'integer', 'in:0,1'],
-            'keep_alive' => ['sometimes', 'integer', 'in:0,1'],
             'status' => ['sometimes', 'integer', 'in:0,1'],
             'remark' => ['nullable', 'string', 'max:255'],
-            'hide_submenu' => ['sometimes', 'integer', 'in:0,1'],
-            'hide_in_breadcrumb' => ['sometimes', 'integer', 'in:0,1'],
-            'hide_in_tab' => ['sometimes', 'integer', 'in:0,1'],
+            'other_settings' => ['nullable', 'array'],
+            'other_settings.hide_menu' => ['sometimes', 'integer', 'in:0,1'],
+            'other_settings.hide_submenu' => ['sometimes', 'integer', 'in:0,1'],
+            'other_settings.hide_in_breadcrumb' => ['sometimes', 'integer', 'in:0,1'],
+            'other_settings.hide_in_tab' => ['sometimes', 'integer', 'in:0,1'],
+            'other_settings.affix_tab' => ['sometimes', 'integer', 'in:0,1'],
+            'other_settings.keep_alive' => ['sometimes', 'integer', 'in:0,1'],
         ];
     }
 
@@ -103,6 +109,7 @@ class MenuController extends Controller
         $branch = [];
 
         foreach ($rows->where('parent_id', $parentId) as $item) {
+            $os = Menu::expandOtherSettingsForApi($item);
             $branch[] = [
                 'id' => $item->id,
                 'parent_id' => $item->parent_id,
@@ -120,13 +127,14 @@ class MenuController extends Controller
                 'link_url' => $item->link_url,
                 'iframe_src' => $item->iframe_src,
                 'sort' => $item->sort,
-                'visible' => $item->visible,
-                'keep_alive' => $item->keep_alive,
+                'visible' => $os['visible'],
+                'keep_alive' => $os['keep_alive'],
+                'affix_tab' => $os['affix_tab'],
                 'status' => $item->status,
                 'remark' => $item->remark,
-                'hide_submenu' => $item->hide_submenu,
-                'hide_in_breadcrumb' => $item->hide_in_breadcrumb,
-                'hide_in_tab' => $item->hide_in_tab,
+                'hide_submenu' => $os['hide_submenu'],
+                'hide_in_breadcrumb' => $os['hide_in_breadcrumb'],
+                'hide_in_tab' => $os['hide_in_tab'],
                 'children' => $this->buildTree($rows, (int) $item->id),
             ];
         }

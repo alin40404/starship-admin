@@ -1,9 +1,9 @@
 <?php
 
+use App\Support\StarshipTables;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use App\Support\StarshipTables;
 
 return new class extends Migration
 {
@@ -26,11 +26,9 @@ return new class extends Migration
             $table->string('link_url', 500)->nullable()->comment('外链地址，type=5');
             $table->string('iframe_src', 500)->nullable()->comment('内嵌地址，type=4');
             $table->integer('sort')->default(0)->comment('排序');
-            $table->tinyInteger('visible')->default(1)->comment('是否显示:1是,0否');
-            $table->tinyInteger('hide_submenu')->default(0)->comment('隐藏子菜单:1是');
-            $table->tinyInteger('hide_in_breadcrumb')->default(0)->comment('在面包屑中隐藏:1是');
-            $table->tinyInteger('hide_in_tab')->default(0)->comment('在标签栏中隐藏:1是');
-            $table->tinyInteger('keep_alive')->default(0)->comment('是否缓存');
+            $table->json('other_settings')->nullable()->comment(
+                '其它设置：hide_menu/hide_submenu/hide_in_breadcrumb/hide_in_tab/affix_tab/keep_alive，均为0|1'
+            );
             $table->tinyInteger('status')->default(1)->comment('状态:1启用,0禁用');
             $table->string('remark', 255)->nullable()->comment('备注');
             $table->timestamps();

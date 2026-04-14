@@ -1,6 +1,10 @@
 <script lang="ts" setup>
 import type { VbenFormSchema } from '#/adapter/form';
-import type { MenuSavePayload, MenuTreeNode } from '#/api/system/menu';
+import type {
+  MenuOtherSettingsPayload,
+  MenuSavePayload,
+  MenuTreeNode,
+} from '#/api/system/menu';
 
 import { computed, nextTick, reactive, ref, watch } from 'vue';
 
@@ -12,6 +16,16 @@ import { useVbenForm } from '#/adapter/form';
 import { createMenu, fetchMenuTree, updateMenu } from '#/api/system/menu';
 
 import { buildMenuFormSchema } from '../data';
+
+/** 按钮类型不使用其它设置，提交时固定为全 0 */
+const ZERO_OTHER_SETTINGS: MenuOtherSettingsPayload = {
+  affix_tab: 0,
+  hide_in_breadcrumb: 0,
+  hide_in_tab: 0,
+  hide_menu: 0,
+  hide_submenu: 0,
+  keep_alive: 0,
+};
 
 const emits = defineEmits<{ success: [] }>();
 
@@ -92,9 +106,7 @@ watch(
     formApi.setState({
       schema: buildMenuFormSchema({
         parentTreeLoader: loadMenuTreeForParentSelect,
-        parentTreeParams: {
-          editingKey: editingId.value ?? 'new',
-        },
+        parentTreeRefreshKey: editingId.value ?? undefined,
       }),
     });
   },
@@ -132,20 +144,28 @@ const [Drawer, drawerApi] = useVbenDrawer({
         : Number(raw.parent_id);
     const hideMenu = Boolean(raw.hide_menu);
     const to01 = (v: unknown) => (v === true || v === 1 ? 1 : 0);
+    const otherSettings: MenuOtherSettingsPayload =
+      type === 3
+        ? { ...ZERO_OTHER_SETTINGS }
+        : {
+            affix_tab: to01(raw.affix_tab),
+            hide_in_breadcrumb: to01(raw.hide_in_breadcrumb),
+            hide_in_tab: to01(raw.hide_in_tab),
+            hide_menu: hideMenu ? 1 : 0,
+            hide_submenu: to01(raw.hide_submenu),
+            keep_alive: to01(raw.keep_alive),
+          };
     const payload: MenuSavePayload = {
       active_icon: (raw.active_icon as string) || null,
       badge: (raw.badge as string) || null,
       badge_type: (raw.badge_type as string) || null,
       badge_variants: (raw.badge_variants as string) || null,
       component: (raw.component as string) || null,
-      hide_in_breadcrumb: to01(raw.hide_in_breadcrumb),
-      hide_in_tab: to01(raw.hide_in_tab),
-      hide_submenu: to01(raw.hide_submenu),
       icon: (raw.icon as string) || null,
       iframe_src: (raw.iframe_src as string) || null,
-      keep_alive: Number(raw.keep_alive ?? 0),
       link_url: (raw.link_url as string) || null,
       name: String(raw.name ?? ''),
+      other_settings: otherSettings,
       parent_id: parentId,
       path: (raw.path as string) || null,
       permission: (raw.permission as string) || null,
@@ -154,7 +174,6 @@ const [Drawer, drawerApi] = useVbenDrawer({
       status: Number(raw.status ?? 1),
       title: String(raw.title ?? '').trim() || null,
       type,
-      visible: hideMenu ? 0 : 1,
     };
 
     drawerApi.lock();
@@ -193,6 +212,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
         badge: row.badge ?? '',
         badge_type: row.badge_type ?? undefined,
         badge_variants: row.badge_variants ?? undefined,
+        affix_tab: row.affix_tab === 1,
         component: row.component ?? '',
         hide_in_breadcrumb: row.hide_in_breadcrumb === 1,
         hide_in_tab: row.hide_in_tab === 1,
@@ -200,7 +220,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
         hide_submenu: row.hide_submenu === 1,
         icon: row.icon ?? '',
         iframe_src: row.iframe_src ?? '',
-        keep_alive: row.keep_alive ?? 0,
+        keep_alive: row.keep_alive === 1,
         link_url: row.link_url ?? '',
         name: row.name,
         parent_id: row.parent_id === 0 ? undefined : row.parent_id,
@@ -220,6 +240,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
         badge: '',
         badge_type: undefined,
         badge_variants: undefined,
+        affix_tab: false,
         component: '',
         hide_in_breadcrumb: false,
         hide_in_tab: false,
@@ -227,7 +248,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
         hide_submenu: false,
         icon: '',
         iframe_src: '',
-        keep_alive: 0,
+        keep_alive: false,
         link_url: '',
         name: '',
         parent_id: pid && pid > 0 ? pid : undefined,

@@ -19,14 +19,26 @@ export interface MenuTreeNode {
   link_url: string | null;
   iframe_src: string | null;
   sort: number;
+  /** 由后端从 other_settings 展开，供表格/路由 */
   visible: number;
   keep_alive: number;
+  affix_tab: number;
   status: number;
   remark: string | null;
   hide_submenu: number;
   hide_in_breadcrumb: number;
   hide_in_tab: number;
   children: MenuTreeNode[];
+}
+
+/** 与 menus.other_settings JSON 一致（均为 0|1） */
+export interface MenuOtherSettingsPayload {
+  hide_menu: number;
+  hide_submenu: number;
+  hide_in_breadcrumb: number;
+  hide_in_tab: number;
+  affix_tab: number;
+  keep_alive: number;
 }
 
 /** 创建/更新 body（与 MenuController 校验一致） */
@@ -46,13 +58,9 @@ export interface MenuSavePayload {
   link_url?: string | null;
   iframe_src?: string | null;
   sort?: number;
-  visible?: number;
-  keep_alive?: number;
   status?: number;
   remark?: string | null;
-  hide_submenu?: number;
-  hide_in_breadcrumb?: number;
-  hide_in_tab?: number;
+  other_settings: MenuOtherSettingsPayload;
 }
 
 export function fetchMenuTree() {
