@@ -16,7 +16,10 @@ return new class extends Migration
             $table->string('name', 100)->comment('名称');
             $table->string('title', 100)->nullable()->comment('菜单标题(展示)，空则同名称');
             $table->string('path', 255)->nullable()->comment('路由路径');
-            $table->string('component', 255)->nullable()->comment('前端组件路径');
+            $table->string('active_path', 255)
+                ->nullable()
+                ->comment('激活路径：侧栏高亮时指向的已有菜单路由');
+            $table->string('component', 255)->nullable()->comment('页面组件路径');
             $table->string('permission', 150)->nullable()->comment('权限标识');
             $table->string('icon', 100)->nullable()->comment('图标');
             $table->string('active_icon', 100)->nullable()->comment('激活图标');

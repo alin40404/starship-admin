@@ -96,6 +96,7 @@ class AdminPermissionService
                 'name' => $item->name,
                 'title' => $item->title,
                 'path' => $item->path,
+                'active_path' => $item->active_path,
                 'component' => $item->component,
                 'permission' => $item->permission,
                 'icon' => $item->icon,

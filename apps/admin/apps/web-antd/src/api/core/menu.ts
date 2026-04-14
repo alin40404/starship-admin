@@ -11,6 +11,7 @@ interface StarshipMenuNode {
   name: string;
   title: string | null;
   path: string | null;
+  active_path: string | null;
   component: string | null;
   permission: string | null;
   icon: string | null;
@@ -67,6 +68,15 @@ function resolvePageComponent(path: string | null): string {
   return PLACEHOLDER_VIEW;
 }
 
+/** 数据库 `component` 优先，否则与历史逻辑一致按 path 解析 */
+function resolveMenuPageComponent(node: StarshipMenuNode): string {
+  const fromDb = node.component?.trim();
+  if (fromDb) {
+    return fromDb;
+  }
+  return resolvePageComponent(node.path);
+}
+
 function menuDisplayTitle(node: StarshipMenuNode): string {
   const t = node.title?.trim();
   return t ? t : node.name;
@@ -95,6 +105,9 @@ function buildRouteMeta(
     hideInBreadcrumb: node.hide_in_breadcrumb === 1,
     hideInTab: node.hide_in_tab === 1,
     ...(node.affix_tab === 1 ? { affix: true } : {}),
+    ...(node.active_path?.trim()
+      ? { activePath: node.active_path.trim() }
+      : {}),
     ...extra,
   };
 }
@@ -153,7 +166,7 @@ function transformMenus(nodes: StarshipMenuNode[]): RouteRecordStringComponent[]
     result.push({
       name,
       path: node.path ?? '/',
-      component: resolvePageComponent(node.path),
+      component: resolveMenuPageComponent(node),
       meta: buildRouteMeta(node, {
         authority,
         keepAlive: node.keep_alive === 1,

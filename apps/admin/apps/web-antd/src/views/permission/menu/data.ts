@@ -7,6 +7,7 @@ import type {
 
 import type { MenuTreeNode } from '#/api/system/menu';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
+import { componentKeys } from '#/router/routes';
 import { IconifyIcon } from '@vben/icons';
 import { getPopupContainer } from '@vben/utils';
 import { h } from 'vue';
@@ -134,7 +135,7 @@ export function useColumns(
       field: 'component',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 180,
-      title: '组件路径',
+      title: '页面组件',
       visible: false,
     },
     { field: 'sort', title: '排序', width: 72 },
@@ -283,7 +284,8 @@ export function buildMenuFormSchema(params: {
         placeholder: '请输入',
       },
       dependencies: {
-        show: (values) => typeIn(values, [1, 2, 4, 5]),
+        rules: (values) => (Number(values.type) !== 5 ? 'required' : null),
+        show: (values) => typeIn(values, [1, 2, 3, 4, 5]),
         triggerFields: ['type'],
       },
       fieldName: 'path',
@@ -293,14 +295,34 @@ export function buildMenuFormSchema(params: {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: '请输入组件路径',
+        placeholder: '须为已有菜单的路由地址',
       },
       dependencies: {
+        show: (values) => typeIn(values, [2, 4]),
+        triggerFields: ['type'],
+      },
+      fieldName: 'active_path',
+      help: '跳转到当前路由时要在侧栏高亮的菜单路径；需与某条菜单的「路由地址」一致，以 / 开头。',
+      label: '激活路径',
+    },
+    {
+      component: 'AutoComplete',
+      componentProps: {
+        allowClear: true,
+        class: 'w-full',
+        filterOption(input: string, option: { value: string }) {
+          return option.value.toLowerCase().includes(input.toLowerCase());
+        },
+        options: componentKeys.map((v) => ({ value: v })),
+        placeholder: '选择或输入页面路径',
+      },
+      dependencies: {
+        rules: (values) => (Number(values.type) === 2 ? 'required' : null),
         show: (values) => typeIn(values, [2]),
         triggerFields: ['type'],
       },
       fieldName: 'component',
-      label: '前端组件',
+      label: '页面组件',
     },
     {
       component: 'Input',
@@ -451,6 +473,7 @@ export function buildMenuFormSchema(params: {
     {
       component: 'Divider',
       componentProps: {
+        class: '!my-0',
         orientation: 'center',
       },
       dependencies: {
@@ -458,7 +481,7 @@ export function buildMenuFormSchema(params: {
         triggerFields: ['type'],
       },
       fieldName: '_divider_other',
-      formItemClass: 'col-span-2 md:col-span-2 !my-2',
+      formItemClass: 'col-span-2 md:col-span-2 !mt-3 !pb-0 !mb-5',
       hideLabel: true,
       renderComponentContent() {
         return {

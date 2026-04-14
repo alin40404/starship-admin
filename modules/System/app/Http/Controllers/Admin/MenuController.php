@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Modules\System\App\Models\Menu;
 
 class MenuController extends Controller
@@ -44,7 +45,7 @@ class MenuController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $menu = Menu::query()->findOrFail($id);
-        $data = $request->validate($this->menuRules(false));
+        $data = $request->validate($this->menuRules(false, $menu));
         if (array_key_exists('other_settings', $data)) {
             $data['other_settings'] = Menu::normalizeOtherSettings($data['other_settings']);
         }
@@ -64,7 +65,7 @@ class MenuController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function menuRules(bool $isCreate): array
+    private function menuRules(bool $isCreate, ?Menu $existing = null): array
     {
         $typeRule = $isCreate
             ? ['required', 'integer', 'in:1,2,3,4,5']
@@ -77,7 +78,8 @@ class MenuController extends Controller
                 ? ['required', 'string', 'max:100']
                 : ['sometimes', 'string', 'max:100'],
             'title' => ['nullable', 'string', 'max:100'],
-            'path' => ['nullable', 'string', 'max:255'],
+            'path' => ['nullable', 'string', 'max:255', $this->pathRequiredUnlessLinkRule($existing)],
+            'active_path' => ['nullable', 'string', 'max:255', $this->activePathRule()],
             'component' => ['nullable', 'string', 'max:255'],
             'permission' => ['nullable', 'string', 'max:150'],
             'icon' => ['nullable', 'string', 'max:100'],
@@ -117,6 +119,7 @@ class MenuController extends Controller
                 'name' => $item->name,
                 'title' => $item->title,
                 'path' => $item->path,
+                'active_path' => $item->active_path,
                 'component' => $item->component,
                 'permission' => $item->permission,
                 'icon' => $item->icon,
@@ -140,5 +143,59 @@ class MenuController extends Controller
         }
 
         return $branch;
+    }
+
+    /**
+     * type≠5（外链）时路由地址必填；更新时未提交 path 字段则沿用原记录。
+     */
+    private function pathRequiredUnlessLinkRule(?Menu $existing = null): \Closure
+    {
+        return function (string $attribute, mixed $value, \Closure $fail) use ($existing): void {
+            $type = (int) (request()->input('type') ?? $existing?->type ?? 0);
+            if ($type === 5) {
+                return;
+            }
+            if ($value === null) {
+                if ($existing !== null && trim((string) ($existing->path ?? '')) !== '') {
+                    return;
+                }
+                $fail('路由地址不能为空');
+
+                return;
+            }
+            if (trim((string) $value) === '') {
+                $fail('路由地址不能为空');
+            }
+        };
+    }
+
+    /**
+     * 非空时须以 / 开头，且须与某条菜单记录的 path 一致（用于侧栏高亮）。
+     */
+    private function activePathRule(): \Closure
+    {
+        return function (string $attribute, mixed $value, \Closure $fail): void {
+            if ($value === null) {
+                return;
+            }
+            $v = trim((string) $value);
+            if ($v === '') {
+                return;
+            }
+            if (! Str::startsWith($v, '/')) {
+                $fail('激活路径须以 / 开头');
+
+                return;
+            }
+            if (mb_strlen($v) < 2) {
+                $fail('激活路径长度至少 2 个字符');
+
+                return;
+            }
+            $exists = Menu::query()->where('path', $v)->exists();
+            if (! $exists) {
+                $fail('该路径未能找到有效的菜单');
+            }
+        };
     }
 }

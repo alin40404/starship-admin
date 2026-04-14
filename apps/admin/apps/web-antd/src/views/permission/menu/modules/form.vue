@@ -125,7 +125,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
     }
     const raw = (await formApi.getValues()) as Record<string, unknown>;
     const type = Number(raw.type);
-    const needsPath = [1, 2, 4, 5].includes(type);
+    const needsPath = [1, 2, 3, 4].includes(type);
     if (needsPath && !String(raw.path ?? '').trim()) {
       message.warning('请填写路由地址');
       return;
@@ -156,6 +156,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
             keep_alive: to01(raw.keep_alive),
           };
     const payload: MenuSavePayload = {
+      active_path: String(raw.active_path ?? '').trim() || null,
       active_icon: (raw.active_icon as string) || null,
       badge: (raw.badge as string) || null,
       badge_type: (raw.badge_type as string) || null,
@@ -208,6 +209,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
     if (hasId) {
       await nextTick();
       formApi.setValues({
+        active_path: row.active_path ?? '',
         active_icon: row.active_icon ?? '',
         badge: row.badge ?? '',
         badge_type: row.badge_type ?? undefined,
@@ -236,6 +238,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
       const pid = (data as { parent_id?: number }).parent_id;
       await nextTick();
       formApi.setValues({
+        active_path: '',
         active_icon: '',
         badge: '',
         badge_type: undefined,

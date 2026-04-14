@@ -9,6 +9,8 @@ export interface MenuTreeNode {
   name: string;
   title: string | null;
   path: string | null;
+  /** 侧栏高亮：须为已有菜单的 path，对应路由 meta.activePath */
+  active_path: string | null;
   component: string | null;
   permission: string | null;
   icon: string | null;
@@ -48,6 +50,7 @@ export interface MenuSavePayload {
   name: string;
   title?: string | null;
   path?: string | null;
+  active_path?: string | null;
   component?: string | null;
   permission?: string | null;
   icon?: string | null;

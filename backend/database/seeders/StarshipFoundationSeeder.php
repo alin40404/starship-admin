@@ -69,6 +69,34 @@ class StarshipFoundationSeeder extends Seeder
         ]);
     }
 
+    /**
+     * 与 web-antd `router/routes` 中 componentKeys 一致：`/` 开头、无 `views/`、无 `.vue`（与菜单「页面组件」AutoComplete 存库格式一致）。
+     */
+    private function defaultComponentForMenuPath(?string $path): ?string
+    {
+        if ($path === null || $path === '') {
+            return null;
+        }
+        if ($path === '/dashboard' || $path === '/dashboard/console') {
+            return '/dashboard/workspace/index';
+        }
+        if ($path === '/dashboard/overview') {
+            return '/dashboard/analytics/index';
+        }
+        $permission = [
+            '/permission/admins' => '/permission/admin/index',
+            '/permission/roles' => '/permission/role/index',
+            '/permission/menus' => '/permission/menu/index',
+            '/permission/permission-points' => '/permission/permission-point/index',
+            '/permission/data-permission' => '/permission/data-scope/index',
+        ];
+        if (isset($permission[$path])) {
+            return $permission[$path];
+        }
+
+        return '/_core/fallback/coming-soon';
+    }
+
     private function seedMenus(): void
     {
         if (Menu::query()->exists()) {
@@ -102,7 +130,7 @@ class StarshipFoundationSeeder extends Seeder
                 'type' => 2,
                 'name' => $m['name'],
                 'path' => $m['path'],
-                'component' => null,
+                'component' => $this->defaultComponentForMenuPath($m['path']),
                 'permission' => $m['permission'],
                 'icon' => $m['icon'],
                 'sort' => $m['sort'],
@@ -129,7 +157,7 @@ class StarshipFoundationSeeder extends Seeder
             'type' => 2,
             'name' => '菜单管理',
             'path' => '/permission/menus',
-            'component' => null,
+            'component' => $this->defaultComponentForMenuPath('/permission/menus'),
             'permission' => 'system.menus',
             'icon' => 'ep:menu',
             'sort' => 101,
@@ -142,7 +170,7 @@ class StarshipFoundationSeeder extends Seeder
             'type' => 2,
             'name' => '角色管理',
             'path' => '/permission/roles',
-            'component' => null,
+            'component' => $this->defaultComponentForMenuPath('/permission/roles'),
             'permission' => 'system.roles',
             'icon' => 'ep:user-filled',
             'sort' => 102,
@@ -155,7 +183,7 @@ class StarshipFoundationSeeder extends Seeder
             'type' => 2,
             'name' => '管理员',
             'path' => '/permission/admins',
-            'component' => null,
+            'component' => $this->defaultComponentForMenuPath('/permission/admins'),
             'permission' => 'system.admins',
             'icon' => 'ep:user',
             'sort' => 103,
@@ -190,7 +218,7 @@ class StarshipFoundationSeeder extends Seeder
             'type' => 2,
             'name' => '权限点管理',
             'path' => '/permission/permission-points',
-            'component' => null,
+            'component' => $this->defaultComponentForMenuPath('/permission/permission-points'),
             'permission' => 'system.permission_points',
             'icon' => 'ep:key',
             'sort' => 104,
@@ -203,7 +231,7 @@ class StarshipFoundationSeeder extends Seeder
             'type' => 2,
             'name' => '数据权限',
             'path' => '/permission/data-permission',
-            'component' => null,
+            'component' => $this->defaultComponentForMenuPath('/permission/data-permission'),
             'permission' => 'system.data_permission',
             'icon' => 'ep:trend-charts',
             'sort' => 105,
@@ -236,7 +264,7 @@ class StarshipFoundationSeeder extends Seeder
                 'type' => 2,
                 'name' => $m['name'],
                 'path' => $m['path'],
-                'component' => null,
+                'component' => $this->defaultComponentForMenuPath($m['path']),
                 'permission' => $m['permission'],
                 'icon' => $m['icon'],
                 'sort' => $m['sort'],
@@ -272,7 +300,7 @@ class StarshipFoundationSeeder extends Seeder
                 'type' => 2,
                 'name' => $m['name'],
                 'path' => $m['path'],
-                'component' => null,
+                'component' => $this->defaultComponentForMenuPath($m['path']),
                 'permission' => $m['permission'],
                 'icon' => $m['icon'],
                 'sort' => $m['sort'],
@@ -306,7 +334,7 @@ class StarshipFoundationSeeder extends Seeder
                 'type' => 2,
                 'name' => $m['name'],
                 'path' => $m['path'],
-                'component' => null,
+                'component' => $this->defaultComponentForMenuPath($m['path']),
                 'permission' => $m['permission'],
                 'icon' => $m['icon'],
                 'sort' => $m['sort'],
@@ -342,7 +370,7 @@ class StarshipFoundationSeeder extends Seeder
                 'type' => 2,
                 'name' => $m['name'],
                 'path' => $m['path'],
-                'component' => null,
+                'component' => $this->defaultComponentForMenuPath($m['path']),
                 'permission' => $m['permission'],
                 'icon' => $m['icon'],
                 'sort' => $m['sort'],
@@ -376,7 +404,7 @@ class StarshipFoundationSeeder extends Seeder
                 'type' => 2,
                 'name' => $m['name'],
                 'path' => $m['path'],
-                'component' => null,
+                'component' => $this->defaultComponentForMenuPath($m['path']),
                 'permission' => $m['permission'],
                 'icon' => $m['icon'],
                 'sort' => $m['sort'],
