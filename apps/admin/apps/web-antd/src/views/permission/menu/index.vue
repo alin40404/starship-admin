@@ -13,7 +13,7 @@ import { Button, message, Modal } from 'ant-design-vue';
 import { deleteMenu, fetchMenuTree } from '#/api/system/menu';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 
-import { useColumns } from './data';
+import { menuDisplayLabel, useColumns } from './data';
 import MenuForm from './modules/form.vue';
 
 const [MenuFormDrawer, menuFormDrawerApi] = useVbenDrawer({
@@ -94,7 +94,7 @@ function onAppend(row: MenuTreeNode) {
 
 function onDelete(row: MenuTreeNode) {
   Modal.confirm({
-    content: `确定删除「${row.name}」吗？若存在子菜单可能删除失败。`,
+    content: `确定删除「${menuDisplayLabel(row)}」吗？若存在子菜单可能删除失败。`,
     okText: '删除',
     okType: 'danger',
     title: '删除菜单',
@@ -131,7 +131,9 @@ function onDelete(row: MenuTreeNode) {
               :icon="row.icon!.trim()"
             />
           </span>
-          <span class="min-w-0 flex-auto truncate">{{ row.name }}</span>
+          <span class="min-w-0 flex-auto truncate">{{
+            menuDisplayLabel(row)
+          }}</span>
         </div>
       </template>
     </Grid>

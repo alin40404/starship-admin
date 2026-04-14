@@ -79,18 +79,32 @@ export const BADGE_VARIANT_OPTIONS = (
   value,
 }));
 
+/** 列表/上级菜单下拉：与路由侧栏一致，优先展示中文标题，否则内部名称 */
+export function menuDisplayLabel(
+  row: Pick<MenuTreeNode, 'name' | 'title'>,
+): string {
+  const t = row.title?.trim();
+  return t ? t : (row.name ?? '');
+}
+
 /** 供 ApiTreeSelect：`labelField: meta.title`，图标在 `meta.icon`。 */
 export function mapMenuTreeForApiSelect(
   nodes: MenuTreeNode[],
 ): Array<{
   children?: ReturnType<typeof mapMenuTreeForApiSelect>;
   id: number;
-  meta: { icon: string | null; menuType: number; title: string };
+  meta: {
+    icon: string | null;
+    internalName: string;
+    menuType: number;
+    title: string;
+  };
 }> {
   return nodes.map((n) => ({
     id: n.id,
     meta: {
-      title: n.title?.trim() ? `${n.name}（${n.title}）` : n.name,
+      title: menuDisplayLabel(n),
+      internalName: n.name ?? '',
       icon: n.icon ?? null,
       menuType: n.type,
     },
@@ -132,10 +146,10 @@ export function useColumns(
   return [
     {
       align: 'left',
-      field: 'name',
+      field: 'title',
       fixed: 'left',
       slots: { default: 'title' },
-      title: '菜单名称',
+      title: '标题',
       treeNode: true,
       width: 240,
     },
@@ -147,11 +161,10 @@ export function useColumns(
       width: 96,
     },
     {
-      field: 'title',
+      field: 'name',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
-      minWidth: 120,
-      title: '标题',
-      visible: false,
+      minWidth: 140,
+      title: '内部名称',
     },
     {
       align: 'left',
@@ -277,11 +290,13 @@ export function buildMenuFormSchema(params: {
           if (!input?.length) {
             return true;
           }
-          const title: string = node.meta?.title ?? node.label ?? '';
-          if (!title) {
-            return false;
-          }
-          return title.includes(input);
+          const q = input.trim().toLowerCase();
+          const display = String(node.meta?.title ?? node.label ?? '');
+          const internal = String(node.meta?.internalName ?? '').toLowerCase();
+          return (
+            display.includes(input) ||
+            internal.includes(q)
+          );
         },
         getPopupContainer,
         labelField: 'meta.title',
