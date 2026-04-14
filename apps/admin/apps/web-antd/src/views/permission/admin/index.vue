@@ -122,7 +122,7 @@ const [Grid, gridApi] = useVbenVxeGrid<AdminRow>({
       [
         'updatedTime',
         ['updated_start', 'updated_end'],
-        ['YYYY-MM-DD HH:mm:ss', 'YYYY-MM-DD HH:mm:ss'],
+        ['YYYY-MM-DD', 'YYYY-MM-DD'],
       ],
     ],
     schema: useGridFormSchema(),

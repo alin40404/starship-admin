@@ -79,7 +79,6 @@ export function useGridFormSchema(): VbenFormSchema[] {
       componentProps: {
         allowClear: true,
         class: 'w-full',
-        showTime: true,
       },
       fieldName: 'updatedTime',
       label: '更新时间',

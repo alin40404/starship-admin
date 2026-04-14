@@ -4,6 +4,7 @@ namespace Modules\System\App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Support\ApiResponse;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Password;
@@ -46,10 +47,18 @@ class AdminUserController extends Controller
             });
         }
         if ($request->filled('updated_start')) {
-            $query->where('updated_at', '>=', (string) $request->get('updated_start'));
+            $query->where(
+                'updated_at',
+                '>=',
+                Carbon::parse((string) $request->get('updated_start'))->startOfDay(),
+            );
         }
         if ($request->filled('updated_end')) {
-            $query->where('updated_at', '<=', (string) $request->get('updated_end'));
+            $query->where(
+                'updated_at',
+                '<=',
+                Carbon::parse((string) $request->get('updated_end'))->endOfDay(),
+            );
         }
 
         $sortField = $request->get('sort_field');
