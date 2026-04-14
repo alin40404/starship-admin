@@ -26,6 +26,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
     {
       component: 'Input',
       componentProps: {
+        class: 'w-full',
         placeholder: '搜索用户名',
       },
       fieldName: 'username',
@@ -34,6 +35,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
     {
       component: 'Input',
       componentProps: {
+        class: 'w-full',
         placeholder: '搜索真实姓名/昵称',
       },
       fieldName: 'name',
@@ -42,6 +44,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
     {
       component: 'Input',
       componentProps: {
+        class: 'w-full',
         placeholder: '搜索邮箱',
       },
       fieldName: 'email',
@@ -50,6 +53,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
     {
       component: 'Input',
       componentProps: {
+        class: 'w-full',
         placeholder: '搜索手机',
       },
       fieldName: 'mobile',
@@ -60,8 +64,12 @@ export function useGridFormSchema(): VbenFormSchema[] {
       componentProps: {
         allowClear: true,
         api: async () => mapDeptForTreeSelect(await fetchDepartmentTree()),
+        class: 'w-full',
         fieldNames: { children: 'children', label: 'label', value: 'value' },
         placeholder: '请选择部门',
+        /** 关闭树连接线/叶节点装饰，避免下拉项左侧出现圆点等图标感样式 */
+        treeIcon: false,
+        treeLine: false,
       },
       fieldName: 'dept_id',
       label: '部门',
@@ -70,6 +78,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
       component: 'RangePicker',
       componentProps: {
         allowClear: true,
+        class: 'w-full',
         showTime: true,
       },
       fieldName: 'updatedTime',
@@ -200,6 +209,7 @@ export function buildAdminFormSchema(params: {
     {
       component: 'Input',
       componentProps: {
+        class: 'w-full',
         disabled: isEdit,
       },
       fieldName: 'username',
@@ -209,6 +219,7 @@ export function buildAdminFormSchema(params: {
     {
       component: 'InputPassword',
       componentProps: {
+        class: 'w-full',
         placeholder: isEdit ? '留空则不修改密码' : undefined,
       },
       fieldName: 'password',
@@ -217,21 +228,33 @@ export function buildAdminFormSchema(params: {
     },
     {
       component: 'Input',
+      componentProps: {
+        class: 'w-full',
+      },
       fieldName: 'nickname',
       label: '昵称',
     },
     {
       component: 'Input',
+      componentProps: {
+        class: 'w-full',
+      },
       fieldName: 'real_name',
       label: '真实姓名',
     },
     {
       component: 'Input',
+      componentProps: {
+        class: 'w-full',
+      },
       fieldName: 'email',
       label: '邮箱',
     },
     {
       component: 'Input',
+      componentProps: {
+        class: 'w-full',
+      },
       fieldName: 'mobile',
       label: '手机',
     },
@@ -239,12 +262,15 @@ export function buildAdminFormSchema(params: {
       component: 'TreeSelect',
       componentProps: {
         allowClear: true,
+        class: 'w-full',
         fieldNames: { children: 'children', label: 'label', value: 'value' },
         placeholder: '选择部门',
         showSearch: true,
         treeData: deptTreeData,
         treeDefaultExpandAll: true,
-        treeLine: true,
+        /** 之前 treeLine: true 会启用连线与叶节点装饰；关闭后下拉项仅保留文字 */
+        treeIcon: false,
+        treeLine: false,
       },
       fieldName: 'dept_id',
       label: '部门',
@@ -253,6 +279,7 @@ export function buildAdminFormSchema(params: {
       component: 'Select',
       componentProps: {
         allowClear: !lockRoles,
+        class: 'w-full',
         disabled: lockRoles,
         mode: 'multiple',
         options: roleOptions,
@@ -266,6 +293,7 @@ export function buildAdminFormSchema(params: {
       component: 'Select',
       componentProps: {
         allowClear: true,
+        class: 'w-full',
         mode: 'multiple',
         options: postOptions,
         placeholder: '可选',
@@ -277,6 +305,7 @@ export function buildAdminFormSchema(params: {
       component: 'RadioGroup',
       componentProps: {
         buttonStyle: 'solid',
+        class: 'w-full',
         disabled: lockRoles,
         optionType: 'button',
         options: [
@@ -291,6 +320,7 @@ export function buildAdminFormSchema(params: {
     {
       component: 'Textarea',
       componentProps: {
+        class: 'w-full',
         rows: 2,
       },
       fieldName: 'remark',

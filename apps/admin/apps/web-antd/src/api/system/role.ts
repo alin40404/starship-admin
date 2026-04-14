@@ -6,11 +6,62 @@ export interface RoleRow {
   id: number;
   name: string;
   code: string;
+  data_scope: number;
+  sort: number;
   status: number;
+  remark: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
-export function fetchRolePage(params: { page: number; per_page: number }) {
+export interface RoleDetail extends RoleRow {
+  menu_ids: number[];
+}
+
+export interface RolePageQuery {
+  page: number;
+  per_page: number;
+  name?: string;
+  code?: string;
+  status?: number;
+  sort_field?: string;
+  sort_order?: 'asc' | 'desc';
+}
+
+export function fetchRolePage(params: RolePageQuery) {
   return requestClient.get<LaravelPaginate<RoleRow>>('/system/roles', {
     params,
   });
+}
+
+export function fetchRole(id: number) {
+  return requestClient.get<RoleDetail>(`/system/roles/${id}`);
+}
+
+export interface RoleSavePayload {
+  name: string;
+  code: string;
+  data_scope?: number;
+  sort?: number;
+  status?: number;
+  remark?: string;
+}
+
+export function createRole(data: RoleSavePayload) {
+  return requestClient.post<RoleRow>('/system/roles', data);
+}
+
+export function updateRole(id: number, data: Partial<RoleSavePayload>) {
+  return requestClient.put<RoleRow>(`/system/roles/${id}`, data);
+}
+
+export function deleteRole(id: number) {
+  return requestClient.delete(`/system/roles/${id}`);
+}
+
+export function syncRoleMenus(id: number, menuIds: number[]) {
+  return requestClient.put<{ menu_ids: number[] }>(
+    `/system/roles/${id}/menus`,
+    { menu_ids: menuIds },
+  );
 }

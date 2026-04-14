@@ -32,8 +32,15 @@ const postOptions = ref<PostRow[]>([]);
 /** useVbenForm 的 schema 必须是数组；传入 computed(Ref) 会在 FormApi 里变成非数组，导致 handleValueFormat 报错 */
 const [Form, formApi] = useVbenForm(
   reactive({
+    /** 与 playground / vxe 搜索表单一致：选择框占满表单项宽度 */
+    commonConfig: {
+      componentProps: {
+        class: 'w-full',
+      },
+    },
     schema: [] as VbenFormSchema[],
     showDefaultActions: false,
+    wrapperClass: 'grid-cols-1',
   }) as any,
 );
 

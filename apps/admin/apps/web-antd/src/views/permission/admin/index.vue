@@ -113,6 +113,11 @@ async function onBatchDelete() {
 
 const [Grid, gridApi] = useVbenVxeGrid<AdminRow>({
   formOptions: {
+    commonConfig: {
+      componentProps: {
+        class: 'w-full',
+      },
+    },
     fieldMappingTime: [
       [
         'updatedTime',
