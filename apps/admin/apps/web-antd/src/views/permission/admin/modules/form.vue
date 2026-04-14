@@ -47,9 +47,13 @@ function normalizeAvatarToFileList(avatar: string | null | undefined) {
 function onAvatarChange(_event: any) {}
 
 async function onAvatarUpload(options: any) {
-  const file = options?.file as File;
-  const row = await uploadAttachment(file);
-  options?.onSuccess?.(row);
+  try {
+    const row = await uploadAttachment(options?.file);
+    options?.onSuccess?.(row);
+  } catch (error) {
+    options?.onError?.(error);
+    throw error;
+  }
 }
 
 /** useVbenForm 的 schema 必须是数组；传入 computed(Ref) 会在 FormApi 里变成非数组，导致 handleValueFormat 报错 */
