@@ -9,8 +9,7 @@ import { computed, nextTick, reactive, ref, watch } from 'vue';
 
 import { useVbenDrawer } from '@vben/common-ui';
 
-import { message, Spin, Tree } from 'ant-design-vue';
-import type { TreeProps } from 'ant-design-vue';
+import { message } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
 import { createAdmin, updateAdmin } from '#/api/system/admin';
@@ -30,15 +29,6 @@ const deptTree = ref<DeptNode[]>([]);
 const roleOptions = ref<RoleRow[]>([]);
 const postOptions = ref<PostRow[]>([]);
 
-const roleTreeData = computed((): TreeProps['treeData'] =>
-  roleOptions.value.map((r) => ({
-    key: r.id,
-    title: r.name,
-  })),
-);
-
-const authTreeReadonly = computed(() => editingIsSuperAdmin.value);
-
 /** useVbenForm 的 schema 必须是数组；传入 computed(Ref) 会在 FormApi 里变成非数组，导致 handleValueFormat 报错 */
 const [Form, formApi] = useVbenForm(
   reactive({
@@ -48,10 +38,9 @@ const [Form, formApi] = useVbenForm(
         class: 'w-full',
       },
     },
-    layout: 'horizontal' as const,
     schema: [] as VbenFormSchema[],
     showDefaultActions: false,
-    wrapperClass: 'grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1',
+    wrapperClass: 'grid-cols-1',
   }) as any,
 );
 
@@ -191,62 +180,7 @@ async function ensureMetaLoaded() {
 </script>
 
 <template>
-  <Drawer :title="drawerTitle" class="max-w-[720px] w-[92vw]">
-    <Form class="role-drawer-form">
-      <template #role_ids="p">
-        <Spin :spinning="!metaReady" class="w-full">
-          <div
-            :class="[
-              'auth-tree-box permission-tree max-h-[min(420px,50vh)] w-full overflow-y-auto rounded-md border border-[var(--ant-color-border)] px-2 py-2',
-              { 'permission-tree--readonly': authTreeReadonly },
-            ]"
-          >
-            <Tree
-              v-if="roleTreeData?.length"
-              :checked-keys="(p.value as (number | string)[] | undefined) ?? []"
-              :disabled="authTreeReadonly"
-              :selectable="false"
-              :tree-data="roleTreeData"
-              block-node
-              checkable
-              default-expand-all
-              :show-icon="false"
-              :show-line="false"
-              @update:checked-keys="
-                (keys) =>
-                  (p as Record<string, any>)['onUpdate:value']?.(
-                    (keys as (number | string)[]).map(Number),
-                  )
-              "
-            />
-            <div v-else class="text-muted-foreground text-sm">暂无角色数据</div>
-          </div>
-        </Spin>
-      </template>
-    </Form>
+  <Drawer :title="drawerTitle" class="w-[560px]">
+    <Form />
   </Drawer>
 </template>
-
-<style scoped>
-.role-drawer-form :deep(.ant-form-item-label) {
-  flex: 0 0 88px;
-  max-width: 88px;
-}
-
-.auth-tree-box.permission-tree :deep(.ant-tree) {
-  min-height: 260px;
-  width: 100%;
-}
-
-.auth-tree-box.permission-tree :deep(.ant-tree-treenode) {
-  width: 100%;
-}
-
-.auth-tree-box.permission-tree :deep(.ant-tree-node-content-wrapper) {
-  width: calc(100% - 24px);
-}
-
-.auth-tree-box.permission-tree--readonly :deep(.ant-tree-checkbox) {
-  pointer-events: none;
-}
-</style>
