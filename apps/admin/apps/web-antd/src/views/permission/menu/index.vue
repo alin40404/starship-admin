@@ -10,7 +10,6 @@ import { IconifyIcon, Plus } from '@vben/icons';
 
 import { Button, message, Modal } from 'ant-design-vue';
 
-import { menuIconToIconify } from '#/api/core/menu';
 import { deleteMenu, fetchMenuTree } from '#/api/system/menu';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 
@@ -127,9 +126,9 @@ function onDelete(row: MenuTreeNode) {
               icon="carbon:security"
             />
             <IconifyIcon
-              v-else-if="menuIconToIconify(row.icon)"
+              v-else-if="row.icon?.trim()"
               class="size-4 text-foreground/80"
-              :icon="menuIconToIconify(row.icon)!"
+              :icon="row.icon!.trim()"
             />
           </span>
           <span class="min-w-0 flex-auto truncate">{{ row.name }}</span>

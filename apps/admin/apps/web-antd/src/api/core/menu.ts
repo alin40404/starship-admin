@@ -44,68 +44,13 @@ const PERMISSION_PAGE_BY_PATH: Record<string, string> = {
   '/permission/data-permission': 'views/permission/data-scope/index.vue',
 };
 
-function pascalToKebabCase(s: string): string {
-  return s.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '');
-}
-
-const ICON_MAP: Record<string, string> = {
-  HomeFilled: 'ep:home-filled',
-  Setting: 'ep:setting',
-  User: 'ep:user',
-  UserFilled: 'ep:user-filled',
-  Menu: 'ep:menu',
-  OfficeBuilding: 'ep:office-building',
-  Postcard: 'ep:postcard',
-  Collection: 'ep:collection',
-  Tools: 'ep:setting',
-  Paperclip: 'ep:paperclip',
-  Lock: 'ep:lock',
-  Key: 'ep:key',
-  Share: 'ep:share',
-  Avatar: 'ep:avatar',
-  TrendCharts: 'ep:trend-charts',
-  Operation: 'ep:operation',
-  Location: 'ep:location',
-  Bell: 'ep:bell',
-  FolderOpened: 'ep:folder-opened',
-  Files: 'ep:files',
-  Coin: 'ep:coin',
-  Monitor: 'ep:monitor',
-  Document: 'ep:document',
-  Notebook: 'ep:notebook',
-  WarningFilled: 'ep:warning-filled',
-  View: 'ep:view',
-  Timer: 'ep:timer',
-  Cpu: 'ep:cpu',
-  MagicStick: 'ep:magic-stick',
-  Grid: 'ep:grid',
-  Link: 'ep:link',
-  Odometer: 'ep:odometer',
-  Histogram: 'ep:histogram',
-  List: 'ep:list',
-  Promotion: 'ep:promotion',
-  StarFilled: 'ep:star-filled',
-};
-
-/**
- * 将 `sa_menus.icon`（Element 组件名或已是 `collection:name`）转为 Iconify 名，供 `IconifyIcon`、权限树等使用。
- */
-export function menuIconToIconify(icon: string | null | undefined): string | undefined {
-  if (!icon?.trim()) {
-    return undefined;
-  }
-  const t = icon.trim();
-  if (t.includes(':')) {
-    return t;
-  }
-  return ICON_MAP[t] ?? `ep:${pascalToKebabCase(t)}`;
-}
-
+/** 路由 meta 用：库内为 Iconify `collection:name`（如 ep:menu），空则用占位 */
 function mapIcon(icon: string | null | undefined): string {
-  if (!icon) {
+  const t = icon?.trim();
+  if (!t) {
     return 'lucide:folder';
   }
-  return menuIconToIconify(icon) ?? 'lucide:file-text';
+  return t;
 }
 
 function resolvePageComponent(path: string | null): string {
