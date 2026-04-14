@@ -235,7 +235,7 @@ async function ensureMenuTree() {
         <Spin :spinning="!menuReady" wrapper-class-name="w-full">
           <div
             :class="[
-              'max-h-[min(420px,50vh)] w-full overflow-y-auto',
+              'w-full',
               { 'permission-tree--readonly': isViewOnly },
             ]"
           >
