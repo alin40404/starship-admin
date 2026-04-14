@@ -11,14 +11,29 @@ interface LaravelRole {
 }
 
 /** Starship `/auth/me` 的 data 段 */
-interface LaravelAdminMe {
+export interface LaravelAdminMe {
   id: number;
   username: string;
   nickname: string | null;
   real_name: string | null;
   avatar: string | null;
+  email?: null | string;
+  mobile?: null | string;
   roles?: LaravelRole[];
   permissions?: string[];
+}
+
+export interface UpdateProfilePayload {
+  nickname?: string;
+  real_name?: string;
+  avatar?: string;
+  email?: string;
+  mobile?: string;
+}
+
+export interface UpdatePasswordPayload {
+  old_password: string;
+  new_password: string;
 }
 
 function mapLaravelAdminToUserInfo(admin: LaravelAdminMe): UserInfo {
@@ -48,4 +63,20 @@ export async function getUserInfoApi() {
     throw new Error('未登录或会话已失效');
   }
   return mapLaravelAdminToUserInfo(raw);
+}
+
+export async function getMyProfileApi() {
+  const raw = await requestClient.get<LaravelAdminMe | null>('/auth/me');
+  if (!raw?.id) {
+    throw new Error('未登录或会话已失效');
+  }
+  return raw;
+}
+
+export async function updateMyProfileApi(payload: UpdateProfilePayload) {
+  return requestClient.put<LaravelAdminMe>('/auth/profile', payload);
+}
+
+export async function updateMyPasswordApi(payload: UpdatePasswordPayload) {
+  return requestClient.put<null>('/auth/password', payload);
 }

@@ -7,6 +7,7 @@ use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 use Modules\System\App\Models\Admin;
 use Modules\System\App\Services\AdminPermissionService;
 
@@ -85,6 +86,56 @@ class AuthController extends Controller
         return ApiResponse::success([
             'permissions' => $permission->permissionCodes($admin),
         ]);
+    }
+
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $admin = $request->user();
+        if (! $admin instanceof Admin) {
+            return ApiResponse::error('未登录', 401);
+        }
+
+        $data = $request->validate([
+            'nickname' => ['nullable', 'string', 'max:100'],
+            'real_name' => ['nullable', 'string', 'max:100'],
+            'avatar' => ['nullable', 'string', 'max:255'],
+            'email' => ['nullable', 'email', 'max:100'],
+            'mobile' => ['nullable', 'string', 'max:20'],
+        ]);
+
+        $admin->fill($data);
+        $admin->save();
+
+        return ApiResponse::success($this->formatAdmin($admin->fresh()), '个人信息已更新');
+    }
+
+    public function updatePassword(Request $request): JsonResponse
+    {
+        $admin = $request->user();
+        if (! $admin instanceof Admin) {
+            return ApiResponse::error('未登录', 401);
+        }
+
+        $data = $request->validate([
+            'old_password' => ['required', 'string'],
+            'new_password' => ['required', 'string', Password::defaults()],
+        ]);
+
+        $oldPassword = trim((string) $data['old_password']);
+        $newPassword = trim((string) $data['new_password']);
+
+        if (! Hash::check($oldPassword, $admin->password)) {
+            return ApiResponse::error('旧密码不正确', 422);
+        }
+
+        if (Hash::check($newPassword, $admin->password)) {
+            return ApiResponse::error('新密码不能与旧密码相同', 422);
+        }
+
+        $admin->password = Hash::make($newPassword);
+        $admin->save();
+
+        return ApiResponse::success(null, '密码修改成功');
     }
 
     /**

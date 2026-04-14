@@ -1,65 +1,127 @@
 <script setup lang="ts">
-import type { BasicOption } from '@vben/types';
-
 import type { VbenFormSchema } from '#/adapter/form';
 
 import { computed, onMounted, ref } from 'vue';
 
 import { ProfileBaseSetting } from '@vben/common-ui';
 
-import { getUserInfoApi } from '#/api';
+import { message } from 'ant-design-vue';
 
-const profileBaseSettingRef = ref();
+import { getMyProfileApi, updateMyProfileApi } from '#/api';
+import { uploadAttachment } from '#/api/system/attachment';
+import { useAuthStore } from '#/store';
 
-const MOCK_ROLES_OPTIONS: BasicOption[] = [
-  {
-    label: '管理员',
-    value: 'super',
-  },
-  {
-    label: '用户',
-    value: 'user',
-  },
-  {
-    label: '测试',
-    value: 'test',
-  },
-];
+const profileBaseSettingRef = ref<any>();
+const authStore = useAuthStore();
+
+function normalizeAvatarToFileList(avatar?: null | string) {
+  if (!avatar) {
+    return [];
+  }
+  return [
+    {
+      name: 'avatar',
+      status: 'done',
+      uid: 'avatar-existing',
+      url: avatar,
+    },
+  ];
+}
+
+function onAvatarChange(_event: any) {}
+
+async function onAvatarUpload(options: any) {
+  try {
+    const row = await uploadAttachment(options?.file);
+    options?.onSuccess?.(row);
+  } catch (error) {
+    options?.onError?.(error);
+    throw error;
+  }
+}
 
 const formSchema = computed((): VbenFormSchema[] => {
   return [
     {
-      fieldName: 'realName',
-      component: 'Input',
-      label: '姓名',
-    },
-    {
       fieldName: 'username',
       component: 'Input',
+      componentProps: {
+        disabled: true,
+      },
       label: '用户名',
     },
     {
-      fieldName: 'roles',
-      component: 'Select',
-      componentProps: {
-        mode: 'tags',
-        options: MOCK_ROLES_OPTIONS,
-      },
-      label: '角色',
+      fieldName: 'nickname',
+      component: 'Input',
+      label: '昵称',
     },
     {
-      fieldName: 'introduction',
-      component: 'Textarea',
-      label: '个人简介',
+      fieldName: 'real_name',
+      component: 'Input',
+      label: '真实姓名',
+    },
+    {
+      component: 'Upload',
+      componentProps: {
+        accept: 'image/*',
+        customRequest: onAvatarUpload,
+        handleChange: onAvatarChange,
+        listType: 'picture-card',
+        maxCount: 1,
+      },
+      fieldName: 'avatar',
+      label: '头像',
+    },
+    {
+      fieldName: 'email',
+      component: 'Input',
+      label: '邮箱',
+    },
+    {
+      fieldName: 'mobile',
+      component: 'Input',
+      label: '手机',
     },
   ];
 });
 
+async function loadProfile() {
+  const data = await getMyProfileApi();
+  profileBaseSettingRef.value?.getFormApi().setValues({
+    avatar: normalizeAvatarToFileList(data.avatar),
+    email: data.email ?? '',
+    mobile: data.mobile ?? '',
+    nickname: data.nickname ?? '',
+    real_name: data.real_name ?? '',
+    username: data.username,
+  });
+}
+
+async function handleSubmit(values: Record<string, any>) {
+  const avatarFiles = Array.isArray(values.avatar) ? values.avatar : [];
+  const avatarFile = avatarFiles[0];
+  const avatar = avatarFile?.response?.file_url ?? avatarFile?.url ?? '';
+
+  await updateMyProfileApi({
+    avatar,
+    email: values.email ?? '',
+    mobile: values.mobile ?? '',
+    nickname: values.nickname ?? '',
+    real_name: values.real_name ?? '',
+  });
+  await authStore.fetchUserInfo();
+  message.success('个人信息已更新');
+  await loadProfile();
+}
+
 onMounted(async () => {
-  const data = await getUserInfoApi();
-  profileBaseSettingRef.value.getFormApi().setValues(data);
+  await loadProfile();
 });
 </script>
 <template>
-  <ProfileBaseSetting ref="profileBaseSettingRef" :form-schema="formSchema" />
+  <ProfileBaseSetting
+    ref="profileBaseSettingRef"
+    :form-schema="formSchema"
+    @submit="handleSubmit"
+  />
 </template>

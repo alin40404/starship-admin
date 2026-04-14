@@ -52,7 +52,7 @@ export async function refreshTokenApi() {
  * 退出登录（需携带 Bearer，与 requestClient 一致）
  */
 export async function logoutApi() {
-  return requestClient.post<null>('/auth/logout');
+  return baseRequestClient.post<null>('/auth/logout');
 }
 
 /**
