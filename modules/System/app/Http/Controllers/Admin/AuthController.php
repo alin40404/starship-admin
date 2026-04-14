@@ -101,7 +101,7 @@ class AuthController extends Controller
             'real_name' => ['nullable', 'string', 'max:100'],
             'avatar' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:100', Rule::unique(Admin::class, 'email')->ignore($admin->id)],
-            'mobile' => ['required', 'string', 'max:20', Rule::unique(Admin::class, 'mobile')->ignore($admin->id)],
+            'mobile' => ['required', 'regex:/^1[3-9]\d{9}$/', Rule::unique(Admin::class, 'mobile')->ignore($admin->id)],
         ]);
 
         $admin->fill($data);

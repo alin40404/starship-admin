@@ -7,6 +7,7 @@ import type {
 import type { AdminRow } from '#/api/system/admin';
 import type { DeptNode } from '#/api/system/department';
 
+import { z } from '@vben/common-ui';
 import { preferences } from '@vben/preferences';
 
 import { fetchDepartmentTree } from '#/api/system/department';
@@ -290,7 +291,10 @@ export function buildAdminFormSchema(params: {
       },
       fieldName: 'email',
       label: '邮箱',
-      rules: 'required',
+      rules: z
+        .string({ required_error: '请输入邮箱' })
+        .min(1, { message: '请输入邮箱' })
+        .email('请输入正确的邮箱格式'),
     },
     {
       component: 'Input',
@@ -299,7 +303,9 @@ export function buildAdminFormSchema(params: {
       },
       fieldName: 'mobile',
       label: '手机',
-      rules: 'required',
+      rules: z
+        .string({ required_error: '请输入手机号' })
+        .regex(/^1[3-9]\d{9}$/, '请输入正确的手机号格式'),
     },
     {
       component: 'TreeSelect',
