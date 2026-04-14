@@ -125,13 +125,13 @@ const [Drawer, drawerApi] = useVbenDrawer({
     }
     const raw = (await formApi.getValues()) as Record<string, unknown>;
     const type = Number(raw.type);
-    const needsPath = [1, 2, 3, 4].includes(type);
+    const needsPath = [1, 2, 4].includes(type);
     if (needsPath && !String(raw.path ?? '').trim()) {
       message.warning('请填写路由地址');
       return;
     }
-    if (type === 4 && !String(raw.iframe_src ?? '').trim()) {
-      message.warning('请填写内嵌地址');
+    if (type === 3 && !String(raw.permission ?? '').trim()) {
+      message.warning('请填写权限标识');
       return;
     }
     if (type === 5 && !String(raw.link_url ?? '').trim()) {
@@ -144,17 +144,48 @@ const [Drawer, drawerApi] = useVbenDrawer({
         : Number(raw.parent_id);
     const hideMenu = Boolean(raw.hide_menu);
     const to01 = (v: unknown) => (v === true || v === 1 ? 1 : 0);
+    /** 与表单 show 条件一致，避免切换类型后残留勾选被提交 */
     const otherSettings: MenuOtherSettingsPayload =
       type === 3
         ? { ...ZERO_OTHER_SETTINGS }
-        : {
-            affix_tab: to01(raw.affix_tab),
-            hide_in_breadcrumb: to01(raw.hide_in_breadcrumb),
-            hide_in_tab: to01(raw.hide_in_tab),
-            hide_menu: hideMenu ? 1 : 0,
-            hide_submenu: to01(raw.hide_submenu),
-            keep_alive: to01(raw.keep_alive),
-          };
+        : (() => {
+            const base: MenuOtherSettingsPayload = {
+              affix_tab: 0,
+              hide_in_breadcrumb: 0,
+              hide_in_tab: 0,
+              hide_menu: hideMenu ? 1 : 0,
+              hide_submenu: 0,
+              keep_alive: 0,
+            };
+            if (type === 1) {
+              return {
+                ...base,
+                hide_in_breadcrumb: to01(raw.hide_in_breadcrumb),
+                hide_in_tab: to01(raw.hide_in_tab),
+                hide_submenu: to01(raw.hide_submenu),
+              };
+            }
+            if (type === 2) {
+              return {
+                ...base,
+                affix_tab: to01(raw.affix_tab),
+                hide_in_breadcrumb: to01(raw.hide_in_breadcrumb),
+                hide_in_tab: to01(raw.hide_in_tab),
+                hide_submenu: to01(raw.hide_submenu),
+                keep_alive: to01(raw.keep_alive),
+              };
+            }
+            if (type === 4) {
+              return {
+                ...base,
+                affix_tab: to01(raw.affix_tab),
+                hide_in_breadcrumb: to01(raw.hide_in_breadcrumb),
+                hide_in_tab: to01(raw.hide_in_tab),
+              };
+            }
+            // 外链：仅「隐藏菜单」与 playground 一致，其余项不展示且不落库
+            return base;
+          })();
     const payload: MenuSavePayload = {
       active_path: String(raw.active_path ?? '').trim() || null,
       active_icon: (raw.active_icon as string) || null,
@@ -168,7 +199,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
       name: String(raw.name ?? ''),
       other_settings: otherSettings,
       parent_id: parentId,
-      path: (raw.path as string) || null,
+      path: type === 3 ? null : (raw.path as string) || null,
       permission: (raw.permission as string) || null,
       remark: (raw.remark as string) || null,
       sort: Number(raw.sort ?? 0),
@@ -278,5 +309,48 @@ const [Drawer, drawerApi] = useVbenDrawer({
 .menu-drawer-form :deep(.ant-form-item-label) {
   flex: 0 0 100px;
   max-width: 100px;
+}
+
+/* 徽标样式：选中后在文案前显示与下拉一致的色块 */
+.menu-drawer-form
+  :deep([class*='menu-form-badge-variant--'] .ant-select-selector .ant-select-selection-item) {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.menu-drawer-form
+  :deep([class*='menu-form-badge-variant--'] .ant-select-selector .ant-select-selection-item::before) {
+  content: '';
+  flex-shrink: 0;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 9999px;
+  border: 1px solid rgb(0 0 0 / 10%);
+}
+
+.menu-drawer-form
+  :deep(.menu-form-badge-variant--default .ant-select-selector .ant-select-selection-item::before) {
+  background-color: #22c55e;
+}
+
+.menu-drawer-form
+  :deep(.menu-form-badge-variant--destructive .ant-select-selector .ant-select-selection-item::before) {
+  background-color: #ef4444;
+}
+
+.menu-drawer-form
+  :deep(.menu-form-badge-variant--primary .ant-select-selector .ant-select-selection-item::before) {
+  background-color: #3b82f6;
+}
+
+.menu-drawer-form
+  :deep(.menu-form-badge-variant--success .ant-select-selector .ant-select-selection-item::before) {
+  background-color: #22c55e;
+}
+
+.menu-drawer-form
+  :deep(.menu-form-badge-variant--warning .ant-select-selector .ant-select-selection-item::before) {
+  background-color: #eab308;
 }
 </style>

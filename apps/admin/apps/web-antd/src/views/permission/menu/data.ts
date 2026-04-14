@@ -1,5 +1,6 @@
 import type { Recordable } from '@vben/types';
 import type { VbenFormSchema } from '#/adapter/form';
+import { z } from '#/adapter/form';
 import type {
   OnActionClickFn,
   VxeTableGridColumns,
@@ -35,13 +36,48 @@ export const MENU_VISIBLE_TAG_OPTIONS = [
   { color: 'default', label: '隐藏', value: 0 },
 ];
 
-export const BADGE_VARIANT_OPTIONS = [
-  { label: 'default', value: 'default' },
-  { label: 'destructive', value: 'destructive' },
-  { label: 'primary', value: 'primary' },
-  { label: 'success', value: 'success' },
-  { label: 'warning', value: 'warning' },
-];
+/** 徽标样式展示名（搜索、筛选用） */
+export const BADGE_VARIANT_DISPLAY: Record<string, string> = {
+  default: 'Default',
+  destructive: 'Destructive',
+  primary: 'Primary',
+  success: 'Success',
+  warning: 'Warning',
+};
+
+/** 与 `menu-badge.vue` 中 variantsMap 语义一致，用于色块 */
+export const BADGE_VARIANT_SWATCH: Record<string, string> = {
+  default: '#22c55e',
+  destructive: '#ef4444',
+  primary: '#3b82f6',
+  success: '#22c55e',
+  warning: '#eab308',
+};
+
+/** 下拉项：色块 + 文案（VNode 仅用于 option 插槽；options 仍为字符串以便选中框回显） */
+function renderBadgeVariantOptionRow(value: string) {
+  const color = BADGE_VARIANT_SWATCH[value] ?? 'rgb(148 163 184)';
+  const text = BADGE_VARIANT_DISPLAY[value] ?? value;
+  return h(
+    'span',
+    { class: 'inline-flex min-w-0 max-w-full items-center gap-2' },
+    [
+      h('span', {
+        class:
+          'inline-block size-2.5 shrink-0 rounded-full border border-solid border-black/10',
+        style: { backgroundColor: color },
+      }),
+      h('span', { class: 'truncate' }, text),
+    ],
+  );
+}
+
+export const BADGE_VARIANT_OPTIONS = (
+  ['default', 'destructive', 'primary', 'success', 'warning'] as const
+).map((value) => ({
+  label: BADGE_VARIANT_DISPLAY[value],
+  value,
+}));
 
 /** 供 ApiTreeSelect：`labelField: meta.title`，图标在 `meta.icon`。 */
 export function mapMenuTreeForApiSelect(
@@ -284,8 +320,9 @@ export function buildMenuFormSchema(params: {
         placeholder: '请输入',
       },
       dependencies: {
-        rules: (values) => (Number(values.type) !== 5 ? 'required' : null),
-        show: (values) => typeIn(values, [1, 2, 3, 4, 5]),
+        rules: (values) =>
+          typeIn(values, [1, 2, 4]) ? 'required' : null,
+        show: (values) => typeIn(values, [1, 2, 4, 5]),
         triggerFields: ['type'],
       },
       fieldName: 'path',
@@ -341,9 +378,13 @@ export function buildMenuFormSchema(params: {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: '内嵌页面 URL',
+        placeholder: 'https:// 开头的内嵌页面 URL',
       },
       dependencies: {
+        rules: (values) =>
+          Number(values.type) === 4
+            ? z.string().min(1, '请填写内嵌地址').url('请输入合法 URL')
+            : null,
         show: (values) => typeIn(values, [4]),
         triggerFields: ['type'],
       },
@@ -383,6 +424,7 @@ export function buildMenuFormSchema(params: {
         placeholder: '请输入',
       },
       dependencies: {
+        rules: (values) => (Number(values.type) === 3 ? 'required' : null),
         show: (values) => typeIn(values, [1, 2, 3, 4, 5]),
         triggerFields: ['type'],
       },
@@ -424,31 +466,58 @@ export function buildMenuFormSchema(params: {
     },
     {
       component: 'Input',
-      componentProps: {
-        class: 'w-full',
-        placeholder: '请输入',
+      componentProps(values: Record<string, unknown>) {
+        return {
+          allowClear: true,
+          class: 'w-full',
+          disabled: values.badge_type !== 'normal',
+          placeholder: '请输入',
+        };
       },
       dependencies: {
         show: (values) => !typeIn(values, [3]),
-        triggerFields: ['type'],
+        triggerFields: ['type', 'badge_type'],
       },
       fieldName: 'badge',
       label: '徽标内容',
     },
     {
       component: 'Select',
-      componentProps: {
-        allowClear: true,
-        class: 'w-full',
-        options: BADGE_VARIANT_OPTIONS,
-        placeholder: '请选择',
+      componentProps(values: Record<string, unknown>) {
+        const v = values.badge_variants;
+        const key =
+          typeof v === 'string' && v && v in BADGE_VARIANT_SWATCH ? v : '';
+        return {
+          allowClear: true,
+          class: ['w-full', ...(key ? [`menu-form-badge-variant--${key}`] : [])],
+          filterOption(input: string, option: { value?: string }) {
+            const val = String(option?.value ?? '');
+            const display = BADGE_VARIANT_DISPLAY[val] ?? val;
+            const q = input.trim().toLowerCase();
+            return (
+              display.toLowerCase().includes(q) ||
+              val.toLowerCase().includes(q)
+            );
+          },
+          options: BADGE_VARIANT_OPTIONS,
+          placeholder: '请选择',
+          showSearch: true,
+        };
       },
       dependencies: {
         show: (values) => !typeIn(values, [3]),
-        triggerFields: ['type'],
+        triggerFields: ['type', 'badge_variants'],
       },
       fieldName: 'badge_variants',
       label: '徽标样式',
+      renderComponentContent() {
+        return {
+          option: (slotProps: Record<string, unknown>) => {
+            const value = String(slotProps.value ?? '');
+            return renderBadgeVariantOptionRow(value);
+          },
+        };
+      },
     },
     {
       component: 'InputNumber',
@@ -477,7 +546,7 @@ export function buildMenuFormSchema(params: {
         orientation: 'center',
       },
       dependencies: {
-        show: (values) => !typeIn(values, [3]),
+        show: (values) => !typeIn(values, [3, 5]),
         triggerFields: ['type'],
       },
       fieldName: '_divider_other',
@@ -495,7 +564,7 @@ export function buildMenuFormSchema(params: {
       componentProps: {},
       defaultValue: false,
       dependencies: {
-        show: (values) => typeIn(values, [2, 4]),
+        show: (values) => typeIn(values, [2]),
         triggerFields: ['type'],
       },
       fieldName: 'keep_alive',
@@ -543,7 +612,7 @@ export function buildMenuFormSchema(params: {
       componentProps: {},
       defaultValue: false,
       dependencies: {
-        show: (values) => typeIn(values, [1, 2, 4, 5]),
+        show: (values) => typeIn(values, [1, 2]),
         triggerFields: ['type'],
       },
       fieldName: 'hide_submenu',
@@ -559,7 +628,7 @@ export function buildMenuFormSchema(params: {
       componentProps: {},
       defaultValue: false,
       dependencies: {
-        show: (values) => typeIn(values, [1, 2, 4, 5]),
+        show: (values) => typeIn(values, [1, 2, 4]),
         triggerFields: ['type'],
       },
       fieldName: 'hide_in_breadcrumb',
@@ -575,7 +644,7 @@ export function buildMenuFormSchema(params: {
       componentProps: {},
       defaultValue: false,
       dependencies: {
-        show: (values) => typeIn(values, [1, 2, 4, 5]),
+        show: (values) => typeIn(values, [1, 2, 4]),
         triggerFields: ['type'],
       },
       fieldName: 'hide_in_tab',

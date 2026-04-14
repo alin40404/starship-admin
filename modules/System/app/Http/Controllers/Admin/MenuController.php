@@ -81,14 +81,14 @@ class MenuController extends Controller
             'path' => ['nullable', 'string', 'max:255', $this->pathRequiredUnlessLinkRule($existing)],
             'active_path' => ['nullable', 'string', 'max:255', $this->activePathRule()],
             'component' => ['nullable', 'string', 'max:255'],
-            'permission' => ['nullable', 'string', 'max:150'],
+            'permission' => ['nullable', 'string', 'max:150', $this->permissionRequiredWhenButtonRule($existing)],
             'icon' => ['nullable', 'string', 'max:100'],
             'active_icon' => ['nullable', 'string', 'max:100'],
             'badge_type' => ['nullable', 'string', 'max:20'],
             'badge' => ['nullable', 'string', 'max:50'],
             'badge_variants' => ['nullable', 'string', 'max:30'],
             'link_url' => ['nullable', 'string', 'max:500'],
-            'iframe_src' => ['nullable', 'string', 'max:500'],
+            'iframe_src' => ['nullable', 'string', 'max:500', $this->iframeSrcRule($existing)],
             'sort' => ['sometimes', 'integer'],
             'status' => ['sometimes', 'integer', 'in:0,1'],
             'remark' => ['nullable', 'string', 'max:255'],
@@ -146,13 +146,13 @@ class MenuController extends Controller
     }
 
     /**
-     * type≠5（外链）时路由地址必填；更新时未提交 path 字段则沿用原记录。
+     * type 为 3（按钮）、5（外链）时不要求路由地址；其余类型必填；更新时未提交 path 则沿用原记录。
      */
     private function pathRequiredUnlessLinkRule(?Menu $existing = null): \Closure
     {
         return function (string $attribute, mixed $value, \Closure $fail) use ($existing): void {
             $type = (int) (request()->input('type') ?? $existing?->type ?? 0);
-            if ($type === 5) {
+            if ($type === 5 || $type === 3) {
                 return;
             }
             if ($value === null) {
@@ -165,6 +165,44 @@ class MenuController extends Controller
             }
             if (trim((string) $value) === '') {
                 $fail('路由地址不能为空');
+            }
+        };
+    }
+
+    /**
+     * type=3（按钮）时权限标识必填。
+     */
+    private function permissionRequiredWhenButtonRule(?Menu $existing = null): \Closure
+    {
+        return function (string $attribute, mixed $value, \Closure $fail) use ($existing): void {
+            $type = (int) (request()->input('type') ?? $existing?->type ?? 0);
+            if ($type !== 3) {
+                return;
+            }
+            if ($value === null || trim((string) $value) === '') {
+                $fail('权限标识不能为空');
+            }
+        };
+    }
+
+    /**
+     * type=4（内嵌）时 iframe_src 必填且为合法 URL。
+     */
+    private function iframeSrcRule(?Menu $existing = null): \Closure
+    {
+        return function (string $attribute, mixed $value, \Closure $fail) use ($existing): void {
+            $type = (int) (request()->input('type') ?? $existing?->type ?? 0);
+            if ($type !== 4) {
+                return;
+            }
+            if ($value === null || trim((string) $value) === '') {
+                $fail('内嵌地址不能为空');
+
+                return;
+            }
+            $v = trim((string) $value);
+            if (filter_var($v, FILTER_VALIDATE_URL) === false) {
+                $fail('内嵌地址须为有效 URL');
             }
         };
     }
