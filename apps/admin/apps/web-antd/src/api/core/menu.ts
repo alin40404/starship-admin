@@ -26,11 +26,11 @@ const PLACEHOLDER_VIEW = 'views/_core/fallback/coming-soon.vue';
 
 /** 权限中心：后端菜单 path → 页面组件 */
 const PERMISSION_PAGE_BY_PATH: Record<string, string> = {
-  '/permission/admins': PLACEHOLDER_VIEW,
-  '/permission/roles': PLACEHOLDER_VIEW,
-  '/permission/menus': PLACEHOLDER_VIEW,
-  '/permission/permission-points': PLACEHOLDER_VIEW,
-  '/permission/data-permission': PLACEHOLDER_VIEW,
+  '/permission/admins': 'views/permission/admin/index.vue',
+  '/permission/roles': 'views/permission/role/index.vue',
+  '/permission/menus': 'views/permission/menu/index.vue',
+  '/permission/permission-points': 'views/permission/permission-point/index.vue',
+  '/permission/data-permission': 'views/permission/data-scope/index.vue',
 };
 
 const ICON_MAP: Record<string, string> = {
