@@ -1,14 +1,16 @@
 <script lang="ts" setup>
+import type { FlattenedItem } from '@vben/common-ui';
+import type { Recordable } from '@vben/types';
 import type { VbenFormSchema } from '#/adapter/form';
 import type { MenuTreeNode } from '#/api/system/menu';
 import type { RoleDetail, RoleRow, RoleSavePayload } from '#/api/system/role';
 
 import { computed, nextTick, reactive, ref, watch } from 'vue';
 
-import { useVbenDrawer } from '@vben/common-ui';
+import { Tree, useVbenDrawer } from '@vben/common-ui';
+import { IconifyIcon } from '@vben/icons';
 
-import { message, Spin, Tree } from 'ant-design-vue';
-import type { TreeProps } from 'ant-design-vue';
+import { message, Spin } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
 import {
@@ -25,6 +27,9 @@ const emits = defineEmits<{ success: [] }>();
 
 type OpenMode = 'create' | 'edit' | 'view';
 
+const MENU_TYPE_MENU = 2;
+const MENU_TYPE_BUTTON = 3;
+
 const editingId = ref<number | null>(null);
 const openMode = ref<OpenMode>('create');
 const menuTree = ref<MenuTreeNode[]>([]);
@@ -32,17 +37,39 @@ const menuReady = ref(false);
 
 const isViewOnly = computed(() => openMode.value === 'view');
 
-const treeData = computed((): TreeProps['treeData'] =>
-  mapMenuToTreeData(menuTree.value),
-);
+function mapMenuToVbenTree(
+  nodes: MenuTreeNode[],
+): Record<string, unknown>[] {
+  return nodes.map((n) => {
+    const typeStr =
+      n.type === MENU_TYPE_BUTTON
+        ? 'button'
+        : n.type === MENU_TYPE_MENU
+          ? 'menu'
+          : 'catalog';
+    const meta: Record<string, unknown> = { title: n.name };
+    if (n.icon) {
+      meta.icon = n.icon;
+    }
+    return {
+      children: n.children?.length
+        ? mapMenuToVbenTree(n.children)
+        : undefined,
+      id: n.id,
+      meta,
+      type: typeStr,
+    };
+  });
+}
 
-function mapMenuToTreeData(nodes: MenuTreeNode[]): NonNullable<TreeProps['treeData']> {
-  return nodes.map((n) => ({
-    children:
-      n.children?.length ? mapMenuToTreeData(n.children) : undefined,
-    key: n.id,
-    title: n.name,
-  }));
+const vbenTreeData = computed(() => mapMenuToVbenTree(menuTree.value));
+
+function getAuthNodeClass(item: FlattenedItem<Recordable<any>>) {
+  const classes: string[] = [];
+  if (item.value?.type === 'button') {
+    classes.push('inline-flex');
+  }
+  return classes.join(' ');
 }
 
 const [Form, formApi] = useVbenForm(
@@ -202,27 +229,31 @@ async function ensureMenuTree() {
 <template>
   <Drawer :title="drawerTitle" class="max-w-[720px] w-[92vw]">
     <Form class="role-drawer-form">
-      <template #menu_ids="p">
-        <Spin :spinning="!menuReady" class="w-full">
+      <template #menu_ids="slotProps">
+        <Spin :spinning="!menuReady" wrapper-class-name="w-full">
           <div
-            class="auth-tree-box max-h-[min(420px,50vh)] w-full overflow-y-auto rounded-md border border-[var(--ant-color-border)] px-2 py-2"
+            :class="[
+              'max-h-[min(420px,50vh)] w-full overflow-y-auto',
+              { 'permission-tree--readonly': isViewOnly },
+            ]"
           >
             <Tree
-              v-if="treeData?.length"
-              :checked-keys="(p.value as (number | string)[] | undefined) ?? []"
+              :tree-data="vbenTreeData"
+              multiple
+              bordered
+              :default-expanded-level="2"
               :disabled="isViewOnly"
-              :selectable="false"
-              :tree-data="treeData"
-              block-node
-              checkable
-              default-expand-all
-              :show-icon="false"
-              :show-line="false"
-              @update:checked-keys="
-                (keys) => (p as Record<string, any>)['onUpdate:value']?.(keys)
-              "
-            />
-            <div v-else class="text-muted-foreground text-sm">暂无菜单数据</div>
+              :get-node-class="getAuthNodeClass"
+              v-bind="slotProps"
+              value-field="id"
+              label-field="meta.title"
+              icon-field="meta.icon"
+            >
+              <template #node="{ value }">
+                <IconifyIcon v-if="value.meta?.icon" :icon="value.meta.icon" />
+                {{ value.meta?.title }}
+              </template>
+            </Tree>
           </div>
         </Spin>
       </template>
@@ -234,5 +265,9 @@ async function ensureMenuTree() {
 .role-drawer-form :deep(.ant-form-item-label) {
   flex: 0 0 88px;
   max-width: 88px;
+}
+
+.role-drawer-form :deep(.permission-tree--readonly button[role='checkbox']) {
+  pointer-events: none;
 }
 </style>

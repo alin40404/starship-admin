@@ -203,8 +203,7 @@ export function buildAdminFormSchema(params: {
   postOptions: { label: string; value: number }[];
   isEdit: boolean;
 }): VbenFormSchema[] {
-  const { deptTreeData, lockRoles = false, roleOptions, postOptions, isEdit } =
-    params;
+  const { deptTreeData, lockRoles = false, postOptions, isEdit } = params;
   return [
     {
       component: 'Input',
@@ -273,20 +272,17 @@ export function buildAdminFormSchema(params: {
         treeLine: false,
       },
       fieldName: 'dept_id',
+      formItemClass: 'col-span-full',
       label: '部门',
     },
+    /** 授权：与角色管理表单一致，由插槽渲染 a-tree */
     {
-      component: 'Select',
-      componentProps: {
-        allowClear: !lockRoles,
-        class: 'w-full',
-        disabled: lockRoles,
-        mode: 'multiple',
-        options: roleOptions,
-        placeholder: '选择角色',
-      },
+      component: 'Input',
+      controlClass: 'w-full min-w-0',
+      defaultValue: [],
       fieldName: 'role_ids',
-      label: '角色',
+      formItemClass: 'col-span-full w-full min-w-0 items-start',
+      label: '授权',
       rules: lockRoles ? undefined : 'selectRequired',
     },
     {
@@ -299,6 +295,7 @@ export function buildAdminFormSchema(params: {
         placeholder: '可选',
       },
       fieldName: 'post_ids',
+      formItemClass: 'col-span-full',
       label: '岗位',
     },
     {
@@ -315,6 +312,7 @@ export function buildAdminFormSchema(params: {
       },
       defaultValue: 1,
       fieldName: 'status',
+      formItemClass: 'col-span-full',
       label: '状态',
     },
     {
@@ -324,6 +322,7 @@ export function buildAdminFormSchema(params: {
         rows: 2,
       },
       fieldName: 'remark',
+      formItemClass: 'col-span-full items-start',
       label: '备注',
     },
   ];

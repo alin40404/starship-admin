@@ -6,13 +6,13 @@ import type {
 
 import type { RoleRow } from '#/api/system/role';
 
-/** 与后端 data_scope 1–5 校验一致（可按业务再调文案） */
+/** 与后端 data_scope 1–5 一致：序号与选项顺序相同（1全部 2本部门 3本部门及下级 4仅本人 5自定义） */
 export const DATA_SCOPE_OPTIONS = [
-  { label: '全部', value: 1 },
-  { label: '自定义', value: 2 },
-  { label: '本部门', value: 3 },
-  { label: '本部门及下级', value: 4 },
-  { label: '仅本人', value: 5 },
+  { label: '全部数据', value: 1 },
+  { label: '本部门', value: 2 },
+  { label: '本部门及下级', value: 3 },
+  { label: '仅本人', value: 4 },
+  { label: '自定义', value: 5 },
 ];
 
 export function useGridFormSchema(): VbenFormSchema[] {
@@ -208,26 +208,29 @@ export function buildRoleFormSchema(params: {
       },
       defaultValue: 1,
       fieldName: 'status',
+      formItemClass: 'col-span-full',
       label: '状态',
+    },
+    /** 授权：由表单插槽渲染 Vben Tree（与 playground 角色表单一致），值参与 getValues */
+    {
+      component: 'Input',
+      controlClass: 'w-full min-w-0',
+      defaultValue: [],
+      fieldName: 'menu_ids',
+      formItemClass: 'col-span-full w-full min-w-0 items-start',
+      label: '授权',
+      modelPropName: 'modelValue',
     },
     {
       component: 'Textarea',
       componentProps: {
         class: 'w-full',
         disabled,
-        rows: 3,
+        rows: 2,
       },
       fieldName: 'remark',
-      formItemClass: 'sm:col-span-2',
+      formItemClass: 'col-span-full items-start',
       label: '备注',
-    },
-    /** 菜单授权：由表单插槽渲染 a-tree，值参与 getValues */
-    {
-      component: 'Input',
-      defaultValue: [],
-      fieldName: 'menu_ids',
-      formItemClass: 'sm:col-span-2 items-start',
-      label: '菜单权限',
     },
   ];
 }
