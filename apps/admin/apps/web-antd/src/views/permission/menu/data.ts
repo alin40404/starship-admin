@@ -172,7 +172,7 @@ export function buildMenuFormSchema(params: {
       },
       defaultValue: 2,
       fieldName: 'type',
-      formItemClass: 'col-span-full',
+      formItemClass: 'col-span-2 md:col-span-2',
       label: '类型',
       rules: 'selectRequired',
     },
@@ -200,7 +200,6 @@ export function buildMenuFormSchema(params: {
         treeLine: false,
       },
       fieldName: 'parent_id',
-      formItemClass: 'col-span-full',
       label: '上级菜单',
     },
     {
@@ -397,7 +396,7 @@ export function buildMenuFormSchema(params: {
     {
       component: 'Divider',
       fieldName: '_divider_other',
-      formItemClass: 'col-span-full !mb-0 mt-2',
+      formItemClass: 'col-span-2 md:col-span-2 !mb-0 mt-2',
       hideLabel: true,
       renderComponentContent() {
         return {
@@ -410,7 +409,6 @@ export function buildMenuFormSchema(params: {
       componentProps: {},
       defaultValue: false,
       fieldName: 'hide_menu',
-      formItemClass: 'col-span-1',
       label: '隐藏菜单',
     },
     {
@@ -418,7 +416,6 @@ export function buildMenuFormSchema(params: {
       componentProps: {},
       defaultValue: false,
       fieldName: 'hide_submenu',
-      formItemClass: 'col-span-1',
       label: '隐藏子菜单',
     },
     {
@@ -426,7 +423,6 @@ export function buildMenuFormSchema(params: {
       componentProps: {},
       defaultValue: false,
       fieldName: 'hide_in_breadcrumb',
-      formItemClass: 'col-span-1',
       label: '在面包屑中隐藏',
     },
     {
@@ -434,7 +430,6 @@ export function buildMenuFormSchema(params: {
       componentProps: {},
       defaultValue: false,
       fieldName: 'hide_in_tab',
-      formItemClass: 'col-span-1',
       label: '在标签栏中隐藏',
     },
     {
@@ -444,7 +439,7 @@ export function buildMenuFormSchema(params: {
         rows: 2,
       },
       fieldName: 'remark',
-      formItemClass: 'col-span-full items-start',
+      formItemClass: 'col-span-2 md:col-span-2 items-start',
       label: '备注',
     },
   ];

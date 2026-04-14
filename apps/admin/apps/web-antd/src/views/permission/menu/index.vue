@@ -110,7 +110,7 @@ function onDelete(row: MenuTreeNode) {
 
 <template>
   <Page auto-content-height>
-    <MenuFormDrawer class="max-w-[720px] w-[92vw]" @success="onRefresh" />
+    <MenuFormDrawer @success="onRefresh" />
     <Grid>
       <template #toolbar-actions>
         <Button type="primary" @click="onCreate">

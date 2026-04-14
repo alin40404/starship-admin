@@ -70,7 +70,7 @@ class StarshipFoundationSeeder extends Seeder
             'path' => '/dashboard',
             'component' => null,
             'permission' => null,
-            'icon' => 'HomeFilled',
+            'icon' => 'ep:home-filled',
             'sort' => 10,
             'visible' => 1,
             'keep_alive' => 0,
@@ -79,11 +79,11 @@ class StarshipFoundationSeeder extends Seeder
 
         foreach (
             [
-                ['name' => '控制台', 'path' => '/dashboard/console', 'permission' => 'dashboard.view', 'sort' => 11, 'icon' => 'Odometer', 'keep_alive' => 0],
-                ['name' => '数据概览', 'path' => '/dashboard/overview', 'permission' => 'dashboard.overview', 'sort' => 12, 'icon' => 'Histogram', 'keep_alive' => 1],
-                ['name' => '待办中心', 'path' => '/dashboard/todos', 'permission' => 'dashboard.todos', 'sort' => 13, 'icon' => 'List', 'keep_alive' => 1],
-                ['name' => '快捷入口', 'path' => '/dashboard/quick-entry', 'permission' => 'dashboard.quick_entry', 'sort' => 14, 'icon' => 'Promotion', 'keep_alive' => 0],
-                ['name' => '我的收藏', 'path' => '/dashboard/favorites', 'permission' => 'dashboard.favorites', 'sort' => 15, 'icon' => 'StarFilled', 'keep_alive' => 1],
+                ['name' => '控制台', 'path' => '/dashboard/console', 'permission' => 'dashboard.view', 'sort' => 11, 'icon' => 'ep:odometer', 'keep_alive' => 0],
+                ['name' => '数据概览', 'path' => '/dashboard/overview', 'permission' => 'dashboard.overview', 'sort' => 12, 'icon' => 'ep:histogram', 'keep_alive' => 1],
+                ['name' => '待办中心', 'path' => '/dashboard/todos', 'permission' => 'dashboard.todos', 'sort' => 13, 'icon' => 'ep:list', 'keep_alive' => 1],
+                ['name' => '快捷入口', 'path' => '/dashboard/quick-entry', 'permission' => 'dashboard.quick_entry', 'sort' => 14, 'icon' => 'ep:promotion', 'keep_alive' => 0],
+                ['name' => '我的收藏', 'path' => '/dashboard/favorites', 'permission' => 'dashboard.favorites', 'sort' => 15, 'icon' => 'ep:star-filled', 'keep_alive' => 1],
             ] as $m
         ) {
             Menu::query()->create([
@@ -108,7 +108,7 @@ class StarshipFoundationSeeder extends Seeder
             'path' => '/permission',
             'component' => null,
             'permission' => null,
-            'icon' => 'Lock',
+            'icon' => 'ep:lock',
             'sort' => 100,
             'visible' => 1,
             'keep_alive' => 0,
@@ -122,7 +122,7 @@ class StarshipFoundationSeeder extends Seeder
             'path' => '/permission/menus',
             'component' => null,
             'permission' => 'system.menus',
-            'icon' => 'Menu',
+            'icon' => 'ep:menu',
             'sort' => 101,
             'visible' => 1,
             'keep_alive' => 1,
@@ -136,7 +136,7 @@ class StarshipFoundationSeeder extends Seeder
             'path' => '/permission/roles',
             'component' => null,
             'permission' => 'system.roles',
-            'icon' => 'UserFilled',
+            'icon' => 'ep:user-filled',
             'sort' => 102,
             'visible' => 1,
             'keep_alive' => 1,
@@ -150,7 +150,7 @@ class StarshipFoundationSeeder extends Seeder
             'path' => '/permission/admins',
             'component' => null,
             'permission' => 'system.admins',
-            'icon' => 'User',
+            'icon' => 'ep:user',
             'sort' => 103,
             'visible' => 1,
             'keep_alive' => 1,
@@ -187,7 +187,7 @@ class StarshipFoundationSeeder extends Seeder
             'path' => '/permission/permission-points',
             'component' => null,
             'permission' => 'system.permission_points',
-            'icon' => 'Key',
+            'icon' => 'ep:key',
             'sort' => 104,
             'visible' => 1,
             'keep_alive' => 1,
@@ -201,7 +201,7 @@ class StarshipFoundationSeeder extends Seeder
             'path' => '/permission/data-permission',
             'component' => null,
             'permission' => 'system.data_permission',
-            'icon' => 'TrendCharts',
+            'icon' => 'ep:trend-charts',
             'sort' => 105,
             'visible' => 1,
             'keep_alive' => 1,
@@ -215,7 +215,7 @@ class StarshipFoundationSeeder extends Seeder
             'path' => '/org',
             'component' => null,
             'permission' => null,
-            'icon' => 'Share',
+            'icon' => 'ep:share',
             'sort' => 200,
             'visible' => 1,
             'keep_alive' => 0,
@@ -224,9 +224,9 @@ class StarshipFoundationSeeder extends Seeder
 
         foreach (
             [
-                ['name' => '部门管理', 'path' => '/org/departments', 'permission' => 'system.departments', 'sort' => 201, 'icon' => 'OfficeBuilding'],
-                ['name' => '岗位管理', 'path' => '/org/posts', 'permission' => 'system.posts', 'sort' => 202, 'icon' => 'Postcard'],
-                ['name' => '用户组管理', 'path' => '/org/user-groups', 'permission' => 'system.user_groups', 'sort' => 203, 'icon' => 'Avatar'],
+                ['name' => '部门管理', 'path' => '/org/departments', 'permission' => 'system.departments', 'sort' => 201, 'icon' => 'ep:office-building'],
+                ['name' => '岗位管理', 'path' => '/org/posts', 'permission' => 'system.posts', 'sort' => 202, 'icon' => 'ep:postcard'],
+                ['name' => '用户组管理', 'path' => '/org/user-groups', 'permission' => 'system.user_groups', 'sort' => 203, 'icon' => 'ep:avatar'],
             ] as $m
         ) {
             Menu::query()->create([
@@ -251,7 +251,7 @@ class StarshipFoundationSeeder extends Seeder
             'path' => '/platform',
             'component' => null,
             'permission' => null,
-            'icon' => 'Operation',
+            'icon' => 'ep:operation',
             'sort' => 300,
             'visible' => 1,
             'keep_alive' => 0,
@@ -260,11 +260,11 @@ class StarshipFoundationSeeder extends Seeder
 
         foreach (
             [
-                ['name' => '字典管理', 'path' => '/platform/dicts', 'permission' => 'system.dicts', 'sort' => 301, 'icon' => 'Collection'],
-                ['name' => '系统配置', 'path' => '/platform/configs', 'permission' => 'system.configs', 'sort' => 302, 'icon' => 'Tools'],
-                ['name' => '参数配置', 'path' => '/platform/params', 'permission' => 'system.params', 'sort' => 303, 'icon' => 'Setting'],
-                ['name' => '区域管理', 'path' => '/platform/regions', 'permission' => 'system.regions', 'sort' => 304, 'icon' => 'Location'],
-                ['name' => '通知配置', 'path' => '/platform/notifications', 'permission' => 'system.notifications', 'sort' => 305, 'icon' => 'Bell'],
+                ['name' => '字典管理', 'path' => '/platform/dicts', 'permission' => 'system.dicts', 'sort' => 301, 'icon' => 'ep:collection'],
+                ['name' => '系统配置', 'path' => '/platform/configs', 'permission' => 'system.configs', 'sort' => 302, 'icon' => 'ep:setting'],
+                ['name' => '参数配置', 'path' => '/platform/params', 'permission' => 'system.params', 'sort' => 303, 'icon' => 'ep:setting'],
+                ['name' => '区域管理', 'path' => '/platform/regions', 'permission' => 'system.regions', 'sort' => 304, 'icon' => 'ep:location'],
+                ['name' => '通知配置', 'path' => '/platform/notifications', 'permission' => 'system.notifications', 'sort' => 305, 'icon' => 'ep:bell'],
             ] as $m
         ) {
             Menu::query()->create([
@@ -289,7 +289,7 @@ class StarshipFoundationSeeder extends Seeder
             'path' => '/resource',
             'component' => null,
             'permission' => null,
-            'icon' => 'FolderOpened',
+            'icon' => 'ep:folder-opened',
             'sort' => 400,
             'visible' => 1,
             'keep_alive' => 0,
@@ -298,9 +298,9 @@ class StarshipFoundationSeeder extends Seeder
 
         foreach (
             [
-                ['name' => '附件管理', 'path' => '/resource/attachments', 'permission' => 'system.attachments', 'sort' => 401, 'icon' => 'Paperclip'],
-                ['name' => '文件分组', 'path' => '/resource/file-groups', 'permission' => 'system.file_groups', 'sort' => 402, 'icon' => 'Files'],
-                ['name' => '存储配置', 'path' => '/resource/storage', 'permission' => 'system.storage', 'sort' => 403, 'icon' => 'Coin'],
+                ['name' => '附件管理', 'path' => '/resource/attachments', 'permission' => 'system.attachments', 'sort' => 401, 'icon' => 'ep:paperclip'],
+                ['name' => '文件分组', 'path' => '/resource/file-groups', 'permission' => 'system.file_groups', 'sort' => 402, 'icon' => 'ep:files'],
+                ['name' => '存储配置', 'path' => '/resource/storage', 'permission' => 'system.storage', 'sort' => 403, 'icon' => 'ep:coin'],
             ] as $m
         ) {
             Menu::query()->create([
@@ -325,7 +325,7 @@ class StarshipFoundationSeeder extends Seeder
             'path' => '/monitor',
             'component' => null,
             'permission' => null,
-            'icon' => 'Monitor',
+            'icon' => 'ep:monitor',
             'sort' => 500,
             'visible' => 1,
             'keep_alive' => 0,
@@ -334,11 +334,11 @@ class StarshipFoundationSeeder extends Seeder
 
         foreach (
             [
-                ['name' => '操作日志', 'path' => '/monitor/operation-logs', 'permission' => 'system.operation_logs', 'sort' => 501, 'icon' => 'Document'],
-                ['name' => '登录日志', 'path' => '/monitor/login-logs', 'permission' => 'system.login_logs', 'sort' => 502, 'icon' => 'Notebook'],
-                ['name' => '异常日志', 'path' => '/monitor/exception-logs', 'permission' => 'system.exception_logs', 'sort' => 503, 'icon' => 'WarningFilled'],
-                ['name' => '在线用户', 'path' => '/monitor/online-users', 'permission' => 'system.online_users', 'sort' => 504, 'icon' => 'View'],
-                ['name' => '定时任务', 'path' => '/monitor/scheduled-tasks', 'permission' => 'system.scheduled_tasks', 'sort' => 505, 'icon' => 'Timer'],
+                ['name' => '操作日志', 'path' => '/monitor/operation-logs', 'permission' => 'system.operation_logs', 'sort' => 501, 'icon' => 'ep:document'],
+                ['name' => '登录日志', 'path' => '/monitor/login-logs', 'permission' => 'system.login_logs', 'sort' => 502, 'icon' => 'ep:notebook'],
+                ['name' => '异常日志', 'path' => '/monitor/exception-logs', 'permission' => 'system.exception_logs', 'sort' => 503, 'icon' => 'ep:warning-filled'],
+                ['name' => '在线用户', 'path' => '/monitor/online-users', 'permission' => 'system.online_users', 'sort' => 504, 'icon' => 'ep:view'],
+                ['name' => '定时任务', 'path' => '/monitor/scheduled-tasks', 'permission' => 'system.scheduled_tasks', 'sort' => 505, 'icon' => 'ep:timer'],
             ] as $m
         ) {
             Menu::query()->create([
@@ -363,7 +363,7 @@ class StarshipFoundationSeeder extends Seeder
             'path' => '/dev',
             'component' => null,
             'permission' => null,
-            'icon' => 'Cpu',
+            'icon' => 'ep:cpu',
             'sort' => 600,
             'visible' => 1,
             'keep_alive' => 0,
@@ -372,9 +372,9 @@ class StarshipFoundationSeeder extends Seeder
 
         foreach (
             [
-                ['name' => '代码生成', 'path' => '/dev/codegen', 'permission' => 'system.codegen', 'sort' => 601, 'icon' => 'MagicStick'],
-                ['name' => '模块管理', 'path' => '/dev/modules', 'permission' => 'system.modules', 'sort' => 602, 'icon' => 'Grid'],
-                ['name' => '接口文档', 'path' => '/dev/api-docs', 'permission' => 'system.api_docs', 'sort' => 603, 'icon' => 'Link'],
+                ['name' => '代码生成', 'path' => '/dev/codegen', 'permission' => 'system.codegen', 'sort' => 601, 'icon' => 'ep:magic-stick'],
+                ['name' => '模块管理', 'path' => '/dev/modules', 'permission' => 'system.modules', 'sort' => 602, 'icon' => 'ep:grid'],
+                ['name' => '接口文档', 'path' => '/dev/api-docs', 'permission' => 'system.api_docs', 'sort' => 603, 'icon' => 'ep:link'],
             ] as $m
         ) {
             Menu::query()->create([

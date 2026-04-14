@@ -74,14 +74,16 @@ const parentTreeForSelect = computed(() => {
 const [Form, formApi] = useVbenForm(
   reactive({
     commonConfig: {
+      colon: true,
       componentProps: {
         class: 'w-full',
       },
+      formItemClass: 'col-span-2 md:col-span-1',
     },
     layout: 'horizontal' as const,
     schema: [] as VbenFormSchema[],
     showDefaultActions: false,
-    wrapperClass: 'grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1',
+    wrapperClass: 'grid-cols-2 gap-x-4',
   }) as any,
 );
 
@@ -247,8 +249,8 @@ async function ensureMenuTree() {
 </script>
 
 <template>
-  <Drawer :title="drawerTitle" class="max-w-[720px] w-[92vw]">
-    <Form class="menu-drawer-form" />
+  <Drawer :title="drawerTitle" class="w-full max-w-200">
+    <Form class="menu-drawer-form mx-4" />
   </Drawer>
 </template>
 
