@@ -55,9 +55,13 @@ setupVbenVxeTable({
 
     vxeUI.renderer.add('CellImage', {
       renderTableDefault(renderOpts, params) {
-        const { props } = renderOpts;
+        const { attrs, props } = renderOpts;
         const { column, row } = params;
-        return h(Image, { src: row[column.field], ...props });
+        const src =
+          typeof attrs?.getSrc === 'function'
+            ? attrs.getSrc(row, column)
+            : row[column.field];
+        return h(Image, { src, ...props });
       },
     });
 
