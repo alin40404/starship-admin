@@ -33,6 +33,10 @@ const PERMISSION_PAGE_BY_PATH: Record<string, string> = {
   '/permission/data-permission': 'views/permission/data-scope/index.vue',
 };
 
+function pascalToKebabCase(s: string): string {
+  return s.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '');
+}
+
 const ICON_MAP: Record<string, string> = {
   HomeFilled: 'ep:home-filled',
   Setting: 'ep:setting',
@@ -72,11 +76,25 @@ const ICON_MAP: Record<string, string> = {
   StarFilled: 'ep:star-filled',
 };
 
+/**
+ * 将 `sa_menus.icon`（Element 组件名或已是 `collection:name`）转为 Iconify 名，供 `IconifyIcon`、权限树等使用。
+ */
+export function menuIconToIconify(icon: string | null | undefined): string | undefined {
+  if (!icon?.trim()) {
+    return undefined;
+  }
+  const t = icon.trim();
+  if (t.includes(':')) {
+    return t;
+  }
+  return ICON_MAP[t] ?? `ep:${pascalToKebabCase(t)}`;
+}
+
 function mapIcon(icon: string | null | undefined): string {
   if (!icon) {
     return 'lucide:folder';
   }
-  return ICON_MAP[icon] ?? 'lucide:file-text';
+  return menuIconToIconify(icon) ?? 'lucide:file-text';
 }
 
 function resolvePageComponent(path: string | null): string {

@@ -19,6 +19,7 @@ import {
   syncRoleMenus,
   updateRole,
 } from '#/api/system/role';
+import { menuIconToIconify } from '#/api/core/menu';
 import { fetchMenuTree } from '#/api/system/menu';
 
 import { buildRoleFormSchema } from '../data';
@@ -48,8 +49,9 @@ function mapMenuToVbenTree(
           ? 'menu'
           : 'catalog';
     const meta: Record<string, unknown> = { title: n.name };
-    if (n.icon) {
-      meta.icon = n.icon;
+    const iconify = menuIconToIconify(n.icon);
+    if (iconify) {
+      meta.icon = iconify;
     }
     return {
       children: n.children?.length
