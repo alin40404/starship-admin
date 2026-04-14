@@ -127,7 +127,7 @@ const [Form, formApi] = useTableForm({
   submitButtonOptions: {
     content: computed(() => $t('common.search')),
   },
-  wrapperClass: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
+  wrapperClass: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
 });
 
 const showTableTitle = computed(() => {
