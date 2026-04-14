@@ -47,7 +47,9 @@ function mapMenuToVbenTree(
         : n.type === MENU_TYPE_MENU
           ? 'menu'
           : 'catalog';
-    const meta: Record<string, unknown> = { title: n.name };
+    const meta: Record<string, unknown> = {
+      title: (n.title && n.title.trim()) || n.name,
+    };
     const icon = n.icon?.trim();
     if (icon) {
       meta.icon = icon;
