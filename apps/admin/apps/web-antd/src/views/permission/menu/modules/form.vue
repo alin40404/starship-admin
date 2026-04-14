@@ -11,12 +11,11 @@ import { message } from 'ant-design-vue';
 import { useVbenForm } from '#/adapter/form';
 import { createMenu, fetchMenuTree, updateMenu } from '#/api/system/menu';
 
-import { buildMenuFormSchema, mapMenuToTreeSelect } from '../data';
+import { buildMenuFormSchema } from '../data';
 
 const emits = defineEmits<{ success: [] }>();
 
 const editingId = ref<number | null>(null);
-const menuTree = ref<MenuTreeNode[]>([]);
 
 function collectSubtreeIds(nodes: MenuTreeNode[], rootId: number): Set<number> {
   const ids = new Set<number>();
@@ -59,17 +58,17 @@ function filterTreeExcludeIds(
     }));
 }
 
-const parentTreeForSelect = computed(() => {
-  const tree = menuTree.value;
+async function loadMenuTreeForParentSelect(): Promise<MenuTreeNode[]> {
+  const tree = await fetchMenuTree();
   if (!tree.length) {
     return [];
   }
   if (editingId.value === null) {
-    return mapMenuToTreeSelect(tree);
+    return tree;
   }
   const exclude = collectSubtreeIds(tree, editingId.value);
-  return mapMenuToTreeSelect(filterTreeExcludeIds(tree, exclude));
-});
+  return filterTreeExcludeIds(tree, exclude);
+}
 
 const [Form, formApi] = useVbenForm(
   reactive({
@@ -88,11 +87,14 @@ const [Form, formApi] = useVbenForm(
 );
 
 watch(
-  parentTreeForSelect,
+  editingId,
   () => {
     formApi.setState({
       schema: buildMenuFormSchema({
-        parentTreeData: parentTreeForSelect.value,
+        parentTreeLoader: loadMenuTreeForParentSelect,
+        parentTreeParams: {
+          editingKey: editingId.value ?? 'new',
+        },
       }),
     });
   },
@@ -175,17 +177,16 @@ const [Drawer, drawerApi] = useVbenDrawer({
     if (!isOpen) {
       return;
     }
-    await ensureMenuTree();
     const data = drawerApi.getData<
       MenuTreeNode | { parent_id?: number } | Record<string, never>
     >();
-    formApi.resetForm();
-
     const row = data as MenuTreeNode;
     const hasId = row && typeof row.id === 'number' && row.id > 0;
+    editingId.value = hasId ? row.id : null;
+
+    formApi.resetForm();
 
     if (hasId) {
-      editingId.value = row.id;
       await nextTick();
       formApi.setValues({
         active_icon: row.active_icon ?? '',
@@ -212,7 +213,6 @@ const [Drawer, drawerApi] = useVbenDrawer({
         type: row.type,
       });
     } else {
-      editingId.value = null;
       const pid = (data as { parent_id?: number }).parent_id;
       await nextTick();
       formApi.setValues({
@@ -242,10 +242,6 @@ const [Drawer, drawerApi] = useVbenDrawer({
     }
   },
 });
-
-async function ensureMenuTree() {
-  menuTree.value = await fetchMenuTree();
-}
 </script>
 
 <template>

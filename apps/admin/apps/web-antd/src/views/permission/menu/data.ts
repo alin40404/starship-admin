@@ -1,3 +1,4 @@
+import type { Recordable } from '@vben/types';
 import type { VbenFormSchema } from '#/adapter/form';
 import type {
   OnActionClickFn,
@@ -6,6 +7,9 @@ import type {
 
 import type { MenuTreeNode } from '#/api/system/menu';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
+import { IconifyIcon } from '@vben/icons';
+import { getPopupContainer } from '@vben/utils';
+import { h } from 'vue';
 
 /** 1目录 2菜单 3按钮 4内嵌 5外链 */
 export const MENU_TYPE_OPTIONS = [
@@ -38,16 +42,53 @@ export const BADGE_VARIANT_OPTIONS = [
   { label: 'warning', value: 'warning' },
 ];
 
-export function mapMenuToTreeSelect(
+/**
+ * 与 playground 菜单表单 ApiTreeSelect 一致：`labelField: meta.title`，图标在 `meta.icon`。
+ */
+export function mapMenuTreeForApiSelect(
   nodes: MenuTreeNode[],
-): { label: string; value: number; children?: any[] }[] {
+): Array<{
+  children?: ReturnType<typeof mapMenuTreeForApiSelect>;
+  id: number;
+  meta: { icon: string | null; menuType: number; title: string };
+}> {
   return nodes.map((n) => ({
-    label: n.title?.trim() ? `${n.name}（${n.title}）` : n.name,
-    value: n.id,
+    id: n.id,
+    meta: {
+      title: n.title?.trim() ? `${n.name}（${n.title}）` : n.name,
+      icon: n.icon ?? null,
+      menuType: n.type,
+    },
     children: n.children?.length
-      ? mapMenuToTreeSelect(n.children)
+      ? mapMenuTreeForApiSelect(n.children)
       : undefined,
   }));
+}
+
+function renderParentMenuTitleSlot({
+  label,
+  meta,
+}: {
+  label: string;
+  meta?: Recordable<any>;
+}) {
+  if (!label) {
+    return '';
+  }
+  const iconName =
+    meta?.menuType === 3
+      ? 'carbon:security'
+      : typeof meta?.icon === 'string' && meta.icon.trim()
+        ? meta.icon.trim()
+        : undefined;
+  const coms: ReturnType<typeof h>[] = [];
+  if (iconName) {
+    coms.push(
+      h(IconifyIcon, { class: 'size-4 shrink-0', icon: iconName }),
+    );
+  }
+  coms.push(h('span', { class: 'min-w-0 truncate' }, label));
+  return h('div', { class: 'flex min-w-0 items-center gap-1' }, coms);
 }
 
 export function useColumns(
@@ -158,9 +199,15 @@ function typeIn(
 }
 
 export function buildMenuFormSchema(params: {
-  parentTreeData: { label: string; value: number; children?: any[] }[];
+  /** 拉取可选上级菜单树（已按需排除当前编辑分支） */
+  parentTreeLoader: () => Promise<MenuTreeNode[]>;
+  /**
+   * 随编辑目标变化；ApiComponent 只监听 params / immediate，不监听 api 函数引用，
+   * 需用该字段触发重新拉树（勿用 alwaysLoad 反复清空 treeData，否则已选标签会丢失）。
+   */
+  parentTreeParams?: Record<string, unknown>;
 }): VbenFormSchema[] {
-  const { parentTreeData } = params;
+  const { parentTreeLoader, parentTreeParams = {} } = params;
   return [
     {
       component: 'RadioGroup',
@@ -187,20 +234,43 @@ export function buildMenuFormSchema(params: {
       rules: 'required',
     },
     {
-      component: 'TreeSelect',
+      component: 'ApiTreeSelect',
       componentProps: {
         allowClear: true,
+        api: async () =>
+          mapMenuTreeForApiSelect(await parentTreeLoader()),
+        childrenField: 'children',
         class: 'w-full',
-        fieldNames: { children: 'children', label: 'label', value: 'value' },
+        params: parentTreeParams,
+        filterTreeNode(input: string, node: Recordable<any>) {
+          if (!input?.length) {
+            return true;
+          }
+          const title: string = node.meta?.title ?? node.label ?? '';
+          if (!title) {
+            return false;
+          }
+          return title.includes(input);
+        },
+        getPopupContainer,
+        labelField: 'meta.title',
         placeholder: '请选择',
         showSearch: true,
-        treeData: parentTreeData,
         treeDefaultExpandAll: true,
         treeIcon: false,
         treeLine: false,
+        treeNodeFilterProp: 'label',
+        valueField: 'id',
       },
       fieldName: 'parent_id',
       label: '上级菜单',
+      renderComponentContent() {
+        return {
+          title({ label, meta }: { label: string; meta: Recordable<any> }) {
+            return renderParentMenuTitleSlot({ label, meta });
+          },
+        };
+      },
     },
     {
       component: 'Input',
