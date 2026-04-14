@@ -101,6 +101,15 @@ export function useColumns(
       width: 48,
     },
     { field: 'id', sortable: true, title: 'ID', width: 70 },
+    { field: 'username', minWidth: 120, sortable: true, title: '用户名' },
+    {
+      field: 'real_name',
+      minWidth: 120,
+      sortable: true,
+      title: '真实姓名',
+      visible: false,
+    },
+    { field: 'nickname', minWidth: 100, sortable: true, title: '昵称' },
     {
       field: 'avatar',
       title: '头像',
@@ -113,20 +122,11 @@ export function useColumns(
         props: {
           fallback: preferences.app.defaultAvatar,
           height: 32,
-          preview: false,
+          preview: true,
           width: 32,
         },
       },
     },
-    { field: 'username', minWidth: 120, sortable: true, title: '用户名' },
-    {
-      field: 'real_name',
-      minWidth: 120,
-      sortable: true,
-      title: '真实姓名',
-      visible: false,
-    },
-    { field: 'nickname', minWidth: 100, sortable: true, title: '昵称' },
     { field: 'mobile', minWidth: 130, sortable: true, title: '手机' },
     {
       field: 'email',
