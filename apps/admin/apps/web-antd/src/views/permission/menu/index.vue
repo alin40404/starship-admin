@@ -7,6 +7,7 @@ import type { MenuTreeNode } from '#/api/system/menu';
 
 import { Page, useVbenDrawer } from '@vben/common-ui';
 import { IconifyIcon, Plus } from '@vben/icons';
+import { MenuBadge } from '@vben-core/menu-ui';
 
 import { Button, message, Modal } from 'ant-design-vue';
 
@@ -118,24 +119,46 @@ function onDelete(row: MenuTreeNode) {
         </Button>
       </template>
       <template #title="{ row }">
-        <div class="flex w-full items-center gap-1.5">
-          <span class="flex size-5 shrink-0 items-center justify-center">
-            <IconifyIcon
-              v-if="row.type === 3"
-              class="size-4 text-foreground/70"
-              icon="carbon:security"
-            />
-            <IconifyIcon
-              v-else-if="row.icon?.trim()"
-              class="size-4 text-foreground/80"
-              :icon="row.icon!.trim()"
-            />
-          </span>
-          <span class="min-w-0 flex-auto truncate">{{
-            menuDisplayLabel(row)
-          }}</span>
+        <div class="relative w-full">
+          <div class="flex w-full items-center gap-1.5 pr-10">
+            <span class="flex size-5 shrink-0 items-center justify-center">
+              <IconifyIcon
+                v-if="row.type === 3"
+                class="size-4 text-foreground/70"
+                icon="carbon:security"
+              />
+              <IconifyIcon
+                v-else-if="row.icon?.trim()"
+                class="size-4 text-foreground/80"
+                :icon="row.icon!.trim()"
+              />
+            </span>
+            <span class="min-w-0 flex-auto truncate">{{
+              menuDisplayLabel(row)
+            }}</span>
+          </div>
+          <MenuBadge
+            v-if="row.badge_type"
+            class="menu-badge"
+            :badge="row.badge ?? undefined"
+            :badge-type="row.badge_type"
+            :badge-variants="row.badge_variants ?? undefined"
+          />
         </div>
       </template>
     </Grid>
   </Page>
 </template>
+
+<style scoped lang="scss">
+.menu-badge {
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+
+  & > :deep(div) {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+</style>
