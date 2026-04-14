@@ -269,7 +269,31 @@ async function ensureMenuTree() {
   max-width: 88px;
 }
 
+.role-drawer-form :deep(.permission-tree--readonly) {
+  @apply text-muted-foreground;
+}
+
+.role-drawer-form :deep(.permission-tree--readonly .tree-node) {
+  @apply cursor-default;
+}
+
 .role-drawer-form :deep(.permission-tree--readonly button[role='checkbox']) {
   pointer-events: none;
+  @apply opacity-100;
+}
+
+.role-drawer-form
+  :deep(
+    .permission-tree--readonly button[role='checkbox'][data-state='checked']
+  ) {
+  @apply border-border bg-muted text-muted-foreground;
+}
+
+.role-drawer-form
+  :deep(
+    .permission-tree--readonly
+      button[role='checkbox'][data-state='checked'][data-disabled]
+  ) {
+  @apply opacity-90;
 }
 </style>
