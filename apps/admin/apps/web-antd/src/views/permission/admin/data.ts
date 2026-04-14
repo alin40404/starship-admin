@@ -8,6 +8,7 @@ import type { AdminRow } from '#/api/system/admin';
 import type { DeptNode } from '#/api/system/department';
 
 import { fetchDepartmentTree } from '#/api/system/department';
+import { TABLE_CELL_EMPTY } from '#/constants/table';
 
 export function mapDeptForTreeSelect(
   nodes: DeptNode[],
@@ -118,7 +119,7 @@ export function useColumns(
     {
       field: 'dept_id',
       formatter: ({ row }) =>
-        (row as AdminRow).department?.name ?? '—',
+        (row as AdminRow).department?.name ?? TABLE_CELL_EMPTY,
       minWidth: 120,
       sortable: true,
       title: '部门',
@@ -128,7 +129,7 @@ export function useColumns(
       formatter: ({ row }) =>
         ((row as AdminRow).roles ?? [])
           .map((r) => r.name)
-          .join('、') || '—',
+          .join('、') || TABLE_CELL_EMPTY,
       minWidth: 160,
       sortable: false,
       title: '角色',

@@ -6,17 +6,28 @@ import { requestClient } from '#/api/request';
 interface StarshipMenuNode {
   id: number;
   parent_id: number;
+  /** 1目录 2菜单 3按钮 4内嵌 5外链 */
   type: number;
   name: string;
+  title: string | null;
   path: string | null;
   component: string | null;
   permission: string | null;
   icon: string | null;
+  active_icon: string | null;
+  badge_type: string | null;
+  badge: string | null;
+  badge_variants: string | null;
+  link_url: string | null;
+  iframe_src: string | null;
   sort: number;
   visible: number;
   keep_alive: number;
   status: number;
   remark: string | null;
+  hide_submenu: number;
+  hide_in_breadcrumb: number;
+  hide_in_tab: number;
   children: StarshipMenuNode[];
 }
 
@@ -110,6 +121,37 @@ function resolvePageComponent(path: string | null): string {
   return PLACEHOLDER_VIEW;
 }
 
+function menuDisplayTitle(node: StarshipMenuNode): string {
+  const t = node.title?.trim();
+  return t ? t : node.name;
+}
+
+function buildRouteMeta(
+  node: StarshipMenuNode,
+  extra: Record<string, unknown> = {},
+): Record<string, unknown> {
+  const badgeType = node.badge_type;
+  return {
+    title: menuDisplayTitle(node),
+    icon: mapIcon(node.icon),
+    order: node.sort,
+    ...(node.active_icon
+      ? { activeIcon: mapIcon(node.active_icon) }
+      : {}),
+    ...(node.badge ? { badge: node.badge } : {}),
+    ...(badgeType === 'dot' || badgeType === 'normal'
+      ? { badgeType }
+      : {}),
+    ...(node.badge_variants
+      ? { badgeVariants: node.badge_variants }
+      : {}),
+    hideChildrenInMenu: node.hide_submenu === 1,
+    hideInBreadcrumb: node.hide_in_breadcrumb === 1,
+    hideInTab: node.hide_in_tab === 1,
+    ...extra,
+  };
+}
+
 function transformMenus(nodes: StarshipMenuNode[]): RouteRecordStringComponent[] {
   const result: RouteRecordStringComponent[] = [];
 
@@ -119,18 +161,13 @@ function transformMenus(nodes: StarshipMenuNode[]): RouteRecordStringComponent[]
     }
 
     const name = `SaMenu${node.id}`;
-    const baseMeta = {
-      title: node.name,
-      icon: mapIcon(node.icon),
-      order: node.sort,
-    };
 
     if (node.type === 1) {
       const children = transformMenus(node.children ?? []);
       result.push({
         name,
         path: node.path ?? `/g-${node.id}`,
-        meta: baseMeta,
+        meta: buildRouteMeta(node),
         children,
       } as RouteRecordStringComponent);
       continue;
@@ -138,15 +175,42 @@ function transformMenus(nodes: StarshipMenuNode[]): RouteRecordStringComponent[]
 
     const authority = node.permission ? [node.permission] : [];
 
+    if (node.type === 4) {
+      result.push({
+        name,
+        path: node.path ?? `/iframe-${node.id}`,
+        component: 'IFrameView',
+        meta: buildRouteMeta(node, {
+          authority,
+          iframeSrc: node.iframe_src ?? '',
+          keepAlive: node.keep_alive === 1,
+        }),
+      } as RouteRecordStringComponent);
+      continue;
+    }
+
+    if (node.type === 5) {
+      result.push({
+        name,
+        path: node.path ?? `/link-${node.id}`,
+        component: PLACEHOLDER_VIEW,
+        meta: buildRouteMeta(node, {
+          authority,
+          link: node.link_url ?? '',
+          keepAlive: false,
+        }),
+      } as RouteRecordStringComponent);
+      continue;
+    }
+
     result.push({
       name,
       path: node.path ?? '/',
       component: resolvePageComponent(node.path),
-      meta: {
-        ...baseMeta,
+      meta: buildRouteMeta(node, {
         authority,
         keepAlive: node.keep_alive === 1,
-      },
+      }),
     } as RouteRecordStringComponent);
   }
 

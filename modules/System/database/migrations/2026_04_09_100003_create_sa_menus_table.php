@@ -12,14 +12,24 @@ return new class extends Migration
         Schema::create(StarshipTables::table('menus'), function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('parent_id')->default(0)->comment('父级ID');
-            $table->tinyInteger('type')->comment('类型:1目录,2菜单,3按钮');
+            $table->tinyInteger('type')->comment('类型:1目录,2菜单,3按钮,4内嵌,5外链');
             $table->string('name', 100)->comment('名称');
+            $table->string('title', 100)->nullable()->comment('菜单标题(展示)，空则同名称');
             $table->string('path', 255)->nullable()->comment('路由路径');
             $table->string('component', 255)->nullable()->comment('前端组件路径');
             $table->string('permission', 150)->nullable()->comment('权限标识');
             $table->string('icon', 100)->nullable()->comment('图标');
+            $table->string('active_icon', 100)->nullable()->comment('激活图标');
+            $table->string('badge_type', 20)->nullable()->comment('徽标类型:dot,normal');
+            $table->string('badge', 50)->nullable()->comment('徽标内容');
+            $table->string('badge_variants', 30)->nullable()->comment('徽标样式');
+            $table->string('link_url', 500)->nullable()->comment('外链地址，type=5');
+            $table->string('iframe_src', 500)->nullable()->comment('内嵌地址，type=4');
             $table->integer('sort')->default(0)->comment('排序');
             $table->tinyInteger('visible')->default(1)->comment('是否显示:1是,0否');
+            $table->tinyInteger('hide_submenu')->default(0)->comment('隐藏子菜单:1是');
+            $table->tinyInteger('hide_in_breadcrumb')->default(0)->comment('在面包屑中隐藏:1是');
+            $table->tinyInteger('hide_in_tab')->default(0)->comment('在标签栏中隐藏:1是');
             $table->tinyInteger('keep_alive')->default(0)->comment('是否缓存');
             $table->tinyInteger('status')->default(1)->comment('状态:1启用,0禁用');
             $table->string('remark', 255)->nullable()->comment('备注');

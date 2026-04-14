@@ -5,6 +5,7 @@ import type {
 } from '#/adapter/vxe-table';
 
 import type { RoleRow } from '#/api/system/role';
+import { TABLE_CELL_EMPTY } from '#/constants/table';
 
 /** 与后端 data_scope 1–5 一致：序号与选项顺序相同（1全部 2本部门 3本部门及下级 4仅本人 5自定义） */
 export const DATA_SCOPE_OPTIONS = [
@@ -64,7 +65,7 @@ export function useColumns(
       field: 'data_scope',
       formatter: ({ cellValue }) =>
         DATA_SCOPE_OPTIONS.find((o) => o.value === cellValue)?.label ??
-        String(cellValue ?? '—'),
+        String(cellValue ?? TABLE_CELL_EMPTY),
       minWidth: 120,
       sortable: true,
       title: '数据范围',
