@@ -450,16 +450,52 @@ export function buildMenuFormSchema(params: {
     },
     {
       component: 'Divider',
+      componentProps: {
+        orientation: 'center',
+      },
       dependencies: {
         show: (values) => !typeIn(values, [3]),
         triggerFields: ['type'],
       },
       fieldName: '_divider_other',
-      formItemClass: 'col-span-2 md:col-span-2 pb-0 mt-3',
+      formItemClass: 'col-span-2 md:col-span-2 !my-2',
       hideLabel: true,
       renderComponentContent() {
         return {
           default: () => '其它设置',
+        };
+      },
+    },
+    // 两列网格：先左后右，与设计图一致 — 左：缓存/隐藏菜单/面包屑；右：固定标签/隐藏子菜单/标签栏
+    {
+      component: 'Checkbox',
+      componentProps: {},
+      defaultValue: false,
+      dependencies: {
+        show: (values) => typeIn(values, [2, 4]),
+        triggerFields: ['type'],
+      },
+      fieldName: 'keep_alive',
+      formItemClass: 'col-span-2 md:col-span-1',
+      renderComponentContent() {
+        return {
+          default: () => '缓存标签页',
+        };
+      },
+    },
+    {
+      component: 'Checkbox',
+      componentProps: {},
+      defaultValue: false,
+      dependencies: {
+        show: (values) => typeIn(values, [2, 4]),
+        triggerFields: ['type'],
+      },
+      fieldName: 'affix_tab',
+      formItemClass: 'col-span-2 md:col-span-1',
+      renderComponentContent() {
+        return {
+          default: () => '固定在标签',
         };
       },
     },
@@ -473,7 +509,6 @@ export function buildMenuFormSchema(params: {
       },
       fieldName: 'hide_menu',
       formItemClass: 'col-span-2 md:col-span-1',
-      hideLabel: true,
       renderComponentContent() {
         return {
           default: () => '隐藏菜单',
@@ -490,7 +525,6 @@ export function buildMenuFormSchema(params: {
       },
       fieldName: 'hide_submenu',
       formItemClass: 'col-span-2 md:col-span-1',
-      hideLabel: true,
       renderComponentContent() {
         return {
           default: () => '隐藏子菜单',
@@ -507,7 +541,6 @@ export function buildMenuFormSchema(params: {
       },
       fieldName: 'hide_in_breadcrumb',
       formItemClass: 'col-span-2 md:col-span-1',
-      hideLabel: true,
       renderComponentContent() {
         return {
           default: () => '在面包屑中隐藏',
@@ -524,44 +557,9 @@ export function buildMenuFormSchema(params: {
       },
       fieldName: 'hide_in_tab',
       formItemClass: 'col-span-2 md:col-span-1',
-      hideLabel: true,
       renderComponentContent() {
         return {
           default: () => '在标签栏中隐藏',
-        };
-      },
-    },
-    {
-      component: 'Checkbox',
-      componentProps: {},
-      defaultValue: false,
-      dependencies: {
-        show: (values) => typeIn(values, [2, 4]),
-        triggerFields: ['type'],
-      },
-      fieldName: 'keep_alive',
-      formItemClass: 'col-span-2 md:col-span-1',
-      hideLabel: true,
-      renderComponentContent() {
-        return {
-          default: () => '页面缓存',
-        };
-      },
-    },
-    {
-      component: 'Checkbox',
-      componentProps: {},
-      defaultValue: false,
-      dependencies: {
-        show: (values) => typeIn(values, [2, 4]),
-        triggerFields: ['type'],
-      },
-      fieldName: 'affix_tab',
-      formItemClass: 'col-span-2 md:col-span-1',
-      hideLabel: true,
-      renderComponentContent() {
-        return {
-          default: () => '固定在标签栏',
         };
       },
     },
