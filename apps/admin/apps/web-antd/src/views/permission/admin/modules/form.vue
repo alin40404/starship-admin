@@ -13,6 +13,7 @@ import { message } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
 import { createAdmin, updateAdmin } from '#/api/system/admin';
+import { uploadAttachment } from '#/api/system/attachment';
 import { fetchDepartmentTree } from '#/api/system/department';
 import { fetchPostPage } from '#/api/system/post';
 import { fetchRolePage } from '#/api/system/role';
@@ -28,6 +29,28 @@ const metaReady = ref(false);
 const deptTree = ref<DeptNode[]>([]);
 const roleOptions = ref<RoleRow[]>([]);
 const postOptions = ref<PostRow[]>([]);
+
+function normalizeAvatarToFileList(avatar: string | null | undefined) {
+  if (!avatar) {
+    return [];
+  }
+  return [
+    {
+      name: 'avatar',
+      status: 'done',
+      uid: 'avatar-existing',
+      url: avatar,
+    },
+  ];
+}
+
+function onAvatarChange(_event: any) {}
+
+async function onAvatarUpload(options: any) {
+  const file = options?.file as File;
+  const row = await uploadAttachment(file);
+  options?.onSuccess?.(row);
+}
 
 /** useVbenForm 的 schema 必须是数组；传入 computed(Ref) 会在 FormApi 里变成非数组，导致 handleValueFormat 报错 */
 const [Form, formApi] = useVbenForm(
@@ -56,6 +79,8 @@ watch(
           label: p.name,
           value: p.id,
         })),
+        onAvatarChange,
+        onAvatarUpload,
         roleOptions: roleOptions.value.map((r) => ({
           label: r.name,
           value: r.id,
@@ -84,8 +109,21 @@ const [Drawer, drawerApi] = useVbenDrawer({
     drawerApi.lock();
     try {
       const payload: AdminSavePayload = { ...values };
+      const avatarFiles = Array.isArray((values as any).avatar)
+        ? ((values as any).avatar as any[])
+        : [];
+      const avatarFile = avatarFiles[0];
+      payload.avatar =
+        avatarFile?.response?.file_url ?? avatarFile?.url ?? undefined;
+      if (avatarFiles.length === 0) {
+        payload.avatar = '';
+      }
+
       if (editingId.value && !payload.password) {
         delete payload.password;
+      }
+      if (payload.avatar === undefined) {
+        delete payload.avatar;
       }
       if (editingIsSuperAdmin.value && editingId.value) {
         const p = payload as unknown as Record<string, unknown>;
@@ -133,6 +171,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
     if (isEdit) {
       const row = data as AdminRow;
       formApi.setValues({
+        avatar: normalizeAvatarToFileList(row.avatar),
         dept_id: row.dept_id ?? undefined,
         email: row.email ?? '',
         mobile: row.mobile ?? '',
@@ -147,6 +186,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
       });
     } else {
       formApi.setValues({
+        avatar: [],
         nickname: '',
         password: '',
         post_ids: [],

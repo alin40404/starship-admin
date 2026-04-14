@@ -7,6 +7,8 @@ import type {
 import type { AdminRow } from '#/api/system/admin';
 import type { DeptNode } from '#/api/system/department';
 
+import { preferences } from '@vben/preferences';
+
 import { fetchDepartmentTree } from '#/api/system/department';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 
@@ -99,6 +101,23 @@ export function useColumns(
       width: 48,
     },
     { field: 'id', sortable: true, title: 'ID', width: 70 },
+    {
+      field: 'avatar',
+      title: '头像',
+      width: 90,
+      cellRender: {
+        attrs: {
+          getSrc: (row: AdminRow) => row.avatar || preferences.app.defaultAvatar,
+        },
+        name: 'CellImage',
+        props: {
+          fallback: preferences.app.defaultAvatar,
+          height: 32,
+          preview: false,
+          width: 32,
+        },
+      },
+    },
     { field: 'username', minWidth: 120, sortable: true, title: '用户名' },
     {
       field: 'real_name',
@@ -201,10 +220,19 @@ export function buildAdminFormSchema(params: {
   lockRoles?: boolean;
   roleOptions: { label: string; value: number }[];
   postOptions: { label: string; value: number }[];
+  onAvatarUpload: (options: any) => Promise<void>;
+  onAvatarChange: (event: any) => void;
   isEdit: boolean;
 }): VbenFormSchema[] {
-  const { deptTreeData, lockRoles = false, roleOptions, postOptions, isEdit } =
-    params;
+  const {
+    deptTreeData,
+    lockRoles = false,
+    roleOptions,
+    postOptions,
+    onAvatarUpload,
+    onAvatarChange,
+    isEdit,
+  } = params;
   return [
     {
       component: 'Input',
@@ -241,6 +269,19 @@ export function buildAdminFormSchema(params: {
       },
       fieldName: 'real_name',
       label: '真实姓名',
+    },
+    {
+      component: 'Upload',
+      componentProps: {
+        accept: 'image/*',
+        class: 'w-full',
+        customRequest: onAvatarUpload,
+        handleChange: onAvatarChange,
+        listType: 'picture-card',
+        maxCount: 1,
+      },
+      fieldName: 'avatar',
+      label: '头像',
     },
     {
       component: 'Input',

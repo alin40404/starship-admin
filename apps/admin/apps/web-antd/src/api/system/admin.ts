@@ -7,6 +7,7 @@ export interface AdminRow {
   username: string;
   nickname: string | null;
   real_name: string | null;
+  avatar: string | null;
   email: string | null;
   mobile: string | null;
   dept_id: number | null;
