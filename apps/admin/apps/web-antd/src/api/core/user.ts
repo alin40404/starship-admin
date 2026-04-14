@@ -47,7 +47,7 @@ function mapLaravelAdminToUserInfo(admin: LaravelAdminMe): UserInfo {
     username: admin.username,
     realName: admin.nickname || admin.real_name || admin.username,
     avatar: admin.avatar || preferences.app.defaultAvatar,
-    desc: '',
+    desc: admin.email || '',
     homePath: '/dashboard/console',
     token: '',
     roles,

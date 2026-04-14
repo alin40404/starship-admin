@@ -7,6 +7,7 @@ use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Modules\System\App\Models\Admin;
 use Modules\System\App\Services\AdminPermissionService;
@@ -99,8 +100,8 @@ class AuthController extends Controller
             'nickname' => ['nullable', 'string', 'max:100'],
             'real_name' => ['nullable', 'string', 'max:100'],
             'avatar' => ['nullable', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:100'],
-            'mobile' => ['nullable', 'string', 'max:20'],
+            'email' => ['required', 'email', 'max:100', Rule::unique(Admin::class, 'email')->ignore($admin->id)],
+            'mobile' => ['required', 'string', 'max:20', Rule::unique(Admin::class, 'mobile')->ignore($admin->id)],
         ]);
 
         $admin->fill($data);

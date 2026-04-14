@@ -76,11 +76,13 @@ const formSchema = computed((): VbenFormSchema[] => {
       fieldName: 'email',
       component: 'Input',
       label: '邮箱',
+      rules: 'required',
     },
     {
       fieldName: 'mobile',
       component: 'Input',
       label: '手机',
+      rules: 'required',
     },
   ];
 });

@@ -290,6 +290,7 @@ export function buildAdminFormSchema(params: {
       },
       fieldName: 'email',
       label: '邮箱',
+      rules: 'required',
     },
     {
       component: 'Input',
@@ -298,6 +299,7 @@ export function buildAdminFormSchema(params: {
       },
       fieldName: 'mobile',
       label: '手机',
+      rules: 'required',
     },
     {
       component: 'TreeSelect',

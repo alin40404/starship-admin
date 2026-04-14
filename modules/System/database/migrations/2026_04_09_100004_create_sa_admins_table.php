@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('real_name', 100)->nullable()->comment('真实姓名');
             $table->string('password')->comment('密码哈希');
             $table->string('avatar', 255)->nullable()->comment('头像');
-            $table->string('email', 100)->nullable()->comment('邮箱');
-            $table->string('mobile', 20)->nullable()->comment('手机号');
+            $table->string('email', 100)->comment('邮箱');
+            $table->string('mobile', 20)->comment('手机号');
             $table->unsignedBigInteger('dept_id')->nullable()->comment('主部门ID');
             $table->tinyInteger('status')->default(1)->comment('状态:1启用,0禁用');
             $table->tinyInteger('is_super')->default(0)->comment('是否超管:1是,0否');
@@ -28,8 +28,8 @@ return new class extends Migration
             $table->softDeletes();
 
             $table->unique('username');
-            $table->index('mobile');
-            $table->index('email');
+            $table->unique('mobile');
+            $table->unique('email');
             $table->index('dept_id');
             $table->index('status');
         });

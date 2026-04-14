@@ -125,6 +125,21 @@ const avatar = computed(() => {
   return userStore.userInfo?.avatar ?? preferences.app.defaultAvatar;
 });
 
+const userEmail = computed(() => userStore.userInfo?.desc || '');
+const userTagText = computed(() => {
+  const roles = userStore.userInfo?.roles ?? [];
+  if (roles.includes('super_admin')) {
+    return 'Super';
+  }
+  if (!userEmail.value) {
+    return 'Incomplete';
+  }
+  if (roles.length > 0) {
+    return 'Admin';
+  }
+  return undefined;
+});
+
 async function handleLogout() {
   await authStore.logout(false);
 }
@@ -176,8 +191,8 @@ watch(
         :avatar
         :menus
         :text="userStore.userInfo?.realName"
-        description="ann.vben@gmail.com"
-        tag-text="Pro"
+        :description="userEmail"
+        :tag-text="userTagText"
         @logout="handleLogout"
       />
     </template>

@@ -45,6 +45,8 @@ class StarshipFoundationSeeder extends Seeder
             [
                 'nickname' => '超级管理员',
                 'password' => $password,
+                'email' => 'admin@starship.org',
+                'mobile' => '13800000000',
                 'dept_id' => $dept->id,
                 'status' => 1,
                 'is_super' => 1,
