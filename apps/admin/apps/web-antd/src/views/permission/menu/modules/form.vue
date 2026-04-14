@@ -13,7 +13,12 @@ import { useVbenDrawer } from '@vben/common-ui';
 import { message } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
-import { createMenu, fetchMenuTree, updateMenu } from '#/api/system/menu';
+import {
+  createMenu,
+  fetchMenuTree,
+  isMenuPathDuplicate,
+  updateMenu,
+} from '#/api/system/menu';
 
 import { buildMenuFormSchema } from '../data';
 
@@ -134,9 +139,16 @@ const [Drawer, drawerApi] = useVbenDrawer({
       message.warning('请填写权限标识');
       return;
     }
-    if (type === 5 && !String(raw.link_url ?? '').trim()) {
-      message.warning('请填写外链地址');
-      return;
+    const pathTrim = String(raw.path ?? '').trim();
+    if (![3, 5].includes(type) && pathTrim !== '') {
+      const duplicate = await isMenuPathDuplicate(
+        pathTrim,
+        editingId.value ?? undefined,
+      );
+      if (duplicate) {
+        message.warning('路由地址已存在');
+        return;
+      }
     }
     const parentId =
       raw.parent_id === undefined || raw.parent_id === null
@@ -199,7 +211,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
       name: String(raw.name ?? ''),
       other_settings: otherSettings,
       parent_id: parentId,
-      path: type === 3 ? null : (raw.path as string) || null,
+      path: type === 3 || type === 5 ? null : (raw.path as string) || null,
       permission: (raw.permission as string) || null,
       remark: (raw.remark as string) || null,
       sort: Number(raw.sort ?? 0),

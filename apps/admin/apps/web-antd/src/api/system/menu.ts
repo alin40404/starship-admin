@@ -70,6 +70,29 @@ export function fetchMenuTree() {
   return requestClient.get<MenuTreeNode[]>('/system/menus/tree');
 }
 
+/** @returns true 表示与其它菜单的路由地址重复（编辑时传 excludeId 排除当前菜单） */
+export async function isMenuPathDuplicate(
+  path: string,
+  excludeId?: number,
+): Promise<boolean> {
+  const trimmed = path.trim();
+  if (!trimmed) {
+    return false;
+  }
+  const data = await requestClient.get<{ exists: boolean }>(
+    '/system/menus/path-exists',
+    {
+      params: {
+        path: trimmed,
+        ...(excludeId !== undefined && excludeId > 0
+          ? { exclude_id: excludeId }
+          : {}),
+      },
+    },
+  );
+  return Boolean(data?.exists);
+}
+
 export function createMenu(data: MenuSavePayload) {
   return requestClient.post<MenuTreeNode>('/system/menus', data);
 }

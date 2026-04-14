@@ -322,7 +322,7 @@ export function buildMenuFormSchema(params: {
       dependencies: {
         rules: (values) =>
           typeIn(values, [1, 2, 4]) ? 'required' : null,
-        show: (values) => typeIn(values, [1, 2, 4, 5]),
+        show: (values) => typeIn(values, [1, 2, 4]),
         triggerFields: ['type'],
       },
       fieldName: 'path',
@@ -368,6 +368,10 @@ export function buildMenuFormSchema(params: {
         placeholder: 'https://',
       },
       dependencies: {
+        rules: (values) =>
+          Number(values.type) === 5
+            ? z.string().min(1, '请填写外链地址').url('请输入合法 URL')
+            : null,
         show: (values) => typeIn(values, [5]),
         triggerFields: ['type'],
       },
@@ -546,7 +550,7 @@ export function buildMenuFormSchema(params: {
         orientation: 'center',
       },
       dependencies: {
-        show: (values) => !typeIn(values, [3, 5]),
+        show: (values) => !typeIn(values, [3]),
         triggerFields: ['type'],
       },
       fieldName: '_divider_other',

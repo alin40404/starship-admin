@@ -43,6 +43,7 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
         Route::put('roles/{id}/menus', [RoleController::class, 'syncMenus']);
 
         Route::get('menus/tree', [MenuController::class, 'tree']);
+        Route::get('menus/path-exists', [MenuController::class, 'pathExists']);
         Route::get('menus', [MenuController::class, 'index']);
         Route::post('menus', [MenuController::class, 'store']);
         Route::put('menus/{id}', [MenuController::class, 'update']);

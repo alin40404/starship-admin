@@ -63,6 +63,25 @@ class MenuController extends Controller
     }
 
     /**
+     * 校验路由地址是否已被其它菜单占用（编辑时传 exclude_id 排除自身）。
+     */
+    public function pathExists(Request $request): JsonResponse
+    {
+        $path = trim((string) $request->query('path', ''));
+        if ($path === '') {
+            return ApiResponse::success(['exists' => false]);
+        }
+
+        $query = Menu::query()->where('path', $path);
+        $exclude = $request->query('exclude_id');
+        if ($exclude !== null && $exclude !== '') {
+            $query->where('id', '!=', (int) $exclude);
+        }
+
+        return ApiResponse::success(['exists' => $query->exists()]);
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function menuRules(bool $isCreate, ?Menu $existing = null): array
@@ -78,7 +97,7 @@ class MenuController extends Controller
                 ? ['required', 'string', 'max:100']
                 : ['sometimes', 'string', 'max:100'],
             'title' => ['nullable', 'string', 'max:100'],
-            'path' => ['nullable', 'string', 'max:255', $this->pathRequiredUnlessLinkRule($existing)],
+            'path' => ['nullable', 'string', 'max:255', $this->pathRequiredUnlessLinkRule($existing), $this->pathUniqueRule($isCreate, $existing)],
             'active_path' => ['nullable', 'string', 'max:255', $this->activePathRule()],
             'component' => ['nullable', 'string', 'max:255'],
             'permission' => ['nullable', 'string', 'max:150', $this->permissionRequiredWhenButtonRule($existing)],
@@ -87,7 +106,7 @@ class MenuController extends Controller
             'badge_type' => ['nullable', 'string', 'max:20'],
             'badge' => ['nullable', 'string', 'max:50'],
             'badge_variants' => ['nullable', 'string', 'max:30'],
-            'link_url' => ['nullable', 'string', 'max:500'],
+            'link_url' => ['nullable', 'string', 'max:500', $this->linkUrlRule($existing)],
             'iframe_src' => ['nullable', 'string', 'max:500', $this->iframeSrcRule($existing)],
             'sort' => ['sometimes', 'integer'],
             'status' => ['sometimes', 'integer', 'in:0,1'],
@@ -170,6 +189,29 @@ class MenuController extends Controller
     }
 
     /**
+     * 非空 path 全局唯一（与其它菜单记录不重复）；更新时排除当前 id。
+     */
+    private function pathUniqueRule(bool $isCreate, ?Menu $existing = null): \Closure
+    {
+        return function (string $attribute, mixed $value, \Closure $fail) use ($isCreate, $existing): void {
+            if ($value === null) {
+                return;
+            }
+            $v = trim((string) $value);
+            if ($v === '') {
+                return;
+            }
+            $query = Menu::query()->where('path', $v);
+            if (! $isCreate && $existing !== null) {
+                $query->where('id', '!=', $existing->id);
+            }
+            if ($query->exists()) {
+                $fail('路由地址已存在');
+            }
+        };
+    }
+
+    /**
      * type=3（按钮）时权限标识必填。
      */
     private function permissionRequiredWhenButtonRule(?Menu $existing = null): \Closure
@@ -203,6 +245,28 @@ class MenuController extends Controller
             $v = trim((string) $value);
             if (filter_var($v, FILTER_VALIDATE_URL) === false) {
                 $fail('内嵌地址须为有效 URL');
+            }
+        };
+    }
+
+    /**
+     * type=5（外链）时 link_url 必填且为合法 URL。
+     */
+    private function linkUrlRule(?Menu $existing = null): \Closure
+    {
+        return function (string $attribute, mixed $value, \Closure $fail) use ($existing): void {
+            $type = (int) (request()->input('type') ?? $existing?->type ?? 0);
+            if ($type !== 5) {
+                return;
+            }
+            if ($value === null || trim((string) $value) === '') {
+                $fail('外链地址不能为空');
+
+                return;
+            }
+            $v = trim((string) $value);
+            if (filter_var($v, FILTER_VALIDATE_URL) === false) {
+                $fail('外链地址须为有效 URL');
             }
         };
     }
