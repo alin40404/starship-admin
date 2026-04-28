@@ -89,7 +89,6 @@ class StarshipFoundationSeeder extends Seeder
             '/permission/admins' => '/permission/admin/index',
             '/permission/roles' => '/permission/role/index',
             '/permission/menus' => '/permission/menu/index',
-            '/permission/permission-points' => '/permission/permission-point/index',
             '/permission/data-permission' => '/permission/data-scope/index',
         ];
         if (isset($permission[$path])) {
@@ -221,20 +220,6 @@ class StarshipFoundationSeeder extends Seeder
                 'status' => 1,
             ]);
         }
-
-        Menu::query()->create([
-            'parent_id' => $access->id,
-            'type' => 2,
-            'name' => 'PermPointMgmt',
-            'title' => '权限点管理',
-            'path' => '/permission/permission-points',
-            'component' => $this->defaultComponentForMenuPath('/permission/permission-points'),
-            'permission' => 'system.permission_points',
-            'icon' => 'ep:key',
-            'sort' => 104,
-            'other_settings' => $this->menuOther(1, 1),
-            'status' => 1,
-        ]);
 
         Menu::query()->create([
             'parent_id' => $access->id,
