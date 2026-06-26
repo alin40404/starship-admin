@@ -22,6 +22,8 @@ Starship Admin 不是一个“大而全”的业务系统，也不是一开始�
 - `Monitor`：日志与监控模块
 - `Generator`：CRUD 代码生成器模块
 
+同时，第一阶段需要提前预留插件机制，但插件机制不作为第四个业务模块，而作为框架扩展能力建设。
+
 这三个底座模块稳定之后，再基于 Starship Admin 孵化独立业务系统或行业解决方案，例如：
 
 - CMS 内容管理系统
@@ -46,6 +48,7 @@ Starship Admin 的核心目标包括：
 - 支持动态菜单与按钮权限
 - 支持前后端分离的现代工程架构
 - 支持底座模块化扩展
+- 提前规划插件扩展能力，支持第三方服务适配与能力增强
 - 支持通用 CRUD 代码生成
 - 支持统一 API 响应结构
 - 支持统一异常处理
@@ -63,6 +66,7 @@ Starship Admin 遵循以下设计原则：
 - **能力可复用，业务可扩展**
 - **约定优于配置**
 - **模块边界清晰**
+- **插件可扩展，但不侵入核心**
 - **前后端职责清晰**
 - **优先考虑长期维护性**
 - **优先考虑二次开发友好性**
@@ -173,6 +177,32 @@ Starship Admin 遵循以下设计原则：
 - 表格列配置
 - 表单项配置
 
+### 5.4 插件能力预留
+
+插件能力不建议作为第一阶段的重业务模块，但建议作为框架基础扩展机制提前规划。
+
+第一阶段建议做到：
+
+- 预留 `plugins/` 目录
+- 定义 `plugin.json` 插件描述文件
+- 支持扫描本地插件
+- 支持插件注册表
+- 支持启用、禁用插件
+- 支持插件配置读取和保存
+- 支持插件注册 ServiceProvider
+- 支持插件注册后台 API 路由
+- 支持插件同步菜单和权限节点
+- 支持插件异常进入 Monitor 日志
+
+第一阶段不建议做：
+
+- 插件市场
+- 在线安装
+- 远程升级
+- 商业授权
+- 插件评分
+- 插件交易结算
+
 ---
 
 ## 6. 后续独立业务系统方向
@@ -231,7 +261,543 @@ solutions/
 
 ---
 
-## 7. 推荐仓库结构
+
+## 7. 插件能力提前规划
+
+插件能力建议提前规划，但第一阶段不要把插件市场、在线安装、远程分发做得过重。
+
+正确路线是：
+
+```text
+第一阶段：预留插件目录、插件描述文件、插件注册机制、插件配置能力、插件生命周期接口
+第二阶段：实现插件管理后台、插件安装/启用/禁用/升级、权限与菜单同步
+第三阶段：再考虑插件市场、远程仓库、在线购买、授权验证、自动更新
+```
+
+### 7.1 插件定位
+
+插件不是底座模块，也不是完整业务系统。
+
+Starship Admin 中三类扩展对象的边界建议这样定义：
+
+| 类型 | 目录 | 定位 | 示例 |
+|---|---|---|---|
+| 底座模块 | `modules/` | 框架内置核心能力，和主框架一起演进 | `System`、`Monitor`、`Generator` |
+| 插件 | `plugins/` | 可选安装的增强能力或第三方服务适配器 | 阿里云短信、七牛存储、微信支付适配器 |
+| 独立业务系统 | `solutions/` 或独立仓库 | 基于 Starship Admin 构建的完整业务系统 | CMS、商城、O2O、SaaS |
+
+因此，插件主要解决这些问题：
+
+- 对接第三方服务
+- 扩展某个通用能力
+- 增加可选功能
+- 不侵入底座核心代码
+- 可以启用、禁用、升级和卸载
+
+不建议把完整 CMS、商城、O2O、SaaS 做成插件。它们应该是独立业务系统。
+
+### 7.2 插件类型规划
+
+建议插件按能力类型分类。
+
+| 类型 | 说明 | 示例 |
+|---|---|---|
+| `adapter` | 第三方服务适配器 | 阿里云短信、腾讯云短信、七牛云存储、阿里云 OSS |
+| `integration` | 外部平台集成 | 企业微信、钉钉、飞书、微信开放平台 |
+| `feature` | 可选功能增强 | 导入导出、通知中心、审批流、报表中心 |
+| `payment` | 支付通道适配 | 微信支付、支付宝支付、Stripe，可后期使用 |
+| `storage` | 存储通道适配 | OSS、COS、S3、Qiniu |
+| `theme` | 前台模板主题，可选 | CMS 主题、官网主题；后台 Vue 主题不建议用插件承载 |
+
+第一阶段最适合优先验证的插件是：
+
+```text
+plugins/SmsAliyun
+plugins/StorageQiniu
+plugins/NotifyWebhook
+```
+
+这类插件边界清晰，不会把业务复杂度提前带进主框架。
+
+### 7.3 插件目录建议
+
+建议根目录提前预留 `plugins/`。
+
+```text
+plugins/
+├─ SmsAliyun/
+│  ├─ plugin.json                     # 插件描述文件
+│  ├─ src/                            # 插件后端代码
+│  │  ├─ Providers/                   # 插件服务提供者
+│  │  ├─ Services/                    # 插件服务类
+│  │  ├─ Http/Controllers/            # 插件控制器，可选
+│  │  └─ Support/                     # 插件辅助能力
+│  ├─ routes/                         # 插件路由，可选
+│  │  └─ admin-api.php
+│  ├─ database/
+│  │  ├─ migrations/                  # 插件迁移，可选
+│  │  └─ seeders/                     # 插件初始化数据，可选
+│  ├─ config/                         # 插件默认配置
+│  ├─ resources/
+│  │  ├─ lang/                        # 语言包，可选
+│  │  └─ views/                       # Blade 视图，可选
+│  ├─ front/                          # 插件前端扩展，可选
+│  │  ├─ api/
+│  │  ├─ views/
+│  │  ├─ components/
+│  │  └─ types/
+│  ├─ docs/                           # 插件说明文档
+│  └─ tests/                          # 插件测试
+│
+└─ StorageQiniu/
+   └─ ...
+```
+
+插件目录使用大驼峰，插件标识使用小写短横线或小写下划线。
+
+示例：
+
+```text
+目录名：SmsAliyun
+插件标识：sms-aliyun
+命名空间：Plugins\SmsAliyun
+配置键：plugin.sms_aliyun
+权限前缀：plugin.sms_aliyun
+```
+
+### 7.4 `plugin.json` 规范
+
+每个插件都应该有自己的 `plugin.json`。
+
+示例：
+
+```json
+{
+  "name": "SmsAliyun",
+  "slug": "sms-aliyun",
+  "type": "adapter",
+  "namespace": "Plugins\\SmsAliyun",
+  "version": "1.0.0",
+  "description": "阿里云短信服务适配插件",
+  "author": "Starship Admin",
+  "homepage": "",
+  "require": {
+    "starship": ">=1.0.0",
+    "php": ">=8.3",
+    "modules": ["System"],
+    "plugins": []
+  },
+  "providers": [
+    "Plugins\\SmsAliyun\\Src\\Providers\\SmsAliyunServiceProvider"
+  ],
+  "routes": [
+    "routes/admin-api.php"
+  ],
+  "migrations": true,
+  "seeders": false,
+  "config": "config/sms-aliyun.php",
+  "front": {
+    "enabled": true,
+    "path": "front"
+  },
+  "permissions": [
+    "plugin.sms_aliyun.index",
+    "plugin.sms_aliyun.config",
+    "plugin.sms_aliyun.test"
+  ],
+  "menus": [
+    {
+      "title": "阿里云短信",
+      "path": "/plugin/sms-aliyun",
+      "permission": "plugin.sms_aliyun.index"
+    }
+  ],
+  "enabled": false,
+  "order": 500
+}
+```
+
+字段说明：
+
+| 字段 | 说明 |
+|---|---|
+| `name` | 插件名称，使用大驼峰 |
+| `slug` | 插件唯一标识，建议小写短横线 |
+| `type` | 插件类型，如 `adapter`、`integration`、`feature` |
+| `namespace` | 插件 PHP 命名空间 |
+| `version` | 插件版本，建议遵循语义化版本 |
+| `require` | 依赖要求，包括 Starship 版本、PHP 版本、模块依赖、插件依赖 |
+| `providers` | 插件服务提供者 |
+| `routes` | 插件路由文件 |
+| `migrations` | 是否包含数据库迁移 |
+| `config` | 插件默认配置文件 |
+| `front` | 是否包含后台前端扩展 |
+| `permissions` | 插件权限节点 |
+| `menus` | 插件菜单声明 |
+| `enabled` | 是否启用 |
+| `order` | 插件加载顺序 |
+
+### 7.5 插件生命周期
+
+插件生命周期建议统一为：
+
+```text
+discovered      # 已发现
+installed       # 已安装
+enabled         # 已启用
+disabled        # 已禁用
+upgrading       # 升级中
+uninstalled     # 已卸载
+```
+
+对应操作：
+
+| 操作 | 说明 |
+|---|---|
+| 发现 | 扫描 `plugins/` 目录，读取 `plugin.json` |
+| 安装 | 写入插件注册表，执行迁移，发布配置，写入菜单和权限 |
+| 启用 | 注册服务、加载路由、开启配置、显示菜单 |
+| 禁用 | 停止加载路由和菜单，但默认不删除数据 |
+| 升级 | 检查版本，执行增量迁移，更新配置和权限 |
+| 卸载 | 移除插件注册信息；是否删除数据必须二次确认 |
+
+第一阶段建议只实现：
+
+```text
+发现、安装、启用、禁用、配置读取
+```
+
+不建议第一阶段实现：
+
+```text
+在线市场、远程下载、自动更新、授权购买、插件评分、商业结算
+```
+
+### 7.6 插件管理表设计
+
+插件管理能力可以先归入 `System` 模块，不必第一阶段新增独立 `Plugin` 模块。
+
+建议表：
+
+```text
+sa_system_plugin              # 插件注册表
+sa_system_plugin_config       # 插件配置表
+sa_system_plugin_migration    # 插件迁移记录表，可选
+sa_system_plugin_log          # 插件安装/启用/禁用/升级日志，可选
+```
+
+`sa_system_plugin` 建议字段：
+
+```sql
+`id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+`name` varchar(100) NOT NULL COMMENT '插件名称',
+`slug` varchar(100) NOT NULL COMMENT '插件标识',
+`type` varchar(50) DEFAULT NULL COMMENT '插件类型',
+`version` varchar(50) NOT NULL DEFAULT '1.0.0' COMMENT '当前版本',
+`description` varchar(500) DEFAULT NULL COMMENT '插件描述',
+`author` varchar(100) DEFAULT NULL COMMENT '作者',
+`namespace` varchar(255) DEFAULT NULL COMMENT '命名空间',
+`path` varchar(255) DEFAULT NULL COMMENT '插件路径',
+`status` tinyint NOT NULL DEFAULT 0 COMMENT '状态:0=未安装,1=已安装,2=已启用,3=已禁用',
+`config` json DEFAULT NULL COMMENT '插件配置快照',
+`installed_at` timestamp NULL DEFAULT NULL COMMENT '安装时间',
+`enabled_at` timestamp NULL DEFAULT NULL COMMENT '启用时间',
+`created_at` timestamp NULL DEFAULT NULL,
+`updated_at` timestamp NULL DEFAULT NULL,
+PRIMARY KEY (`id`),
+UNIQUE KEY `uk_slug` (`slug`)
+```
+
+`sa_system_plugin_config` 建议字段：
+
+```sql
+`id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+`plugin_slug` varchar(100) NOT NULL COMMENT '插件标识',
+`config_key` varchar(100) NOT NULL COMMENT '配置键',
+`config_value` text DEFAULT NULL COMMENT '配置值',
+`value_type` varchar(30) NOT NULL DEFAULT 'string' COMMENT '值类型:string,int,bool,json,array',
+`is_encrypted` tinyint NOT NULL DEFAULT 0 COMMENT '是否加密:0=否,1=是',
+`created_at` timestamp NULL DEFAULT NULL,
+`updated_at` timestamp NULL DEFAULT NULL,
+PRIMARY KEY (`id`),
+UNIQUE KEY `uk_plugin_config` (`plugin_slug`,`config_key`)
+```
+
+敏感配置必须支持加密存储，例如：
+
+```text
+access_key
+secret_key
+app_secret
+token
+private_key
+```
+
+### 7.7 插件后端加载机制
+
+插件加载建议由 `PluginManager` 统一处理。
+
+核心职责：
+
+- 扫描插件目录
+- 读取 `plugin.json`
+- 校验版本和依赖
+- 注册 ServiceProvider
+- 加载配置
+- 加载路由
+- 加载迁移
+- 同步菜单和权限
+- 提供插件启用状态查询
+
+建议后端核心类：
+
+```text
+backend/app/Foundation/Plugin/PluginManager.php
+backend/app/Foundation/Plugin/PluginManifest.php
+backend/app/Foundation/Plugin/PluginLoader.php
+backend/app/Foundation/Plugin/PluginLifecycle.php
+```
+
+如果不希望污染 `backend/app`，也可以放在：
+
+```text
+packages/core/src/Plugin/
+```
+
+第一版更推荐先放在：
+
+```text
+backend/app/Foundation/Plugin/
+```
+
+等插件机制稳定后，再抽到 `packages/core`。
+
+### 7.8 插件前端扩展机制
+
+插件前端扩展不要一开始做得太复杂。
+
+第一阶段建议支持三类扩展：
+
+- 插件配置页面
+- 插件菜单页面
+- 插件前端 API 文件
+
+建议插件前端文件先放在插件自身目录：
+
+```text
+plugins/SmsAliyun/front/
+├─ api/
+├─ views/
+├─ components/
+└─ types/
+```
+
+构建时可以通过脚本同步到：
+
+```text
+apps/admin/src/plugins/sms-aliyun/
+```
+
+或者通过 Vite alias 指向插件目录。
+
+第一版推荐使用“同步生成”方式，更容易理解和调试：
+
+```bash
+php artisan starship:plugin:publish-front SmsAliyun
+```
+
+同步后结构：
+
+```text
+apps/admin/src/plugins/
+└─ sms-aliyun/
+   ├─ api/
+   ├─ views/
+   ├─ components/
+   └─ types/
+```
+
+### 7.9 插件扩展点 Hook 规划
+
+插件要避免直接修改核心代码，应该通过扩展点接入。
+
+建议预留后端 Hook：
+
+```text
+system.booted                         # 系统启动完成
+admin.login.before                    # 管理员登录前
+admin.login.after                     # 管理员登录后
+admin.logout.after                    # 管理员退出后
+file.upload.before                    # 文件上传前
+file.upload.after                     # 文件上传后
+menu.build.after                      # 菜单构建后
+permission.sync.after                 # 权限同步后
+generator.table.loaded                # 生成器读取表后
+generator.code.generated              # 生成器代码生成后
+config.updated                        # 系统配置更新后
+```
+
+后期业务系统可以继续扩展：
+
+```text
+member.registered
+payment.created
+payment.paid
+order.created
+order.paid
+order.refunded
+merchant.approved
+```
+
+实现方式建议优先复用 Laravel Event，不要一开始自造复杂 Hook 框架。
+
+可以在 `PluginManager` 里提供统一注册入口：
+
+```php
+PluginManager::listen('file.upload.after', SmsUploadListener::class);
+```
+
+底层可以映射为 Laravel Event / Listener。
+
+### 7.10 插件权限与菜单
+
+插件不能绕过 RBAC。
+
+插件声明的菜单和权限应该在安装或启用时同步到 System 模块。
+
+权限节点建议统一使用：
+
+```text
+plugin.{plugin_slug}.{action}
+```
+
+示例：
+
+```text
+plugin.sms_aliyun.index
+plugin.sms_aliyun.config
+plugin.sms_aliyun.test
+plugin.storage_qiniu.index
+plugin.storage_qiniu.config
+```
+
+插件菜单建议挂在后台：
+
+```text
+系统管理 / 插件管理
+系统管理 / 插件配置
+扩展管理 / 阿里云短信
+扩展管理 / 七牛云存储
+```
+
+是否创建单独“扩展管理”菜单，可以根据插件数量决定。
+
+### 7.11 插件配置规范
+
+插件配置要同时支持：
+
+- 默认配置文件
+- 数据库配置覆盖
+- 后台页面修改配置
+- 敏感字段加密
+- 配置缓存
+
+读取优先级建议：
+
+```text
+数据库配置 > 环境变量 > 插件默认配置
+```
+
+示例：
+
+```php
+plugin_config('sms-aliyun.access_key');
+plugin_config('sms-aliyun.sign_name');
+```
+
+敏感配置不应该明文返回给前端。
+
+前端展示时可以返回：
+
+```text
+已配置
+未配置
+```
+
+不要返回完整 `secret_key`。
+
+### 7.12 插件命令规划
+
+建议提前规划 Artisan 命令：
+
+```bash
+php artisan starship:plugin:discover
+php artisan starship:plugin:list
+php artisan starship:plugin:install SmsAliyun
+php artisan starship:plugin:enable SmsAliyun
+php artisan starship:plugin:disable SmsAliyun
+php artisan starship:plugin:uninstall SmsAliyun
+php artisan starship:plugin:migrate SmsAliyun
+php artisan starship:plugin:publish-config SmsAliyun
+php artisan starship:plugin:publish-front SmsAliyun
+```
+
+第一阶段最少实现：
+
+```bash
+php artisan starship:plugin:discover
+php artisan starship:plugin:list
+php artisan starship:plugin:enable SmsAliyun
+php artisan starship:plugin:disable SmsAliyun
+```
+
+### 7.13 插件安全边界
+
+插件能力必须有安全边界。
+
+建议规则：
+
+- 插件不能直接修改 `backend/app` 核心代码
+- 插件不能直接修改 `modules/System`、`modules/Monitor`、`modules/Generator`
+- 插件数据库迁移必须可追踪
+- 插件启用前必须校验依赖和版本
+- 插件路由必须走统一认证和权限中间件
+- 插件配置敏感字段必须加密
+- 插件卸载默认不删除业务数据
+- 插件前端页面必须经过菜单和权限控制
+- 插件异常必须记录到 Monitor 模块
+
+如果后期支持第三方插件上传安装，必须增加：
+
+- 插件签名校验
+- 插件包 Hash 校验
+- 插件来源白名单
+- 插件危险函数扫描
+- 插件安装前备份提醒
+- 插件权限声明审核
+
+### 7.14 插件能力第一阶段验收标准
+
+第一阶段插件能力不要求完整市场化，但至少要能证明架构可行。
+
+建议验收标准：
+
+- 可以扫描 `plugins/` 目录
+- 可以读取 `plugin.json`
+- 可以在后台看到插件列表
+- 可以启用和禁用插件
+- 插件可以注册 ServiceProvider
+- 插件可以注册后台 API 路由
+- 插件可以加载自己的配置
+- 插件可以同步菜单和权限节点
+- 插件配置可以在后台保存
+- 插件异常可以进入 Monitor 日志
+- 插件不能绕过后台登录和权限校验
+
+第一阶段可以用 `SmsAliyun` 或 `StorageQiniu` 做验证插件。
+
+
+## 8. 推荐仓库结构
 
 第一版建议保持克制，只保留后台框架底座真正需要的目录。
 
@@ -266,6 +832,9 @@ starship-admin/
 │  ├─ Monitor/                        # 日志与监控模块
 │  └─ Generator/                      # CRUD 代码生成器模块
 │
+├─ plugins/                           # 插件预留目录，放可选插件和第三方服务适配器
+│  └─ .gitkeep                        # 第一阶段可先保留空目录
+│
 ├─ packages/                          # 代码级共享能力
 │  ├─ contracts/                      # 扩展契约、接口定义
 │  └─ shared/                         # 共享常量、枚举、协议
@@ -274,6 +843,7 @@ starship-admin/
 │  ├─ architecture/                   # 架构设计
 │  ├─ modules/                        # 模块开发规范
 │  ├─ generator/                      # 代码生成器设计
+│  ├─ plugins/                        # 插件机制设计
 │  ├─ database/                       # 数据库规范
 │  ├─ api/                            # API 规范
 │  └─ deployment/                     # 部署文档
@@ -288,9 +858,9 @@ starship-admin/
 
 ---
 
-## 8. 目录命名建议
+## 9. 目录命名建议
 
-### 8.1 `backend`
+### 9.1 `backend`
 
 保留 `backend`。
 
@@ -302,7 +872,7 @@ starship-admin/
 
 不建议改成 `server`，除非项目后续整体转向更强的 Node monorepo 风格。
 
-### 8.2 `apps`
+### 9.2 `apps`
 
 `apps` 只放可以独立运行、独立构建、独立部署的前端应用。
 
@@ -329,7 +899,7 @@ apps/merchant/    # 商家端
 apps/mobile/      # 移动端 H5
 ```
 
-### 8.3 `modules`
+### 9.3 `modules`
 
 保留 `modules`，但要收窄它的含义。
 
@@ -357,26 +927,28 @@ extensions
 - CMS、商城、O2O、SaaS 更适合定义为独立业务系统或解决方案
 - `plugins` 更适合后期第三方插件市场或外部服务适配器
 
-### 8.4 `plugins`
+### 9.4 `plugins`
 
-第一版不建议增加 `plugins`。
+建议提前规划 `plugins`，但第一阶段只做轻量预留和本地插件能力，不做复杂插件市场。
 
-后期如果要支持第三方插件，可以再新增：
+推荐预留：
 
 ```text
 plugins/
 ├─ SmsAliyun/
 ├─ StorageQiniu/
-└─ PaymentWechat/
+└─ NotifyWebhook/
 ```
 
 建议规则：
 
-- `modules`：底座功能模块
-- `solutions`：独立业务系统或行业解决方案，可选
-- `plugins`：第三方插件、外部服务适配器
+- `modules`：底座功能模块，例如 `System`、`Monitor`、`Generator`
+- `plugins`：可选插件、第三方服务适配器、能力增强包
+- `solutions`：独立业务系统或行业解决方案
 
-### 8.5 `solutions`
+插件适合承载短信、存储、支付通道、通知通道、外部平台集成等可插拔能力，不适合承载完整 CMS、商城、O2O、SaaS。
+
+### 9.5 `solutions`
 
 第一版不建议增加 `solutions`。
 
@@ -401,7 +973,7 @@ starship-o2o
 starship-saas
 ```
 
-### 8.6 `packages`
+### 9.6 `packages`
 
 `packages` 只放代码级共享能力，不能变成杂物目录。
 
@@ -420,7 +992,7 @@ packages/core/     # 框架核心能力
 packages/ui/       # 前端共享组件
 ```
 
-### 8.7 `themes`
+### 9.7 `themes`
 
 第一版不建议放 `themes`。
 
@@ -456,7 +1028,7 @@ apps/admin/src/design/
 
 ---
 
-## 9. 模块目录规范
+## 10. 模块目录规范
 
 每个模块建议采用统一结构。
 
@@ -499,7 +1071,7 @@ modules/System/
 
 ---
 
-## 10. `module.json` 规范
+## 11. `module.json` 规范
 
 每个模块都应该有自己的 `module.json`。
 
@@ -535,9 +1107,9 @@ modules/System/
 
 ---
 
-## 11. 模块命名规范
+## 12. 模块命名规范
 
-### 11.1 模块目录
+### 12.1 模块目录
 
 使用大驼峰：
 
@@ -547,7 +1119,7 @@ modules/Monitor
 modules/Generator
 ```
 
-### 11.2 模块标识
+### 12.2 模块标识
 
 使用小写：
 
@@ -557,7 +1129,7 @@ monitor
 generator
 ```
 
-### 11.3 PHP 命名空间
+### 12.3 PHP 命名空间
 
 使用大驼峰：
 
@@ -567,7 +1139,7 @@ Modules\Monitor
 Modules\Generator
 ```
 
-### 11.4 前端路由路径
+### 12.4 前端路由路径
 
 使用小写短横线：
 
@@ -579,7 +1151,7 @@ Modules\Generator
 /generator/table
 ```
 
-### 11.5 权限节点
+### 12.5 权限节点
 
 使用点分结构：
 
@@ -593,7 +1165,7 @@ system.user.export
 
 ---
 
-## 12. 后端架构分层
+## 13. 后端架构分层
 
 建议每个模块内部遵循统一分层：
 
@@ -609,7 +1181,7 @@ Model / Repository
 Database
 ```
 
-### 12.1 Controller
+### 13.1 Controller
 
 负责：
 
@@ -620,7 +1192,7 @@ Database
 
 不建议在 Controller 写复杂业务逻辑。
 
-### 12.2 Request
+### 13.2 Request
 
 负责：
 
@@ -629,7 +1201,7 @@ Database
 - 字段提示
 - 场景区分
 
-### 12.3 Service
+### 13.3 Service
 
 负责：
 
@@ -638,7 +1210,7 @@ Database
 - 数据处理
 - 事务控制
 
-### 12.4 Model
+### 13.4 Model
 
 负责：
 
@@ -648,7 +1220,7 @@ Database
 - 修改器
 - 查询作用域
 
-### 12.5 Repository，可选
+### 13.5 Repository，可选
 
 如果业务较复杂，可以增加 Repository。
 
@@ -656,9 +1228,9 @@ Database
 
 ---
 
-## 13. API 规范
+## 14. API 规范
 
-### 13.1 路由前缀
+### 14.1 路由前缀
 
 后台 API 建议统一使用：
 
@@ -676,7 +1248,7 @@ PUT    /admin-api/system/user/{id}
 DELETE /admin-api/system/user/{id}
 ```
 
-### 13.2 统一响应结构
+### 14.2 统一响应结构
 
 成功响应：
 
@@ -713,7 +1285,7 @@ DELETE /admin-api/system/user/{id}
 }
 ```
 
-### 13.3 常用状态码
+### 14.3 常用状态码
 
 | code | 说明 |
 |---:|---|
@@ -727,11 +1299,11 @@ DELETE /admin-api/system/user/{id}
 
 ---
 
-## 14. 权限设计
+## 15. 权限设计
 
 Starship Admin 建议采用 RBAC 权限模型。
 
-### 14.1 核心对象
+### 15.1 核心对象
 
 - 管理员
 - 角色
@@ -741,7 +1313,7 @@ Starship Admin 建议采用 RBAC 权限模型。
 - 角色菜单关系
 - 角色权限关系
 
-### 14.2 权限层级
+### 15.2 权限层级
 
 建议分为三类：
 
@@ -751,7 +1323,7 @@ Starship Admin 建议采用 RBAC 权限模型。
 | 菜单 | 页面入口 | 管理员管理 |
 | 按钮 | 操作权限 | 新增、编辑、删除、导出 |
 
-### 14.3 权限节点示例
+### 15.3 权限节点示例
 
 ```text
 system.admin.index
@@ -772,7 +1344,7 @@ system.menu.update
 system.menu.delete
 ```
 
-### 14.4 前端权限控制
+### 15.4 前端权限控制
 
 前端根据后端返回的权限节点控制：
 
@@ -781,7 +1353,7 @@ system.menu.delete
 - 按钮显示
 - 操作入口显示
 
-### 14.5 后端权限控制
+### 15.5 后端权限控制
 
 后端必须基于权限节点进行二次校验。
 
@@ -789,9 +1361,9 @@ system.menu.delete
 
 ---
 
-## 15. 数据库规范
+## 16. 数据库规范
 
-### 15.1 表前缀
+### 16.1 表前缀
 
 建议统一使用：
 
@@ -812,7 +1384,7 @@ sa_generator_table
 sa_generator_column
 ```
 
-### 15.2 表命名规则
+### 16.2 表命名规则
 
 建议格式：
 
@@ -829,7 +1401,7 @@ sa_monitor_operation_log
 sa_generator_table
 ```
 
-### 15.3 通用字段
+### 16.3 通用字段
 
 业务表建议统一包含：
 
@@ -851,7 +1423,7 @@ PRIMARY KEY (`id`)
 `remark` varchar(500) DEFAULT NULL COMMENT '备注'
 ```
 
-### 15.4 字段命名规则
+### 16.4 字段命名规则
 
 - 使用小写字母
 - 使用下划线分隔
@@ -873,7 +1445,7 @@ is_enabled
 
 ---
 
-## 16. System 模块建议表
+## 17. System 模块建议表
 
 第一版可优先设计这些表：
 
@@ -889,6 +1461,8 @@ sa_system_dict_type          # 字典类型表
 sa_system_dict_data          # 字典数据表
 sa_system_config             # 系统配置表
 sa_system_attachment         # 附件表
+sa_system_plugin             # 插件注册表
+sa_system_plugin_config      # 插件配置表
 ```
 
 可选：
@@ -900,7 +1474,7 @@ sa_system_post               # 岗位表
 
 ---
 
-## 17. Monitor 模块建议表
+## 18. Monitor 模块建议表
 
 第一版可优先设计这些表：
 
@@ -915,7 +1489,7 @@ sa_monitor_schedule_log      # 定时任务日志表，可选
 
 ---
 
-## 18. Generator 模块建议表
+## 19. Generator 模块建议表
 
 第一版可优先设计这些表：
 
@@ -928,9 +1502,9 @@ sa_generator_record          # 生成记录，可选
 
 ---
 
-## 19. CRUD 代码生成器设计
+## 20. CRUD 代码生成器设计
 
-### 19.1 输入来源
+### 20.1 输入来源
 
 代码生成器建议支持：
 
@@ -942,7 +1516,7 @@ sa_generator_record          # 生成记录，可选
 - 手动配置字段展示方式
 - 手动配置搜索、表单、列表、验证规则
 
-### 19.2 字段配置
+### 20.2 字段配置
 
 每个字段建议支持配置：
 
@@ -960,7 +1534,7 @@ sa_generator_record          # 生成记录，可选
 | 字典绑定 | 是否绑定数据字典 |
 | 排序 | 显示排序 |
 
-### 19.3 生成内容
+### 20.3 生成内容
 
 后端生成：
 
@@ -988,7 +1562,7 @@ schema.ts
 route.ts，可选
 ```
 
-### 19.4 生成原则
+### 20.4 生成原则
 
 - 生成器只生成基础 CRUD
 - 复杂业务逻辑由开发者在 Service 中扩展
@@ -999,7 +1573,7 @@ route.ts，可选
 
 ---
 
-## 20. 前端架构建议
+## 21. 前端架构建议
 
 后台前端基于 Vben Admin 5.x 改造，建议目录结构：
 
@@ -1031,7 +1605,7 @@ apps/admin/src/views/generator/
 
 ---
 
-## 21. 登录认证建议
+## 22. 登录认证建议
 
 后台登录认证建议选择一种方案并固定。
 
@@ -1061,7 +1635,7 @@ Laravel Sanctum
 
 ---
 
-## 22. 文件上传建议
+## 23. 文件上传建议
 
 文件上传建议统一由 `System` 模块管理。
 
@@ -1087,7 +1661,7 @@ Laravel Sanctum
 
 ---
 
-## 23. 日志审计建议
+## 24. 日志审计建议
 
 后台系统必须具备基础审计能力。
 
@@ -1117,11 +1691,11 @@ authorization
 
 ---
 
-## 24. 快速启动规划
+## 25. 快速启动规划
 
 第一版 README 可以先预留快速启动命令。
 
-### 24.1 后端启动
+### 25.1 后端启动
 
 ```bash
 cd backend
@@ -1137,7 +1711,7 @@ php artisan migrate --seed
 php artisan serve
 ```
 
-### 24.2 前端启动
+### 25.2 前端启动
 
 ```bash
 cd apps/admin
@@ -1147,7 +1721,7 @@ pnpm install
 pnpm dev
 ```
 
-### 24.3 常用地址
+### 25.3 常用地址
 
 ```text
 后台前端：http://localhost:5173
@@ -1156,7 +1730,7 @@ pnpm dev
 
 ---
 
-## 25. 开发流程建议
+## 26. 开发流程建议
 
 建议开发流程：
 
@@ -1167,19 +1741,20 @@ pnpm dev
 4. 完成后台登录、菜单、权限
 5. 完成 Monitor 模块
 6. 完成 Generator 模块
-7. 用 Generator 生成一个 Demo CRUD 验证闭环
-8. 补充模块开发规范
-9. 补充部署文档
-10. 再开始建设独立业务系统或解决方案
+7. 完成插件发现、注册、启用、禁用的最小闭环
+8. 用 Generator 生成一个 Demo CRUD 验证闭环
+9. 补充模块开发规范
+10. 补充部署文档
+11. 再开始建设独立业务系统或解决方案
 ```
 
 ---
 
-## 26. 第一阶段验收标准
+## 27. 第一阶段验收标准
 
 第一阶段完成后，至少需要达到以下标准：
 
-### 26.1 System 模块
+### 27.1 System 模块
 
 - 可以登录后台
 - 可以管理管理员
@@ -1192,7 +1767,7 @@ pnpm dev
 - 可以维护系统配置
 - 可以上传文件
 
-### 26.2 Monitor 模块
+### 27.2 Monitor 模块
 
 - 可以查看登录日志
 - 可以查看操作日志
@@ -1201,7 +1776,7 @@ pnpm dev
 - 关键操作可以被审计
 - 敏感字段可以脱敏
 
-### 26.3 Generator 模块
+### 27.3 Generator 模块
 
 - 可以读取数据库表
 - 可以读取字段信息
@@ -1212,9 +1787,22 @@ pnpm dev
 - 可以生成权限节点
 - 可以生成后直接访问后台页面
 
+### 27.4 插件能力预留
+
+- 可以扫描 `plugins/` 目录
+- 可以读取 `plugin.json`
+- 可以在后台查看插件列表
+- 可以启用和禁用本地插件
+- 插件可以注册 ServiceProvider
+- 插件可以注册后台 API 路由
+- 插件可以加载配置
+- 插件可以同步菜单和权限节点
+- 插件配置可以保存到数据库
+- 插件异常可以记录到 Monitor 模块
+
 ---
 
-## 27. 文档规划
+## 28. 文档规划
 
 建议在 `docs/` 下补充以下文档：
 
@@ -1231,6 +1819,13 @@ docs/
 │  ├─ system.md                       # System 模块设计
 │  ├─ monitor.md                      # Monitor 模块设计
 │  └─ generator.md                    # Generator 模块设计
+│
+├─ plugins/
+│  ├─ overview.md                     # 插件体系总览
+│  ├─ plugin-json.md                  # plugin.json 规范
+│  ├─ lifecycle.md                    # 插件生命周期
+│  ├─ hooks.md                        # 插件扩展点
+│  └─ security.md                     # 插件安全边界
 │
 ├─ solutions/
 │  ├─ overview.md                     # 独立业务系统规划
@@ -1262,7 +1857,7 @@ docs/
 
 ---
 
-## 28. 路线图
+## 29. 路线图
 
 ### 第一阶段：后台底座
 
@@ -1276,6 +1871,7 @@ docs/
 - System 模块
 - Monitor 模块
 - Generator 模块
+- 插件机制最小闭环：发现、注册、启用、禁用、配置
 
 ### 第二阶段：通用业务系统
 
@@ -1289,6 +1885,7 @@ docs/
 - Notify 通知中心系统
 - Storage 文件资源中心系统
 - ImportExport 导入导出中心系统
+- Plugin 插件管理能力增强
 
 ### 第三阶段：行业业务系统
 
@@ -1306,14 +1903,14 @@ docs/
 
 ---
 
-## 29. 不建议第一版做的事情
+## 30. 不建议第一版做的事情
 
 第一版不建议做：
 
 - 不建议一开始内置完整商城
 - 不建议一开始内置完整 CMS
 - 不建议一开始做复杂 SaaS 多租户
-- 不建议一开始做插件市场
+- 不建议一开始做完整插件市场、在线分发和商业授权，但建议预留本地插件机制
 - 不建议一开始做多前端应用
 - 不建议一开始加入 `apps/web`
 - 不建议一开始加入根目录 `themes`
@@ -1323,7 +1920,7 @@ docs/
 
 ---
 
-## 30. 推荐最终第一版结构
+## 31. 推荐最终第一版结构
 
 第一版最终建议聚焦为：
 
@@ -1336,6 +1933,8 @@ starship-admin/
 │  ├─ System/
 │  ├─ Monitor/
 │  └─ Generator/
+├─ plugins/
+│  └─ .gitkeep
 ├─ packages/
 │  ├─ contracts/
 │  └─ shared/
@@ -1389,17 +1988,17 @@ themes/default
 themes/corporate
 ```
 
-如果确实需要第三方插件，再增加：
+插件目录建议提前预留，第一阶段可以先使用示例插件验证机制：
 
 ```text
 plugins/SmsAliyun
 plugins/StorageQiniu
-plugins/PaymentWechat
+plugins/NotifyWebhook
 ```
 
 ---
 
-## 31. 总结
+## 32. 总结
 
 Starship Admin 的第一阶段应该聚焦于后台框架底座，而不是业务大而全。
 
@@ -1412,9 +2011,11 @@ Monitor 模块
   ↓
 Generator 模块
   ↓
+插件机制最小闭环
+  ↓
 Demo CRUD 验证
   ↓
 独立业务系统建设
 ```
 
-只要 `System`、`Monitor`、`Generator` 三个底座模块稳定，Starship Admin 就可以成为后续 CMS、商城、O2O、SaaS、会员、支付、订单等独立业务系统的统一开发底座。
+只要 `System`、`Monitor`、`Generator` 三个底座模块稳定，并且插件机制完成最小闭环，Starship Admin 就可以成为后续 CMS、商城、O2O、SaaS、会员、支付、订单等独立业务系统的统一开发底座。
