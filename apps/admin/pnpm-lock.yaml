@@ -1639,9 +1639,18 @@ importers:
 
   packages/icons:
     dependencies:
+      '@iconify/json':
+        specifier: 'catalog:'
+        version: 2.2.460
+      '@iconify/vue':
+        specifier: 'catalog:'
+        version: 5.0.0(vue@3.5.32(typescript@6.0.2))
       '@vben-core/icons':
         specifier: workspace:*
         version: link:../@core/base/icons
+      '@vben/types':
+        specifier: workspace:*
+        version: link:../types
 
   packages/locales:
     dependencies:

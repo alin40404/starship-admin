@@ -18,7 +18,14 @@ const props = defineProps<{
 }>();
 
 const isRemoteIcon = computed(() => {
-  return isString(props.icon) && isHttpUrl(props.icon);
+  if (!isString(props.icon) || !props.icon) {
+    return false;
+  }
+  return (
+    isHttpUrl(props.icon) ||
+    props.icon.startsWith('/') ||
+    props.icon.startsWith('data:')
+  );
 });
 
 const isComponent = computed(() => {

@@ -1,5 +1,7 @@
 import type { Preferences } from './types';
 
+import { VBEN_LOGO_URL } from '@vben-core/shared/constants';
+
 const defaultPreferences: Preferences = {
   app: {
     accessMode: 'frontend',
@@ -66,7 +68,7 @@ const defaultPreferences: Preferences = {
   logo: {
     enable: true,
     fit: 'contain',
-    source: 'https://unpkg.com/@vbenjs/static-source@0.1.7/source/logo-v1.webp',
+    source: VBEN_LOGO_URL,
   },
   navigation: {
     accordion: true,

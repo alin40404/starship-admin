@@ -2,6 +2,7 @@ import {
   defineOverridesPreferences,
   definePreferencesExtension,
 } from '@vben/preferences';
+import { VBEN_LOGO_URL } from '@vben/constants';
 
 interface WebAntdPreferencesExtension {
   defaultTableSize: number;
@@ -23,6 +24,9 @@ export const overridesPreferences = defineOverridesPreferences({
     accessMode: 'backend',
     /** 与种子菜单「工作台 / 控制台」路径一致 */
     defaultHomePath: '/dashboard/console',
+  },
+  logo: {
+    source: VBEN_LOGO_URL,
   },
 });
 

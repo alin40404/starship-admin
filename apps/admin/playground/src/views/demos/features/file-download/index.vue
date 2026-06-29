@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
+import { VBEN_LOGO_URL } from '@vben/constants';
 import {
   downloadFileFromBase64,
   downloadFileFromBlobPart,
@@ -52,8 +53,7 @@ function getResponse() {
         type="primary"
         @click="
           downloadFileFromImageUrl({
-            source:
-              'https://unpkg.com/@vbenjs/static-source@0.1.7/source/logo-v1.webp',
+            source: VBEN_LOGO_URL,
             fileName: 'vben-logo.png',
           })
         "

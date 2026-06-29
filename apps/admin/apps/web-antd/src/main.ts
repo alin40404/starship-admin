@@ -1,3 +1,5 @@
+import { initOfflineIcons } from '@vben/icons';
+import { VBEN_LOGO_URL } from '@vben/constants';
 import { initPreferences, updatePreferences } from '@vben/preferences';
 import { unmountGlobalLoading } from '@vben/utils';
 
@@ -13,6 +15,9 @@ async function initApplication() {
   const appVersion = import.meta.env.VITE_APP_VERSION;
   const namespace = `${import.meta.env.VITE_APP_NAMESPACE}-${appVersion}-${env}`;
 
+  // 预加载本地 Iconify 图标集，避免运行时请求 api.iconify.design
+  await initOfflineIcons();
+
   // app偏好设置初始化
   await initPreferences({
     extension: preferencesExtension,
@@ -20,13 +25,15 @@ async function initApplication() {
     overrides: overridesPreferences,
   });
 
-  // Vben 会把偏好写入 localStorage；历史缓存里的 accessMode 可能仍是默认的 frontend，
-  // 会覆盖 overrides 中的 backend，导致侧栏仍显示模板自带的「概览/演示/项目」而非后端菜单。
-  // 启动后强制采用项目约定的 accessMode / 首页路径。
+  // Vben 会把偏好写入 localStorage；历史缓存可能仍保留旧值（defu 合并不覆盖已存在字段），
+  // 启动后强制采用项目约定配置。
   updatePreferences({
     app: {
       accessMode: overridesPreferences.app?.accessMode ?? 'backend',
       defaultHomePath: overridesPreferences.app?.defaultHomePath ?? '/dashboard/console',
+    },
+    logo: {
+      source: overridesPreferences.logo?.source ?? VBEN_LOGO_URL,
     },
   });
 
