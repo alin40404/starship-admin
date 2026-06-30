@@ -62,6 +62,33 @@ class MenuController extends Controller
         return ApiResponse::success(null, '已删除');
     }
 
+    public function batchDestroy(Request $request): JsonResponse
+    {
+        $ids = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+        ])['ids'];
+
+        $deleted = Menu::query()->whereIn('id', $ids)->delete();
+
+        return ApiResponse::success(['deleted' => $deleted], '已批量删除');
+    }
+
+    public function batchUpdateStatus(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+            'status' => ['required', 'integer', 'in:0,1'],
+        ]);
+
+        $updated = Menu::query()
+            ->whereIn('id', $data['ids'])
+            ->update(['status' => $data['status']]);
+
+        return ApiResponse::success(['updated' => $updated], '已批量更新状态');
+    }
+
     /**
      * 校验路由地址是否已被其它菜单占用（编辑时传 exclude_id 排除自身）。
      */

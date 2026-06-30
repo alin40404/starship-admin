@@ -47,6 +47,8 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
         Route::get('menus/tree', [MenuController::class, 'tree']);
         Route::get('menus/path-exists', [MenuController::class, 'pathExists']);
         Route::get('menus', [MenuController::class, 'index']);
+        Route::post('menus/batch-destroy', [MenuController::class, 'batchDestroy']);
+        Route::put('menus/batch-status', [MenuController::class, 'batchUpdateStatus']);
         Route::post('menus', [MenuController::class, 'store']);
         Route::put('menus/{id}', [MenuController::class, 'update']);
         Route::delete('menus/{id}', [MenuController::class, 'destroy']);

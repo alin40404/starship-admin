@@ -104,3 +104,17 @@ export function updateMenu(id: number, data: Partial<MenuSavePayload>) {
 export function deleteMenu(id: number) {
   return requestClient.delete(`/system/menus/${id}`);
 }
+
+export function batchDeleteMenus(ids: number[]) {
+  return requestClient.post<{ deleted: number }>(
+    '/system/menus/batch-destroy',
+    { ids },
+  );
+}
+
+export function batchUpdateMenuStatus(ids: number[], status: 0 | 1) {
+  return requestClient.put<{ updated: number }>(
+    '/system/menus/batch-status',
+    { ids, status },
+  );
+}

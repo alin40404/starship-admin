@@ -5,13 +5,21 @@ import type {
 } from '#/adapter/vxe-table';
 import type { MenuTreeNode } from '#/api/system/menu';
 
+import { ref } from 'vue';
+
 import { Page, useVbenDrawer } from '@vben/common-ui';
 import { IconifyIcon, Plus } from '@vben/icons';
 import { MenuBadge } from '@vben-core/menu-ui';
 
 import { Button, message, Modal } from 'ant-design-vue';
 
-import { deleteMenu, fetchMenuTree } from '#/api/system/menu';
+import {
+  batchDeleteMenus,
+  batchUpdateMenuStatus,
+  deleteMenu,
+  fetchMenuTree,
+  updateMenu,
+} from '#/api/system/menu';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 
 import { menuDisplayLabel, useColumns } from './data';
@@ -22,9 +30,93 @@ const [MenuFormDrawer, menuFormDrawerApi] = useVbenDrawer({
   destroyOnClose: true,
 });
 
+const selectedRows = ref<MenuTreeNode[]>([]);
+
+function syncSelection() {
+  const records = gridApi?.grid?.getCheckboxRecords?.() ?? [];
+  selectedRows.value = records as MenuTreeNode[];
+}
+
+function clearSelection() {
+  gridApi?.grid?.clearCheckboxRow?.();
+  selectedRows.value = [];
+}
+
+async function onMenuStatusToggle(nextStatus: number, row: MenuTreeNode) {
+  return new Promise<boolean>((resolve) => {
+    const label = nextStatus === 1 ? '启用' : '禁用';
+    Modal.confirm({
+      content: `确定将「${menuDisplayLabel(row)}」的状态切换为【${label}】吗？`,
+      okText: '确定',
+      cancelText: '取消',
+      title: '切换状态',
+      async onOk() {
+        try {
+          await updateMenu(row.id, { status: nextStatus });
+          message.success('状态已更新');
+          onRefresh();
+          resolve(true);
+        } catch {
+          resolve(false);
+        }
+      },
+      onCancel() {
+        resolve(false);
+      },
+    });
+  });
+}
+
 const [Grid, gridApi] = useVbenVxeGrid({
+  gridEvents: {
+    checkboxAll: syncSelection,
+    checkboxChange: syncSelection,
+    async editClosed({
+      column,
+      row,
+    }: {
+      column: { field: string };
+      row: MenuTreeNode;
+    }) {
+      if (column.field !== 'sort') {
+        return;
+      }
+      const grid = gridApi.grid;
+      if (!grid?.isUpdateByRow?.(row)) {
+        return;
+      }
+
+      const sort = Number(row.sort);
+      if (!Number.isFinite(sort) || sort < 0 || !Number.isInteger(sort)) {
+        message.warning('请输入有效整数');
+        await gridApi.reload();
+        return;
+      }
+
+      gridApi.setLoading(true);
+      try {
+        await updateMenu(row.id, { sort });
+        message.success('排序已更新');
+        onRefresh();
+      } catch {
+        await gridApi.reload();
+      } finally {
+        gridApi.setLoading(false);
+      }
+    },
+  },
   gridOptions: {
-    columns: useColumns(onActionClick),
+    checkboxConfig: {
+      highlight: true,
+    },
+    columns: useColumns(onActionClick, onMenuStatusToggle),
+    editConfig: {
+      beforeEditMethod({ column }) {
+        return column.field === 'sort';
+      },
+      mode: 'cell',
+      trigger: 'dblclick',
+    },
     height: 'auto',
     keepSource: true,
     pagerConfig: {
@@ -106,6 +198,46 @@ function onDelete(row: MenuTreeNode) {
     },
   });
 }
+
+function onBatchDelete() {
+  const ids = selectedRows.value.map((row) => row.id);
+  if (ids.length === 0) {
+    return;
+  }
+  Modal.confirm({
+    content: `确定删除选中的 ${ids.length} 条菜单吗？若存在未选中的子菜单，删除可能失败。`,
+    okText: '删除',
+    okType: 'danger',
+    cancelText: '取消',
+    title: '批量删除',
+    async onOk() {
+      await batchDeleteMenus(ids);
+      message.success('已批量删除');
+      clearSelection();
+      onRefresh();
+    },
+  });
+}
+
+function onBatchUpdateStatus(status: 0 | 1) {
+  const ids = selectedRows.value.map((row) => row.id);
+  if (ids.length === 0) {
+    return;
+  }
+  const label = status === 1 ? '启用' : '禁用';
+  Modal.confirm({
+    content: `确定将选中的 ${ids.length} 条菜单批量【${label}】吗？`,
+    okText: '确定',
+    cancelText: '取消',
+    title: `批量${label}`,
+    async onOk() {
+      await batchUpdateMenuStatus(ids, status);
+      message.success(`已批量${label}`);
+      clearSelection();
+      onRefresh();
+    },
+  });
+}
 </script>
 
 <template>
@@ -113,7 +245,25 @@ function onDelete(row: MenuTreeNode) {
     <MenuFormDrawer @success="onRefresh" />
     <Grid>
       <template #toolbar-actions>
-        <Button type="primary" @click="onCreate">
+        <template v-if="selectedRows.length > 0">
+          <Button danger @click="onBatchDelete">
+            批量删除（{{ selectedRows.length }}）
+          </Button>
+          <Button
+            class="menu-batch-btn-enable ml-2"
+            @click="onBatchUpdateStatus(1)"
+          >
+            批量启用
+          </Button>
+          <Button
+            class="menu-batch-btn-disable ml-2"
+            @click="onBatchUpdateStatus(0)"
+          >
+            批量禁用
+          </Button>
+          <Button class="ml-2" type="link" @click="clearSelection">取消选择</Button>
+        </template>
+        <Button v-else type="primary" @click="onCreate">
           <Plus class="size-4" />
           新增菜单
         </Button>
@@ -160,5 +310,37 @@ function onDelete(row: MenuTreeNode) {
     padding-top: 0;
     padding-bottom: 0;
   }
+}
+</style>
+
+<style lang="scss">
+/** 排序列：提示可双击编辑 */
+.vxe-grid .menu-sort-editable-col {
+  cursor: pointer;
+}
+
+/** 批量启用 / 批量禁用（工具栏） */
+.vxe-grid .menu-batch-btn-enable.ant-btn {
+  color: #fff;
+  background-color: #52c41a;
+  border-color: #52c41a;
+}
+
+.vxe-grid .menu-batch-btn-enable.ant-btn:not(:disabled):hover {
+  color: #fff;
+  background-color: #73d13d;
+  border-color: #73d13d;
+}
+
+.vxe-grid .menu-batch-btn-disable.ant-btn {
+  color: #fff;
+  background-color: #fa8c16;
+  border-color: #fa8c16;
+}
+
+.vxe-grid .menu-batch-btn-disable.ant-btn:not(:disabled):hover {
+  color: #fff;
+  background-color: #ffa940;
+  border-color: #ffa940;
 }
 </style>

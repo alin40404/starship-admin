@@ -144,8 +144,18 @@ function renderParentMenuTitleSlot({
 
 export function useColumns(
   onActionClick: OnActionClickFn<MenuTreeNode>,
+  onStatusBeforeChange: (
+    newVal: number,
+    row: MenuTreeNode,
+  ) => Promise<boolean>,
 ): VxeTableGridColumns {
   return [
+    {
+      align: 'center',
+      fixed: 'left',
+      type: 'checkbox',
+      width: 48,
+    },
     {
       align: 'left',
       field: 'title',
@@ -189,7 +199,30 @@ export function useColumns(
       title: '页面组件',
       visible: false,
     },
-    { field: 'sort', title: '排序', width: 72 },
+    {
+      align: 'center',
+      className: 'menu-sort-editable-col',
+      editRender: {
+        name: 'VxeNumberInput',
+        props: {
+          min: 0,
+          type: 'integer',
+        },
+        events: {
+          keydown(params, event: KeyboardEvent) {
+            if (event.key !== 'Enter') {
+              return;
+            }
+            event.preventDefault();
+            (event.target as HTMLElement | null)?.blur?.();
+            void params.$table.clearEdit();
+          },
+        },
+      },
+      field: 'sort',
+      title: '排序',
+      width: 100,
+    },
     {
       align: 'center',
       cellRender: {
@@ -201,10 +234,18 @@ export function useColumns(
       width: 96,
     },
     {
-      cellRender: { name: 'CellTag' },
+      align: 'center',
+      cellRender: {
+        attrs: {
+          beforeChange(newVal: unknown, row: MenuTreeNode) {
+            return onStatusBeforeChange(newVal as number, row);
+          },
+        },
+        name: 'CellSwitch',
+      },
       field: 'status',
       title: '状态',
-      width: 88,
+      width: 100,
     },
     {
       align: 'center',
