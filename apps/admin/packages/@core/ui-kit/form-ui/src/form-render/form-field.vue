@@ -349,7 +349,7 @@ onUnmounted(() => {
           <VbenRenderContent :content="label" />
         </template>
       </FormLabel>
-      <div class="flex-auto overflow-hidden p-px">
+      <div class="w-full flex-auto overflow-hidden p-px">
         <div :class="cn('relative flex w-full items-center', wrapperClass)">
           <FormControl :class="cn(controlClass)">
             <slot

@@ -193,6 +193,7 @@ export function buildRoleFormSchema(params: {
       },
       defaultValue: 0,
       fieldName: 'sort',
+      hideLabel: true,
       label: '排序',
     },
     {
@@ -209,7 +210,8 @@ export function buildRoleFormSchema(params: {
       },
       defaultValue: 1,
       fieldName: 'status',
-      formItemClass: 'col-span-full',
+      formItemClass: 'hidden',
+      hideLabel: true,
       label: '状态',
     },
     /** 授权：由表单插槽渲染 Vben Tree（与 playground 角色表单一致），值参与 getValues */
@@ -218,7 +220,7 @@ export function buildRoleFormSchema(params: {
       controlClass: 'w-full min-w-0',
       defaultValue: [],
       fieldName: 'menu_ids',
-      formItemClass: 'col-span-full w-full min-w-0 items-start',
+      formItemClass: 'col-span-full sm:col-span-2 w-full min-w-0 items-start',
       label: '授权',
       modelPropName: 'modelValue',
     },
@@ -230,7 +232,7 @@ export function buildRoleFormSchema(params: {
         rows: 2,
       },
       fieldName: 'remark',
-      formItemClass: 'col-span-full items-start',
+      formItemClass: 'col-span-full sm:col-span-2 w-full items-start',
       label: '备注',
     },
   ];

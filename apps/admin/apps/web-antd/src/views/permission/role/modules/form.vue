@@ -10,7 +10,7 @@ import { computed, nextTick, reactive, ref, watch } from 'vue';
 import { Tree, useVbenDrawer } from '@vben/common-ui';
 import { IconifyIcon } from '@vben/icons';
 
-import { message, Spin } from 'ant-design-vue';
+import { message, Spin, InputNumber, Radio } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
 import {
@@ -36,6 +36,23 @@ const menuTree = ref<MenuTreeNode[]>([]);
 const menuReady = ref(false);
 
 const isViewOnly = computed(() => openMode.value === 'view');
+
+const STATUS_OPTIONS = [
+  { label: '启用', value: 1 },
+  { label: '禁用', value: 0 },
+] as const;
+
+const statusValue = ref<number>(1);
+
+async function syncStatusValueFromForm() {
+  const values = (await formApi.getValues()) as Record<string, unknown>;
+  statusValue.value = Number(values.status ?? 1);
+}
+
+async function handleStatusChange(value: number) {
+  statusValue.value = value;
+  await formApi.setFieldValue('status', value);
+}
 
 function mapMenuToVbenTree(
   nodes: MenuTreeNode[],
@@ -81,8 +98,9 @@ const [Form, formApi] = useVbenForm(
       componentProps: {
         class: 'w-full',
       },
+      labelClass: 'justify-start',
     },
-    layout: 'horizontal' as const,
+    layout: 'vertical' as const,
     schema: [] as VbenFormSchema[],
     showDefaultActions: false,
     wrapperClass: 'grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1',
@@ -203,6 +221,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
         sort: detail.sort ?? 0,
         status: detail.status,
       });
+      await syncStatusValueFromForm();
     } else {
       formApi.setValues({
         code: '',
@@ -214,6 +233,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
         status: 1,
       });
     }
+    await syncStatusValueFromForm();
   },
 });
 
@@ -232,6 +252,32 @@ async function ensureMenuTree() {
 <template>
   <Drawer :title="drawerTitle" class="max-w-[720px] w-[92vw]">
     <Form class="role-drawer-form">
+      <template #sort="slotProps">
+        <div class="grid w-full grid-cols-2 gap-x-4">
+          <div class="flex min-w-0 flex-col items-start">
+            <span class="mb-1 text-sm leading-6">排序</span>
+            <InputNumber
+              class="w-full"
+              :disabled="isViewOnly"
+              :min="0"
+              :value="slotProps.componentField.modelValue"
+              @update:value="slotProps.componentField['onUpdate:modelValue']"
+            />
+          </div>
+          <div class="flex min-w-0 flex-col items-start">
+            <span class="mb-1 text-sm leading-6">状态</span>
+            <Radio.Group
+              :value="statusValue"
+              button-style="solid"
+              class="w-full"
+              :disabled="isViewOnly"
+              option-type="button"
+              :options="[...STATUS_OPTIONS]"
+              @update:value="handleStatusChange"
+            />
+          </div>
+        </div>
+      </template>
       <template #menu_ids="slotProps">
         <Spin :spinning="!menuReady" wrapper-class-name="w-full">
           <div
@@ -265,9 +311,8 @@ async function ensureMenuTree() {
 </template>
 
 <style scoped>
-.role-drawer-form :deep(.ant-form-item-label) {
-  flex: 0 0 88px;
-  max-width: 88px;
+.role-drawer-form :deep(.grid > .col-span-full) {
+  width: 100%;
 }
 
 .role-drawer-form :deep(.permission-tree--readonly) {
