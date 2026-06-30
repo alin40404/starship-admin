@@ -255,7 +255,7 @@ async function ensureMenuTree() {
       <template #sort="slotProps">
         <div class="grid w-full grid-cols-2 gap-x-4">
           <div class="flex min-w-0 flex-col items-start">
-            <span class="mb-1 text-sm leading-6">排序</span>
+            <span class="text-sm leading-6">排序</span>
             <InputNumber
               class="w-full"
               :disabled="isViewOnly"
@@ -265,7 +265,7 @@ async function ensureMenuTree() {
             />
           </div>
           <div class="flex min-w-0 flex-col items-start">
-            <span class="mb-1 text-sm leading-6">状态</span>
+            <span class="text-sm leading-6">状态</span>
             <Radio.Group
               :value="statusValue"
               button-style="solid"

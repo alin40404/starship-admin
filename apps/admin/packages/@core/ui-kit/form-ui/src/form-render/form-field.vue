@@ -334,7 +334,7 @@ onUnmounted(() => {
             'flex leading-6',
             {
               'mr-2 shrink-0 justify-end': !isVertical,
-              'mb-1 flex-row': isVertical,
+              'flex-row': isVertical,
             },
             labelClass,
           )
