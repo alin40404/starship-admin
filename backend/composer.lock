@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "26f1734b54bb71f6928404fa3b8d1e4d",
+    "content-hash": "97c451703b0d3cc4fe68cda30a015fc9",
     "packages": [
         {
             "name": "brick/math",
@@ -2859,6 +2859,73 @@
                 "source": "https://github.com/ramsey/uuid/tree/4.9.2"
             },
             "time": "2025-12-14T04:43:48+00:00"
+        },
+        {
+            "name": "starship/generator",
+            "version": "0.1.0",
+            "dist": {
+                "type": "path",
+                "url": "../modules/Generator",
+                "reference": "49043a366a9b738ce9e49cf8029eaa7ee3b9dc9e"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Modules\\Generator\\App\\": "app/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Starship Admin Generator module",
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "starship/monitor",
+            "version": "0.1.0",
+            "dist": {
+                "type": "path",
+                "url": "../modules/Monitor",
+                "reference": "85680a40655ca9ca187e6c3d88b793a2a935fb65"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Modules\\Monitor\\App\\": "app/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Starship Admin Monitor module",
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "starship/system",
+            "version": "0.1.0",
+            "dist": {
+                "type": "path",
+                "url": "../modules/System",
+                "reference": "92fae3b464a350cf73e043175148cbe465ee58be"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Modules\\System\\App\\": "app/",
+                    "Modules\\System\\Database\\Seeders\\": "database/seeders/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Starship Admin System module",
+            "transport-options": {
+                "relative": true
+            }
         },
         {
             "name": "symfony/clock",
@@ -6489,7 +6556,11 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "starship/generator": 20,
+        "starship/monitor": 20,
+        "starship/system": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

@@ -1,0 +1,13 @@
+{
+    "name": "starship/system",
+    "description": "Starship Admin System module",
+    "type": "library",
+    "license": "MIT",
+    "version": "0.1.0",
+    "autoload": {
+        "psr-4": {
+            "Modules\\System\\App\\": "app/",
+            "Modules\\System\\Database\\Seeders\\": "database/seeders/"
+        }
+    }
+}

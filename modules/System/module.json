@@ -5,5 +5,8 @@
   "enabled": true,
   "providers": [
     "Modules\\System\\App\\Providers\\SystemServiceProvider"
+  ],
+  "seeders": [
+    "Modules\\System\\Database\\Seeders\\StarshipFoundationSeeder"
   ]
 }

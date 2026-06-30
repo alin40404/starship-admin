@@ -28,6 +28,14 @@ class Module
         return $this->attributes['providers'] ?? [];
     }
 
+    /**
+     * @return list<class-string<\Illuminate\Database\Seeder>>
+     */
+    public function seeders(): array
+    {
+        return $this->attributes['seeders'] ?? [];
+    }
+
     public function all(): array
     {
         return $this->attributes;

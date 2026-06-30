@@ -9,7 +9,10 @@
         "php": "^8.3",
         "laravel/framework": "^13.0",
         "laravel/sanctum": "^4.3",
-        "laravel/tinker": "^3.0"
+        "laravel/tinker": "^3.0",
+        "starship/generator": "@dev",
+        "starship/monitor": "@dev",
+        "starship/system": "@dev"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -23,11 +26,23 @@
         "psr-4": {
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/",
-            "Modules\\System\\App\\": "../modules/System/app/",
-            "Modules\\": "../modules/"
+            "Database\\Seeders\\": "database/seeders/"
         }
     },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../modules/System"
+        },
+        {
+            "type": "path",
+            "url": "../modules/Monitor"
+        },
+        {
+            "type": "path",
+            "url": "../modules/Generator"
+        }
+    ],
     "autoload-dev": {
         "psr-4": {
             "Tests\\": "tests/"

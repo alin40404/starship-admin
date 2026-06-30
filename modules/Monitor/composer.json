@@ -1,0 +1,12 @@
+{
+    "name": "starship/monitor",
+    "description": "Starship Admin Monitor module",
+    "type": "library",
+    "license": "MIT",
+    "version": "0.1.0",
+    "autoload": {
+        "psr-4": {
+            "Modules\\Monitor\\App\\": "app/"
+        }
+    }
+}

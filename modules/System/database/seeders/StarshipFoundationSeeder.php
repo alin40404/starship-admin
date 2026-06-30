@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Seeders;
+namespace Modules\System\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\System\App\Models\Admin;
@@ -12,7 +12,7 @@ use Modules\System\App\Models\Role;
 use Modules\System\App\Models\Setting;
 
 /**
- * 安装后最小可用数据：超管、超管角色、系统菜单树、角色-菜单、管理员-角色；可选字典与站点配置。
+ * System 模块基础数据：超管、角色、菜单树、字典与站点配置。
  */
 class StarshipFoundationSeeder extends Seeder
 {
@@ -156,7 +156,7 @@ class StarshipFoundationSeeder extends Seeder
             'status' => 1,
         ]);
 
-        Menu::query()->create([
+        $menuMgmt = Menu::query()->create([
             'parent_id' => $access->id,
             'type' => 2,
             'name' => 'MenuMgmt',
@@ -169,6 +169,29 @@ class StarshipFoundationSeeder extends Seeder
             'other_settings' => $this->menuOther(1, 1),
             'status' => 1,
         ]);
+
+        foreach (
+            [
+                ['name' => 'Query', 'title' => '查询', 'permission' => 'system.menus.query', 'sort' => 1],
+                ['name' => 'Create', 'title' => '新增', 'permission' => 'system.menus.create', 'sort' => 2],
+                ['name' => 'Update', 'title' => '编辑', 'permission' => 'system.menus.update', 'sort' => 3],
+                ['name' => 'Delete', 'title' => '删除', 'permission' => 'system.menus.delete', 'sort' => 4],
+            ] as $btn
+        ) {
+            Menu::query()->create([
+                'parent_id' => $menuMgmt->id,
+                'type' => 3,
+                'name' => $btn['name'],
+                'title' => $btn['title'],
+                'path' => null,
+                'component' => null,
+                'permission' => $btn['permission'],
+                'icon' => null,
+                'sort' => $btn['sort'],
+                'other_settings' => $this->menuOther(0),
+                'status' => 1,
+            ]);
+        }
 
         Menu::query()->create([
             'parent_id' => $access->id,
@@ -418,7 +441,6 @@ class StarshipFoundationSeeder extends Seeder
                 'status' => 1,
             ]);
         }
-
     }
 
     private function seedDictBasics(): void
