@@ -214,14 +214,14 @@ export function buildRoleFormSchema(params: {
       hideLabel: true,
       label: '状态',
     },
-    /** 授权：由表单插槽渲染 Vben Tree（与 playground 角色表单一致），值参与 getValues */
+    /** 角色权限：由表单插槽渲染 Vben Tree，值参与 getValues */
     {
       component: 'Input',
       controlClass: 'w-full min-w-0',
       defaultValue: [],
       fieldName: 'menu_ids',
       formItemClass: 'col-span-full sm:col-span-2 w-full min-w-0 items-start',
-      label: '授权',
+      label: '角色权限',
       modelPropName: 'modelValue',
     },
     {
