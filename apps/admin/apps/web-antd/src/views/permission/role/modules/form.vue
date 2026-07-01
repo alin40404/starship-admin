@@ -345,7 +345,7 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
               <template #node="{ value }">
                 <IconifyIcon
                   v-if="value.meta?.icon && value.type !== 'button'"
-                  class="size-4 shrink-0 text-foreground/75"
+                  class="size-4 shrink-0 text-primary"
                   :icon="value.meta.icon"
                 />
                 <span
@@ -486,7 +486,9 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
 }
 
 .role-drawer-form :deep(.permission-tree-catalog-label) {
+  font-size: 0.9375rem;
   font-weight: 600;
+  line-height: 1.375rem;
   color: hsl(var(--foreground));
 }
 
@@ -499,8 +501,10 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
 }
 
 .role-drawer-form :deep(.permission-tree-menu-label) {
-  font-weight: 500;
-  color: hsl(var(--foreground) / 0.88);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.125rem;
+  color: hsl(var(--foreground) / 0.78);
 }
 
 /* 三级：按钮权限，每行 4 个 */
@@ -534,7 +538,9 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
 
 .role-drawer-form :deep(.permission-tree-btn-label) {
   display: block;
+  font-size: 0.8125rem;
   font-weight: 400;
+  line-height: 1.125rem;
   color: hsl(var(--foreground) / 0.78);
 }
 
