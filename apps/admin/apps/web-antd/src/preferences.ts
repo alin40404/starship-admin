@@ -28,6 +28,11 @@ export const overridesPreferences = defineOverridesPreferences({
   logo: {
     source: VBEN_LOGO_URL,
   },
+  theme: {
+    mode: 'light',
+    radius: '0.25',
+    fontSize: 15,
+  },
 });
 
 export const preferencesExtension =
