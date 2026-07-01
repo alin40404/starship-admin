@@ -40,10 +40,7 @@ class StarshipFoundationSeeder extends Seeder
 
         $password = (string) env('SYSTEM_ADMIN_PASSWORD', 'admin123');
 
-        $dept = Department::query()->firstOrCreate(
-            ['parent_id' => 0, 'name' => '总公司'],
-            ['sort' => 0, 'status' => 1]
-        );
+        $dept = $this->seedDepartments();
 
         $admin = Admin::query()->updateOrCreate(
             ['username' => 'admin'],
@@ -541,5 +538,86 @@ class StarshipFoundationSeeder extends Seeder
                 'remark' => '后台左上角展示名称',
             ]
         );
+    }
+
+    private function seedDepartments(): Department
+    {
+        $root = Department::query()->updateOrCreate(
+            ['parent_id' => 0, 'name' => '总公司'],
+            [
+                'leader' => '张总',
+                'phone' => '010-88880000',
+                'email' => 'ceo@starship.org',
+                'sort' => 0,
+                'status' => 1,
+                'remark' => '集团总部',
+            ],
+        );
+
+        $this->createDepartmentTree([
+            [
+                'name' => '研发中心',
+                'leader' => '李研',
+                'phone' => '010-88880001',
+                'sort' => 10,
+                'children' => [
+                    ['name' => '前端组', 'leader' => '王前', 'sort' => 1],
+                    ['name' => '后端组', 'leader' => '赵后', 'sort' => 2],
+                    ['name' => '测试组', 'leader' => '钱测', 'sort' => 3],
+                ],
+            ],
+            [
+                'name' => '市场营销部',
+                'leader' => '孙市',
+                'phone' => '010-88880002',
+                'sort' => 20,
+            ],
+            [
+                'name' => '人力资源部',
+                'leader' => '周人',
+                'phone' => '010-88880003',
+                'sort' => 30,
+            ],
+            [
+                'name' => '财务部',
+                'leader' => '吴财',
+                'phone' => '010-88880004',
+                'sort' => 40,
+                'status' => 0,
+                'remark' => '示例：禁用状态',
+            ],
+        ], (int) $root->id);
+
+        return $root;
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $nodes
+     */
+    private function createDepartmentTree(array $nodes, int $parentId): void
+    {
+        foreach ($nodes as $node) {
+            $children = $node['children'] ?? [];
+            unset($node['children']);
+
+            $dept = Department::query()->updateOrCreate(
+                ['parent_id' => $parentId, 'name' => (string) $node['name']],
+                array_merge(
+                    [
+                        'leader' => null,
+                        'phone' => null,
+                        'email' => null,
+                        'sort' => 0,
+                        'status' => 1,
+                        'remark' => null,
+                    ],
+                    $node,
+                ),
+            );
+
+            if ($children !== []) {
+                $this->createDepartmentTree($children, (int) $dept->id);
+            }
+        }
     }
 }

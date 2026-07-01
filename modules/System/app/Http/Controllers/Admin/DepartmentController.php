@@ -106,6 +106,18 @@ class DepartmentController extends Controller
         return ApiResponse::success($dept->fresh(), '状态已更新');
     }
 
+    public function updateSort(Request $request, int $id): JsonResponse
+    {
+        $dept = Department::query()->findOrFail($id);
+        $data = $request->validate([
+            'sort' => ['required', 'integer', 'min:0'],
+        ]);
+
+        $dept->update($data);
+
+        return ApiResponse::success($dept->fresh(), '排序已更新');
+    }
+
     public function destroy(int $id): JsonResponse
     {
         $dept = Department::query()->whereKey($id)->firstOrFail();
@@ -121,6 +133,52 @@ class DepartmentController extends Controller
         $dept->delete();
 
         return ApiResponse::success(null, '已删除');
+    }
+
+    public function batchDestroy(Request $request): JsonResponse
+    {
+        $ids = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+        ])['ids'];
+
+        $deletableIds = [];
+        foreach ($ids as $id) {
+            if (Department::query()->where('parent_id', $id)->exists()) {
+                continue;
+            }
+            if (Admin::query()->where('dept_id', $id)->exists()) {
+                continue;
+            }
+            $deletableIds[] = (int) $id;
+        }
+
+        if ($deletableIds === []) {
+            return ApiResponse::error('所选部门存在下级或管理员，无法删除', 422);
+        }
+
+        $deleted = Department::query()->whereIn('id', $deletableIds)->delete();
+        $skipped = count($ids) - count($deletableIds);
+
+        return ApiResponse::success(
+            ['deleted' => $deleted, 'skipped' => $skipped],
+            $skipped > 0 ? "已删除 {$deleted} 个，{$skipped} 个因存在下级或管理员未删除" : '已批量删除',
+        );
+    }
+
+    public function batchUpdateStatus(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+            'status' => ['required', 'integer', 'in:0,1'],
+        ]);
+
+        $updated = Department::query()
+            ->whereIn('id', $data['ids'])
+            ->update(['status' => $data['status']]);
+
+        return ApiResponse::success(['updated' => $updated], '已批量更新状态');
     }
 
     /**

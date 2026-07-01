@@ -17,7 +17,13 @@ final class DepartmentPermissions
 
     public const DELETE = 'system.departments.delete';
 
+    public const BATCH_DELETE = 'system.departments.batch_delete';
+
+    public const BATCH_STATUS = 'system.departments.batch_status';
+
     public const STATUS = 'system.departments.status';
+
+    public const SORT = 'system.departments.sort';
 
     /**
      * @return list<array{name: string, title: string, permission: string, sort: int}>
@@ -30,7 +36,10 @@ final class DepartmentPermissions
             ['name' => 'Append', 'title' => '新增下级', 'permission' => self::APPEND, 'sort' => 3],
             ['name' => 'Update', 'title' => '编辑', 'permission' => self::UPDATE, 'sort' => 4],
             ['name' => 'Delete', 'title' => '删除', 'permission' => self::DELETE, 'sort' => 5],
-            ['name' => 'Status', 'title' => '切换状态', 'permission' => self::STATUS, 'sort' => 6],
+            ['name' => 'BatchDelete', 'title' => '批量删除', 'permission' => self::BATCH_DELETE, 'sort' => 6],
+            ['name' => 'BatchStatus', 'title' => '批量改状态', 'permission' => self::BATCH_STATUS, 'sort' => 7],
+            ['name' => 'Status', 'title' => '切换状态', 'permission' => self::STATUS, 'sort' => 8],
+            ['name' => 'Sort', 'title' => '调整排序', 'permission' => self::SORT, 'sort' => 9],
         ];
     }
 }

@@ -41,8 +41,14 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
             ->middleware('admin.permission:'.DepartmentPermissions::QUERY);
         Route::post('departments', [DepartmentController::class, 'store'])
             ->middleware('admin.permission.department.store');
+        Route::post('departments/batch-destroy', [DepartmentController::class, 'batchDestroy'])
+            ->middleware('admin.permission:'.DepartmentPermissions::BATCH_DELETE);
+        Route::put('departments/batch-status', [DepartmentController::class, 'batchUpdateStatus'])
+            ->middleware('admin.permission:'.DepartmentPermissions::BATCH_STATUS);
         Route::put('departments/{id}/status', [DepartmentController::class, 'updateStatus'])
             ->middleware('admin.permission:'.DepartmentPermissions::STATUS);
+        Route::put('departments/{id}/sort', [DepartmentController::class, 'updateSort'])
+            ->middleware('admin.permission:'.DepartmentPermissions::SORT);
         Route::put('departments/{id}', [DepartmentController::class, 'update'])
             ->middleware('admin.permission:'.DepartmentPermissions::UPDATE);
         Route::delete('departments/{id}', [DepartmentController::class, 'destroy'])

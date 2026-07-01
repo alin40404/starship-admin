@@ -21,7 +21,8 @@ export function useColumns(
   ) => Promise<boolean>,
   access: DepartmentAccessChecker,
 ): VxeTableGridColumns {
-  const canUpdate = access.can(DEPARTMENT_PERMISSIONS.UPDATE);
+  const canStatus = access.can(DEPARTMENT_PERMISSIONS.STATUS);
+  const canSort = access.can(DEPARTMENT_PERMISSIONS.SORT);
 
   return [
     {
@@ -31,6 +32,7 @@ export function useColumns(
       width: 48,
     },
     {
+      align: 'left',
       field: 'name',
       minWidth: 180,
       title: '部门名称',
@@ -48,7 +50,32 @@ export function useColumns(
       minWidth: 120,
       title: '联系电话',
     },
-    { field: 'sort', title: '排序', width: 80 },
+    {
+      align: 'center',
+      className: canSort ? 'dept-sort-editable-col' : undefined,
+      editRender: canSort
+        ? {
+            name: 'VxeNumberInput',
+            props: {
+              min: 0,
+              type: 'integer',
+            },
+            events: {
+              keydown(params, event: KeyboardEvent) {
+                if (event.key !== 'Enter') {
+                  return;
+                }
+                event.preventDefault();
+                (event.target as HTMLElement | null)?.blur?.();
+                void params.$table.clearEdit();
+              },
+            },
+          }
+        : undefined,
+      field: 'sort',
+      title: '排序',
+      width: 100,
+    },
     {
       field: 'status',
       title: '状态',
@@ -58,7 +85,7 @@ export function useColumns(
           async beforeChange(newVal: unknown, row: DepartmentTreeNode) {
             return onStatusBeforeChange(newVal as number, row);
           },
-          getSwitchProps: () => ({ disabled: !canUpdate }),
+          getSwitchProps: () => ({ disabled: !canStatus }),
         },
         name: 'CellSwitch',
       },

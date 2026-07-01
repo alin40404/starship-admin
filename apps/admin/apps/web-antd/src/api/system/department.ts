@@ -64,8 +64,28 @@ export function updateDepartmentStatus(id: number, status: 0 | 1) {
   });
 }
 
+export function updateDepartmentSort(id: number, sort: number) {
+  return requestClient.put<DepartmentRow>(`/system/departments/${id}/sort`, {
+    sort,
+  });
+}
+
 export function deleteDepartment(id: number) {
   return requestClient.delete(`/system/departments/${id}`);
+}
+
+export function batchDeleteDepartments(ids: number[]) {
+  return requestClient.post<{ deleted: number; skipped: number }>(
+    '/system/departments/batch-destroy',
+    { ids },
+  );
+}
+
+export function batchUpdateDepartmentStatus(ids: number[], status: 0 | 1) {
+  return requestClient.put<{ updated: number }>(
+    '/system/departments/batch-status',
+    { ids, status },
+  );
 }
 
 export function mapDeptForTreeSelect(

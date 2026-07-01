@@ -3,9 +3,12 @@
  */
 export const DEPARTMENT_PERMISSIONS = {
   APPEND: 'system.departments.append',
+  BATCH_DELETE: 'system.departments.batch_delete',
+  BATCH_STATUS: 'system.departments.batch_status',
   CREATE: 'system.departments.create',
   DELETE: 'system.departments.delete',
   QUERY: 'system.departments.query',
+  SORT: 'system.departments.sort',
   STATUS: 'system.departments.status',
   UPDATE: 'system.departments.update',
 } as const;

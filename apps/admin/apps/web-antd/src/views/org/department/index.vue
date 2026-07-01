@@ -12,8 +12,11 @@ import { Button, message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
+  batchDeleteDepartments,
+  batchUpdateDepartmentStatus,
   deleteDepartment,
   fetchDepartmentTree,
+  updateDepartmentSort,
   updateDepartmentStatus,
 } from '#/api/system/department';
 import { DEPARTMENT_PERMISSIONS } from '#/constants/department-permissions';
@@ -116,12 +119,11 @@ function onBatchDelete() {
     cancelText: '取消',
     title: '批量删除',
     async onOk() {
-      const results = await Promise.allSettled(
-        ids.map((id) => deleteDepartment(id)),
-      );
-      const failed = results.filter((r) => r.status === 'rejected').length;
-      if (failed > 0) {
-        message.warning(`已删除 ${ids.length - failed} 个，${failed} 个删除失败`);
+      const result = await batchDeleteDepartments(ids);
+      if (result.skipped > 0) {
+        message.warning(
+          `已删除 ${result.deleted} 个，${result.skipped} 个因存在下级或管理员未删除`,
+        );
       } else {
         message.success('已批量删除');
       }
@@ -141,7 +143,7 @@ function onBatchUpdateStatus(status: 0 | 1) {
     cancelText: '取消',
     title: `批量${label}`,
     async onOk() {
-      await Promise.all(ids.map((id) => updateDepartmentStatus(id, status)));
+      await batchUpdateDepartmentStatus(ids, status);
       message.success(`已批量${label}`);
       clearSelection();
       onRefresh();
@@ -153,11 +155,55 @@ const [Grid, gridApi] = useVbenVxeGrid({
   gridEvents: {
     checkboxAll: syncSelection,
     checkboxChange: syncSelection,
+    async editClosed({
+      column,
+      row,
+    }: {
+      column: { field: string };
+      row: DepartmentTreeNode;
+    }) {
+      if (column.field !== 'sort') {
+        return;
+      }
+      const grid = gridApi.grid;
+      if (!grid?.isUpdateByRow?.(row)) {
+        return;
+      }
+
+      const sort = Number(row.sort);
+      if (!Number.isFinite(sort) || sort < 0 || !Number.isInteger(sort)) {
+        message.warning('请输入有效整数');
+        await gridApi.reload();
+        return;
+      }
+
+      gridApi.setLoading(true);
+      try {
+        await updateDepartmentSort(row.id, sort);
+        message.success('排序已更新');
+        onRefresh();
+      } catch {
+        await gridApi.reload();
+      } finally {
+        gridApi.setLoading(false);
+      }
+    },
   },
   gridOptions: {
     checkboxConfig: { highlight: true },
     columns: useColumns(onActionClick, onDeptStatusToggle, deptAccess),
+    editConfig: {
+      beforeEditMethod({ column }) {
+        return (
+          column.field === 'sort' &&
+          deptAccess.can(DEPARTMENT_PERMISSIONS.SORT)
+        );
+      },
+      mode: 'cell',
+      trigger: 'dblclick',
+    },
     height: 'auto',
+    keepSource: true,
     pagerConfig: { enabled: false },
     proxyConfig: {
       ajax: {
@@ -168,6 +214,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
     toolbarConfig: { custom: true, refresh: true, zoom: true },
     treeConfig: {
       childrenField: 'children',
+      expandAll: true,
       rowField: 'id',
       transform: false,
     },
@@ -182,21 +229,21 @@ const [Grid, gridApi] = useVbenVxeGrid({
       <template #toolbar-actions>
         <template v-if="selectedRows.length > 0">
           <Button
-            v-if="deptAccess.can(DEPARTMENT_PERMISSIONS.DELETE)"
+            v-if="deptAccess.can(DEPARTMENT_PERMISSIONS.BATCH_DELETE)"
             danger
             @click="onBatchDelete"
           >
             批量删除（{{ selectedRows.length }}）
           </Button>
           <Button
-            v-if="deptAccess.can(DEPARTMENT_PERMISSIONS.STATUS)"
+            v-if="deptAccess.can(DEPARTMENT_PERMISSIONS.BATCH_STATUS)"
             class="org-batch-btn-enable ml-2"
             @click="onBatchUpdateStatus(1)"
           >
             批量启用
           </Button>
           <Button
-            v-if="deptAccess.can(DEPARTMENT_PERMISSIONS.STATUS)"
+            v-if="deptAccess.can(DEPARTMENT_PERMISSIONS.BATCH_STATUS)"
             class="org-batch-btn-disable ml-2"
             @click="onBatchUpdateStatus(0)"
           >
@@ -220,6 +267,10 @@ const [Grid, gridApi] = useVbenVxeGrid({
 </template>
 
 <style lang="scss">
+.vxe-grid .dept-sort-editable-col {
+  cursor: pointer;
+}
+
 .vxe-grid .org-batch-btn-enable.ant-btn {
   color: #fff;
   background-color: #52c41a;

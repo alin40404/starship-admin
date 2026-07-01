@@ -18,7 +18,10 @@ FROM (
     UNION ALL SELECT 'Append', '新增下级', 'system.departments.append', 3
     UNION ALL SELECT 'Update', '编辑', 'system.departments.update', 4
     UNION ALL SELECT 'Delete', '删除', 'system.departments.delete', 5
-    UNION ALL SELECT 'Status', '切换状态', 'system.departments.status', 6
+    UNION ALL SELECT 'BatchDelete', '批量删除', 'system.departments.batch_delete', 6
+    UNION ALL SELECT 'BatchStatus', '批量改状态', 'system.departments.batch_status', 7
+    UNION ALL SELECT 'Status', '切换状态', 'system.departments.status', 8
+    UNION ALL SELECT 'Sort', '调整排序', 'system.departments.sort', 9
 ) AS src
 WHERE @dept_parent_id IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `sa_menus` m WHERE m.`permission` = src.`permission` AND m.`deleted_at` IS NULL);
@@ -68,7 +71,9 @@ CROSS JOIN `sa_menus` AS m
 WHERE r.`code` = 'super_admin'
   AND m.`permission` IN (
       'system.departments.query','system.departments.create','system.departments.append',
-      'system.departments.update','system.departments.delete','system.departments.status',
+      'system.departments.update','system.departments.delete',
+      'system.departments.batch_delete','system.departments.batch_status',
+      'system.departments.status','system.departments.sort',
       'system.posts.query','system.posts.create','system.posts.update','system.posts.delete',
       'system.posts.batch_delete','system.posts.batch_status',
       'system.user_groups.query','system.user_groups.create','system.user_groups.update',

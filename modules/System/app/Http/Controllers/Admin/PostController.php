@@ -34,6 +34,7 @@ class PostController extends Controller
             'code' => 'code',
             'sort' => 'sort',
             'status' => 'status',
+            'updated_at' => 'updated_at',
         ];
 
         if (is_string($sortField) && isset($allowedSorts[$sortField])) {
