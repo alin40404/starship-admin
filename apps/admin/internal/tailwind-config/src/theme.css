@@ -21,6 +21,7 @@
 @theme inline {
   /* Font */
   --font-sans: var(--font-family);
+  --text-sm: 0.875rem;
 
   /* Border Radius */
   --radius-sm: calc(var(--radius) - 4px);

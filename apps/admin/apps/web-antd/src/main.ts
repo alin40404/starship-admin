@@ -35,6 +35,11 @@ async function initApplication() {
     logo: {
       source: overridesPreferences.logo?.source ?? VBEN_LOGO_URL,
     },
+    theme: {
+      fontSize: overridesPreferences.theme?.fontSize ?? 16,
+      mode: overridesPreferences.theme?.mode ?? 'light',
+      radius: overridesPreferences.theme?.radius ?? '0.5',
+    },
   });
 
   // 启动应用并挂载

@@ -7,6 +7,46 @@
   color: inherit;
 }
 
+/** 表单控件字号：跟随 Tailwind --text-sm，随 html 根字号缩放（含 Modal/Drawer/Select 下拉 Portal 场景） */
+.ant-input,
+.ant-input-affix-wrapper,
+textarea.ant-input,
+.ant-input-textarea textarea,
+.ant-input-number,
+.ant-input-number-input,
+/* Select 选择框 */
+.ant-select,
+.ant-select .ant-select-selector,
+.ant-select-selection-search-input,
+.ant-select-selection-item,
+.ant-select-selection-placeholder,
+.ant-select-auto-complete .ant-input,
+/* Select 下拉菜单（Portal 渲染在 body） */
+.ant-select-dropdown .ant-select-item,
+.ant-select-dropdown .ant-select-item-option-content,
+/* TreeSelect */
+.ant-tree-select .ant-select-selector,
+/* Radio */
+.ant-radio-wrapper,
+.ant-radio-button-wrapper,
+/* Checkbox */
+.ant-checkbox-wrapper,
+.ant-checkbox-label,
+.ant-checkbox-wrapper .ant-checkbox + span,
+/* 表单分组标题（如「其它设置」） */
+.ant-divider-inner-text,
+.ant-picker .ant-picker-input > input,
+.ant-cascader-input,
+.ant-mentions textarea {
+  font-size: var(--text-sm, 0.875rem) !important;
+}
+
+/** Tree / TreeSelect 展开箭头：与节点图标 size-4 对齐，随根字号缩放 */
+.ant-select-tree-switcher-icon,
+.ant-tree-switcher-icon {
+  font-size: var(--font-size-base, 1rem) !important;
+}
+
 .ant-btn {
   .anticon {
     display: inline-flex;

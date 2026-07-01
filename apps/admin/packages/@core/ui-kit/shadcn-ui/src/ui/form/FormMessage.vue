@@ -13,6 +13,6 @@ const { formMessageId, name } = useFormField();
     :id="formMessageId"
     :name="toValue(name)"
     as="p"
-    class="text-destructive text-[0.75rem]"
+    class="text-destructive text-[0.8rem]"
   />
 </template>
