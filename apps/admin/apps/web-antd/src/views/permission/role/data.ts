@@ -229,16 +229,6 @@ export function buildRoleFormSchema(params: {
       hideLabel: true,
       label: '状态',
     },
-    /** 角色权限：由表单插槽渲染 Vben Tree，值参与 getValues */
-    {
-      component: 'Input',
-      controlClass: 'w-full min-w-0',
-      defaultValue: [],
-      fieldName: 'menu_ids',
-      formItemClass: 'col-span-full sm:col-span-2 w-full min-w-0 items-start',
-      label: '角色权限',
-      modelPropName: 'modelValue',
-    },
     {
       component: 'Textarea',
       componentProps: {
@@ -249,6 +239,16 @@ export function buildRoleFormSchema(params: {
       fieldName: 'remark',
       formItemClass: 'col-span-full sm:col-span-2 w-full items-start',
       label: '备注',
+    },
+    /** 角色权限：由表单插槽渲染 Vben Tree，值参与 getValues */
+    {
+      component: 'Input',
+      controlClass: 'w-full min-w-0',
+      defaultValue: [],
+      fieldName: 'menu_ids',
+      formItemClass: 'col-span-full sm:col-span-2 w-full min-w-0 items-start',
+      label: '角色权限',
+      modelPropName: 'modelValue',
     },
   ];
 }
