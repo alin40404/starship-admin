@@ -48,6 +48,9 @@ textarea.ant-input,
 }
 
 .ant-btn {
+  display: inline-flex;
+  align-items: center;
+
   .anticon {
     display: inline-flex;
   }
@@ -55,6 +58,7 @@ textarea.ant-input,
   /* * 修复按钮添加图标时的位置问题 */
   > svg {
     display: inline-block;
+    flex-shrink: 0;
   }
 
   > svg + span {

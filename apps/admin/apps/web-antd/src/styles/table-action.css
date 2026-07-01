@@ -4,5 +4,7 @@
  */
 .vxe-grid .vxe-buttons--wrapper .ant-btn,
 .vxe-grid .table-operations .ant-btn {
+  display: inline-flex;
+  align-items: center;
   font-size: var(--vben-table-action-button-font-size) !important;
 }
