@@ -8,8 +8,11 @@ use Modules\System\App\Models\Department;
 use Modules\System\App\Models\DictItem;
 use Modules\System\App\Models\DictType;
 use Modules\System\App\Models\Menu;
+use Modules\System\App\Support\DepartmentPermissions;
 use Modules\System\App\Support\MenuPermissions;
+use Modules\System\App\Support\PostPermissions;
 use Modules\System\App\Support\RolePermissions;
+use Modules\System\App\Support\UserGroupPermissions;
 use Modules\System\App\Models\Role;
 use Modules\System\App\Models\Setting;
 
@@ -91,6 +94,9 @@ class StarshipFoundationSeeder extends Seeder
             '/permission/admins' => '/permission/admin/index',
             '/permission/roles' => '/permission/role/index',
             '/permission/menus' => '/permission/menu/index',
+            '/org/departments' => '/org/department/index',
+            '/org/posts' => '/org/post/index',
+            '/org/user-groups' => '/org/user-group/index',
         ];
         if (isset($permission[$path])) {
             return $permission[$path];
@@ -268,24 +274,92 @@ class StarshipFoundationSeeder extends Seeder
             'status' => 1,
         ]);
 
-        foreach (
-            [
-                ['name' => 'DeptMgmt', 'title' => '部门管理', 'path' => '/org/departments', 'permission' => 'system.departments', 'sort' => 201, 'icon' => 'ep:office-building'],
-                ['name' => 'PostMgmt', 'title' => '岗位管理', 'path' => '/org/posts', 'permission' => 'system.posts', 'sort' => 202, 'icon' => 'ep:postcard'],
-                ['name' => 'UserGroupMgmt', 'title' => '用户组管理', 'path' => '/org/user-groups', 'permission' => 'system.user_groups', 'sort' => 203, 'icon' => 'ep:avatar'],
-            ] as $m
-        ) {
+        $deptMgmt = Menu::query()->create([
+            'parent_id' => $org->id,
+            'type' => 2,
+            'name' => 'DeptMgmt',
+            'title' => '部门管理',
+            'path' => '/org/departments',
+            'component' => $this->defaultComponentForMenuPath('/org/departments'),
+            'permission' => 'system.departments',
+            'icon' => 'ep:office-building',
+            'sort' => 201,
+            'other_settings' => $this->menuOther(1, 1),
+            'status' => 1,
+        ]);
+
+        foreach (DepartmentPermissions::buttonDefinitions() as $btn) {
             Menu::query()->create([
-                'parent_id' => $org->id,
-                'type' => 2,
-                'name' => $m['name'],
-                'title' => $m['title'],
-                'path' => $m['path'],
-                'component' => $this->defaultComponentForMenuPath($m['path']),
-                'permission' => $m['permission'],
-                'icon' => $m['icon'],
-                'sort' => $m['sort'],
-                'other_settings' => $this->menuOther(1, 1),
+                'parent_id' => $deptMgmt->id,
+                'type' => 3,
+                'name' => $btn['name'],
+                'title' => $btn['title'],
+                'path' => null,
+                'component' => null,
+                'permission' => $btn['permission'],
+                'icon' => null,
+                'sort' => $btn['sort'],
+                'other_settings' => $this->menuOther(0),
+                'status' => 1,
+            ]);
+        }
+
+        $postMgmt = Menu::query()->create([
+            'parent_id' => $org->id,
+            'type' => 2,
+            'name' => 'PostMgmt',
+            'title' => '岗位管理',
+            'path' => '/org/posts',
+            'component' => $this->defaultComponentForMenuPath('/org/posts'),
+            'permission' => 'system.posts',
+            'icon' => 'ep:postcard',
+            'sort' => 202,
+            'other_settings' => $this->menuOther(1, 1),
+            'status' => 1,
+        ]);
+
+        foreach (PostPermissions::buttonDefinitions() as $btn) {
+            Menu::query()->create([
+                'parent_id' => $postMgmt->id,
+                'type' => 3,
+                'name' => $btn['name'],
+                'title' => $btn['title'],
+                'path' => null,
+                'component' => null,
+                'permission' => $btn['permission'],
+                'icon' => null,
+                'sort' => $btn['sort'],
+                'other_settings' => $this->menuOther(0),
+                'status' => 1,
+            ]);
+        }
+
+        $userGroupMgmt = Menu::query()->create([
+            'parent_id' => $org->id,
+            'type' => 2,
+            'name' => 'UserGroupMgmt',
+            'title' => '用户组管理',
+            'path' => '/org/user-groups',
+            'component' => $this->defaultComponentForMenuPath('/org/user-groups'),
+            'permission' => 'system.user_groups',
+            'icon' => 'ep:avatar',
+            'sort' => 203,
+            'other_settings' => $this->menuOther(1, 1),
+            'status' => 1,
+        ]);
+
+        foreach (UserGroupPermissions::buttonDefinitions() as $btn) {
+            Menu::query()->create([
+                'parent_id' => $userGroupMgmt->id,
+                'type' => 3,
+                'name' => $btn['name'],
+                'title' => $btn['title'],
+                'path' => null,
+                'component' => null,
+                'permission' => $btn['permission'],
+                'icon' => null,
+                'sort' => $btn['sort'],
+                'other_settings' => $this->menuOther(0),
                 'status' => 1,
             ]);
         }

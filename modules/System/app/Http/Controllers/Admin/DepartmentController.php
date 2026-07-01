@@ -10,6 +10,7 @@ use Modules\System\App\Models\Admin;
 use Modules\System\App\Models\Department;
 use Modules\System\App\Services\AdminPermissionService;
 use Modules\System\App\Services\DataScopeService;
+use Modules\System\App\Support\DepartmentPermissions;
 use Modules\System\App\Support\RolePermissions;
 
 class DepartmentController extends Controller
@@ -45,6 +46,13 @@ class DepartmentController extends Controller
         return ApiResponse::success($query->paginate((int) $request->get('per_page', 15)));
     }
 
+    public function show(int $id): JsonResponse
+    {
+        $dept = Department::query()->findOrFail($id);
+
+        return ApiResponse::success($dept);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -77,14 +85,40 @@ class DepartmentController extends Controller
             'remark' => ['nullable', 'string', 'max:255'],
         ]);
 
+        if (isset($data['parent_id']) && (int) $data['parent_id'] === (int) $dept->id) {
+            return ApiResponse::error('上级部门不能为自身', 422);
+        }
+
         $dept->update($data);
 
         return ApiResponse::success($dept->fresh(), '更新成功');
     }
 
+    public function updateStatus(Request $request, int $id): JsonResponse
+    {
+        $dept = Department::query()->findOrFail($id);
+        $data = $request->validate([
+            'status' => ['required', 'integer', 'in:0,1'],
+        ]);
+
+        $dept->update($data);
+
+        return ApiResponse::success($dept->fresh(), '状态已更新');
+    }
+
     public function destroy(int $id): JsonResponse
     {
-        Department::query()->whereKey($id)->firstOrFail()->delete();
+        $dept = Department::query()->whereKey($id)->firstOrFail();
+
+        if (Department::query()->where('parent_id', $dept->id)->exists()) {
+            return ApiResponse::error('存在下级部门，无法删除', 422);
+        }
+
+        if (Admin::query()->where('dept_id', $dept->id)->exists()) {
+            return ApiResponse::error('部门下存在管理员，无法删除', 422);
+        }
+
+        $dept->delete();
 
         return ApiResponse::success(null, '已删除');
     }
@@ -108,6 +142,8 @@ class DepartmentController extends Controller
                 'sort' => $item->sort,
                 'status' => $item->status,
                 'remark' => $item->remark,
+                'created_at' => $item->created_at?->format('Y-m-d H:i:s'),
+                'updated_at' => $item->updated_at?->format('Y-m-d H:i:s'),
                 'children' => $this->buildTree($rows, (int) $item->id),
             ];
         }
@@ -121,7 +157,13 @@ class DepartmentController extends Controller
             return true;
         }
 
-        return app(AdminPermissionService::class)->hasAnyPermission($admin, [
+        $service = app(AdminPermissionService::class);
+
+        return $service->hasAnyPermission($admin, [
+            DepartmentPermissions::QUERY,
+            DepartmentPermissions::CREATE,
+            DepartmentPermissions::UPDATE,
+            DepartmentPermissions::APPEND,
             RolePermissions::CREATE,
             RolePermissions::UPDATE,
         ]);

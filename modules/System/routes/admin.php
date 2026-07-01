@@ -11,8 +11,12 @@ use Modules\System\App\Http\Controllers\Admin\DictTypeController;
 use Modules\System\App\Http\Controllers\Admin\MenuController;
 use Modules\System\App\Http\Controllers\Admin\PostController;
 use Modules\System\App\Http\Controllers\Admin\RoleController;
+use Modules\System\App\Http\Controllers\Admin\UserGroupController;
+use Modules\System\App\Support\DepartmentPermissions;
 use Modules\System\App\Support\MenuPermissions;
+use Modules\System\App\Support\PostPermissions;
 use Modules\System\App\Support\RolePermissions;
+use Modules\System\App\Support\UserGroupPermissions;
 
 Route::middleware('api')->prefix('admin-api')->group(function () {
     Route::prefix('auth')->group(function () {
@@ -28,16 +32,48 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
     });
 
     Route::middleware('auth:sanctum')->prefix('system')->group(function () {
-        Route::get('departments/tree', [DepartmentController::class, 'tree']);
-        Route::get('departments', [DepartmentController::class, 'index']);
-        Route::post('departments', [DepartmentController::class, 'store']);
-        Route::put('departments/{id}', [DepartmentController::class, 'update']);
-        Route::delete('departments/{id}', [DepartmentController::class, 'destroy']);
+        Route::get('departments/tree', [DepartmentController::class, 'tree'])
+            ->middleware('admin.permission:'.DepartmentPermissions::QUERY);
+        Route::get('departments', [DepartmentController::class, 'index'])
+            ->middleware('admin.permission:'.DepartmentPermissions::QUERY);
+        Route::get('departments/{id}', [DepartmentController::class, 'show'])
+            ->middleware('admin.permission:'.DepartmentPermissions::QUERY);
+        Route::post('departments', [DepartmentController::class, 'store'])
+            ->middleware('admin.permission.department.store');
+        Route::put('departments/{id}/status', [DepartmentController::class, 'updateStatus'])
+            ->middleware('admin.permission:'.DepartmentPermissions::STATUS);
+        Route::put('departments/{id}', [DepartmentController::class, 'update'])
+            ->middleware('admin.permission:'.DepartmentPermissions::UPDATE);
+        Route::delete('departments/{id}', [DepartmentController::class, 'destroy'])
+            ->middleware('admin.permission:'.DepartmentPermissions::DELETE);
 
-        Route::get('posts', [PostController::class, 'index']);
-        Route::post('posts', [PostController::class, 'store']);
-        Route::put('posts/{id}', [PostController::class, 'update']);
-        Route::delete('posts/{id}', [PostController::class, 'destroy']);
+        Route::get('posts', [PostController::class, 'index'])
+            ->middleware('admin.permission:'.PostPermissions::QUERY);
+        Route::post('posts', [PostController::class, 'store'])
+            ->middleware('admin.permission:'.PostPermissions::CREATE);
+        Route::post('posts/batch-destroy', [PostController::class, 'batchDestroy'])
+            ->middleware('admin.permission:'.PostPermissions::BATCH_DELETE);
+        Route::put('posts/batch-status', [PostController::class, 'batchUpdateStatus'])
+            ->middleware('admin.permission.post.batch_status');
+        Route::put('posts/{id}', [PostController::class, 'update'])
+            ->middleware('admin.permission:'.PostPermissions::UPDATE);
+        Route::delete('posts/{id}', [PostController::class, 'destroy'])
+            ->middleware('admin.permission:'.PostPermissions::DELETE);
+
+        Route::get('user-groups', [UserGroupController::class, 'index'])
+            ->middleware('admin.permission:'.UserGroupPermissions::QUERY);
+        Route::post('user-groups', [UserGroupController::class, 'store'])
+            ->middleware('admin.permission:'.UserGroupPermissions::CREATE);
+        Route::post('user-groups/batch-destroy', [UserGroupController::class, 'batchDestroy'])
+            ->middleware('admin.permission:'.UserGroupPermissions::BATCH_DELETE);
+        Route::get('user-groups/{id}', [UserGroupController::class, 'show'])
+            ->middleware('admin.permission:'.UserGroupPermissions::QUERY);
+        Route::put('user-groups/{id}', [UserGroupController::class, 'update'])
+            ->middleware('admin.permission:'.UserGroupPermissions::UPDATE);
+        Route::delete('user-groups/{id}', [UserGroupController::class, 'destroy'])
+            ->middleware('admin.permission:'.UserGroupPermissions::DELETE);
+        Route::put('user-groups/{id}/admins', [UserGroupController::class, 'syncAdmins'])
+            ->middleware('admin.permission.any:'.UserGroupPermissions::CREATE.','.UserGroupPermissions::UPDATE);
 
         // 角色管理（/permission/roles）— 权限码见 RolePermissions
         Route::get('roles', [RoleController::class, 'index'])
