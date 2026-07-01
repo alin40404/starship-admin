@@ -359,6 +359,10 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
 }
 
 /** 角色权限树：默认全展开，保留边框与顶部全选，三级层次排版 */
+.role-drawer-form {
+  --permission-tree-pl: 0.5rem;
+}
+
 .role-drawer-form :deep(.permission-tree .container.list-none) {
   border-radius: 0.375rem;
 }
@@ -368,6 +372,7 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
   :deep(
     .permission-tree .container.list-none > div:has(> .flex.size-5.flex-1.cursor-pointer)
   ) {
+  padding: 0.375rem 0.5rem 0.375rem var(--permission-tree-pl);
   cursor: default;
 }
 
@@ -412,9 +417,11 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
   display: none;
 }
 
-/* 去掉节点箭头与占位，层级用 padding 表达 */
+/* 去掉节点箭头与占位，层级缩进改由内容区表达，checkbox 第一列统一对齐 */
 .role-drawer-form :deep(.permission-tree .tree-node) {
   margin-left: 0 !important;
+  padding-right: 0.5rem;
+  padding-left: var(--permission-tree-pl) !important;
   border-radius: 0.25rem;
 }
 
@@ -423,15 +430,37 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
   display: none;
 }
 
+.role-drawer-form :deep(.permission-tree .tree-node > .flex.items-center.gap-1) {
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+}
+
+.role-drawer-form
+  :deep(.permission-tree .tree-node button[role='checkbox']) {
+  flex-shrink: 0;
+}
+
 /* 一级：目录模块 */
 .role-drawer-form :deep(.permission-tree .tree-node.permission-tree-catalog) {
+  position: relative;
   display: flex !important;
   width: 100% !important;
   margin-top: 0.75rem;
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem 0.75rem 0.5rem var(--permission-tree-pl);
   background: hsl(var(--muted) / 0.45);
-  border-left: 3px solid hsl(var(--primary));
+  border-left: none;
   font-weight: 600;
+}
+
+.role-drawer-form :deep(.permission-tree .tree-node.permission-tree-catalog::before) {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 3px;
+  background: hsl(var(--primary));
+  content: '';
 }
 
 .role-drawer-form
@@ -449,7 +478,7 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
   display: flex !important;
   width: 100% !important;
   margin-top: 0.375rem;
-  padding: 0.375rem 0.75rem 0.25rem 1.25rem;
+  padding: 0.375rem 0.75rem 0.25rem var(--permission-tree-pl);
 }
 
 .role-drawer-form :deep(.permission-tree-menu-label) {
@@ -464,14 +493,8 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
   width: 25% !important;
   max-width: 25%;
   margin-top: 0;
-  padding: 0.25rem 0.5rem 0.25rem 2rem;
+  padding: 0.25rem 0.5rem 0.25rem var(--permission-tree-pl);
   vertical-align: top;
-}
-
-.role-drawer-form :deep(.permission-tree .tree-node.permission-tree-btn > .flex.items-center.gap-1) {
-  min-width: 0;
-  flex: 1;
-  overflow: hidden;
 }
 
 .role-drawer-form
@@ -481,6 +504,12 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
       > .flex.items-center.gap-1
       > .flex.items-center.gap-1
   ) {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.role-drawer-form :deep(.permission-tree .tree-node.permission-tree-btn > .flex.items-center.gap-1) {
   min-width: 0;
   flex: 1;
   overflow: hidden;
