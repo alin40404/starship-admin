@@ -13,6 +13,7 @@ use Modules\System\App\Models\Admin;
 use Modules\System\App\Models\Department;
 use Modules\System\App\Models\Post;
 use Modules\System\App\Models\Role;
+use Modules\System\App\Services\DataScopeService;
 
 class AdminUserController extends Controller
 {
@@ -20,6 +21,11 @@ class AdminUserController extends Controller
     {
         $query = Admin::query()
             ->with(['department', 'roles', 'posts']);
+
+        $admin = $request->user();
+        if ($admin instanceof Admin) {
+            app(DataScopeService::class)->applyAdminScope($query, $admin);
+        }
 
         if ($request->filled('username')) {
             $query->where('username', 'like', '%'.$request->get('username').'%');

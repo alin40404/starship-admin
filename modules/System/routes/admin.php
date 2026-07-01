@@ -57,6 +57,8 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
         // 同步角色菜单权限：新增或编辑角色时均可调用
         Route::put('roles/{id}/menus', [RoleController::class, 'syncMenus'])
             ->middleware('admin.permission.any:'.RolePermissions::CREATE.','.RolePermissions::UPDATE);
+        Route::put('roles/{id}/depts', [RoleController::class, 'syncDepts'])
+            ->middleware('admin.permission.any:'.RolePermissions::CREATE.','.RolePermissions::UPDATE);
 
         // 菜单管理（/permission/menus）— 权限码见 MenuPermissions
         Route::get('menus/tree', [MenuController::class, 'tree'])

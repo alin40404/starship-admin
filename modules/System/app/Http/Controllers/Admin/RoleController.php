@@ -7,8 +7,10 @@ use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Modules\System\App\Models\Department;
 use Modules\System\App\Models\Menu;
 use Modules\System\App\Models\Role;
+use Modules\System\App\Support\DataScope;
 
 class RoleController extends Controller
 {
@@ -50,7 +52,7 @@ class RoleController extends Controller
     public function show(int $id): JsonResponse
     {
         $role = Role::query()->findOrFail($id);
-        $role->load('menus');
+        $role->load(['menus', 'departments']);
         $isSuperAdminRole = $role->code === 'super_admin';
 
         $menuIds = $isSuperAdminRole
@@ -66,6 +68,7 @@ class RoleController extends Controller
             'status' => $role->status,
             'remark' => $role->remark,
             'menu_ids' => $menuIds,
+            'dept_ids' => $role->departments->pluck('id')->values()->all(),
         ]);
     }
 
@@ -103,6 +106,10 @@ class RoleController extends Controller
         ]);
 
         $role->update($data);
+
+        if (isset($data['data_scope']) && (int) $data['data_scope'] !== DataScope::CUSTOM) {
+            $role->departments()->sync([]);
+        }
 
         return ApiResponse::success($role->fresh(), '更新成功');
     }
@@ -162,5 +169,27 @@ class RoleController extends Controller
         $role->menus()->sync($validated['menu_ids']);
 
         return ApiResponse::success(['menu_ids' => $validated['menu_ids']], '菜单权限已更新');
+    }
+
+    public function syncDepts(Request $request, int $id): JsonResponse
+    {
+        $role = Role::query()->findOrFail($id);
+
+        if ($role->code === 'super_admin') {
+            return ApiResponse::error('系统内置角色不允许修改', 422);
+        }
+
+        if ((int) $role->data_scope !== DataScope::CUSTOM) {
+            return ApiResponse::error('仅自定义数据范围可配置部门', 422);
+        }
+
+        $validated = $request->validate([
+            'dept_ids' => ['present', 'array'],
+            'dept_ids.*' => ['integer', 'min:1', Rule::exists(Department::class, 'id')],
+        ]);
+
+        $role->departments()->sync($validated['dept_ids']);
+
+        return ApiResponse::success(['dept_ids' => $validated['dept_ids']], '数据部门已更新');
     }
 }

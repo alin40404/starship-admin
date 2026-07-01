@@ -6,16 +6,29 @@ use App\Http\Controllers\Controller;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Modules\System\App\Models\Admin;
 use Modules\System\App\Models\Department;
+use Modules\System\App\Services\AdminPermissionService;
+use Modules\System\App\Services\DataScopeService;
+use Modules\System\App\Support\RolePermissions;
 
 class DepartmentController extends Controller
 {
-    public function tree(): JsonResponse
+    public function tree(Request $request): JsonResponse
     {
-        $rows = Department::query()
+        $query = Department::query()
             ->orderBy('sort')
-            ->orderBy('id')
-            ->get();
+            ->orderBy('id');
+
+        $admin = $request->user();
+        if (
+            $admin instanceof Admin
+            && ! ($request->boolean('unscoped') && $this->canLoadUnscopedDeptTree($admin))
+        ) {
+            app(DataScopeService::class)->applyDepartmentScope($query, $admin);
+        }
+
+        $rows = $query->get();
 
         return ApiResponse::success($this->buildTree($rows));
     }
@@ -23,6 +36,11 @@ class DepartmentController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = Department::query()->orderBy('sort')->orderBy('id');
+
+        $admin = $request->user();
+        if ($admin instanceof Admin) {
+            app(DataScopeService::class)->applyDepartmentScope($query, $admin);
+        }
 
         return ApiResponse::success($query->paginate((int) $request->get('per_page', 15)));
     }
@@ -95,5 +113,17 @@ class DepartmentController extends Controller
         }
 
         return $branch;
+    }
+
+    private function canLoadUnscopedDeptTree(Admin $admin): bool
+    {
+        if ((int) $admin->is_super === 1) {
+            return true;
+        }
+
+        return app(AdminPermissionService::class)->hasAnyPermission($admin, [
+            RolePermissions::CREATE,
+            RolePermissions::UPDATE,
+        ]);
     }
 }

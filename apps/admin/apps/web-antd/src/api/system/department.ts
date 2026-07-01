@@ -7,6 +7,8 @@ export interface DeptNode {
   children?: DeptNode[];
 }
 
-export function fetchDepartmentTree() {
-  return requestClient.get<DeptNode[]>('/system/departments/tree');
+export function fetchDepartmentTree(unscoped = false) {
+  return requestClient.get<DeptNode[]>('/system/departments/tree', {
+    params: unscoped ? { unscoped: 1 } : undefined,
+  });
 }

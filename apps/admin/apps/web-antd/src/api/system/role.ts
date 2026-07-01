@@ -16,6 +16,7 @@ export interface RoleRow {
 
 export interface RoleDetail extends RoleRow {
   menu_ids: number[];
+  dept_ids: number[];
 }
 
 export interface RolePageQuery {
@@ -77,5 +78,12 @@ export function syncRoleMenus(id: number, menuIds: number[]) {
   return requestClient.put<{ menu_ids: number[] }>(
     `/system/roles/${id}/menus`,
     { menu_ids: menuIds },
+  );
+}
+
+export function syncRoleDepts(id: number, deptIds: number[]) {
+  return requestClient.put<{ dept_ids: number[] }>(
+    `/system/roles/${id}/depts`,
+    { dept_ids: deptIds },
   );
 }

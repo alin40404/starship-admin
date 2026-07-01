@@ -35,4 +35,14 @@ class Role extends Model
     {
         return $this->belongsToMany(Menu::class, StarshipTables::table('role_menu'), 'role_id', 'menu_id');
     }
+
+    public function departments(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Department::class,
+            StarshipTables::table('role_dept'),
+            'role_id',
+            'dept_id',
+        );
+    }
 }

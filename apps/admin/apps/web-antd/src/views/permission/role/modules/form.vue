@@ -2,6 +2,7 @@
 import type { FlattenedItem } from '@vben/common-ui';
 import type { Recordable } from '@vben/types';
 import type { VbenFormSchema } from '#/adapter/form';
+import type { DeptNode } from '#/api/system/department';
 import type { MenuTreeNode } from '#/api/system/menu';
 import type { RoleDetail, RoleRow, RoleSavePayload } from '#/api/system/role';
 
@@ -17,13 +18,15 @@ import { useVbenForm } from '#/adapter/form';
 import {
   createRole,
   fetchRole,
+  syncRoleDepts,
   syncRoleMenus,
   updateRole,
 } from '#/api/system/role';
+import { fetchDepartmentTree } from '#/api/system/department';
 import { fetchMenuTree } from '#/api/system/menu';
 import { ROLE_PERMISSIONS } from '#/constants/role-permissions';
 
-import { buildRoleFormSchema } from '../data';
+import { buildRoleFormSchema, DATA_SCOPE_CUSTOM } from '../data';
 
 const emits = defineEmits<{ success: [] }>();
 
@@ -38,6 +41,8 @@ const editingId = ref<number | null>(null);
 const openMode = ref<OpenMode>('create');
 const menuTree = ref<MenuTreeNode[]>([]);
 const menuReady = ref(false);
+const deptTree = ref<DeptNode[]>([]);
+const deptReady = ref(false);
 
 const isViewOnly = computed(() => openMode.value === 'view');
 
@@ -101,6 +106,18 @@ function mapMenuToVbenTree(
 
 const vbenTreeData = computed(() => mapMenuToVbenTree(menuTree.value));
 
+function mapDeptToVbenTree(nodes: DeptNode[]): Record<string, unknown>[] {
+  return nodes.map((n) => ({
+    children: n.children?.length
+      ? mapDeptToVbenTree(n.children)
+      : undefined,
+    id: n.id,
+    meta: { title: n.name },
+  }));
+}
+
+const vbenDeptTreeData = computed(() => mapDeptToVbenTree(deptTree.value));
+
 function getAuthNodeClass(item: FlattenedItem<Recordable<any>>) {
   const type = item.value?.type as string | undefined;
   if (type === 'button') {
@@ -151,8 +168,8 @@ const drawerTitle = computed(() => {
   return editingId.value ? '编辑角色' : '新增角色';
 });
 
-function stripMenuIds(values: Record<string, unknown>): RoleSavePayload {
-  const { menu_ids: _m, ...rest } = values;
+function stripRolePayload(values: Record<string, unknown>): RoleSavePayload {
+  const { menu_ids: _m, dept_ids: _d, ...rest } = values;
   return rest as unknown as RoleSavePayload;
 }
 
@@ -170,16 +187,29 @@ const [Drawer, drawerApi] = useVbenDrawer({
     const menuIds = ((raw.menu_ids as (number | string)[] | undefined) ?? []).map(
       (k) => Number(k),
     );
-    const values = stripMenuIds(raw);
+    const dataScope = Number(raw.data_scope);
+    const deptIds =
+      dataScope === DATA_SCOPE_CUSTOM
+        ? ((raw.dept_ids as (number | string)[] | undefined) ?? []).map((k) =>
+            Number(k),
+          )
+        : [];
+    const values = stripRolePayload(raw);
     drawerApi.lock();
     try {
       if (!editingId.value) {
         const created = await createRole(values);
         await syncRoleMenus(created.id, menuIds);
+        if (dataScope === DATA_SCOPE_CUSTOM) {
+          await syncRoleDepts(created.id, deptIds);
+        }
         message.success('创建成功');
       } else {
         await updateRole(editingId.value, values);
         await syncRoleMenus(editingId.value, menuIds);
+        if (dataScope === DATA_SCOPE_CUSTOM) {
+          await syncRoleDepts(editingId.value, deptIds);
+        }
         message.success('已保存');
       }
       drawerApi.close();
@@ -199,6 +229,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
     }
 
     await ensureMenuTree();
+    await ensureDeptTree();
 
     const data = drawerApi.getData<
       (RoleRow & { _mode?: 'view' }) | Record<string, never>
@@ -238,6 +269,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
       formApi.setValues({
         code: detail.code,
         data_scope: detail.data_scope,
+        dept_ids: detail.dept_ids ?? [],
         menu_ids: detail.menu_ids ?? [],
         name: detail.name,
         remark: detail.remark ?? '',
@@ -249,6 +281,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
       formApi.setValues({
         code: '',
         data_scope: 1,
+        dept_ids: [],
         menu_ids: [],
         name: '',
         remark: '',
@@ -268,6 +301,17 @@ async function loadMenuTree() {
 async function ensureMenuTree() {
   if (!menuReady.value) {
     await loadMenuTree();
+  }
+}
+
+async function loadDeptTree() {
+  deptTree.value = await fetchDepartmentTree(true);
+  deptReady.value = true;
+}
+
+async function ensureDeptTree() {
+  if (!deptReady.value) {
+    await loadDeptTree();
   }
 }
 
@@ -320,6 +364,27 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
             />
           </div>
         </div>
+      </template>
+      <template #dept_ids="slotProps">
+        <Spin :spinning="!deptReady" wrapper-class-name="w-full">
+          <div
+            :class="[
+              'dept-tree w-full',
+              { 'dept-tree--readonly': !canWriteRole },
+            ]"
+          >
+            <Tree
+              :tree-data="vbenDeptTreeData"
+              multiple
+              bordered
+              :default-expanded-level="10"
+              :disabled="!canWriteRole"
+              v-bind="slotProps"
+              value-field="id"
+              label-field="meta.title"
+            />
+          </div>
+        </Spin>
       </template>
       <template #menu_ids="slotProps">
         <Spin :spinning="!menuReady" wrapper-class-name="w-full">
@@ -564,11 +629,20 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
   @apply border-border bg-muted text-muted-foreground;
 }
 
-.role-drawer-form
-  :deep(
-    .permission-tree--readonly
-      button[role='checkbox'][data-state='checked'][data-disabled]
-  ) {
+.role-drawer-form :deep(.permission-tree--readonly button[role='checkbox'][data-state='checked'][data-disabled]) {
   @apply opacity-90;
+}
+
+.role-drawer-form :deep(.dept-tree .container.list-none) {
+  border-radius: 0.375rem;
+}
+
+.role-drawer-form :deep(.dept-tree--readonly) {
+  @apply text-muted-foreground;
+}
+
+.role-drawer-form :deep(.dept-tree--readonly button[role='checkbox']) {
+  pointer-events: none;
+  @apply opacity-100;
 }
 </style>

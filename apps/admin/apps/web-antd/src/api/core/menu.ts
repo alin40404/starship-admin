@@ -42,7 +42,6 @@ const PERMISSION_PAGE_BY_PATH: Record<string, string> = {
   '/permission/admins': 'views/permission/admin/index.vue',
   '/permission/roles': 'views/permission/role/index.vue',
   '/permission/menus': 'views/permission/menu/index.vue',
-  '/permission/data-permission': 'views/permission/data-scope/index.vue',
 };
 
 /** 路由 meta 用：库内为 Iconify `collection:name`（如 ep:menu），空则用占位 */

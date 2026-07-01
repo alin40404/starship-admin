@@ -9,6 +9,8 @@ import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { ROLE_PERMISSIONS } from '#/constants/role-permissions';
 
 /** 与后端 data_scope 1–5 一致：序号与选项顺序相同（1全部 2本部门 3本部门及下级 4仅本人 5自定义） */
+export const DATA_SCOPE_CUSTOM = 5;
+
 export const DATA_SCOPE_OPTIONS = [
   { label: '全部数据', value: 1 },
   { label: '本部门', value: 2 },
@@ -204,6 +206,21 @@ export function buildRoleFormSchema(params: {
       fieldName: 'data_scope',
       label: '数据范围',
       rules: readonly ? undefined : 'selectRequired',
+    },
+    {
+      component: 'Input',
+      controlClass: 'w-full min-w-0',
+      defaultValue: [],
+      dependencies: {
+        show(values) {
+          return Number(values.data_scope) === DATA_SCOPE_CUSTOM;
+        },
+        triggerFields: ['data_scope'],
+      },
+      fieldName: 'dept_ids',
+      formItemClass: 'col-span-full sm:col-span-2 w-full min-w-0 items-start',
+      label: '数据部门',
+      modelPropName: 'modelValue',
     },
     {
       component: 'InputNumber',

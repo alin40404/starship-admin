@@ -91,7 +91,6 @@ class StarshipFoundationSeeder extends Seeder
             '/permission/admins' => '/permission/admin/index',
             '/permission/roles' => '/permission/role/index',
             '/permission/menus' => '/permission/menu/index',
-            '/permission/data-permission' => '/permission/data-scope/index',
         ];
         if (isset($permission[$path])) {
             return $permission[$path];
@@ -254,20 +253,6 @@ class StarshipFoundationSeeder extends Seeder
                 'status' => 1,
             ]);
         }
-
-        Menu::query()->create([
-            'parent_id' => $access->id,
-            'type' => 2,
-            'name' => 'DataPerm',
-            'title' => '数据权限',
-            'path' => '/permission/data-permission',
-            'component' => $this->defaultComponentForMenuPath('/permission/data-permission'),
-            'permission' => 'system.data_permission',
-            'icon' => 'ep:trend-charts',
-            'sort' => 105,
-            'other_settings' => $this->menuOther(1, 1),
-            'status' => 1,
-        ]);
 
         $org = Menu::query()->create([
             'parent_id' => 0,
