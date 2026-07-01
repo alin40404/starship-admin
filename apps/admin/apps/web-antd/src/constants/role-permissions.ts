@@ -8,6 +8,7 @@ export const ROLE_PERMISSIONS = {
   CREATE: 'system.roles.create',
   DELETE: 'system.roles.delete',
   QUERY: 'system.roles.query',
+  STATUS: 'system.roles.status',
   UPDATE: 'system.roles.update',
 } as const;
 

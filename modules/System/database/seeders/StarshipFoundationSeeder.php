@@ -29,7 +29,6 @@ class StarshipFoundationSeeder extends Seeder
                 'name' => '超级管理员',
                 'data_scope' => 1,
                 'status' => 1,
-                'sort' => 0,
                 'remark' => '系统内置，绑定全部菜单',
             ]
         );

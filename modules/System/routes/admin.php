@@ -86,6 +86,8 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
             ->middleware('admin.permission.role.batch_status');
         Route::get('roles/{id}', [RoleController::class, 'show'])
             ->middleware('admin.permission:'.RolePermissions::QUERY);
+        Route::put('roles/{id}/status', [RoleController::class, 'updateStatus'])
+            ->middleware('admin.permission:'.RolePermissions::STATUS);
         Route::put('roles/{id}', [RoleController::class, 'update'])
             ->middleware('admin.permission:'.RolePermissions::UPDATE);
         Route::delete('roles/{id}', [RoleController::class, 'destroy'])

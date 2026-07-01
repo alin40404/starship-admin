@@ -66,7 +66,7 @@ export function useColumns(
   onStatusBeforeChange: (newVal: number, row: RoleRow) => Promise<boolean>,
   access: RoleAccessChecker,
 ): VxeTableGridColumns {
-  const canUpdate = access.can(ROLE_PERMISSIONS.UPDATE);
+  const canStatus = access.can(ROLE_PERMISSIONS.STATUS);
 
   return [
     {
@@ -87,7 +87,6 @@ export function useColumns(
       sortable: true,
       title: '数据范围',
     },
-    { field: 'sort', sortable: true, title: '排序', width: 80 },
     {
       field: 'status',
       sortable: true,
@@ -102,7 +101,7 @@ export function useColumns(
             return onStatusBeforeChange(newVal as number, row);
           },
           getSwitchProps: (row: RoleRow) => ({
-            disabled: row.code === 'super_admin' || !canUpdate,
+            disabled: row.code === 'super_admin' || !canStatus,
           }),
         },
         name: 'CellSwitch',
@@ -223,18 +222,6 @@ export function buildRoleFormSchema(params: {
       modelPropName: 'modelValue',
     },
     {
-      component: 'InputNumber',
-      componentProps: {
-        class: 'w-full',
-        disabled,
-        min: 0,
-      },
-      defaultValue: 0,
-      fieldName: 'sort',
-      hideLabel: true,
-      label: '排序',
-    },
-    {
       component: 'RadioGroup',
       componentProps: {
         buttonStyle: 'solid',
@@ -248,8 +235,6 @@ export function buildRoleFormSchema(params: {
       },
       defaultValue: 1,
       fieldName: 'status',
-      formItemClass: 'hidden',
-      hideLabel: true,
       label: '状态',
     },
     {

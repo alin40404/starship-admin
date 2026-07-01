@@ -12,7 +12,7 @@ import { useAccess } from '@vben/access';
 import { Tree, useVbenDrawer } from '@vben/common-ui';
 import { IconifyIcon } from '@vben/icons';
 
-import { message, Spin, InputNumber, Radio } from 'ant-design-vue';
+import { message, Spin } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
 import {
@@ -58,23 +58,6 @@ const canWriteRole = computed(() => {
   }
   return false;
 });
-
-const STATUS_OPTIONS = [
-  { label: '启用', value: 1 },
-  { label: '禁用', value: 0 },
-] as const;
-
-const statusValue = ref<number>(1);
-
-async function syncStatusValueFromForm() {
-  const values = (await formApi.getValues()) as Record<string, unknown>;
-  statusValue.value = Number(values.status ?? 1);
-}
-
-async function handleStatusChange(value: number) {
-  statusValue.value = value;
-  await formApi.setFieldValue('status', value);
-}
 
 function mapMenuToVbenTree(
   nodes: MenuTreeNode[],
@@ -273,10 +256,8 @@ const [Drawer, drawerApi] = useVbenDrawer({
         menu_ids: detail.menu_ids ?? [],
         name: detail.name,
         remark: detail.remark ?? '',
-        sort: detail.sort ?? 0,
         status: detail.status,
       });
-      await syncStatusValueFromForm();
     } else {
       formApi.setValues({
         code: '',
@@ -285,11 +266,9 @@ const [Drawer, drawerApi] = useVbenDrawer({
         menu_ids: [],
         name: '',
         remark: '',
-        sort: 0,
         status: 1,
       });
     }
-    await syncStatusValueFromForm();
   },
 });
 
@@ -339,32 +318,6 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
 <template>
   <Drawer :title="drawerTitle" class="max-w-[720px] w-[92vw]">
     <Form class="role-drawer-form">
-      <template #sort="slotProps">
-        <div class="grid w-full grid-cols-2 gap-x-4">
-          <div class="flex min-w-0 flex-col items-start">
-            <span class="text-sm leading-6">排序</span>
-            <InputNumber
-              class="w-full"
-              :disabled="!canWriteRole"
-              :min="0"
-              :value="slotProps.componentField.modelValue"
-              @update:value="slotProps.componentField['onUpdate:modelValue']"
-            />
-          </div>
-          <div class="flex min-w-0 flex-col items-start">
-            <span class="text-sm leading-6">状态</span>
-            <Radio.Group
-              :value="statusValue"
-              button-style="solid"
-              class="w-full"
-              :disabled="!canWriteRole"
-              option-type="button"
-              :options="[...STATUS_OPTIONS]"
-              @update:value="handleStatusChange"
-            />
-          </div>
-        </div>
-      </template>
       <template #dept_ids="slotProps">
         <Spin :spinning="!deptReady" wrapper-class-name="w-full">
           <div

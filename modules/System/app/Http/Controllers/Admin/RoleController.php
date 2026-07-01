@@ -36,14 +36,13 @@ class RoleController extends Controller
             'name' => 'name',
             'code' => 'code',
             'data_scope' => 'data_scope',
-            'sort' => 'sort',
             'status' => 'status',
         ];
 
         if (is_string($sortField) && isset($allowedSorts[$sortField])) {
             $query->orderBy($allowedSorts[$sortField], $sortOrder)->orderBy('id');
         } else {
-            $query->orderBy('sort')->orderBy('id');
+            $query->orderBy('id');
         }
 
         return ApiResponse::success($query->paginate((int) $request->get('per_page', 15)));
@@ -64,7 +63,6 @@ class RoleController extends Controller
             'name' => $role->name,
             'code' => $role->code,
             'data_scope' => $role->data_scope,
-            'sort' => $role->sort,
             'status' => $role->status,
             'remark' => $role->remark,
             'menu_ids' => $menuIds,
@@ -78,7 +76,6 @@ class RoleController extends Controller
             'name' => ['required', 'string', 'max:100'],
             'code' => ['required', 'string', 'max:100', Rule::unique(Role::class, 'code')],
             'data_scope' => ['sometimes', 'integer', 'min:1', 'max:5'],
-            'sort' => ['sometimes', 'integer'],
             'status' => ['sometimes', 'integer', 'in:0,1'],
             'remark' => ['nullable', 'string', 'max:255'],
         ]);
@@ -100,7 +97,6 @@ class RoleController extends Controller
             'name' => ['sometimes', 'string', 'max:100'],
             'code' => ['sometimes', 'string', 'max:100', Rule::unique(Role::class, 'code')->ignore($role->id)],
             'data_scope' => ['sometimes', 'integer', 'min:1', 'max:5'],
-            'sort' => ['sometimes', 'integer'],
             'status' => ['sometimes', 'integer', 'in:0,1'],
             'remark' => ['nullable', 'string', 'max:255'],
         ]);
@@ -112,6 +108,23 @@ class RoleController extends Controller
         }
 
         return ApiResponse::success($role->fresh(), '更新成功');
+    }
+
+    public function updateStatus(Request $request, int $id): JsonResponse
+    {
+        $role = Role::query()->findOrFail($id);
+
+        if ($role->code === 'super_admin') {
+            return ApiResponse::error('系统内置角色不允许修改', 422);
+        }
+
+        $data = $request->validate([
+            'status' => ['required', 'integer', 'in:0,1'],
+        ]);
+
+        $role->update($data);
+
+        return ApiResponse::success($role->fresh(), '状态已更新');
     }
 
     public function destroy(int $id): JsonResponse

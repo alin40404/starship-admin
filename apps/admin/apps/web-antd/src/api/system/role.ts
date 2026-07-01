@@ -7,7 +7,6 @@ export interface RoleRow {
   name: string;
   code: string;
   data_scope: number;
-  sort: number;
   status: number;
   remark: string | null;
   created_at?: string;
@@ -43,7 +42,6 @@ export interface RoleSavePayload {
   name: string;
   code: string;
   data_scope?: number;
-  sort?: number;
   status?: number;
   remark?: string;
 }
@@ -54,6 +52,12 @@ export function createRole(data: RoleSavePayload) {
 
 export function updateRole(id: number, data: Partial<RoleSavePayload>) {
   return requestClient.put<RoleRow>(`/system/roles/${id}`, data);
+}
+
+export function updateRoleStatus(id: number, status: 0 | 1) {
+  return requestClient.put<RoleRow>(`/system/roles/${id}/status`, {
+    status,
+  });
 }
 
 export function deleteRole(id: number) {

@@ -16,7 +16,7 @@ import {
   batchUpdateRoleStatus,
   deleteRole,
   fetchRolePage,
-  updateRole,
+  updateRoleStatus,
 } from '#/api/system/role';
 import { ROLE_PERMISSIONS } from '#/constants/role-permissions';
 
@@ -87,7 +87,7 @@ async function onRoleStatusToggle(nextStatus: number, row: RoleRow) {
       title: '切换状态',
       async onOk() {
         try {
-          await updateRole(row.id, { status: nextStatus });
+          await updateRoleStatus(row.id, nextStatus as 0 | 1);
           message.success('状态已更新');
           resolve(true);
         } catch {
