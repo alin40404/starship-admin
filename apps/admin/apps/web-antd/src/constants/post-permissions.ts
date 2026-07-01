@@ -3,8 +3,7 @@
  */
 export const POST_PERMISSIONS = {
   BATCH_DELETE: 'system.posts.batch_delete',
-  BATCH_DISABLE: 'system.posts.batch_disable',
-  BATCH_ENABLE: 'system.posts.batch_enable',
+  BATCH_STATUS: 'system.posts.batch_status',
   CREATE: 'system.posts.create',
   DELETE: 'system.posts.delete',
   QUERY: 'system.posts.query',

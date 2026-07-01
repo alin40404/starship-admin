@@ -267,14 +267,14 @@ function onBatchUpdateStatus(status: 0 | 1) {
             批量删除（{{ selectedRows.length }}）
           </Button>
           <Button
-            v-if="menuAccess.can(MENU_PERMISSIONS.BATCH_ENABLE)"
+            v-if="menuAccess.can(MENU_PERMISSIONS.BATCH_STATUS)"
             class="menu-batch-btn-enable ml-2"
             @click="onBatchUpdateStatus(1)"
           >
             批量启用
           </Button>
           <Button
-            v-if="menuAccess.can(MENU_PERMISSIONS.BATCH_DISABLE)"
+            v-if="menuAccess.can(MENU_PERMISSIONS.BATCH_STATUS)"
             class="menu-batch-btn-disable ml-2"
             @click="onBatchUpdateStatus(0)"
           >

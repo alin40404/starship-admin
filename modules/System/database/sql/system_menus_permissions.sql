@@ -50,10 +50,9 @@ FROM (
     UNION ALL SELECT 'Update', '编辑', 'system.menus.update', 4
     UNION ALL SELECT 'Delete', '删除', 'system.menus.delete', 5
     UNION ALL SELECT 'BatchDelete', '批量删除', 'system.menus.batch_delete', 6
-    UNION ALL SELECT 'BatchEnable', '批量启用', 'system.menus.batch_enable', 7
-    UNION ALL SELECT 'BatchDisable', '批量禁用', 'system.menus.batch_disable', 8
-    UNION ALL SELECT 'Status', '切换状态', 'system.menus.status', 9
-    UNION ALL SELECT 'Sort', '调整排序', 'system.menus.sort', 10
+    UNION ALL SELECT 'BatchStatus', '批量改状态', 'system.menus.batch_status', 7
+    UNION ALL SELECT 'Status', '切换状态', 'system.menus.status', 8
+    UNION ALL SELECT 'Sort', '调整排序', 'system.menus.sort', 9
 ) AS src
 WHERE @menu_parent_id IS NOT NULL
   AND NOT EXISTS (
@@ -76,8 +75,7 @@ WHERE r.`code` = 'super_admin'
       'system.menus.update',
       'system.menus.delete',
       'system.menus.batch_delete',
-      'system.menus.batch_enable',
-      'system.menus.batch_disable',
+      'system.menus.batch_status',
       'system.menus.status',
       'system.menus.sort'
   )

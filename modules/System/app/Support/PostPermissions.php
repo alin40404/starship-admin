@@ -17,9 +17,7 @@ final class PostPermissions
 
     public const BATCH_DELETE = 'system.posts.batch_delete';
 
-    public const BATCH_ENABLE = 'system.posts.batch_enable';
-
-    public const BATCH_DISABLE = 'system.posts.batch_disable';
+    public const BATCH_STATUS = 'system.posts.batch_status';
 
     /**
      * @return list<array{name: string, title: string, permission: string, sort: int}>
@@ -32,8 +30,7 @@ final class PostPermissions
             ['name' => 'Update', 'title' => '编辑', 'permission' => self::UPDATE, 'sort' => 3],
             ['name' => 'Delete', 'title' => '删除', 'permission' => self::DELETE, 'sort' => 4],
             ['name' => 'BatchDelete', 'title' => '批量删除', 'permission' => self::BATCH_DELETE, 'sort' => 5],
-            ['name' => 'BatchEnable', 'title' => '批量启用', 'permission' => self::BATCH_ENABLE, 'sort' => 6],
-            ['name' => 'BatchDisable', 'title' => '批量禁用', 'permission' => self::BATCH_DISABLE, 'sort' => 7],
+            ['name' => 'BatchStatus', 'title' => '批量改状态', 'permission' => self::BATCH_STATUS, 'sort' => 6],
         ];
     }
 }

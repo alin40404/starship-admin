@@ -189,14 +189,14 @@ const [Grid, gridApi] = useVbenVxeGrid<PostRow>({
             批量删除（{{ selectedRows.length }}）
           </Button>
           <Button
-            v-if="postAccess.can(POST_PERMISSIONS.BATCH_ENABLE)"
+            v-if="postAccess.can(POST_PERMISSIONS.BATCH_STATUS)"
             class="org-batch-btn-enable ml-2"
             @click="onBatchUpdateStatus(1)"
           >
             批量启用
           </Button>
           <Button
-            v-if="postAccess.can(POST_PERMISSIONS.BATCH_DISABLE)"
+            v-if="postAccess.can(POST_PERMISSIONS.BATCH_STATUS)"
             class="org-batch-btn-disable ml-2"
             @click="onBatchUpdateStatus(0)"
           >

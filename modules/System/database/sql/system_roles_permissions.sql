@@ -49,9 +49,8 @@ FROM (
     UNION ALL SELECT 'Update', '编辑', 'system.roles.update', 3
     UNION ALL SELECT 'Delete', '删除', 'system.roles.delete', 4
     UNION ALL SELECT 'BatchDelete', '批量删除', 'system.roles.batch_delete', 5
-    UNION ALL SELECT 'BatchEnable', '批量启用', 'system.roles.batch_enable', 6
-    UNION ALL SELECT 'BatchDisable', '批量禁用', 'system.roles.batch_disable', 7
-    UNION ALL SELECT 'Status', '切换状态', 'system.roles.status', 8
+    UNION ALL SELECT 'BatchStatus', '批量改状态', 'system.roles.batch_status', 6
+    UNION ALL SELECT 'Status', '切换状态', 'system.roles.status', 7
 ) AS src
 WHERE @role_parent_id IS NOT NULL
   AND NOT EXISTS (
@@ -73,8 +72,7 @@ WHERE r.`code` = 'super_admin'
       'system.roles.update',
       'system.roles.delete',
       'system.roles.batch_delete',
-      'system.roles.batch_enable',
-      'system.roles.batch_disable',
+      'system.roles.batch_status',
       'system.roles.status'
   )
   AND m.`deleted_at` IS NULL

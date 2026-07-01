@@ -49,9 +49,8 @@ FROM (
     UNION ALL SELECT 'Update', '编辑', 'system.admins.update', 3
     UNION ALL SELECT 'Delete', '删除', 'system.admins.delete', 4
     UNION ALL SELECT 'BatchDelete', '批量删除', 'system.admins.batch_delete', 5
-    UNION ALL SELECT 'BatchEnable', '批量启用', 'system.admins.batch_enable', 6
-    UNION ALL SELECT 'BatchDisable', '批量禁用', 'system.admins.batch_disable', 7
-    UNION ALL SELECT 'Status', '切换状态', 'system.admins.status', 8
+    UNION ALL SELECT 'BatchStatus', '批量改状态', 'system.admins.batch_status', 6
+    UNION ALL SELECT 'Status', '切换状态', 'system.admins.status', 7
 ) AS src
 WHERE @admin_parent_id IS NOT NULL
   AND NOT EXISTS (
@@ -73,8 +72,7 @@ WHERE r.`code` = 'super_admin'
       'system.admins.update',
       'system.admins.delete',
       'system.admins.batch_delete',
-      'system.admins.batch_enable',
-      'system.admins.batch_disable',
+      'system.admins.batch_status',
       'system.admins.status'
   )
   AND m.`deleted_at` IS NULL

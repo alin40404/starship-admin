@@ -37,8 +37,7 @@ FROM (
     UNION ALL SELECT 'Update', '编辑', 'system.posts.update', 3
     UNION ALL SELECT 'Delete', '删除', 'system.posts.delete', 4
     UNION ALL SELECT 'BatchDelete', '批量删除', 'system.posts.batch_delete', 5
-    UNION ALL SELECT 'BatchEnable', '批量启用', 'system.posts.batch_enable', 6
-    UNION ALL SELECT 'BatchDisable', '批量禁用', 'system.posts.batch_disable', 7
+    UNION ALL SELECT 'BatchStatus', '批量改状态', 'system.posts.batch_status', 6
 ) AS src
 WHERE @post_parent_id IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `sa_menus` m WHERE m.`permission` = src.`permission` AND m.`deleted_at` IS NULL);
@@ -71,7 +70,7 @@ WHERE r.`code` = 'super_admin'
       'system.departments.query','system.departments.create','system.departments.append',
       'system.departments.update','system.departments.delete','system.departments.status',
       'system.posts.query','system.posts.create','system.posts.update','system.posts.delete',
-      'system.posts.batch_delete','system.posts.batch_enable','system.posts.batch_disable',
+      'system.posts.batch_delete','system.posts.batch_status',
       'system.user_groups.query','system.user_groups.create','system.user_groups.update',
       'system.user_groups.delete','system.user_groups.batch_delete'
   )

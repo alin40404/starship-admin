@@ -55,7 +55,7 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
         Route::post('posts/batch-destroy', [PostController::class, 'batchDestroy'])
             ->middleware('admin.permission:'.PostPermissions::BATCH_DELETE);
         Route::put('posts/batch-status', [PostController::class, 'batchUpdateStatus'])
-            ->middleware('admin.permission.post.batch_status');
+            ->middleware('admin.permission:'.PostPermissions::BATCH_STATUS);
         Route::put('posts/{id}', [PostController::class, 'update'])
             ->middleware('admin.permission:'.PostPermissions::UPDATE);
         Route::delete('posts/{id}', [PostController::class, 'destroy'])
@@ -84,7 +84,7 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
         Route::post('roles/batch-destroy', [RoleController::class, 'batchDestroy'])
             ->middleware('admin.permission:'.RolePermissions::BATCH_DELETE);
         Route::put('roles/batch-status', [RoleController::class, 'batchUpdateStatus'])
-            ->middleware('admin.permission.role.batch_status');
+            ->middleware('admin.permission:'.RolePermissions::BATCH_STATUS);
         Route::get('roles/{id}', [RoleController::class, 'show'])
             ->middleware('admin.permission:'.RolePermissions::QUERY);
         Route::put('roles/{id}/status', [RoleController::class, 'updateStatus'])
@@ -109,7 +109,7 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
         Route::post('menus/batch-destroy', [MenuController::class, 'batchDestroy'])
             ->middleware('admin.permission:'.MenuPermissions::BATCH_DELETE);
         Route::put('menus/batch-status', [MenuController::class, 'batchUpdateStatus'])
-            ->middleware('admin.permission.menu.batch_status');
+            ->middleware('admin.permission:'.MenuPermissions::BATCH_STATUS);
         // 新增菜单：parent_id > 0 走 append，否则走 create（见 EnsureAdminMenuStorePermission）
         Route::post('menus', [MenuController::class, 'store'])
             ->middleware('admin.permission.menu.store');
@@ -126,7 +126,7 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
         Route::post('admins/batch-destroy', [AdminUserController::class, 'batchDestroy'])
             ->middleware('admin.permission:'.AdminPermissions::BATCH_DELETE);
         Route::put('admins/batch-status', [AdminUserController::class, 'batchUpdateStatus'])
-            ->middleware('admin.permission.admin.batch_status');
+            ->middleware('admin.permission:'.AdminPermissions::BATCH_STATUS);
         Route::post('admins', [AdminUserController::class, 'store'])
             ->middleware('admin.permission:'.AdminPermissions::CREATE);
         Route::put('admins/{id}/status', [AdminUserController::class, 'updateStatus'])

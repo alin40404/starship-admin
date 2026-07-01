@@ -224,14 +224,14 @@ const [Grid, gridApi] = useVbenVxeGrid<AdminRow>({
             批量删除（{{ selectedRows.length }}）
           </Button>
           <Button
-            v-if="adminAccess.can(ADMIN_PERMISSIONS.BATCH_ENABLE)"
+            v-if="adminAccess.can(ADMIN_PERMISSIONS.BATCH_STATUS)"
             class="admin-batch-btn-enable ml-2"
             @click="onBatchUpdateStatus(1)"
           >
             批量启用
           </Button>
           <Button
-            v-if="adminAccess.can(ADMIN_PERMISSIONS.BATCH_DISABLE)"
+            v-if="adminAccess.can(ADMIN_PERMISSIONS.BATCH_STATUS)"
             class="admin-batch-btn-disable ml-2"
             @click="onBatchUpdateStatus(0)"
           >

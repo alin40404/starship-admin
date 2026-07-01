@@ -3,8 +3,7 @@
  */
 export const ROLE_PERMISSIONS = {
   BATCH_DELETE: 'system.roles.batch_delete',
-  BATCH_DISABLE: 'system.roles.batch_disable',
-  BATCH_ENABLE: 'system.roles.batch_enable',
+  BATCH_STATUS: 'system.roles.batch_status',
   CREATE: 'system.roles.create',
   DELETE: 'system.roles.delete',
   QUERY: 'system.roles.query',

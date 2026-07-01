@@ -17,9 +17,7 @@ final class RolePermissions
 
     public const BATCH_DELETE = 'system.roles.batch_delete';
 
-    public const BATCH_ENABLE = 'system.roles.batch_enable';
-
-    public const BATCH_DISABLE = 'system.roles.batch_disable';
+    public const BATCH_STATUS = 'system.roles.batch_status';
 
     public const STATUS = 'system.roles.status';
 
@@ -34,9 +32,8 @@ final class RolePermissions
             ['name' => 'Update', 'title' => '编辑', 'permission' => self::UPDATE, 'sort' => 3],
             ['name' => 'Delete', 'title' => '删除', 'permission' => self::DELETE, 'sort' => 4],
             ['name' => 'BatchDelete', 'title' => '批量删除', 'permission' => self::BATCH_DELETE, 'sort' => 5],
-            ['name' => 'BatchEnable', 'title' => '批量启用', 'permission' => self::BATCH_ENABLE, 'sort' => 6],
-            ['name' => 'BatchDisable', 'title' => '批量禁用', 'permission' => self::BATCH_DISABLE, 'sort' => 7],
-            ['name' => 'Status', 'title' => '切换状态', 'permission' => self::STATUS, 'sort' => 8],
+            ['name' => 'BatchStatus', 'title' => '批量改状态', 'permission' => self::BATCH_STATUS, 'sort' => 6],
+            ['name' => 'Status', 'title' => '切换状态', 'permission' => self::STATUS, 'sort' => 7],
         ];
     }
 }

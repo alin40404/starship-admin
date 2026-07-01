@@ -4,8 +4,7 @@
 export const MENU_PERMISSIONS = {
   APPEND: 'system.menus.append',
   BATCH_DELETE: 'system.menus.batch_delete',
-  BATCH_DISABLE: 'system.menus.batch_disable',
-  BATCH_ENABLE: 'system.menus.batch_enable',
+  BATCH_STATUS: 'system.menus.batch_status',
   CREATE: 'system.menus.create',
   DELETE: 'system.menus.delete',
   QUERY: 'system.menus.query',

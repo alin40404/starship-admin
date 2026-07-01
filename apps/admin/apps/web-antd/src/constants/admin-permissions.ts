@@ -3,8 +3,7 @@
  */
 export const ADMIN_PERMISSIONS = {
   BATCH_DELETE: 'system.admins.batch_delete',
-  BATCH_DISABLE: 'system.admins.batch_disable',
-  BATCH_ENABLE: 'system.admins.batch_enable',
+  BATCH_STATUS: 'system.admins.batch_status',
   CREATE: 'system.admins.create',
   DELETE: 'system.admins.delete',
   QUERY: 'system.admins.query',
