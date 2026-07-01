@@ -6,6 +6,7 @@ import type {
 
 import type { RoleRow } from '#/api/system/role';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
+import { ROLE_PERMISSIONS } from '#/constants/role-permissions';
 
 /** 与后端 data_scope 1–5 一致：序号与选项顺序相同（1全部 2本部门 3本部门及下级 4仅本人 5自定义） */
 export const DATA_SCOPE_OPTIONS = [
@@ -53,10 +54,18 @@ export function useGridFormSchema(): VbenFormSchema[] {
   ];
 }
 
+export type RoleAccessChecker = {
+  can: (code: string) => boolean;
+  canAny: (codes: string[]) => boolean;
+};
+
 export function useColumns(
   onActionClick: OnActionClickFn<RoleRow>,
   onStatusBeforeChange: (newVal: number, row: RoleRow) => Promise<boolean>,
+  access: RoleAccessChecker,
 ): VxeTableGridColumns {
+  const canUpdate = access.can(ROLE_PERMISSIONS.UPDATE);
+
   return [
     { field: 'id', sortable: true, title: 'ID', width: 72 },
     { field: 'name', minWidth: 140, sortable: true, title: '名称' },
@@ -85,7 +94,7 @@ export function useColumns(
             return onStatusBeforeChange(newVal as number, row);
           },
           getSwitchProps: (row: RoleRow) => ({
-            disabled: row.code === 'super_admin',
+            disabled: row.code === 'super_admin' || !canUpdate,
           }),
         },
         name: 'CellSwitch',
@@ -115,20 +124,26 @@ export function useColumns(
         options: [
           {
             code: 'view',
-            show: (row: RoleRow) => row.code === 'super_admin',
+            show: (row: RoleRow) =>
+              row.code === 'super_admin' &&
+              access.can(ROLE_PERMISSIONS.QUERY),
             text: '查看',
             type: 'link',
           },
           {
             code: 'edit',
-            show: (row: RoleRow) => row.code !== 'super_admin',
+            show: (row: RoleRow) =>
+              row.code !== 'super_admin' &&
+              access.can(ROLE_PERMISSIONS.UPDATE),
             text: '编辑',
             type: 'link',
           },
           {
             code: 'delete',
             danger: true,
-            show: (row: RoleRow) => row.code !== 'super_admin',
+            show: (row: RoleRow) =>
+              row.code !== 'super_admin' &&
+              access.can(ROLE_PERMISSIONS.DELETE),
             text: '删除',
             type: 'link',
           },

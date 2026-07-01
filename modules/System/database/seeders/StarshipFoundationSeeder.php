@@ -9,6 +9,7 @@ use Modules\System\App\Models\DictItem;
 use Modules\System\App\Models\DictType;
 use Modules\System\App\Models\Menu;
 use Modules\System\App\Support\MenuPermissions;
+use Modules\System\App\Support\RolePermissions;
 use Modules\System\App\Models\Role;
 use Modules\System\App\Models\Setting;
 
@@ -187,7 +188,7 @@ class StarshipFoundationSeeder extends Seeder
             ]);
         }
 
-        Menu::query()->create([
+        $roleMgmt = Menu::query()->create([
             'parent_id' => $access->id,
             'type' => 2,
             'name' => 'RoleMgmt',
@@ -200,6 +201,22 @@ class StarshipFoundationSeeder extends Seeder
             'other_settings' => $this->menuOther(1, 1),
             'status' => 1,
         ]);
+
+        foreach (RolePermissions::buttonDefinitions() as $btn) {
+            Menu::query()->create([
+                'parent_id' => $roleMgmt->id,
+                'type' => 3,
+                'name' => $btn['name'],
+                'title' => $btn['title'],
+                'path' => null,
+                'component' => null,
+                'permission' => $btn['permission'],
+                'icon' => null,
+                'sort' => $btn['sort'],
+                'other_settings' => $this->menuOther(0),
+                'status' => 1,
+            ]);
+        }
 
         $adminMenu = Menu::query()->create([
             'parent_id' => $access->id,

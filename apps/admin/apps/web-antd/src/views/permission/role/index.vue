@@ -2,6 +2,7 @@
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { RoleRow } from '#/api/system/role';
 
+import { useAccess } from '@vben/access';
 import { Page, useVbenDrawer } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
@@ -9,9 +10,17 @@ import { Button, message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { deleteRole, fetchRolePage, updateRole } from '#/api/system/role';
+import { ROLE_PERMISSIONS } from '#/constants/role-permissions';
 
 import { useColumns, useGridFormSchema } from './data';
 import RoleForm from './modules/form.vue';
+
+const { hasAccessByCodes } = useAccess();
+
+const roleAccess = {
+  can: (code: string) => hasAccessByCodes([code]),
+  canAny: (codes: string[]) => hasAccessByCodes(codes),
+};
 
 const [RoleFormDrawer, roleFormDrawerApi] = useVbenDrawer({
   connectedComponent: RoleForm,
@@ -92,7 +101,7 @@ const [Grid, gridApi] = useVbenVxeGrid<RoleRow>({
     },
   },
   gridOptions: {
-    columns: useColumns(onActionClick, onRoleStatusToggle),
+    columns: useColumns(onActionClick, onRoleStatusToggle, roleAccess),
     height: 'auto',
     keepSource: true,
     proxyConfig: {
@@ -137,7 +146,11 @@ const [Grid, gridApi] = useVbenVxeGrid<RoleRow>({
     <RoleFormDrawer class="max-w-[720px] w-[92vw]" @success="onRefresh" />
     <Grid>
       <template #toolbar-actions>
-        <Button type="primary" @click="onCreate">
+        <Button
+          v-if="roleAccess.can(ROLE_PERMISSIONS.CREATE)"
+          type="primary"
+          @click="onCreate"
+        >
           <Plus class="size-4" />
           新增角色
         </Button>

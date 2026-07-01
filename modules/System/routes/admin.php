@@ -12,6 +12,7 @@ use Modules\System\App\Http\Controllers\Admin\MenuController;
 use Modules\System\App\Http\Controllers\Admin\PostController;
 use Modules\System\App\Http\Controllers\Admin\RoleController;
 use Modules\System\App\Support\MenuPermissions;
+use Modules\System\App\Support\RolePermissions;
 
 Route::middleware('api')->prefix('admin-api')->group(function () {
     Route::prefix('auth')->group(function () {
@@ -38,15 +39,25 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
         Route::put('posts/{id}', [PostController::class, 'update']);
         Route::delete('posts/{id}', [PostController::class, 'destroy']);
 
-        Route::get('roles', [RoleController::class, 'index']);
-        Route::post('roles', [RoleController::class, 'store']);
-        Route::get('roles/{id}', [RoleController::class, 'show']);
-        Route::put('roles/{id}', [RoleController::class, 'update']);
-        Route::delete('roles/{id}', [RoleController::class, 'destroy']);
-        Route::put('roles/{id}/menus', [RoleController::class, 'syncMenus']);
+        // 角色管理（/permission/roles）— 权限码见 RolePermissions
+        Route::get('roles', [RoleController::class, 'index'])
+            ->middleware('admin.permission:'.RolePermissions::QUERY);
+        Route::post('roles', [RoleController::class, 'store'])
+            ->middleware('admin.permission:'.RolePermissions::CREATE);
+        Route::get('roles/{id}', [RoleController::class, 'show'])
+            ->middleware('admin.permission:'.RolePermissions::QUERY);
+        Route::put('roles/{id}', [RoleController::class, 'update'])
+            ->middleware('admin.permission:'.RolePermissions::UPDATE);
+        Route::delete('roles/{id}', [RoleController::class, 'destroy'])
+            ->middleware('admin.permission:'.RolePermissions::DELETE);
+        // 同步角色菜单权限：新增或编辑角色时均可调用
+        Route::put('roles/{id}/menus', [RoleController::class, 'syncMenus'])
+            ->middleware('admin.permission.any:'.RolePermissions::CREATE.','.RolePermissions::UPDATE);
 
+        // 菜单管理（/permission/menus）— 权限码见 MenuPermissions
         Route::get('menus/tree', [MenuController::class, 'tree'])
             ->middleware('admin.permission:'.MenuPermissions::QUERY);
+        // 校验路由路径是否已存在，表单联动用，不做按钮权限拦截
         Route::get('menus/path-exists', [MenuController::class, 'pathExists']);
         Route::get('menus', [MenuController::class, 'index'])
             ->middleware('admin.permission:'.MenuPermissions::QUERY);
@@ -54,6 +65,7 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
             ->middleware('admin.permission:'.MenuPermissions::BATCH_DELETE);
         Route::put('menus/batch-status', [MenuController::class, 'batchUpdateStatus'])
             ->middleware('admin.permission.menu.batch_status');
+        // 新增菜单：parent_id > 0 走 append，否则走 create（见 EnsureAdminMenuStorePermission）
         Route::post('menus', [MenuController::class, 'store'])
             ->middleware('admin.permission.menu.store');
         Route::put('menus/{id}/status', [MenuController::class, 'updateStatus'])
@@ -64,7 +76,6 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
             ->middleware('admin.permission:'.MenuPermissions::UPDATE);
         Route::delete('menus/{id}', [MenuController::class, 'destroy'])
             ->middleware('admin.permission:'.MenuPermissions::DELETE);
-
         Route::get('admins', [AdminUserController::class, 'index']);
         Route::post('admins/batch-destroy', [AdminUserController::class, 'batchDestroy']);
         Route::post('admins', [AdminUserController::class, 'store']);

@@ -7,6 +7,7 @@ import type { RoleDetail, RoleRow, RoleSavePayload } from '#/api/system/role';
 
 import { computed, nextTick, reactive, ref, watch } from 'vue';
 
+import { useAccess } from '@vben/access';
 import { Tree, useVbenDrawer } from '@vben/common-ui';
 import { IconifyIcon } from '@vben/icons';
 
@@ -20,10 +21,13 @@ import {
   updateRole,
 } from '#/api/system/role';
 import { fetchMenuTree } from '#/api/system/menu';
+import { ROLE_PERMISSIONS } from '#/constants/role-permissions';
 
 import { buildRoleFormSchema } from '../data';
 
 const emits = defineEmits<{ success: [] }>();
+
+const { hasAccessByCodes } = useAccess();
 
 type OpenMode = 'create' | 'edit' | 'view';
 
@@ -36,6 +40,19 @@ const menuTree = ref<MenuTreeNode[]>([]);
 const menuReady = ref(false);
 
 const isViewOnly = computed(() => openMode.value === 'view');
+
+const canWriteRole = computed(() => {
+  if (isViewOnly.value) {
+    return false;
+  }
+  if (openMode.value === 'create') {
+    return hasAccessByCodes([ROLE_PERMISSIONS.CREATE]);
+  }
+  if (openMode.value === 'edit') {
+    return hasAccessByCodes([ROLE_PERMISSIONS.UPDATE]);
+  }
+  return false;
+});
 
 const STATUS_OPTIONS = [
   { label: '启用', value: 1 },
@@ -114,13 +131,13 @@ const [Form, formApi] = useVbenForm(
 );
 
 watch(
-  [editingId, openMode],
+  [editingId, openMode, canWriteRole],
   () => {
     formApi.setState({
       schema: buildRoleFormSchema({
         isEdit: editingId.value !== null,
         lockBuiltin: false,
-        readonly: openMode.value === 'view',
+        readonly: !canWriteRole.value,
       }),
     });
   },
@@ -141,7 +158,7 @@ function stripMenuIds(values: Record<string, unknown>): RoleSavePayload {
 
 const [Drawer, drawerApi] = useVbenDrawer({
   async onConfirm() {
-    if (openMode.value === 'view') {
+    if (!canWriteRole.value) {
       drawerApi.close();
       return;
     }
@@ -197,7 +214,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
     editingId.value = id;
     openMode.value = isView ? 'view' : id ? 'edit' : 'create';
 
-    if (openMode.value === 'view') {
+    if (openMode.value === 'view' || !canWriteRole.value) {
       drawerApi.setState({
         cancelText: '关闭',
         showConfirmButton: false,
@@ -256,7 +273,7 @@ async function ensureMenuTree() {
 
 /** 点击「全部」文案时同步触发工具行全选 checkbox */
 function handlePermissionTreeCheckAllClick(event: MouseEvent) {
-  if (isViewOnly.value) return;
+  if (!canWriteRole.value) return;
 
   const target = event.target as HTMLElement | null;
   if (!target) return;
@@ -284,7 +301,7 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
             <span class="text-sm leading-6">排序</span>
             <InputNumber
               class="w-full"
-              :disabled="isViewOnly"
+              :disabled="!canWriteRole"
               :min="0"
               :value="slotProps.componentField.modelValue"
               @update:value="slotProps.componentField['onUpdate:modelValue']"
@@ -296,7 +313,7 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
               :value="statusValue"
               button-style="solid"
               class="w-full"
-              :disabled="isViewOnly"
+              :disabled="!canWriteRole"
               option-type="button"
               :options="[...STATUS_OPTIONS]"
               @update:value="handleStatusChange"
@@ -309,7 +326,7 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
           <div
             :class="[
               'permission-tree w-full',
-              { 'permission-tree--readonly': isViewOnly },
+              { 'permission-tree--readonly': !canWriteRole },
             ]"
             @click.capture="handlePermissionTreeCheckAllClick"
           >
@@ -318,7 +335,7 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
               multiple
               bordered
               :default-expanded-level="10"
-              :disabled="isViewOnly"
+              :disabled="!canWriteRole"
               :get-node-class="getAuthNodeClass"
               v-bind="slotProps"
               value-field="id"
