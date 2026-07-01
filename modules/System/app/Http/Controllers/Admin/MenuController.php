@@ -55,6 +55,30 @@ class MenuController extends Controller
         return ApiResponse::success($menu->fresh(), '更新成功');
     }
 
+    public function updateStatus(Request $request, int $id): JsonResponse
+    {
+        $menu = Menu::query()->findOrFail($id);
+        $data = $request->validate([
+            'status' => ['required', 'integer', 'in:0,1'],
+        ]);
+
+        $menu->update(['status' => $data['status']]);
+
+        return ApiResponse::success($menu->fresh(), '状态已更新');
+    }
+
+    public function updateSort(Request $request, int $id): JsonResponse
+    {
+        $menu = Menu::query()->findOrFail($id);
+        $data = $request->validate([
+            'sort' => ['required', 'integer', 'min:0'],
+        ]);
+
+        $menu->update(['sort' => $data['sort']]);
+
+        return ApiResponse::success($menu->fresh(), '排序已更新');
+    }
+
     public function destroy(int $id): JsonResponse
     {
         Menu::query()->whereKey($id)->firstOrFail()->delete();

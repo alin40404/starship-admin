@@ -7,6 +7,7 @@ import type { MenuTreeNode } from '#/api/system/menu';
 
 import { ref } from 'vue';
 
+import { useAccess } from '@vben/access';
 import { Page, useVbenDrawer } from '@vben/common-ui';
 import { IconifyIcon, Plus } from '@vben/icons';
 import { MenuBadge } from '@vben-core/menu-ui';
@@ -18,12 +19,21 @@ import {
   batchUpdateMenuStatus,
   deleteMenu,
   fetchMenuTree,
-  updateMenu,
+  updateMenuSort,
+  updateMenuStatus,
 } from '#/api/system/menu';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { MENU_PERMISSIONS } from '#/constants/menu-permissions';
 
 import { menuDisplayLabel, useColumns } from './data';
 import MenuForm from './modules/form.vue';
+
+const { hasAccessByCodes } = useAccess();
+
+const menuAccess = {
+  can: (code: string) => hasAccessByCodes([code]),
+  canAny: (codes: string[]) => hasAccessByCodes(codes),
+};
 
 const [MenuFormDrawer, menuFormDrawerApi] = useVbenDrawer({
   connectedComponent: MenuForm,
@@ -52,7 +62,7 @@ async function onMenuStatusToggle(nextStatus: number, row: MenuTreeNode) {
       title: '切换状态',
       async onOk() {
         try {
-          await updateMenu(row.id, { status: nextStatus });
+          await updateMenuStatus(row.id, nextStatus as 0 | 1);
           message.success('状态已更新');
           onRefresh();
           resolve(true);
@@ -95,7 +105,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
 
       gridApi.setLoading(true);
       try {
-        await updateMenu(row.id, { sort });
+        await updateMenuSort(row.id, sort);
         message.success('排序已更新');
         onRefresh();
       } catch {
@@ -109,10 +119,13 @@ const [Grid, gridApi] = useVbenVxeGrid({
     checkboxConfig: {
       highlight: true,
     },
-    columns: useColumns(onActionClick, onMenuStatusToggle),
+    columns: useColumns(onActionClick, onMenuStatusToggle, menuAccess),
     editConfig: {
       beforeEditMethod({ column }) {
-        return column.field === 'sort';
+        return (
+          column.field === 'sort' &&
+          menuAccess.can(MENU_PERMISSIONS.SORT)
+        );
       },
       mode: 'cell',
       trigger: 'dblclick',
@@ -246,16 +259,22 @@ function onBatchUpdateStatus(status: 0 | 1) {
     <Grid>
       <template #toolbar-actions>
         <template v-if="selectedRows.length > 0">
-          <Button danger @click="onBatchDelete">
+          <Button
+            v-if="menuAccess.can(MENU_PERMISSIONS.BATCH_DELETE)"
+            danger
+            @click="onBatchDelete"
+          >
             批量删除（{{ selectedRows.length }}）
           </Button>
           <Button
+            v-if="menuAccess.can(MENU_PERMISSIONS.BATCH_ENABLE)"
             class="menu-batch-btn-enable ml-2"
             @click="onBatchUpdateStatus(1)"
           >
             批量启用
           </Button>
           <Button
+            v-if="menuAccess.can(MENU_PERMISSIONS.BATCH_DISABLE)"
             class="menu-batch-btn-disable ml-2"
             @click="onBatchUpdateStatus(0)"
           >
@@ -263,7 +282,11 @@ function onBatchUpdateStatus(status: 0 | 1) {
           </Button>
           <Button class="ml-2" type="link" @click="clearSelection">取消选择</Button>
         </template>
-        <Button v-else type="primary" @click="onCreate">
+        <Button
+          v-else-if="menuAccess.can(MENU_PERMISSIONS.CREATE)"
+          type="primary"
+          @click="onCreate"
+        >
           <Plus class="size-4" />
           新增菜单
         </Button>

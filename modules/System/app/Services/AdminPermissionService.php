@@ -65,6 +65,35 @@ class AdminPermissionService
             ->all();
     }
 
+    public function hasPermission(Admin $admin, string $permission): bool
+    {
+        if ((int) $admin->is_super === 1) {
+            return true;
+        }
+
+        return in_array($permission, $this->permissionCodes($admin), true);
+    }
+
+    /**
+     * @param  list<string>  $permissions
+     */
+    public function hasAnyPermission(Admin $admin, array $permissions): bool
+    {
+        if ((int) $admin->is_super === 1) {
+            return true;
+        }
+
+        $codes = array_flip($this->permissionCodes($admin));
+
+        foreach ($permissions as $permission) {
+            if (isset($codes[$permission])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * 侧边栏用菜单树（仅 visible=1）。
      *

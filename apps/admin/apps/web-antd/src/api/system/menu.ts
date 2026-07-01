@@ -97,8 +97,18 @@ export function createMenu(data: MenuSavePayload) {
   return requestClient.post<MenuTreeNode>('/system/menus', data);
 }
 
-export function updateMenu(id: number, data: Partial<MenuSavePayload>) {
+export function updateMenu(id: number, data: MenuSavePayload) {
   return requestClient.put<MenuTreeNode>(`/system/menus/${id}`, data);
+}
+
+export function updateMenuStatus(id: number, status: 0 | 1) {
+  return requestClient.put<MenuTreeNode>(`/system/menus/${id}/status`, {
+    status,
+  });
+}
+
+export function updateMenuSort(id: number, sort: number) {
+  return requestClient.put<MenuTreeNode>(`/system/menus/${id}/sort`, { sort });
 }
 
 export function deleteMenu(id: number) {

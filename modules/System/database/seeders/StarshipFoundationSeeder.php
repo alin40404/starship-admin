@@ -8,6 +8,7 @@ use Modules\System\App\Models\Department;
 use Modules\System\App\Models\DictItem;
 use Modules\System\App\Models\DictType;
 use Modules\System\App\Models\Menu;
+use Modules\System\App\Support\MenuPermissions;
 use Modules\System\App\Models\Role;
 use Modules\System\App\Models\Setting;
 
@@ -170,14 +171,7 @@ class StarshipFoundationSeeder extends Seeder
             'status' => 1,
         ]);
 
-        foreach (
-            [
-                ['name' => 'Query', 'title' => '查询', 'permission' => 'system.menus.query', 'sort' => 1],
-                ['name' => 'Create', 'title' => '新增', 'permission' => 'system.menus.create', 'sort' => 2],
-                ['name' => 'Update', 'title' => '编辑', 'permission' => 'system.menus.update', 'sort' => 3],
-                ['name' => 'Delete', 'title' => '删除', 'permission' => 'system.menus.delete', 'sort' => 4],
-            ] as $btn
-        ) {
+        foreach (MenuPermissions::buttonDefinitions() as $btn) {
             Menu::query()->create([
                 'parent_id' => $menuMgmt->id,
                 'type' => 3,

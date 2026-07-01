@@ -11,6 +11,7 @@ use Modules\System\App\Http\Controllers\Admin\DictTypeController;
 use Modules\System\App\Http\Controllers\Admin\MenuController;
 use Modules\System\App\Http\Controllers\Admin\PostController;
 use Modules\System\App\Http\Controllers\Admin\RoleController;
+use Modules\System\App\Support\MenuPermissions;
 
 Route::middleware('api')->prefix('admin-api')->group(function () {
     Route::prefix('auth')->group(function () {
@@ -44,14 +45,25 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
         Route::delete('roles/{id}', [RoleController::class, 'destroy']);
         Route::put('roles/{id}/menus', [RoleController::class, 'syncMenus']);
 
-        Route::get('menus/tree', [MenuController::class, 'tree']);
+        Route::get('menus/tree', [MenuController::class, 'tree'])
+            ->middleware('admin.permission:'.MenuPermissions::QUERY);
         Route::get('menus/path-exists', [MenuController::class, 'pathExists']);
-        Route::get('menus', [MenuController::class, 'index']);
-        Route::post('menus/batch-destroy', [MenuController::class, 'batchDestroy']);
-        Route::put('menus/batch-status', [MenuController::class, 'batchUpdateStatus']);
-        Route::post('menus', [MenuController::class, 'store']);
-        Route::put('menus/{id}', [MenuController::class, 'update']);
-        Route::delete('menus/{id}', [MenuController::class, 'destroy']);
+        Route::get('menus', [MenuController::class, 'index'])
+            ->middleware('admin.permission:'.MenuPermissions::QUERY);
+        Route::post('menus/batch-destroy', [MenuController::class, 'batchDestroy'])
+            ->middleware('admin.permission:'.MenuPermissions::BATCH_DELETE);
+        Route::put('menus/batch-status', [MenuController::class, 'batchUpdateStatus'])
+            ->middleware('admin.permission.menu.batch_status');
+        Route::post('menus', [MenuController::class, 'store'])
+            ->middleware('admin.permission.menu.store');
+        Route::put('menus/{id}/status', [MenuController::class, 'updateStatus'])
+            ->middleware('admin.permission:'.MenuPermissions::STATUS);
+        Route::put('menus/{id}/sort', [MenuController::class, 'updateSort'])
+            ->middleware('admin.permission:'.MenuPermissions::SORT);
+        Route::put('menus/{id}', [MenuController::class, 'update'])
+            ->middleware('admin.permission:'.MenuPermissions::UPDATE);
+        Route::delete('menus/{id}', [MenuController::class, 'destroy'])
+            ->middleware('admin.permission:'.MenuPermissions::DELETE);
 
         Route::get('admins', [AdminUserController::class, 'index']);
         Route::post('admins/batch-destroy', [AdminUserController::class, 'batchDestroy']);

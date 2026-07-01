@@ -8,6 +8,7 @@ import type {
 
 import type { MenuTreeNode } from '#/api/system/menu';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
+import { MENU_PERMISSIONS } from '#/constants/menu-permissions';
 import { componentKeys } from '#/router/routes';
 import { IconifyIcon } from '@vben/icons';
 import { getPopupContainer } from '@vben/utils';
@@ -142,13 +143,22 @@ function renderParentMenuTitleSlot({
   return h('div', { class: 'flex min-w-0 items-center gap-1' }, coms);
 }
 
+export type MenuAccessChecker = {
+  can: (code: string) => boolean;
+  canAny: (codes: string[]) => boolean;
+};
+
 export function useColumns(
   onActionClick: OnActionClickFn<MenuTreeNode>,
   onStatusBeforeChange: (
     newVal: number,
     row: MenuTreeNode,
   ) => Promise<boolean>,
+  access: MenuAccessChecker,
 ): VxeTableGridColumns {
+  const canSort = access.can(MENU_PERMISSIONS.SORT);
+  const canStatus = access.can(MENU_PERMISSIONS.STATUS);
+
   return [
     {
       align: 'center',
@@ -201,24 +211,26 @@ export function useColumns(
     },
     {
       align: 'center',
-      className: 'menu-sort-editable-col',
-      editRender: {
-        name: 'VxeNumberInput',
-        props: {
-          min: 0,
-          type: 'integer',
-        },
-        events: {
-          keydown(params, event: KeyboardEvent) {
-            if (event.key !== 'Enter') {
-              return;
-            }
-            event.preventDefault();
-            (event.target as HTMLElement | null)?.blur?.();
-            void params.$table.clearEdit();
-          },
-        },
-      },
+      className: canSort ? 'menu-sort-editable-col' : undefined,
+      editRender: canSort
+        ? {
+            name: 'VxeNumberInput',
+            props: {
+              min: 0,
+              type: 'integer',
+            },
+            events: {
+              keydown(params, event: KeyboardEvent) {
+                if (event.key !== 'Enter') {
+                  return;
+                }
+                event.preventDefault();
+                (event.target as HTMLElement | null)?.blur?.();
+                void params.$table.clearEdit();
+              },
+            },
+          }
+        : undefined,
       field: 'sort',
       title: '排序',
       width: 100,
@@ -240,6 +252,9 @@ export function useColumns(
           beforeChange(newVal: unknown, row: MenuTreeNode) {
             return onStatusBeforeChange(newVal as number, row);
           },
+          getSwitchProps: () => ({
+            disabled: !canStatus,
+          }),
         },
         name: 'CellSwitch',
       },
@@ -259,18 +274,21 @@ export function useColumns(
         options: [
           {
             code: 'append',
-            show: (row: MenuTreeNode) => row.type !== 3,
+            show: (row: MenuTreeNode) =>
+              row.type !== 3 && access.can(MENU_PERMISSIONS.APPEND),
             text: '新增下级',
             type: 'link',
           },
           {
             code: 'edit',
+            show: () => access.can(MENU_PERMISSIONS.UPDATE),
             text: '编辑',
             type: 'link',
           },
           {
             code: 'delete',
             danger: true,
+            show: () => access.can(MENU_PERMISSIONS.DELETE),
             text: '删除',
             type: 'link',
           },
