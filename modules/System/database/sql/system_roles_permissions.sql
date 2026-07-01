@@ -48,6 +48,9 @@ FROM (
     UNION ALL SELECT 'Create', '新增角色', 'system.roles.create', 2
     UNION ALL SELECT 'Update', '编辑', 'system.roles.update', 3
     UNION ALL SELECT 'Delete', '删除', 'system.roles.delete', 4
+    UNION ALL SELECT 'BatchDelete', '批量删除', 'system.roles.batch_delete', 5
+    UNION ALL SELECT 'BatchEnable', '批量启用', 'system.roles.batch_enable', 6
+    UNION ALL SELECT 'BatchDisable', '批量禁用', 'system.roles.batch_disable', 7
 ) AS src
 WHERE @role_parent_id IS NOT NULL
   AND NOT EXISTS (
@@ -67,7 +70,10 @@ WHERE r.`code` = 'super_admin'
       'system.roles.query',
       'system.roles.create',
       'system.roles.update',
-      'system.roles.delete'
+      'system.roles.delete',
+      'system.roles.batch_delete',
+      'system.roles.batch_enable',
+      'system.roles.batch_disable'
   )
   AND m.`deleted_at` IS NULL
   AND NOT EXISTS (

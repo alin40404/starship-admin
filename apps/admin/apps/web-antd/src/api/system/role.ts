@@ -59,6 +59,20 @@ export function deleteRole(id: number) {
   return requestClient.delete(`/system/roles/${id}`);
 }
 
+export function batchDeleteRoles(ids: number[]) {
+  return requestClient.post<{ deleted: number }>(
+    '/system/roles/batch-destroy',
+    { ids },
+  );
+}
+
+export function batchUpdateRoleStatus(ids: number[], status: 0 | 1) {
+  return requestClient.put<{ updated: number }>('/system/roles/batch-status', {
+    ids,
+    status,
+  });
+}
+
 export function syncRoleMenus(id: number, menuIds: number[]) {
   return requestClient.put<{ menu_ids: number[] }>(
     `/system/roles/${id}/menus`,

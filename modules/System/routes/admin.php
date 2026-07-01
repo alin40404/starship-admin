@@ -44,6 +44,10 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
             ->middleware('admin.permission:'.RolePermissions::QUERY);
         Route::post('roles', [RoleController::class, 'store'])
             ->middleware('admin.permission:'.RolePermissions::CREATE);
+        Route::post('roles/batch-destroy', [RoleController::class, 'batchDestroy'])
+            ->middleware('admin.permission:'.RolePermissions::BATCH_DELETE);
+        Route::put('roles/batch-status', [RoleController::class, 'batchUpdateStatus'])
+            ->middleware('admin.permission.role.batch_status');
         Route::get('roles/{id}', [RoleController::class, 'show'])
             ->middleware('admin.permission:'.RolePermissions::QUERY);
         Route::put('roles/{id}', [RoleController::class, 'update'])

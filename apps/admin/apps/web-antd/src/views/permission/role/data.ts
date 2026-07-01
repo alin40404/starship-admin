@@ -67,6 +67,12 @@ export function useColumns(
   const canUpdate = access.can(ROLE_PERMISSIONS.UPDATE);
 
   return [
+    {
+      align: 'center',
+      fixed: 'left',
+      type: 'checkbox',
+      width: 48,
+    },
     { field: 'id', sortable: true, title: 'ID', width: 72 },
     { field: 'name', minWidth: 140, sortable: true, title: '名称' },
     { field: 'code', minWidth: 140, sortable: true, title: '编码' },

@@ -2,6 +2,8 @@
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { RoleRow } from '#/api/system/role';
 
+import { ref } from 'vue';
+
 import { useAccess } from '@vben/access';
 import { Page, useVbenDrawer } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
@@ -9,7 +11,13 @@ import { Plus } from '@vben/icons';
 import { Button, message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { deleteRole, fetchRolePage, updateRole } from '#/api/system/role';
+import {
+  batchDeleteRoles,
+  batchUpdateRoleStatus,
+  deleteRole,
+  fetchRolePage,
+  updateRole,
+} from '#/api/system/role';
 import { ROLE_PERMISSIONS } from '#/constants/role-permissions';
 
 import { useColumns, useGridFormSchema } from './data';
@@ -26,6 +34,18 @@ const [RoleFormDrawer, roleFormDrawerApi] = useVbenDrawer({
   connectedComponent: RoleForm,
   destroyOnClose: true,
 });
+
+const selectedRows = ref<RoleRow[]>([]);
+
+function syncSelection() {
+  const records = gridApi?.grid?.getCheckboxRecords?.() ?? [];
+  selectedRows.value = records as RoleRow[];
+}
+
+function clearSelection() {
+  gridApi?.grid?.clearCheckboxRow?.();
+  selectedRows.value = [];
+}
 
 function onCreate() {
   roleFormDrawerApi.setData({}).open();
@@ -84,7 +104,48 @@ async function onRoleStatusToggle(nextStatus: number, row: RoleRow) {
 async function onDelete(row: RoleRow) {
   await deleteRole(row.id);
   message.success('已删除');
+  clearSelection();
   gridApi.query();
+}
+
+function onBatchDelete() {
+  const ids = selectedRows.value.map((row) => row.id);
+  if (ids.length === 0) {
+    return;
+  }
+  Modal.confirm({
+    content: `确定删除选中的 ${ids.length} 条角色吗？删除后不可恢复。`,
+    okText: '删除',
+    okType: 'danger',
+    cancelText: '取消',
+    title: '批量删除',
+    async onOk() {
+      await batchDeleteRoles(ids);
+      message.success('已批量删除');
+      clearSelection();
+      onRefresh();
+    },
+  });
+}
+
+function onBatchUpdateStatus(status: 0 | 1) {
+  const ids = selectedRows.value.map((row) => row.id);
+  if (ids.length === 0) {
+    return;
+  }
+  const label = status === 1 ? '启用' : '禁用';
+  Modal.confirm({
+    content: `确定将选中的 ${ids.length} 条角色批量【${label}】吗？`,
+    okText: '确定',
+    cancelText: '取消',
+    title: `批量${label}`,
+    async onOk() {
+      await batchUpdateRoleStatus(ids, status);
+      message.success(`已批量${label}`);
+      clearSelection();
+      onRefresh();
+    },
+  });
 }
 
 const [Grid, gridApi] = useVbenVxeGrid<RoleRow>({
@@ -100,7 +161,15 @@ const [Grid, gridApi] = useVbenVxeGrid<RoleRow>({
       content: '查询',
     },
   },
+  gridEvents: {
+    checkboxAll: syncSelection,
+    checkboxChange: syncSelection,
+  },
   gridOptions: {
+    checkboxConfig: {
+      checkMethod: ({ row }) => (row as RoleRow).code !== 'super_admin',
+      highlight: true,
+    },
     columns: useColumns(onActionClick, onRoleStatusToggle, roleAccess),
     height: 'auto',
     keepSource: true,
@@ -146,8 +215,34 @@ const [Grid, gridApi] = useVbenVxeGrid<RoleRow>({
     <RoleFormDrawer class="max-w-[720px] w-[92vw]" @success="onRefresh" />
     <Grid>
       <template #toolbar-actions>
+        <template v-if="selectedRows.length > 0">
+          <Button
+            v-if="roleAccess.can(ROLE_PERMISSIONS.BATCH_DELETE)"
+            danger
+            @click="onBatchDelete"
+          >
+            批量删除（{{ selectedRows.length }}）
+          </Button>
+          <Button
+            v-if="roleAccess.can(ROLE_PERMISSIONS.BATCH_ENABLE)"
+            class="role-batch-btn-enable ml-2"
+            @click="onBatchUpdateStatus(1)"
+          >
+            批量启用
+          </Button>
+          <Button
+            v-if="roleAccess.can(ROLE_PERMISSIONS.BATCH_DISABLE)"
+            class="role-batch-btn-disable ml-2"
+            @click="onBatchUpdateStatus(0)"
+          >
+            批量禁用
+          </Button>
+          <Button class="ml-2" type="link" @click="clearSelection">
+            取消选择
+          </Button>
+        </template>
         <Button
-          v-if="roleAccess.can(ROLE_PERMISSIONS.CREATE)"
+          v-else-if="roleAccess.can(ROLE_PERMISSIONS.CREATE)"
           type="primary"
           @click="onCreate"
         >
@@ -158,3 +253,30 @@ const [Grid, gridApi] = useVbenVxeGrid<RoleRow>({
     </Grid>
   </Page>
 </template>
+
+<style lang="scss">
+/** 批量启用 / 批量禁用（工具栏） */
+.vxe-grid .role-batch-btn-enable.ant-btn {
+  color: #fff;
+  background-color: #52c41a;
+  border-color: #52c41a;
+}
+
+.vxe-grid .role-batch-btn-enable.ant-btn:not(:disabled):hover {
+  color: #fff;
+  background-color: #73d13d;
+  border-color: #73d13d;
+}
+
+.vxe-grid .role-batch-btn-disable.ant-btn {
+  color: #fff;
+  background-color: #fa8c16;
+  border-color: #fa8c16;
+}
+
+.vxe-grid .role-batch-btn-disable.ant-btn:not(:disabled):hover {
+  color: #fff;
+  background-color: #ffa940;
+  border-color: #ffa940;
+}
+</style>

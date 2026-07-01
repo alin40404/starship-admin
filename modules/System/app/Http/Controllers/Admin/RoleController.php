@@ -120,6 +120,37 @@ class RoleController extends Controller
         return ApiResponse::success(null, '已删除');
     }
 
+    public function batchDestroy(Request $request): JsonResponse
+    {
+        $ids = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+        ])['ids'];
+
+        $deleted = Role::query()
+            ->whereIn('id', $ids)
+            ->where('code', '!=', 'super_admin')
+            ->delete();
+
+        return ApiResponse::success(['deleted' => $deleted], '已批量删除');
+    }
+
+    public function batchUpdateStatus(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+            'status' => ['required', 'integer', 'in:0,1'],
+        ]);
+
+        $updated = Role::query()
+            ->whereIn('id', $data['ids'])
+            ->where('code', '!=', 'super_admin')
+            ->update(['status' => $data['status']]);
+
+        return ApiResponse::success(['updated' => $updated], '已批量更新状态');
+    }
+
     public function syncMenus(Request $request, int $id): JsonResponse
     {
         $role = Role::query()->findOrFail($id);
