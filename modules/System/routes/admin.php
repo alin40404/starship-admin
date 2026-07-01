@@ -12,6 +12,7 @@ use Modules\System\App\Http\Controllers\Admin\MenuController;
 use Modules\System\App\Http\Controllers\Admin\PostController;
 use Modules\System\App\Http\Controllers\Admin\RoleController;
 use Modules\System\App\Http\Controllers\Admin\UserGroupController;
+use Modules\System\App\Support\AdminPermissions;
 use Modules\System\App\Support\DepartmentPermissions;
 use Modules\System\App\Support\MenuPermissions;
 use Modules\System\App\Support\PostPermissions;
@@ -120,11 +121,20 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
             ->middleware('admin.permission:'.MenuPermissions::UPDATE);
         Route::delete('menus/{id}', [MenuController::class, 'destroy'])
             ->middleware('admin.permission:'.MenuPermissions::DELETE);
-        Route::get('admins', [AdminUserController::class, 'index']);
-        Route::post('admins/batch-destroy', [AdminUserController::class, 'batchDestroy']);
-        Route::post('admins', [AdminUserController::class, 'store']);
-        Route::put('admins/{id}', [AdminUserController::class, 'update']);
-        Route::delete('admins/{id}', [AdminUserController::class, 'destroy']);
+        Route::get('admins', [AdminUserController::class, 'index'])
+            ->middleware('admin.permission:'.AdminPermissions::QUERY);
+        Route::post('admins/batch-destroy', [AdminUserController::class, 'batchDestroy'])
+            ->middleware('admin.permission:'.AdminPermissions::BATCH_DELETE);
+        Route::put('admins/batch-status', [AdminUserController::class, 'batchUpdateStatus'])
+            ->middleware('admin.permission.admin.batch_status');
+        Route::post('admins', [AdminUserController::class, 'store'])
+            ->middleware('admin.permission:'.AdminPermissions::CREATE);
+        Route::put('admins/{id}/status', [AdminUserController::class, 'updateStatus'])
+            ->middleware('admin.permission:'.AdminPermissions::STATUS);
+        Route::put('admins/{id}', [AdminUserController::class, 'update'])
+            ->middleware('admin.permission:'.AdminPermissions::UPDATE);
+        Route::delete('admins/{id}', [AdminUserController::class, 'destroy'])
+            ->middleware('admin.permission:'.AdminPermissions::DELETE);
 
         Route::get('configs', [ConfigController::class, 'index']);
         Route::put('configs', [ConfigController::class, 'batchUpsert']);

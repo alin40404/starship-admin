@@ -12,6 +12,7 @@ import { preferences } from '@vben/preferences';
 
 import { fetchDepartmentTree } from '#/api/system/department';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
+import { ADMIN_PERMISSIONS } from '#/constants/admin-permissions';
 
 export function mapDeptForTreeSelect(
   nodes: DeptNode[],
@@ -90,10 +91,17 @@ export function useGridFormSchema(): VbenFormSchema[] {
   ];
 }
 
+export type AdminAccessChecker = {
+  can: (code: string) => boolean;
+};
+
 export function useColumns(
   onActionClick: OnActionClickFn<AdminRow>,
   onStatusBeforeChange: (newVal: number, row: AdminRow) => Promise<boolean>,
+  access: AdminAccessChecker,
 ): VxeTableGridColumns {
+  const canStatus = access.can(ADMIN_PERMISSIONS.STATUS);
+
   return [
     {
       align: 'center',
@@ -178,7 +186,7 @@ export function useColumns(
             return onStatusBeforeChange(newVal as number, row);
           },
           getSwitchProps: (row: AdminRow) => ({
-            disabled: row.is_super === 1,
+            disabled: row.is_super === 1 || !canStatus,
           }),
         },
         name: 'CellSwitch',
@@ -196,14 +204,18 @@ export function useColumns(
         options: [
           {
             code: 'edit',
-            show: (row: AdminRow) => row.is_super !== 1,
+            show: (row: AdminRow) =>
+              row.is_super !== 1 &&
+              access.can(ADMIN_PERMISSIONS.UPDATE),
             text: '编辑',
             type: 'link',
           },
           {
             code: 'delete',
             danger: true,
-            show: (row: AdminRow) => row.is_super !== 1,
+            show: (row: AdminRow) =>
+              row.is_super !== 1 &&
+              access.can(ADMIN_PERMISSIONS.DELETE),
             text: '删除',
             type: 'link',
           },

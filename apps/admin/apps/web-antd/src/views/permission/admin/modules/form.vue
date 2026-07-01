@@ -7,6 +7,7 @@ import type { RoleRow } from '#/api/system/role';
 
 import { computed, nextTick, reactive, ref, watch } from 'vue';
 
+import { useAccess } from '@vben/access';
 import { useVbenDrawer } from '@vben/common-ui';
 
 import { message } from 'ant-design-vue';
@@ -17,10 +18,13 @@ import { uploadAttachment } from '#/api/system/attachment';
 import { fetchDepartmentTree } from '#/api/system/department';
 import { fetchPostPage } from '#/api/system/post';
 import { fetchRolePage } from '#/api/system/role';
+import { ADMIN_PERMISSIONS } from '#/constants/admin-permissions';
 
 import { buildAdminFormSchema, mapDeptForTreeSelect } from '../data';
 
 const emits = defineEmits<{ success: [] }>();
+
+const { hasAccessByCodes } = useAccess();
 
 const editingId = ref<number | null>(null);
 const editingIsSuperAdmin = ref(false);
@@ -99,8 +103,19 @@ const drawerTitle = computed(() =>
   editingId.value ? '编辑管理员' : '新增管理员',
 );
 
+const canWriteAdmin = computed(() => {
+  if (editingId.value) {
+    return hasAccessByCodes([ADMIN_PERMISSIONS.UPDATE]);
+  }
+  return hasAccessByCodes([ADMIN_PERMISSIONS.CREATE]);
+});
+
 const [Drawer, drawerApi] = useVbenDrawer({
   async onConfirm() {
+    if (!canWriteAdmin.value) {
+      drawerApi.close();
+      return;
+    }
     const { valid } = await formApi.validate();
     if (!valid) {
       return;
@@ -150,6 +165,10 @@ const [Drawer, drawerApi] = useVbenDrawer({
 
   async onOpenChange(isOpen: boolean) {
     if (!isOpen) {
+      drawerApi.setState({
+        cancelText: undefined,
+        showConfirmButton: true,
+      });
       return;
     }
     await ensureMetaLoaded();
@@ -168,6 +187,18 @@ const [Drawer, drawerApi] = useVbenDrawer({
     } else {
       editingIsSuperAdmin.value = false;
       editingId.value = null;
+    }
+
+    if (!canWriteAdmin.value) {
+      drawerApi.setState({
+        cancelText: '关闭',
+        showConfirmButton: false,
+      });
+    } else {
+      drawerApi.setState({
+        cancelText: undefined,
+        showConfirmButton: true,
+      });
     }
 
     await nextTick();

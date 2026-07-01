@@ -8,6 +8,7 @@ use Modules\System\App\Models\Department;
 use Modules\System\App\Models\DictItem;
 use Modules\System\App\Models\DictType;
 use Modules\System\App\Models\Menu;
+use Modules\System\App\Support\AdminPermissions;
 use Modules\System\App\Support\DepartmentPermissions;
 use Modules\System\App\Support\MenuPermissions;
 use Modules\System\App\Support\PostPermissions;
@@ -236,14 +237,7 @@ class StarshipFoundationSeeder extends Seeder
             'status' => 1,
         ]);
 
-        foreach (
-            [
-                ['name' => 'Query', 'title' => '查询', 'permission' => 'system.admins.query', 'sort' => 1],
-                ['name' => 'Create', 'title' => '新增', 'permission' => 'system.admins.create', 'sort' => 2],
-                ['name' => 'Update', 'title' => '编辑', 'permission' => 'system.admins.update', 'sort' => 3],
-                ['name' => 'Delete', 'title' => '删除', 'permission' => 'system.admins.delete', 'sort' => 4],
-            ] as $btn
-        ) {
+        foreach (AdminPermissions::buttonDefinitions() as $btn) {
             Menu::query()->create([
                 'parent_id' => $adminMenu->id,
                 'type' => 3,

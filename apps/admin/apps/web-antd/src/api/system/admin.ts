@@ -66,6 +66,12 @@ export function updateAdmin(id: number, data: Partial<AdminSavePayload>) {
   return requestClient.put<AdminRow>(`/system/admins/${id}`, data);
 }
 
+export function updateAdminStatus(id: number, status: 0 | 1) {
+  return requestClient.put<AdminRow>(`/system/admins/${id}/status`, {
+    status,
+  });
+}
+
 export function deleteAdmin(id: number) {
   return requestClient.delete(`/system/admins/${id}`);
 }
@@ -75,4 +81,11 @@ export function batchDeleteAdmins(ids: number[]) {
     '/system/admins/batch-destroy',
     { ids },
   );
+}
+
+export function batchUpdateAdminStatus(ids: number[], status: 0 | 1) {
+  return requestClient.put<{ updated: number }>('/system/admins/batch-status', {
+    ids,
+    status,
+  });
 }
