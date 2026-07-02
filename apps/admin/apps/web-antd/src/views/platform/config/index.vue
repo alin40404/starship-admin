@@ -101,23 +101,19 @@ const currentSection = computed(
       class="bg-card flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-border md:min-h-[520px] md:flex-row"
     >
       <aside
-        class="config-section-tabs flex shrink-0 flex-row gap-1 overflow-x-auto overscroll-x-contain border-b border-border p-2 md:w-[200px] md:flex-col md:overflow-x-visible md:overflow-y-auto md:border-b-0 md:border-r md:p-3"
+        class="config-section-tabs flex shrink-0 flex-row gap-2 overflow-x-auto overscroll-x-contain border-b border-border p-2 md:w-[200px] md:flex-col md:gap-0 md:overflow-x-visible md:overflow-y-auto md:border-b-0 md:border-r md:p-0"
       >
         <button
           v-for="item in sections"
           :key="item.key"
-          class="shrink-0 snap-start rounded-md px-3 py-2 text-center transition-colors md:w-full md:flex-none md:px-3 md:py-2.5 md:text-left"
-          :class="
-            activeSection === item.key
-              ? 'bg-primary/10 text-primary font-medium'
-              : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-          "
+          class="config-section-item"
+          :class="{ 'is-active': activeSection === item.key }"
           type="button"
           @click="activeSection = item.key"
         >
-          <div class="whitespace-nowrap text-sm">{{ item.label }}</div>
+          <div class="config-section-item__label">{{ item.label }}</div>
           <div
-            class="text-muted-foreground mt-0.5 hidden truncate text-xs leading-5 md:block"
+            class="config-section-item__desc"
             :title="item.description"
           >
             {{ item.description }}
@@ -180,5 +176,99 @@ const currentSection = computed(
 .config-section-tabs::-webkit-scrollbar-thumb {
   border-radius: 9999px;
   background-color: hsl(var(--border));
+}
+
+.config-section-item {
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  border: 1px solid hsl(var(--border));
+  border-radius: 9999px;
+  background: transparent;
+  padding: 6px 14px;
+  text-align: center;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+  cursor: pointer;
+}
+
+.config-section-item__label {
+  font-size: 14px;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.config-section-item__desc {
+  display: none;
+}
+
+.config-section-item:hover {
+  border-color: hsl(var(--primary) / 0.35);
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+.config-section-item.is-active {
+  border-color: hsl(var(--primary) / 0.25);
+  background-color: hsl(var(--primary) / 0.08);
+  color: hsl(var(--primary));
+  font-weight: 500;
+}
+
+.config-section-item.is-active .config-section-item__label {
+  color: hsl(var(--primary));
+}
+
+@media (min-width: 768px) {
+  .config-section-tabs {
+    flex-direction: column;
+    gap: 0;
+    overflow-x: visible;
+    overflow-y: auto;
+  }
+
+  .config-section-item {
+    width: 100%;
+    border: 0;
+    border-left: 2px solid transparent;
+    border-radius: 0;
+    padding: 10px 12px;
+    text-align: left;
+    color: hsl(var(--foreground));
+  }
+
+  .config-section-item__desc {
+    display: block;
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    line-height: 1.25;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .config-section-item:hover {
+    border-color: transparent;
+    border-left-color: hsl(var(--border));
+    background-color: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+  }
+
+  .config-section-item:hover .config-section-item__desc {
+    color: hsl(var(--muted-foreground));
+  }
+
+  .config-section-item.is-active {
+    border-color: transparent;
+    border-left-color: hsl(var(--primary));
+    background-color: hsl(var(--primary) / 0.08);
+    color: hsl(var(--primary));
+  }
+
+  .config-section-item.is-active .config-section-item__desc {
+    color: hsl(var(--muted-foreground));
+  }
 }
 </style>
