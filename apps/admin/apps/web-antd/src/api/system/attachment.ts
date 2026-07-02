@@ -37,6 +37,7 @@ export interface AttachmentPageQuery {
   per_page: number;
   file_name?: string;
   file_ext?: string;
+  mime_type?: string;
   category?: string;
   storage?: string;
   sort_field?: string;
@@ -52,6 +53,20 @@ export function fetchAttachmentCategories() {
 export function fetchAttachmentPage(params: AttachmentPageQuery) {
   return requestClient.get<LaravelPaginate<AttachmentRow>>(
     '/system/attachments',
+    { params },
+  );
+}
+
+/** 表单附件选择弹窗：仅需登录，不要求附件管理查询权限 */
+export function fetchAttachmentPickerCategories() {
+  return requestClient.get<AttachmentCategoryOption[]>(
+    '/system/attachments/picker/categories',
+  );
+}
+
+export function fetchAttachmentPickerPage(params: AttachmentPageQuery) {
+  return requestClient.get<LaravelPaginate<AttachmentRow>>(
+    '/system/attachments/picker',
     { params },
   );
 }

@@ -68,6 +68,9 @@ import { isEmpty } from '@vben/utils';
 
 import { message, Modal, notification } from 'ant-design-vue';
 
+import type { AttachmentFieldProps } from '#/components/attachment-field';
+import { AttachmentField } from '#/components/attachment-field';
+
 type AdapterUploadProps = UploadProps & {
   aspectRatio?: string;
   crop?: boolean;
@@ -600,6 +603,7 @@ export type ComponentType =
   | 'ApiCascader'
   | 'ApiSelect'
   | 'ApiTreeSelect'
+  | 'AttachmentField'
   | 'AutoComplete'
   | 'Cascader'
   | 'Checkbox'
@@ -633,6 +637,7 @@ export interface ComponentPropsMap {
   ApiCascader: ApiComponentSharedProps & CascaderProps;
   ApiSelect: ApiComponentSharedProps & SelectProps;
   ApiTreeSelect: ApiComponentSharedProps & TreeSelectProps;
+  AttachmentField: AttachmentFieldProps;
   AutoComplete: AutoCompleteProps;
   Cascader: CascaderProps;
   Checkbox: CheckboxProps;
@@ -687,6 +692,7 @@ async function initComponentAdapter() {
       // TreeSelect(vc-tree-select) 下拉显隐为 onDropdownVisibleChange，与 Select 的 onVisibleChange 不同
       visibleEvent: 'onDropdownVisibleChange',
     }),
+    AttachmentField,
     AutoComplete,
     Cascader,
     Checkbox,

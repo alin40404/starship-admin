@@ -4,6 +4,7 @@ namespace Modules\System\App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Support\ApiResponse;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -18,7 +19,32 @@ class AttachmentController extends Controller
         return ApiResponse::success(AttachmentCategory::options());
     }
 
+    /**
+     * 表单附件选择弹窗：分类列表，仅需登录。
+     */
+    public function pickerCategories(): JsonResponse
+    {
+        return ApiResponse::success(AttachmentCategory::options());
+    }
+
     public function index(Request $request): JsonResponse
+    {
+        return ApiResponse::success(
+            $this->paginateAttachments($this->buildAttachmentQuery($request), $request),
+        );
+    }
+
+    /**
+     * 表单附件选择弹窗：附件分页列表，仅需登录。
+     */
+    public function pickerIndex(Request $request): JsonResponse
+    {
+        return ApiResponse::success(
+            $this->paginateAttachments($this->buildAttachmentQuery($request), $request),
+        );
+    }
+
+    private function buildAttachmentQuery(Request $request): Builder
     {
         $query = Attachment::query()->with('admin:id,username,nickname');
 
@@ -62,6 +88,11 @@ class AttachmentController extends Controller
             $query->orderByDesc('id');
         }
 
+        return $query;
+    }
+
+    private function paginateAttachments(Builder $query, Request $request): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
         $paginator = $query->paginate((int) $request->get('per_page', 15));
         $labels = AttachmentCategory::labelMap();
 
@@ -74,7 +105,7 @@ class AttachmentController extends Controller
             return $row;
         });
 
-        return ApiResponse::success($paginator);
+        return $paginator;
     }
 
     public function store(Request $request): JsonResponse

@@ -197,6 +197,8 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
         Route::delete('areas/{id}', [AreaController::class, 'destroy'])
             ->middleware('admin.permission:'.AreaPermissions::DELETE);
 
+        Route::get('attachments/picker/categories', [AttachmentController::class, 'pickerCategories']);
+        Route::get('attachments/picker', [AttachmentController::class, 'pickerIndex']);
         Route::get('attachments/categories', [AttachmentController::class, 'categories'])
             ->middleware('admin.permission:'.AttachmentPermissions::QUERY);
         Route::get('attachments', [AttachmentController::class, 'index'])
