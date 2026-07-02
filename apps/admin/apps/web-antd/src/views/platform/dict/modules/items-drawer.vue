@@ -6,11 +6,12 @@ import type {
   DictTypeRow,
 } from '#/api/system/dict';
 
-import { computed, ref } from 'vue';
+import { computed, ref, useTemplateRef, watch } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { useVbenDrawer, useVbenModal } from '@vben/common-ui';
 
+import { useElementSize } from '@vueuse/core';
 import { Button, message } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
@@ -34,6 +35,8 @@ const dictAccess = {
 
 const activeType = ref<DictTypeRow | null>(null);
 const editingItemId = ref<number | null>(null);
+const gridWrapRef = useTemplateRef<HTMLElement>('gridWrapRef');
+const { height: gridWrapHeight } = useElementSize(gridWrapRef);
 
 const drawerTitle = computed(() => {
   const name = activeType.value?.name ?? '';
@@ -147,10 +150,11 @@ const [ItemModal, itemModalApi] = useVbenModal({
 });
 
 const [Grid, gridApi] = useVbenVxeGrid<DictItemRow>({
+  class: 'h-full min-h-0',
   gridClass: 'p-0',
   gridOptions: {
     columns: useDictItemColumns(onItemActionClick, dictAccess),
-    height: 420,
+    height: 360,
     proxyConfig: {
       ajax: {
         query: async ({ page }) => {
@@ -170,6 +174,16 @@ const [Grid, gridApi] = useVbenVxeGrid<DictItemRow>({
   } as VxeTableGridOptions<DictItemRow>,
 });
 
+watch(
+  gridWrapHeight,
+  (height) => {
+    gridApi.setGridOptions({
+      height: Math.max(Math.floor(height), 200),
+    });
+  },
+  { immediate: true },
+);
+
 const [Drawer, drawerApi] = useVbenDrawer({
   onConfirm() {
     drawerApi.close();
@@ -187,7 +201,11 @@ const [Drawer, drawerApi] = useVbenDrawer({
 </script>
 
 <template>
-  <Drawer :title="drawerTitle" class="max-w-[860px] w-[94vw]">
+  <Drawer
+    :title="drawerTitle"
+    class="max-w-[860px] w-[94vw]"
+    content-class="flex min-h-0 flex-1 flex-col overflow-hidden"
+  >
     <div class="mb-3 flex justify-end">
       <Button
         v-if="dictAccess.can(DICT_PERMISSIONS.CREATE)"
@@ -197,7 +215,9 @@ const [Drawer, drawerApi] = useVbenDrawer({
         新增字典项
       </Button>
     </div>
-    <Grid />
+    <div ref="gridWrapRef" class="min-h-0 flex-1">
+      <Grid />
+    </div>
   </Drawer>
 
   <ItemModal :title="itemModalTitle" class="w-[520px] max-w-[calc(100vw-32px)]">
