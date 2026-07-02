@@ -192,13 +192,16 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
       class="bg-card flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-border md:min-h-[520px] md:flex-row"
     >
       <aside
-        class="attachment-category-tabs flex shrink-0 flex-row gap-1 overflow-x-auto overscroll-x-contain border-b border-border p-2 md:w-[200px] md:flex-col md:overflow-x-visible md:overflow-y-auto md:border-b-0 md:border-r md:p-3"
+        class="attachment-category-panel flex shrink-0 flex-col overflow-hidden border-b border-border md:w-[200px] md:border-b-0 md:border-r"
       >
         <div
-          class="text-muted-foreground hidden px-3 pb-1 text-xs font-medium md:block"
+          class="attachment-category-header flex h-11 shrink-0 items-center border-b border-border bg-accent px-3 text-sm font-medium text-foreground"
         >
           附件分类
         </div>
+        <div
+          class="attachment-category-tabs flex flex-1 flex-row gap-1 overflow-x-auto overscroll-x-contain p-2 md:flex-col md:overflow-x-visible md:overflow-y-auto md:p-3"
+        >
         <button
           class="shrink-0 snap-start rounded-md px-3 py-2 text-center transition-colors md:w-full md:flex-none md:px-3 md:py-2.5 md:text-left"
           :class="
@@ -225,6 +228,7 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
         >
           <div class="whitespace-nowrap text-sm">{{ item.label }}</div>
         </button>
+        </div>
       </aside>
 
       <main class="flex min-h-0 flex-1 flex-col overflow-hidden">
