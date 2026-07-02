@@ -33,12 +33,6 @@ const PARAM_FORM_SCHEMA: VbenFormSchema[] = [
     rules: 'required',
   },
   {
-    component: 'Input',
-    componentProps: { class: 'w-full' },
-    fieldName: 'value',
-    label: '参数值',
-  },
-  {
     component: 'Select',
     componentProps: {
       class: 'w-full',
@@ -52,6 +46,12 @@ const PARAM_FORM_SCHEMA: VbenFormSchema[] = [
     defaultValue: 'string',
     fieldName: 'type',
     label: '值类型',
+  },
+  {
+    component: 'Input',
+    componentProps: { class: 'w-full' },
+    fieldName: 'value',
+    label: '参数值',
   },
   {
     component: 'InputNumber',
@@ -69,6 +69,38 @@ const PARAM_FORM_SCHEMA: VbenFormSchema[] = [
   },
 ];
 
+function buildValueFieldSchema(type: string): VbenFormSchema {
+  if (type === 'json') {
+    return {
+      component: 'Textarea',
+      componentProps: {
+        class: 'w-full',
+        placeholder: '请输入 JSON，如 {"key": "value"}',
+        rows: 4,
+      },
+      fieldName: 'value',
+      formItemClass: 'col-span-full w-full items-start',
+      label: '参数值',
+    };
+  }
+
+  const placeholderMap: Record<string, string> = {
+    bool: '请输入 true 或 false',
+    number: '请输入数字',
+    string: '请输入参数值',
+  };
+
+  return {
+    component: 'Input',
+    componentProps: {
+      class: 'w-full',
+      placeholder: placeholderMap[type] ?? '请输入参数值',
+    },
+    fieldName: 'value',
+    label: '参数值',
+  };
+}
+
 const [Form, formApi] = useVbenForm({
   commonConfig: {
     componentProps: { class: 'w-full' },
@@ -78,7 +110,22 @@ const [Form, formApi] = useVbenForm({
   schema: PARAM_FORM_SCHEMA,
   showDefaultActions: false,
   wrapperClass: 'grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1',
+  handleValuesChange(values, fieldsChanged) {
+    if (fieldsChanged.includes('type')) {
+      syncValueFieldByType(String(values.type ?? 'string'));
+    }
+  },
 });
+
+function syncValueFieldByType(type: string) {
+  const schema = [...(formApi.getState()?.schema ?? PARAM_FORM_SCHEMA)];
+  const index = schema.findIndex((item) => item.fieldName === 'value');
+  if (index < 0) {
+    return;
+  }
+  schema[index] = buildValueFieldSchema(type);
+  formApi.setState({ schema });
+}
 
 const modalTitle = computed(() =>
   editingKey.value ? '编辑参数' : '新增参数',
@@ -128,6 +175,7 @@ const [Modal, modalApi] = useVbenModal({
     if (row?.key) {
       editingKey.value = row.key;
       syncKeyFieldDisabled(true);
+      syncValueFieldByType(row.type ?? 'string');
       formApi.setValues({
         key: row.key,
         name: row.name,
@@ -139,6 +187,7 @@ const [Modal, modalApi] = useVbenModal({
     } else {
       editingKey.value = null;
       syncKeyFieldDisabled(false);
+      syncValueFieldByType('string');
       formApi.setValues({
         key: '',
         name: '',
