@@ -106,7 +106,6 @@ class StarshipFoundationSeeder extends Seeder
             '/platform/configs' => '/platform/config/index',
             '/platform/dicts' => '/platform/dict/index',
             '/platform/regions' => '/platform/region/index',
-            '/platform/notifications' => '/platform/notification/index',
         ];
         if (isset($permission[$path])) {
             return $permission[$path];
@@ -467,26 +466,6 @@ class StarshipFoundationSeeder extends Seeder
                 'icon' => null,
                 'sort' => $btn['sort'],
                 'other_settings' => $this->menuOther(0),
-                'status' => 1,
-            ]);
-        }
-
-        foreach (
-            [
-                ['name' => 'NotifyMgmt', 'title' => '通知配置', 'path' => '/platform/notifications', 'permission' => 'system.notifications', 'sort' => 305, 'icon' => 'ep:bell'],
-            ] as $m
-        ) {
-            Menu::query()->create([
-                'parent_id' => $platform->id,
-                'type' => 2,
-                'name' => $m['name'],
-                'title' => $m['title'],
-                'path' => $m['path'],
-                'component' => $this->defaultComponentForMenuPath($m['path']),
-                'permission' => $m['permission'],
-                'icon' => $m['icon'],
-                'sort' => $m['sort'],
-                'other_settings' => $this->menuOther(1, 1),
                 'status' => 1,
             ]);
         }
