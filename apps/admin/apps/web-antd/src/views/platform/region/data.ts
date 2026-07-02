@@ -6,6 +6,11 @@ import type {
 
 import type { AreaTreeNode } from '#/api/system/region';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
+import { REGION_PERMISSIONS } from '#/constants/region-permissions';
+
+export type AreaAccessChecker = {
+  can: (code: string) => boolean;
+};
 
 export const AREA_LEVEL_OPTIONS = [
   { label: '省', value: 1 },
@@ -56,9 +61,15 @@ export function useAreaGridFormSchema(): VbenFormSchema[] {
 
 export function useAreaColumns(
   onActionClick: OnActionClickFn<AreaTreeNode>,
-  canManage: () => boolean,
+  access: AreaAccessChecker,
 ): VxeTableGridColumns<AreaTreeNode> {
   return [
+    {
+      align: 'center',
+      fixed: 'left',
+      type: 'checkbox',
+      width: 48,
+    },
     {
       align: 'left',
       field: 'name',
@@ -125,20 +136,20 @@ export function useAreaColumns(
         options: [
           {
             code: 'append',
-            show: () => canManage(),
+            show: () => access.can(REGION_PERMISSIONS.APPEND),
             text: '新增下级',
             type: 'link',
           },
           {
             code: 'edit',
-            show: () => canManage(),
+            show: () => access.can(REGION_PERMISSIONS.UPDATE),
             text: '编辑',
             type: 'link',
           },
           {
             code: 'delete',
             danger: true,
-            show: () => canManage(),
+            show: () => access.can(REGION_PERMISSIONS.DELETE),
             text: '删除',
             type: 'link',
           },

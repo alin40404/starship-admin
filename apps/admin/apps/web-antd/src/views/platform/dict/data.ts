@@ -6,6 +6,11 @@ import type {
 
 import type { DictItemRow, DictTypeRow } from '#/api/system/dict';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
+import { DICT_PERMISSIONS } from '#/constants/dict-permissions';
+
+export type DictAccessChecker = {
+  can: (code: string) => boolean;
+};
 
 export function useDictTypeGridFormSchema(): VbenFormSchema[] {
   return [
@@ -40,6 +45,7 @@ export function useDictTypeGridFormSchema(): VbenFormSchema[] {
 
 export function useDictTypeColumns(
   onActionClick: OnActionClickFn<DictTypeRow>,
+  access: DictAccessChecker,
 ): VxeTableGridColumns<DictTypeRow> {
   return [
     { field: 'id', sortable: true, title: 'ID', width: 72 },
@@ -86,9 +92,25 @@ export function useDictTypeColumns(
         },
         name: 'CellOperation',
         options: [
-          { code: 'items', text: '字典项', type: 'link' },
-          { code: 'edit', text: '编辑', type: 'link' },
-          { code: 'delete', danger: true, text: '删除', type: 'link' },
+          {
+            code: 'items',
+            show: () => access.can(DICT_PERMISSIONS.QUERY),
+            text: '字典项',
+            type: 'link',
+          },
+          {
+            code: 'edit',
+            show: () => access.can(DICT_PERMISSIONS.UPDATE),
+            text: '编辑',
+            type: 'link',
+          },
+          {
+            code: 'delete',
+            danger: true,
+            show: () => access.can(DICT_PERMISSIONS.DELETE),
+            text: '删除',
+            type: 'link',
+          },
         ],
       },
       fixed: 'right',
@@ -145,6 +167,7 @@ export function buildDictTypeFormSchema(): VbenFormSchema[] {
 
 export function useDictItemColumns(
   onActionClick: OnActionClickFn<DictItemRow>,
+  access: DictAccessChecker,
 ): VxeTableGridColumns<DictItemRow> {
   return [
     { field: 'id', title: 'ID', width: 72 },
@@ -175,8 +198,19 @@ export function useDictItemColumns(
         },
         name: 'CellOperation',
         options: [
-          { code: 'edit', text: '编辑', type: 'link' },
-          { code: 'delete', danger: true, text: '删除', type: 'link' },
+          {
+            code: 'edit',
+            show: () => access.can(DICT_PERMISSIONS.UPDATE),
+            text: '编辑',
+            type: 'link',
+          },
+          {
+            code: 'delete',
+            danger: true,
+            show: () => access.can(DICT_PERMISSIONS.DELETE),
+            text: '删除',
+            type: 'link',
+          },
         ],
       },
       fixed: 'right',

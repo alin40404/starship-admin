@@ -14,7 +14,10 @@ use Modules\System\App\Http\Controllers\Admin\PostController;
 use Modules\System\App\Http\Controllers\Admin\RoleController;
 use Modules\System\App\Http\Controllers\Admin\UserGroupController;
 use Modules\System\App\Support\AdminPermissions;
+use Modules\System\App\Support\AreaPermissions;
+use Modules\System\App\Support\ConfigPermissions;
 use Modules\System\App\Support\DepartmentPermissions;
+use Modules\System\App\Support\DictPermissions;
 use Modules\System\App\Support\MenuPermissions;
 use Modules\System\App\Support\PostPermissions;
 use Modules\System\App\Support\RolePermissions;
@@ -143,28 +146,49 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
         Route::delete('admins/{id}', [AdminUserController::class, 'destroy'])
             ->middleware('admin.permission:'.AdminPermissions::DELETE);
 
-        Route::get('configs', [ConfigController::class, 'index']);
-        Route::put('configs', [ConfigController::class, 'batchUpsert']);
+        Route::get('configs', [ConfigController::class, 'index'])
+            ->middleware('admin.permission:'.ConfigPermissions::QUERY);
+        Route::put('configs', [ConfigController::class, 'batchUpsert'])
+            ->middleware('admin.permission:'.ConfigPermissions::UPDATE);
 
-        Route::get('dict-types', [DictTypeController::class, 'index']);
-        Route::post('dict-types', [DictTypeController::class, 'store']);
-        Route::put('dict-types/{id}', [DictTypeController::class, 'update']);
-        Route::delete('dict-types/{id}', [DictTypeController::class, 'destroy']);
+        Route::get('dict-types', [DictTypeController::class, 'index'])
+            ->middleware('admin.permission:'.DictPermissions::QUERY);
+        Route::post('dict-types', [DictTypeController::class, 'store'])
+            ->middleware('admin.permission:'.DictPermissions::CREATE);
+        Route::put('dict-types/{id}', [DictTypeController::class, 'update'])
+            ->middleware('admin.permission:'.DictPermissions::UPDATE);
+        Route::delete('dict-types/{id}', [DictTypeController::class, 'destroy'])
+            ->middleware('admin.permission:'.DictPermissions::DELETE);
 
-        Route::get('dict-items', [DictItemController::class, 'index']);
-        Route::post('dict-items', [DictItemController::class, 'store']);
-        Route::put('dict-items/{id}', [DictItemController::class, 'update']);
-        Route::delete('dict-items/{id}', [DictItemController::class, 'destroy']);
+        Route::get('dict-items', [DictItemController::class, 'index'])
+            ->middleware('admin.permission:'.DictPermissions::QUERY);
+        Route::post('dict-items', [DictItemController::class, 'store'])
+            ->middleware('admin.permission:'.DictPermissions::CREATE);
+        Route::put('dict-items/{id}', [DictItemController::class, 'update'])
+            ->middleware('admin.permission:'.DictPermissions::UPDATE);
+        Route::delete('dict-items/{id}', [DictItemController::class, 'destroy'])
+            ->middleware('admin.permission:'.DictPermissions::DELETE);
 
-        Route::get('areas/tree', [AreaController::class, 'tree']);
-        Route::get('areas/children', [AreaController::class, 'children']);
-        Route::get('areas/cascader-init', [AreaController::class, 'cascaderInit']);
-        Route::get('areas/cascader-options', [AreaController::class, 'cascaderOptions']);
-        Route::get('areas/pinyin-preview', [AreaController::class, 'pinyinPreview']);
-        Route::get('areas/{id}', [AreaController::class, 'show']);
-        Route::post('areas', [AreaController::class, 'store']);
-        Route::put('areas/{id}', [AreaController::class, 'update']);
-        Route::delete('areas/{id}', [AreaController::class, 'destroy']);
+        Route::get('areas/tree', [AreaController::class, 'tree'])
+            ->middleware('admin.permission:'.AreaPermissions::QUERY);
+        Route::get('areas/children', [AreaController::class, 'children'])
+            ->middleware('admin.permission:'.AreaPermissions::QUERY);
+        Route::get('areas/cascader-init', [AreaController::class, 'cascaderInit'])
+            ->middleware('admin.permission:'.AreaPermissions::QUERY);
+        Route::get('areas/cascader-options', [AreaController::class, 'cascaderOptions'])
+            ->middleware('admin.permission:'.AreaPermissions::QUERY);
+        Route::get('areas/pinyin-preview', [AreaController::class, 'pinyinPreview'])
+            ->middleware('admin.permission:'.AreaPermissions::QUERY);
+        Route::post('areas/batch-destroy', [AreaController::class, 'batchDestroy'])
+            ->middleware('admin.permission:'.AreaPermissions::BATCH_DELETE);
+        Route::get('areas/{id}', [AreaController::class, 'show'])
+            ->middleware('admin.permission:'.AreaPermissions::QUERY);
+        Route::post('areas', [AreaController::class, 'store'])
+            ->middleware('admin.permission.area.store');
+        Route::put('areas/{id}', [AreaController::class, 'update'])
+            ->middleware('admin.permission:'.AreaPermissions::UPDATE);
+        Route::delete('areas/{id}', [AreaController::class, 'destroy'])
+            ->middleware('admin.permission:'.AreaPermissions::DELETE);
 
         Route::get('attachments', [AttachmentController::class, 'index']);
         Route::post('attachments', [AttachmentController::class, 'store']);

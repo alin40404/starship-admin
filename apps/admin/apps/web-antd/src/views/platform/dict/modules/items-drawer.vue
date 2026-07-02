@@ -8,6 +8,7 @@ import type {
 
 import { computed, ref } from 'vue';
 
+import { useAccess } from '@vben/access';
 import { useVbenDrawer, useVbenModal } from '@vben/common-ui';
 
 import { Button, message } from 'ant-design-vue';
@@ -20,10 +21,16 @@ import {
   fetchDictItemPage,
   updateDictItem,
 } from '#/api/system/dict';
+import { DICT_PERMISSIONS } from '#/constants/dict-permissions';
 
 import { buildDictItemFormSchema, useDictItemColumns } from '../data';
 
 const emits = defineEmits<{ success: [] }>();
+
+const { hasAccessByCodes } = useAccess();
+const dictAccess = {
+  can: (code: string) => hasAccessByCodes([code]),
+};
 
 const activeType = ref<DictTypeRow | null>(null);
 const editingItemId = ref<number | null>(null);
@@ -142,7 +149,7 @@ const [ItemModal, itemModalApi] = useVbenModal({
 const [Grid, gridApi] = useVbenVxeGrid<DictItemRow>({
   gridClass: 'p-0',
   gridOptions: {
-    columns: useDictItemColumns(onItemActionClick),
+    columns: useDictItemColumns(onItemActionClick, dictAccess),
     height: 420,
     proxyConfig: {
       ajax: {
@@ -182,7 +189,13 @@ const [Drawer, drawerApi] = useVbenDrawer({
 <template>
   <Drawer :title="drawerTitle" class="max-w-[860px] w-[94vw]">
     <div class="mb-3 flex justify-end">
-      <Button type="primary" @click="onCreateItem">新增字典项</Button>
+      <Button
+        v-if="dictAccess.can(DICT_PERMISSIONS.CREATE)"
+        type="primary"
+        @click="onCreateItem"
+      >
+        新增字典项
+      </Button>
     </div>
     <Grid />
   </Drawer>

@@ -5,6 +5,7 @@ namespace Modules\System\App\Providers;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Modules\System\App\Http\Middleware\EnsureAdminAnyPermission;
+use Modules\System\App\Http\Middleware\EnsureAdminAreaStorePermission;
 use Modules\System\App\Http\Middleware\EnsureAdminDepartmentStorePermission;
 use Modules\System\App\Http\Middleware\EnsureAdminMenuStorePermission;
 use Modules\System\App\Http\Middleware\EnsureAdminPermission;
@@ -22,6 +23,7 @@ class SystemServiceProvider extends ServiceProvider
         Route::aliasMiddleware('admin.permission.any', EnsureAdminAnyPermission::class);
         Route::aliasMiddleware('admin.permission.menu.store', EnsureAdminMenuStorePermission::class);
         Route::aliasMiddleware('admin.permission.department.store', EnsureAdminDepartmentStorePermission::class);
+        Route::aliasMiddleware('admin.permission.area.store', EnsureAdminAreaStorePermission::class);
 
         $this->loadRoutesFrom(__DIR__.'/../../routes/admin.php');
         $this->loadRoutesFrom(__DIR__.'/../../routes/web.php');

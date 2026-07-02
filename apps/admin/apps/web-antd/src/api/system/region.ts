@@ -107,6 +107,13 @@ export function deleteArea(id: number) {
   return requestClient.delete(`/system/areas/${id}`);
 }
 
+export function batchDeleteAreas(ids: number[]) {
+  return requestClient.post<{ deleted: number; skipped: number }>(
+    '/system/areas/batch-destroy',
+    { ids },
+  );
+}
+
 export function mapAreaForTreeSelect(
   nodes: AreaTreeNode[],
 ): { label: string; value: number; children?: ReturnType<typeof mapAreaForTreeSelect> }[] {

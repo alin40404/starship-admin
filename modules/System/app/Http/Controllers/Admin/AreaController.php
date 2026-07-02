@@ -158,6 +158,34 @@ class AreaController extends Controller
         return ApiResponse::success(null, '已删除');
     }
 
+    public function batchDestroy(Request $request): JsonResponse
+    {
+        $ids = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+        ])['ids'];
+
+        $deletableIds = [];
+        foreach ($ids as $id) {
+            if (Area::query()->where('pid', $id)->exists()) {
+                continue;
+            }
+            $deletableIds[] = (int) $id;
+        }
+
+        if ($deletableIds === []) {
+            return ApiResponse::error('所选区域存在下级，无法删除', 422);
+        }
+
+        $deleted = Area::query()->whereIn('id', $deletableIds)->delete();
+        $skipped = count($ids) - count($deletableIds);
+
+        return ApiResponse::success(
+            ['deleted' => $deleted, 'skipped' => $skipped],
+            $skipped > 0 ? "已删除 {$deleted} 个，{$skipped} 个因存在下级未删除" : '已批量删除',
+        );
+    }
+
     /**
      * @param  \Illuminate\Support\Collection<int, Area>  $rows
      * @return array<int, mixed>

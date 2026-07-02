@@ -17,7 +17,10 @@ import DictItemsDrawer from './modules/items-drawer.vue';
 import DictTypeForm from './modules/type-form.vue';
 
 const { hasAccessByCodes } = useAccess();
-const canManage = () => hasAccessByCodes([DICT_PERMISSIONS.MANAGE]);
+
+const dictAccess = {
+  can: (code: string) => hasAccessByCodes([code]),
+};
 
 const [DictTypeFormModal, typeFormModalApi] = useVbenModal({
   connectedComponent: DictTypeForm,
@@ -74,7 +77,7 @@ const [Grid, gridApi] = useVbenVxeGrid<DictTypeRow>({
     submitButtonOptions: { content: '查询' },
   },
   gridOptions: {
-    columns: useDictTypeColumns(onActionClick),
+    columns: useDictTypeColumns(onActionClick, dictAccess),
     height: 'auto',
     proxyConfig: {
       ajax: {
@@ -110,7 +113,7 @@ const [Grid, gridApi] = useVbenVxeGrid<DictTypeRow>({
     <DictItemsPanel @success="onRefresh" />
     <Grid>
       <template #toolbar-actions>
-        <Button v-if="canManage()" type="primary" @click="onCreate">
+        <Button v-if="dictAccess.can(DICT_PERMISSIONS.CREATE)" type="primary" @click="onCreate">
           <Plus class="size-4" />
           新增字典
         </Button>

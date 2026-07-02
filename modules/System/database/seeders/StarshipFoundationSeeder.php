@@ -11,7 +11,10 @@ use Modules\System\App\Models\DictType;
 use Modules\System\App\Models\Menu;
 use Modules\System\App\Models\Post;
 use Modules\System\App\Support\AdminPermissions;
+use Modules\System\App\Support\AreaPermissions;
+use Modules\System\App\Support\ConfigPermissions;
 use Modules\System\App\Support\DepartmentPermissions;
+use Modules\System\App\Support\DictPermissions;
 use Modules\System\App\Support\MenuPermissions;
 use Modules\System\App\Support\PostPermissions;
 use Modules\System\App\Support\RolePermissions;
@@ -378,11 +381,98 @@ class StarshipFoundationSeeder extends Seeder
             'status' => 1,
         ]);
 
+        $configMgmt = Menu::query()->create([
+            'parent_id' => $platform->id,
+            'type' => 2,
+            'name' => 'ConfigMgmt',
+            'title' => '系统配置',
+            'path' => '/platform/configs',
+            'component' => $this->defaultComponentForMenuPath('/platform/configs'),
+            'permission' => 'system.configs',
+            'icon' => 'ep:setting',
+            'sort' => 301,
+            'other_settings' => $this->menuOther(1, 1),
+            'status' => 1,
+        ]);
+
+        foreach (ConfigPermissions::buttonDefinitions() as $btn) {
+            Menu::query()->create([
+                'parent_id' => $configMgmt->id,
+                'type' => 3,
+                'name' => $btn['name'],
+                'title' => $btn['title'],
+                'path' => null,
+                'component' => null,
+                'permission' => $btn['permission'],
+                'icon' => null,
+                'sort' => $btn['sort'],
+                'other_settings' => $this->menuOther(0),
+                'status' => 1,
+            ]);
+        }
+
+        $dictMgmt = Menu::query()->create([
+            'parent_id' => $platform->id,
+            'type' => 2,
+            'name' => 'DictMgmt',
+            'title' => '字典管理',
+            'path' => '/platform/dicts',
+            'component' => $this->defaultComponentForMenuPath('/platform/dicts'),
+            'permission' => 'system.dicts',
+            'icon' => 'ep:collection',
+            'sort' => 302,
+            'other_settings' => $this->menuOther(1, 1),
+            'status' => 1,
+        ]);
+
+        foreach (DictPermissions::buttonDefinitions() as $btn) {
+            Menu::query()->create([
+                'parent_id' => $dictMgmt->id,
+                'type' => 3,
+                'name' => $btn['name'],
+                'title' => $btn['title'],
+                'path' => null,
+                'component' => null,
+                'permission' => $btn['permission'],
+                'icon' => null,
+                'sort' => $btn['sort'],
+                'other_settings' => $this->menuOther(0),
+                'status' => 1,
+            ]);
+        }
+
+        $regionMgmt = Menu::query()->create([
+            'parent_id' => $platform->id,
+            'type' => 2,
+            'name' => 'RegionMgmt',
+            'title' => '区域管理',
+            'path' => '/platform/regions',
+            'component' => $this->defaultComponentForMenuPath('/platform/regions'),
+            'permission' => 'system.regions',
+            'icon' => 'ep:location',
+            'sort' => 304,
+            'other_settings' => $this->menuOther(1, 1),
+            'status' => 1,
+        ]);
+
+        foreach (AreaPermissions::buttonDefinitions() as $btn) {
+            Menu::query()->create([
+                'parent_id' => $regionMgmt->id,
+                'type' => 3,
+                'name' => $btn['name'],
+                'title' => $btn['title'],
+                'path' => null,
+                'component' => null,
+                'permission' => $btn['permission'],
+                'icon' => null,
+                'sort' => $btn['sort'],
+                'other_settings' => $this->menuOther(0),
+                'status' => 1,
+            ]);
+        }
+
         foreach (
             [
-                ['name' => 'ConfigMgmt', 'title' => '系统配置', 'path' => '/platform/configs', 'permission' => 'system.configs', 'sort' => 301, 'icon' => 'ep:setting'],
-                ['name' => 'DictMgmt', 'title' => '字典管理', 'path' => '/platform/dicts', 'permission' => 'system.dicts', 'sort' => 302, 'icon' => 'ep:collection'],
-                ['name' => 'RegionMgmt', 'title' => '区域管理', 'path' => '/platform/regions', 'permission' => 'system.regions', 'sort' => 304, 'icon' => 'ep:location'],
                 ['name' => 'NotifyMgmt', 'title' => '通知配置', 'path' => '/platform/notifications', 'permission' => 'system.notifications', 'sort' => 305, 'icon' => 'ep:bell'],
             ] as $m
         ) {

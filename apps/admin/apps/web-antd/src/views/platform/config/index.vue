@@ -31,9 +31,9 @@ const settingsFormRef = useTemplateRef<InstanceType<typeof SettingsForm>>(
   'settingsFormRef',
 );
 
-const canManageSite = () => hasAccessByCodes([CONFIG_PERMISSIONS.MANAGE]);
+const canManageSite = () => hasAccessByCodes([CONFIG_PERMISSIONS.UPDATE]);
 const canManageParams = () =>
-  hasAccessByCodes([CONFIG_PERMISSIONS.MANAGE, PARAM_PERMISSIONS.MANAGE]);
+  hasAccessByCodes([CONFIG_PERMISSIONS.UPDATE, PARAM_PERMISSIONS.MANAGE]);
 
 const showSettingsSave = computed(
   () =>
