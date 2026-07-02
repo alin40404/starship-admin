@@ -772,17 +772,86 @@ class StarshipFoundationSeeder extends Seeder
 
         Setting::query()->where('key', 'site.name')->update(['group_name' => 'basic']);
 
-        Setting::query()->updateOrCreate(
-            ['key' => 'app.page_size'],
+        $runtimeParams = [
             [
+                'key' => 'app.page_size',
                 'name' => '默认分页大小',
                 'value' => '15',
                 'group_name' => 'param',
                 'type' => 'number',
                 'sort' => 10,
-                'remark' => '列表默认每页条数',
-            ]
-        );
+                'remark' => '后台列表默认每页条数',
+            ],
+            [
+                'key' => 'app.api.timeout',
+                'name' => '接口超时时间',
+                'value' => '30',
+                'group_name' => 'param',
+                'type' => 'number',
+                'sort' => 20,
+                'remark' => 'HTTP 接口请求超时时间（秒）',
+            ],
+            [
+                'key' => 'app.upload.max_size',
+                'name' => '上传大小上限',
+                'value' => '20',
+                'group_name' => 'param',
+                'type' => 'number',
+                'sort' => 30,
+                'remark' => '单文件上传最大体积（MB）',
+            ],
+            [
+                'key' => 'app.jwt.ttl',
+                'name' => '登录有效期',
+                'value' => '120',
+                'group_name' => 'param',
+                'type' => 'number',
+                'sort' => 40,
+                'remark' => '管理员 Token 有效时长（分钟）',
+            ],
+            [
+                'key' => 'app.login.captcha',
+                'name' => '登录验证码',
+                'value' => 'false',
+                'group_name' => 'param',
+                'type' => 'bool',
+                'sort' => 50,
+                'remark' => '是否在登录页启用图形验证码',
+            ],
+            [
+                'key' => 'app.maintenance',
+                'name' => '维护模式',
+                'value' => 'false',
+                'group_name' => 'param',
+                'type' => 'bool',
+                'sort' => 60,
+                'remark' => '开启后普通管理员无法访问系统',
+            ],
+            [
+                'key' => 'app.storage.driver',
+                'name' => '默认存储驱动',
+                'value' => 'local',
+                'group_name' => 'param',
+                'type' => 'string',
+                'sort' => 70,
+                'remark' => '附件默认存储驱动标识，如 local、oss',
+            ],
+            [
+                'key' => 'app.upload.allowed_ext',
+                'name' => '允许上传扩展名',
+                'value' => '["jpg","jpeg","png","gif","webp","pdf","doc","docx","xls","xlsx","zip"]',
+                'group_name' => 'param',
+                'type' => 'json',
+                'sort' => 80,
+                'remark' => 'JSON 数组，列出允许上传的文件扩展名',
+            ],
+        ];
+
+        foreach ($runtimeParams as $config) {
+            $key = $config['key'];
+            unset($config['key']);
+            Setting::query()->updateOrCreate(['key' => $key], $config);
+        }
     }
 
     private function seedDepartments(): Department

@@ -21,3 +21,10 @@ export const CONFIG_SELECT_OPTIONS: Record<
     { label: 'SSL', value: '2' },
   ],
 };
+
+export const PARAM_TYPE_TAG_OPTIONS = [
+  { color: 'default', label: '字符串', value: 'string' },
+  { color: 'processing', label: '数字', value: 'number' },
+  { color: 'warning', label: '布尔', value: 'bool' },
+  { color: 'success', label: 'JSON', value: 'json' },
+] as const;

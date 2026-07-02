@@ -14,6 +14,7 @@ import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchConfigs } from '#/api/system/config';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 
+import { PARAM_TYPE_TAG_OPTIONS } from '../data';
 import ParamForm from './param-form.vue';
 
 const props = defineProps<{
@@ -59,9 +60,16 @@ const [Grid, gridApi] = useVbenVxeGrid<ConfigRow>({
         minWidth: 180,
         title: '参数值',
       },
-      { field: 'type', title: '类型', width: 90 },
+      {
+        align: 'center',
+        cellRender: { name: 'CellTag', options: [...PARAM_TYPE_TAG_OPTIONS] },
+        field: 'type',
+        title: '类型',
+        width: 96,
+      },
       { field: 'sort', title: '排序', width: 80 },
       {
+        align: 'left',
         field: 'remark',
         formatter: ({ cellValue }: { cellValue: ConfigRow['remark'] }) =>
           cellValue ?? TABLE_CELL_EMPTY,
@@ -92,12 +100,13 @@ const [Grid, gridApi] = useVbenVxeGrid<ConfigRow>({
       },
     ],
     height: 360,
+    pagerConfig: { enabled: false },
     proxyConfig: {
       ajax: {
         query: async () => {
           const result = await fetchConfigs('param');
           const list = result.list ?? [];
-          return { items: list, total: list.length };
+          return { data: list, total: list.length };
         },
       },
     },
