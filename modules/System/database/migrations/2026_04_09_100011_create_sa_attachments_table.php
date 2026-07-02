@@ -11,7 +11,7 @@ return new class extends Migration
     {
         Schema::create(StarshipTables::table('attachments'), function (Blueprint $table) {
             $table->id();
-            $table->string('storage', 50)->default('local')->comment('存储驱动');
+            $table->string('storage', 50)->default('public')->comment('存储驱动');
             $table->string('category', 50)->nullable()->comment('附件分类，对应字典 attachment_category');
             $table->string('file_name', 255)->comment('原始文件名');
             $table->string('file_path', 500)->comment('文件路径');

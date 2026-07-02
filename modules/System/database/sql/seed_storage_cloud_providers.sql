@@ -49,3 +49,8 @@ SET c.`group_name` = meta.`group_name`,
     c.`sort` = meta.`sort`,
     c.`type` = meta.`type`,
     c.`updated_at` = NOW();
+
+-- 默认存储驱动统一为公共存储（修正历史运行参数遗留的 local）
+UPDATE `sa_configs`
+SET `value` = 'public', `updated_at` = NOW()
+WHERE `key` = 'app.storage.driver' AND (`value` IS NULL OR `value` = '' OR `value` = 'local');

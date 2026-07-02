@@ -40,6 +40,11 @@ SET c.`group_name` = meta.`group_name`,
     c.`type` = meta.`type`,
     c.`updated_at` = NOW();
 
+-- 默认存储驱动统一为公共存储（修正历史运行参数遗留的 local）
+UPDATE `sa_configs`
+SET `value` = 'public', `updated_at` = NOW()
+WHERE `key` = 'app.storage.driver' AND (`value` IS NULL OR `value` = '' OR `value` = 'local');
+
 -- 存储配置已合并至平台设置 / 系统配置，移除资源管理下的独立菜单
 UPDATE `sa_menus` SET `deleted_at` = NOW(), `updated_at` = NOW()
 WHERE `path` = '/resource/storage' AND `type` = 2 AND `deleted_at` IS NULL;
