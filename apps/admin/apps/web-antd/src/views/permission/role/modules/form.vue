@@ -6,13 +6,17 @@ import type { DeptNode } from '#/api/system/department';
 import type { MenuTreeNode } from '#/api/system/menu';
 import type { RoleDetail, RoleRow, RoleSavePayload } from '#/api/system/role';
 
-import { computed, nextTick, reactive, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, nextTick, reactive, ref, watch } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { Tree, useVbenDrawer } from '@vben/common-ui';
 import { IconifyIcon } from '@vben/icons';
 
 import { message, Spin } from 'ant-design-vue';
+
+const Cascader = defineAsyncComponent(
+  () => import('ant-design-vue/es/cascader'),
+);
 
 import { useVbenForm } from '#/adapter/form';
 import {
@@ -22,11 +26,19 @@ import {
   syncRoleMenus,
   updateRole,
 } from '#/api/system/role';
-import { fetchDepartmentTree } from '#/api/system/department';
+import {
+  fetchDepartmentTree,
+  mapDeptForTreeSelect,
+} from '#/api/system/department';
 import { fetchMenuTree } from '#/api/system/menu';
 import { ROLE_PERMISSIONS } from '#/constants/role-permissions';
 
-import { buildRoleFormSchema, DATA_SCOPE_CUSTOM } from '../data';
+import {
+  buildRoleFormSchema,
+  cascaderPathsToDeptIds,
+  DATA_SCOPE_CUSTOM,
+  deptIdsToCascaderPaths,
+} from '../data';
 
 const emits = defineEmits<{ success: [] }>();
 
@@ -89,17 +101,9 @@ function mapMenuToVbenTree(
 
 const vbenTreeData = computed(() => mapMenuToVbenTree(menuTree.value));
 
-function mapDeptToVbenTree(nodes: DeptNode[]): Record<string, unknown>[] {
-  return nodes.map((n) => ({
-    children: n.children?.length
-      ? mapDeptToVbenTree(n.children)
-      : undefined,
-    id: n.id,
-    meta: { title: n.name },
-  }));
-}
-
-const vbenDeptTreeData = computed(() => mapDeptToVbenTree(deptTree.value));
+const deptCascaderOptions = computed(() =>
+  mapDeptForTreeSelect(deptTree.value),
+);
 
 function getAuthNodeClass(item: FlattenedItem<Recordable<any>>) {
   const type = item.value?.type as string | undefined;
@@ -319,25 +323,41 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
   <Drawer :title="drawerTitle" class="max-w-[720px] w-[92vw]">
     <Form class="role-drawer-form">
       <template #dept_ids="slotProps">
-        <Spin :spinning="!deptReady" wrapper-class-name="w-full">
+        <div class="dept-cascader-field w-full min-w-0">
+          <Cascader
+            v-if="deptReady"
+            :allow-clear="canWriteRole"
+            class="dept-cascader w-full"
+            :disabled="!canWriteRole"
+            :field-names="{
+              label: 'label',
+              value: 'value',
+              children: 'children',
+            }"
+            max-tag-count="responsive"
+            :multiple="true"
+            :options="deptCascaderOptions"
+            placeholder="请选择数据部门"
+            show-checked-strategy="SHOW_CHILD"
+            style="width: 100%"
+            :value="
+              deptIdsToCascaderPaths(
+                (slotProps.modelValue as number[] | undefined) ?? [],
+                deptCascaderOptions,
+              )
+            "
+            @update:value="
+              (paths: number[][]) =>
+                slotProps['onUpdate:modelValue']?.(
+                  cascaderPathsToDeptIds(paths),
+                )
+            "
+          />
           <div
-            :class="[
-              'dept-tree w-full',
-              { 'dept-tree--readonly': !canWriteRole },
-            ]"
-          >
-            <Tree
-              :tree-data="vbenDeptTreeData"
-              multiple
-              bordered
-              :default-expanded-level="10"
-              :disabled="!canWriteRole"
-              v-bind="slotProps"
-              value-field="id"
-              label-field="meta.title"
-            />
-          </div>
-        </Spin>
+            v-else
+            class="border-input bg-background h-8 w-full animate-pulse rounded-md border"
+          />
+        </div>
       </template>
       <template #menu_ids="slotProps">
         <Spin :spinning="!menuReady" wrapper-class-name="w-full">
@@ -562,6 +582,33 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
   color: hsl(var(--foreground) / 0.78);
 }
 
+.role-drawer-form :deep(.role-dept-field) {
+  width: 100%;
+  min-width: 0;
+}
+
+.role-drawer-form :deep(.role-dept-field > .w-full.flex-auto) {
+  width: 100%;
+  min-width: 0;
+}
+
+.role-drawer-form :deep(.dept-cascader-field) {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.role-drawer-form :deep(.dept-cascader.ant-select),
+.role-drawer-form :deep(.dept-cascader-field .ant-select) {
+  display: block;
+  width: 100% !important;
+  max-width: 100%;
+}
+
+.role-drawer-form :deep(.dept-cascader-field .ant-select-selector) {
+  width: 100% !important;
+}
+
 .role-drawer-form :deep(.permission-tree--readonly) {
   @apply text-muted-foreground;
 }
@@ -586,16 +633,4 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
   @apply opacity-90;
 }
 
-.role-drawer-form :deep(.dept-tree .container.list-none) {
-  border-radius: 0.375rem;
-}
-
-.role-drawer-form :deep(.dept-tree--readonly) {
-  @apply text-muted-foreground;
-}
-
-.role-drawer-form :deep(.dept-tree--readonly button[role='checkbox']) {
-  pointer-events: none;
-  @apply opacity-100;
-}
 </style>

@@ -11,6 +11,53 @@ import { ROLE_PERMISSIONS } from '#/constants/role-permissions';
 /** 与后端 data_scope 1–5 一致：序号与选项顺序相同（1全部 2本部门 3本部门及下级 4仅本人 5自定义） */
 export const DATA_SCOPE_CUSTOM = 5;
 
+type DeptCascaderOption = {
+  children?: DeptCascaderOption[];
+  label: string;
+  value: number;
+};
+
+/** 部门 ID 列表 → Cascader 多选路径 */
+export function deptIdsToCascaderPaths(
+  deptIds: number[],
+  options: DeptCascaderOption[],
+): number[][] {
+  function findPath(
+    nodes: DeptCascaderOption[],
+    targetId: number,
+    path: number[] = [],
+  ): number[] | null {
+    for (const node of nodes) {
+      const next = [...path, node.value];
+      if (node.value === targetId) {
+        return next;
+      }
+      if (node.children?.length) {
+        const found = findPath(node.children, targetId, next);
+        if (found) {
+          return found;
+        }
+      }
+    }
+    return null;
+  }
+
+  return deptIds
+    .map((id) => findPath(options, id))
+    .filter((path): path is number[] => path !== null);
+}
+
+/** Cascader 多选路径 → 部门 ID 列表（取每条路径末级） */
+export function cascaderPathsToDeptIds(paths: number[][]): number[] {
+  return [
+    ...new Set(
+      paths
+        .map((path) => path[path.length - 1])
+        .filter((id): id is number => id != null),
+    ),
+  ];
+}
+
 export const DATA_SCOPE_OPTIONS = [
   { label: '全部数据', value: 1 },
   { label: '本部门', value: 2 },
@@ -216,10 +263,12 @@ export function buildRoleFormSchema(params: {
         },
         triggerFields: ['data_scope'],
       },
+      /** 数据部门：由表单插槽渲染 Cascader，与数据范围同一行 */
       fieldName: 'dept_ids',
-      formItemClass: 'col-span-full sm:col-span-2 w-full min-w-0 items-start',
+      formItemClass: 'role-dept-field w-full min-w-0 items-start',
       label: '数据部门',
       modelPropName: 'modelValue',
+      wrapperClass: 'block w-full min-w-0',
     },
     {
       component: 'RadioGroup',
