@@ -37,6 +37,24 @@ export interface AreaTreeQuery {
   pinyin?: string;
 }
 
+export interface AreaPinyinPreview {
+  first: string | null;
+  pinyin: string | null;
+}
+
+export interface AreaCascaderOption {
+  children?: AreaCascaderOption[];
+  isLeaf?: boolean;
+  label: string;
+  loading?: boolean;
+  value: number;
+}
+
+export interface AreaCascaderInitResult {
+  options: AreaCascaderOption[];
+  path: number[];
+}
+
 export function fetchAreaTree(params?: AreaTreeQuery) {
   return requestClient.get<AreaTreeNode[]>('/system/areas/tree', { params });
 }
@@ -45,6 +63,32 @@ export function fetchAreaChildren(pid = 0) {
   return requestClient.get<AreaTreeNode[]>('/system/areas/children', {
     params: { pid },
   });
+}
+
+export function fetchAreaPinyinPreview(shortname: string) {
+  return requestClient.get<AreaPinyinPreview>('/system/areas/pinyin-preview', {
+    params: { shortname },
+  });
+}
+
+export function fetchAreaCascaderInit(params?: {
+  exclude_id?: number;
+  pid?: number;
+}) {
+  return requestClient.get<AreaCascaderInitResult>(
+    '/system/areas/cascader-init',
+    { params },
+  );
+}
+
+export function fetchAreaCascaderOptions(params?: {
+  exclude_id?: number;
+  pid?: number;
+}) {
+  return requestClient.get<AreaCascaderOption[]>(
+    '/system/areas/cascader-options',
+    { params },
+  );
 }
 
 export function fetchArea(id: number) {

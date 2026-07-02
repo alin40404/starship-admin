@@ -7,6 +7,7 @@ use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\System\App\Models\Area;
+use Modules\System\App\Support\AreaHelper;
 
 class AreaController extends Controller
 {
@@ -63,6 +64,34 @@ class AreaController extends Controller
         return ApiResponse::success($list);
     }
 
+    public function pinyinPreview(Request $request): JsonResponse
+    {
+        $shortname = trim((string) $request->get('shortname', ''));
+
+        return ApiResponse::success(AreaHelper::buildPinyinMeta($shortname));
+    }
+
+    public function cascaderInit(Request $request): JsonResponse
+    {
+        $pid = (int) $request->get('pid', 0);
+        $excludeId = $request->filled('exclude_id') ? (int) $request->get('exclude_id') : null;
+        $path = $pid > 0 ? $this->ancestorIds($pid) : [];
+        $options = $this->buildCascaderOptionsForPath($path, $excludeId);
+
+        return ApiResponse::success([
+            'path' => $path,
+            'options' => $options,
+        ]);
+    }
+
+    public function cascaderOptions(Request $request): JsonResponse
+    {
+        $pid = (int) $request->get('pid', 0);
+        $excludeId = $request->filled('exclude_id') ? (int) $request->get('exclude_id') : null;
+
+        return ApiResponse::success($this->loadCascaderOptions($pid, $excludeId));
+    }
+
     public function show(int $id): JsonResponse
     {
         $area = Area::query()->findOrFail($id);
@@ -74,6 +103,7 @@ class AreaController extends Controller
     {
         $data = $this->validatePayload($request);
         $data['pid'] = (int) ($data['pid'] ?? 0);
+        $data = $this->applyPinyinMeta($data);
         $data['level'] = $this->resolveLevel($data['pid'], $data['level'] ?? null);
         $data['mergename'] = $this->resolveMergeName($data['pid'], $data['name'], $data['mergename'] ?? null);
 
@@ -101,6 +131,7 @@ class AreaController extends Controller
         $pid = (int) ($data['pid'] ?? $area->pid);
         $name = (string) ($data['name'] ?? $area->name);
         $data['level'] = $this->resolveLevel($pid, $data['level'] ?? $area->level);
+        $data = $this->applyPinyinMeta($data, $area);
         if (array_key_exists('mergename', $data) || isset($data['name']) || isset($data['pid'])) {
             $data['mergename'] = $this->resolveMergeName(
                 $pid,
@@ -198,10 +229,8 @@ class AreaController extends Controller
             'name' => [$partial ? 'sometimes' : 'required', 'string', 'max:100'],
             'mergename' => ['nullable', 'string', 'max:255'],
             'level' => ['nullable', 'integer', 'in:1,2,3'],
-            'pinyin' => ['nullable', 'string', 'max:100'],
             'code' => ['nullable', 'string', 'max:100'],
             'zip' => ['nullable', 'string', 'max:100'],
-            'first' => ['nullable', 'string', 'max:50'],
             'lng' => ['nullable', 'string', 'max:100'],
             'lat' => ['nullable', 'string', 'max:100'],
         ];
@@ -255,5 +284,134 @@ class AreaController extends Controller
         }
 
         return false;
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function ancestorIds(int $id): array
+    {
+        $path = [];
+        $current = Area::query()->find($id);
+
+        while ($current) {
+            array_unshift($path, (int) $current->id);
+            if (! $current->pid) {
+                break;
+            }
+            $current = Area::query()->find((int) $current->pid);
+        }
+
+        return $path;
+    }
+
+    /**
+     * @param  array<int, int>  $path
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildCascaderOptionsForPath(array $path, ?int $excludeId): array
+    {
+        $options = $this->loadCascaderOptions(0, $excludeId);
+        if ($path === []) {
+            return $options;
+        }
+
+        $this->injectPathIntoOptions($options, $path, 0, $excludeId);
+
+        return $options;
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $options
+     * @param  array<int, int>  $path
+     */
+    private function injectPathIntoOptions(array &$options, array $path, int $depth, ?int $excludeId): void
+    {
+        if (! isset($path[$depth])) {
+            return;
+        }
+
+        $targetId = $path[$depth];
+        foreach ($options as &$node) {
+            if ((int) $node['value'] !== $targetId) {
+                continue;
+            }
+
+            if ($depth < count($path) - 1) {
+                $node['children'] = $this->loadCascaderOptions($targetId, $excludeId);
+                $this->injectPathIntoOptions($node['children'], $path, $depth + 1, $excludeId);
+            }
+
+            break;
+        }
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function loadCascaderOptions(int $pid, ?int $excludeId): array
+    {
+        $rows = Area::query()
+            ->where('pid', $pid)
+            ->orderBy('id')
+            ->get();
+
+        if ($rows->isEmpty()) {
+            return [];
+        }
+
+        $childCounts = Area::query()
+            ->whereIn('pid', $rows->pluck('id'))
+            ->selectRaw('pid, COUNT(*) as aggregate')
+            ->groupBy('pid')
+            ->pluck('aggregate', 'pid');
+
+        return $rows
+            ->filter(fn (Area $area) => ! $this->cannotSelectAsParent((int) $area->id, $excludeId))
+            ->map(function (Area $area) use ($childCounts) {
+                $hasChild = (int) ($childCounts[$area->id] ?? 0) > 0;
+
+                return [
+                    'label' => $area->name,
+                    'value' => (int) $area->id,
+                    'isLeaf' => ! $hasChild,
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    private function cannotSelectAsParent(int $candidateId, ?int $excludeId): bool
+    {
+        if (! $excludeId) {
+            return false;
+        }
+
+        if ($candidateId === $excludeId) {
+            return true;
+        }
+
+        return $this->isDescendant($candidateId, $excludeId);
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function applyPinyinMeta(array $data, ?Area $area = null): array
+    {
+        $source = trim((string) ($data['shortname'] ?? ''));
+        if ($source === '' && $area) {
+            $source = trim((string) ($area->shortname ?? ''));
+        }
+        if ($source === '') {
+            $source = trim((string) ($data['name'] ?? ($area?->name ?? '')));
+        }
+
+        $meta = AreaHelper::buildPinyinMeta($source);
+        $data['pinyin'] = $meta['pinyin'];
+        $data['first'] = $meta['first'];
+
+        return $data;
     }
 }

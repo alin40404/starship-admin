@@ -5,7 +5,6 @@ import type {
 } from '#/adapter/vxe-table';
 
 import type { AreaTreeNode } from '#/api/system/region';
-import { fetchAreaTree, mapAreaForTreeSelect } from '#/api/system/region';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 
 export const AREA_LEVEL_OPTIONS = [
@@ -152,46 +151,13 @@ export function useAreaColumns(
   ];
 }
 
-export async function loadAreaTreeForParent(excludeId?: number) {
-  const tree = await fetchAreaTree();
-  if (!excludeId) {
-    return [{ label: '顶级区域', value: 0 }, ...mapAreaForTreeSelect(tree)];
-  }
-
-  function filter(nodes: AreaTreeNode[]): AreaTreeNode[] {
-    return nodes
-      .filter((node) => node.id !== excludeId)
-      .map((node) => ({
-        ...node,
-        children: node.children?.length ? filter(node.children) : [],
-      }));
-  }
-
-  return [
-    { label: '顶级区域', value: 0 },
-    ...mapAreaForTreeSelect(filter(tree)),
-  ];
-}
-
-export function buildAreaFormSchema(params: {
-  parentTreeLoader: () => ReturnType<typeof loadAreaTreeForParent>;
-}): VbenFormSchema[] {
+export function buildAreaFormSchema(): VbenFormSchema[] {
   return [
     {
-      component: 'ApiTreeSelect',
-      componentProps: {
-        allowClear: true,
-        api: params.parentTreeLoader,
-        class: 'w-full',
-        fieldNames: { children: 'children', label: 'label', value: 'value' },
-        placeholder: '上级区域（留空为顶级）',
-        showSearch: true,
-        treeDefaultExpandAll: true,
-        treeIcon: false,
-        treeLine: false,
-      },
-      defaultValue: 0,
+      component: 'Input',
+      controlClass: 'w-full min-w-0',
       fieldName: 'pid',
+      formItemClass: 'col-span-full w-full items-start',
       label: '上级区域',
     },
     {
@@ -226,7 +192,12 @@ export function buildAreaFormSchema(params: {
     },
     {
       component: 'Input',
-      componentProps: { class: 'w-full' },
+      componentProps: {
+        class: 'w-full',
+        disabled: true,
+        placeholder: '根据简称自动生成',
+        readonly: true,
+      },
       fieldName: 'pinyin',
       label: '拼音',
     },
@@ -244,7 +215,12 @@ export function buildAreaFormSchema(params: {
     },
     {
       component: 'Input',
-      componentProps: { class: 'w-full', maxlength: 1 },
+      componentProps: {
+        class: 'w-full',
+        disabled: true,
+        placeholder: '根据拼音自动生成',
+        readonly: true,
+      },
       fieldName: 'first',
       label: '首字母',
     },

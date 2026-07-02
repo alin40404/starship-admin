@@ -158,6 +158,9 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
 
         Route::get('areas/tree', [AreaController::class, 'tree']);
         Route::get('areas/children', [AreaController::class, 'children']);
+        Route::get('areas/cascader-init', [AreaController::class, 'cascaderInit']);
+        Route::get('areas/cascader-options', [AreaController::class, 'cascaderOptions']);
+        Route::get('areas/pinyin-preview', [AreaController::class, 'pinyinPreview']);
         Route::get('areas/{id}', [AreaController::class, 'show']);
         Route::post('areas', [AreaController::class, 'store']);
         Route::put('areas/{id}', [AreaController::class, 'update']);
