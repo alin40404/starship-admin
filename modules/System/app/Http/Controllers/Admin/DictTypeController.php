@@ -13,7 +13,33 @@ class DictTypeController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = DictType::query()->orderByDesc('id');
+        $query = DictType::query()->withCount('items');
+
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%'.$request->get('name').'%');
+        }
+        if ($request->filled('code')) {
+            $query->where('code', 'like', '%'.$request->get('code').'%');
+        }
+        if ($request->filled('status')) {
+            $query->where('status', (int) $request->get('status'));
+        }
+
+        $sortField = $request->get('sort_field');
+        $sortOrder = strtolower((string) $request->get('sort_order', 'asc')) === 'desc' ? 'desc' : 'asc';
+        $allowedSorts = [
+            'id' => 'id',
+            'name' => 'name',
+            'code' => 'code',
+            'status' => 'status',
+            'updated_at' => 'updated_at',
+        ];
+
+        if (is_string($sortField) && isset($allowedSorts[$sortField])) {
+            $query->orderBy($allowedSorts[$sortField], $sortOrder)->orderBy('id');
+        } else {
+            $query->orderByDesc('id');
+        }
 
         return ApiResponse::success($query->paginate((int) $request->get('per_page', 15)));
     }

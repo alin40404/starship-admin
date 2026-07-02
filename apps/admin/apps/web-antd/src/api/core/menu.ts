@@ -45,6 +45,11 @@ const PERMISSION_PAGE_BY_PATH: Record<string, string> = {
   '/org/departments': 'views/org/department/index.vue',
   '/org/posts': 'views/org/post/index.vue',
   '/org/user-groups': 'views/org/user-group/index.vue',
+  '/platform/dicts': 'views/platform/dict/index.vue',
+  '/platform/configs': 'views/platform/config/index.vue',
+  '/platform/params': 'views/platform/param/index.vue',
+  '/platform/regions': 'views/platform/region/index.vue',
+  '/platform/notifications': 'views/platform/notification/index.vue',
 };
 
 /** 路由 meta 用：库内为 Iconify `collection:name`（如 ep:menu），空则用占位 */

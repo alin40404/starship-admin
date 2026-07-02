@@ -96,6 +96,11 @@ class StarshipFoundationSeeder extends Seeder
             '/org/departments' => '/org/department/index',
             '/org/posts' => '/org/post/index',
             '/org/user-groups' => '/org/user-group/index',
+            '/platform/dicts' => '/platform/dict/index',
+            '/platform/configs' => '/platform/config/index',
+            '/platform/params' => '/platform/param/index',
+            '/platform/regions' => '/platform/region/index',
+            '/platform/notifications' => '/platform/notification/index',
         ];
         if (isset($permission[$path])) {
             return $permission[$path];
@@ -538,6 +543,18 @@ class StarshipFoundationSeeder extends Seeder
                 'type' => 'string',
                 'sort' => 0,
                 'remark' => '后台左上角展示名称',
+            ]
+        );
+
+        Setting::query()->updateOrCreate(
+            ['key' => 'app.page_size'],
+            [
+                'name' => '默认分页大小',
+                'value' => '15',
+                'group_name' => 'param',
+                'type' => 'number',
+                'sort' => 10,
+                'remark' => '列表默认每页条数',
             ]
         );
     }
