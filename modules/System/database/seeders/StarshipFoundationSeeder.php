@@ -12,6 +12,7 @@ use Modules\System\App\Models\Menu;
 use Modules\System\App\Models\Post;
 use Modules\System\App\Support\AdminPermissions;
 use Modules\System\App\Support\AreaPermissions;
+use Modules\System\App\Support\CategoryPermissions;
 use Modules\System\App\Support\AttachmentPermissions;
 use Modules\System\App\Support\ConfigPermissions;
 use Modules\System\App\Support\DepartmentPermissions;
@@ -106,6 +107,7 @@ class StarshipFoundationSeeder extends Seeder
             '/org/user-groups' => '/org/user-group/index',
             '/platform/configs' => '/platform/config/index',
             '/platform/dicts' => '/platform/dict/index',
+            '/platform/categories' => '/platform/category/index',
             '/platform/regions' => '/platform/region/index',
             '/resource/attachments' => '/resource/attachment/index',
         ];
@@ -472,6 +474,36 @@ class StarshipFoundationSeeder extends Seeder
             ]);
         }
 
+        $categoryMgmt = Menu::query()->create([
+            'parent_id' => $platform->id,
+            'type' => 2,
+            'name' => 'CategoryMgmt',
+            'title' => '分类管理',
+            'path' => '/platform/categories',
+            'component' => $this->defaultComponentForMenuPath('/platform/categories'),
+            'permission' => 'system.categories',
+            'icon' => 'ep:collection-tag',
+            'sort' => 304,
+            'other_settings' => $this->menuOther(1, 1),
+            'status' => 1,
+        ]);
+
+        foreach (CategoryPermissions::buttonDefinitions() as $btn) {
+            Menu::query()->create([
+                'parent_id' => $categoryMgmt->id,
+                'type' => 3,
+                'name' => $btn['name'],
+                'title' => $btn['title'],
+                'path' => null,
+                'component' => null,
+                'permission' => $btn['permission'],
+                'icon' => null,
+                'sort' => $btn['sort'],
+                'other_settings' => $this->menuOther(0),
+                'status' => 1,
+            ]);
+        }
+
         $regionMgmt = Menu::query()->create([
             'parent_id' => $platform->id,
             'type' => 2,
@@ -481,7 +513,7 @@ class StarshipFoundationSeeder extends Seeder
             'component' => $this->defaultComponentForMenuPath('/platform/regions'),
             'permission' => 'system.regions',
             'icon' => 'ep:location',
-            'sort' => 304,
+            'sort' => 305,
             'other_settings' => $this->menuOther(1, 1),
             'status' => 1,
         ]);

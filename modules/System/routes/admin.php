@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Modules\System\App\Http\Controllers\Admin\AdminUserController;
 use Modules\System\App\Http\Controllers\Admin\AreaController;
+use Modules\System\App\Http\Controllers\Admin\CategoryController;
 use Modules\System\App\Http\Controllers\Admin\AttachmentController;
 use Modules\System\App\Http\Controllers\Admin\AuthController;
 use Modules\System\App\Http\Controllers\Admin\ConfigController;
@@ -15,6 +16,7 @@ use Modules\System\App\Http\Controllers\Admin\RoleController;
 use Modules\System\App\Http\Controllers\Admin\UserGroupController;
 use Modules\System\App\Support\AdminPermissions;
 use Modules\System\App\Support\AreaPermissions;
+use Modules\System\App\Support\CategoryPermissions;
 use Modules\System\App\Support\AttachmentPermissions;
 use Modules\System\App\Support\ConfigPermissions;
 use Modules\System\App\Support\DepartmentPermissions;
@@ -205,5 +207,14 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
             ->middleware('admin.permission:'.AttachmentPermissions::BATCH_DELETE);
         Route::delete('attachments/{id}', [AttachmentController::class, 'destroy'])
             ->middleware('admin.permission:'.AttachmentPermissions::DELETE);
+
+        Route::get('categories', [CategoryController::class, 'index'])
+            ->middleware('admin.permission:'.CategoryPermissions::QUERY);
+        Route::post('categories', [CategoryController::class, 'store'])
+            ->middleware('admin.permission:'.CategoryPermissions::CREATE);
+        Route::put('categories/{id}', [CategoryController::class, 'update'])
+            ->middleware('admin.permission:'.CategoryPermissions::UPDATE);
+        Route::delete('categories/{id}', [CategoryController::class, 'destroy'])
+            ->middleware('admin.permission:'.CategoryPermissions::DELETE);
     });
 });

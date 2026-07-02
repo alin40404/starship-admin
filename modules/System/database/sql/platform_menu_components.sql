@@ -21,6 +21,9 @@ WHERE `path` = '/platform/params' AND `type` = 2 AND `deleted_at` IS NULL;
 UPDATE `sa_menus` SET `component` = '/platform/region/index', `updated_at` = NOW()
 WHERE `path` = '/platform/regions' AND `type` = 2 AND `deleted_at` IS NULL;
 
+UPDATE `sa_menus` SET `component` = '/platform/category/index', `updated_at` = NOW()
+WHERE `path` = '/platform/categories' AND `type` = 2 AND `deleted_at` IS NULL;
+
 -- 通知配置已合并至系统配置，移除独立菜单
 UPDATE `sa_menus` SET `deleted_at` = NOW(), `updated_at` = NOW()
 WHERE `path` = '/platform/notifications' AND `type` = 2 AND `deleted_at` IS NULL;
