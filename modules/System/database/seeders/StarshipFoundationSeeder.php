@@ -537,7 +537,7 @@ class StarshipFoundationSeeder extends Seeder
         $siteConfigs = [
             [
                 'key' => 'site.name',
-                'name' => '站点名称',
+                'name' => '系统名称',
                 'value' => 'Starship Admin',
                 'group_name' => 'basic',
                 'type' => 'string',
@@ -546,7 +546,7 @@ class StarshipFoundationSeeder extends Seeder
             ],
             [
                 'key' => 'site.logo',
-                'name' => '站点 Logo',
+                'name' => '系统 Logo',
                 'value' => '',
                 'group_name' => 'basic',
                 'type' => 'string',

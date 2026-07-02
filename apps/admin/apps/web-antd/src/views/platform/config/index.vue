@@ -64,7 +64,7 @@ const currentSection = computed(
         <button
           v-for="item in sections"
           :key="item.key"
-          class="rounded-md px-3 py-2.5 text-left transition-colors"
+          class="w-full rounded-md px-3 py-2.5 text-left transition-colors"
           :class="
             activeSection === item.key
               ? 'bg-primary/10 text-primary font-medium'
@@ -73,8 +73,11 @@ const currentSection = computed(
           type="button"
           @click="activeSection = item.key"
         >
-          <div class="text-sm">{{ item.label }}</div>
-          <div class="text-muted-foreground mt-0.5 text-xs leading-5">
+          <div class="truncate text-sm">{{ item.label }}</div>
+          <div
+            class="text-muted-foreground mt-0.5 truncate text-xs leading-5"
+            :title="item.description"
+          >
             {{ item.description }}
           </div>
         </button>

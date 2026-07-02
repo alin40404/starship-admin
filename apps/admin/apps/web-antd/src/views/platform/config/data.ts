@@ -5,7 +5,7 @@ export const CONFIG_GROUP_LABELS: Record<string, string> = {
 };
 
 export const CONFIG_GROUP_DESCRIPTIONS: Record<string, string> = {
-  basic: '站点名称、版本号、时区等基础信息',
+  basic: '系统名称、版本号、时区等基础信息',
   email: 'SMTP 邮件发送相关配置',
 };
 
