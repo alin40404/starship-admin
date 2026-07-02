@@ -47,7 +47,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
 export function useColumns(
   onActionClick: OnActionClickFn<UserGroupRow>,
   access: UserGroupAccessChecker,
-): VxeTableGridColumns {
+): VxeTableGridColumns<UserGroupRow> {
   return [
     {
       align: 'center',
@@ -56,28 +56,31 @@ export function useColumns(
       width: 48,
     },
     { field: 'id', sortable: true, title: 'ID', width: 72 },
-    { field: 'name', minWidth: 140, sortable: true, title: '名称' },
-    { field: 'code', minWidth: 140, sortable: true, title: '编码' },
+    { align: 'left', field: 'name', minWidth: 140, sortable: true, title: '名称' },
+    { align: 'left', field: 'code', minWidth: 140, sortable: true, title: '编码' },
     {
+      align: 'center',
       field: 'admins_count',
-      formatter: ({ cellValue }) =>
+      formatter: ({ cellValue }: { cellValue: UserGroupRow['admins_count'] }) =>
         cellValue === undefined || cellValue === null
           ? TABLE_CELL_EMPTY
           : String(cellValue),
       title: '成员数',
-      width: 90,
+      width: 120,
     },
     { field: 'sort', sortable: true, title: '排序', width: 80 },
     {
       field: 'status',
-      formatter: ({ cellValue }) => (cellValue === 1 ? '启用' : '禁用'),
+      formatter: ({ cellValue }: { cellValue: UserGroupRow['status'] }) =>
+        cellValue === 1 ? '启用' : '禁用',
       sortable: true,
       title: '状态',
       width: 90,
     },
     {
       field: 'remark',
-      formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
+      formatter: ({ cellValue }: { cellValue: UserGroupRow['remark'] }) =>
+        cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 160,
       title: '备注',
     },

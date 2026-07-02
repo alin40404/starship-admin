@@ -59,8 +59,8 @@ export function useColumns(
       width: 48,
     },
     { field: 'id', sortable: true, title: 'ID', width: 72 },
-    { field: 'name', minWidth: 140, sortable: true, title: '名称' },
-    { field: 'code', minWidth: 140, sortable: true, title: '编码' },
+    { align: 'left', field: 'name', minWidth: 140, sortable: true, title: '名称' },
+    { align: 'left', field: 'code', minWidth: 140, sortable: true, title: '编码' },
     { field: 'sort', sortable: true, title: '排序', width: 80 },
     {
       field: 'status',
