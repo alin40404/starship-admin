@@ -34,4 +34,9 @@ class Department extends Model
     {
         return $this->hasMany(Admin::class, 'dept_id');
     }
+
+    public function leader(): BelongsTo
+    {
+        return $this->belongsTo(Admin::class, 'leader_id');
+    }
 }

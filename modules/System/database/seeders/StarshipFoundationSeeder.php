@@ -59,6 +59,8 @@ class StarshipFoundationSeeder extends Seeder
 
         $admin->roles()->sync([$role->id]);
 
+        Department::query()->whereKey($dept->id)->update(['leader_id' => $admin->id]);
+
         $this->seedDictBasics();
         $this->seedConfigBasics();
     }
@@ -98,7 +100,6 @@ class StarshipFoundationSeeder extends Seeder
             '/org/user-groups' => '/org/user-group/index',
             '/platform/dicts' => '/platform/dict/index',
             '/platform/configs' => '/platform/config/index',
-            '/platform/params' => '/platform/param/index',
             '/platform/regions' => '/platform/region/index',
             '/platform/notifications' => '/platform/notification/index',
         ];
@@ -379,7 +380,6 @@ class StarshipFoundationSeeder extends Seeder
             [
                 ['name' => 'DictMgmt', 'title' => '字典管理', 'path' => '/platform/dicts', 'permission' => 'system.dicts', 'sort' => 301, 'icon' => 'ep:collection'],
                 ['name' => 'ConfigMgmt', 'title' => '系统配置', 'path' => '/platform/configs', 'permission' => 'system.configs', 'sort' => 302, 'icon' => 'ep:setting'],
-                ['name' => 'ParamMgmt', 'title' => '参数配置', 'path' => '/platform/params', 'permission' => 'system.params', 'sort' => 303, 'icon' => 'ep:setting'],
                 ['name' => 'RegionMgmt', 'title' => '区域管理', 'path' => '/platform/regions', 'permission' => 'system.regions', 'sort' => 304, 'icon' => 'ep:location'],
                 ['name' => 'NotifyMgmt', 'title' => '通知配置', 'path' => '/platform/notifications', 'permission' => 'system.notifications', 'sort' => 305, 'icon' => 'ep:bell'],
             ] as $m
@@ -564,7 +564,6 @@ class StarshipFoundationSeeder extends Seeder
         $root = Department::query()->updateOrCreate(
             ['parent_id' => 0, 'name' => '总公司'],
             [
-                'leader' => '张总',
                 'phone' => '010-88880000',
                 'email' => 'ceo@starship.org',
                 'sort' => 0,
@@ -576,30 +575,26 @@ class StarshipFoundationSeeder extends Seeder
         $this->createDepartmentTree([
             [
                 'name' => '研发中心',
-                'leader' => '李研',
                 'phone' => '010-88880001',
                 'sort' => 10,
                 'children' => [
-                    ['name' => '前端组', 'leader' => '王前', 'sort' => 1],
-                    ['name' => '后端组', 'leader' => '赵后', 'sort' => 2],
-                    ['name' => '测试组', 'leader' => '钱测', 'sort' => 3],
+                    ['name' => '前端组', 'sort' => 1],
+                    ['name' => '后端组', 'sort' => 2],
+                    ['name' => '测试组', 'sort' => 3],
                 ],
             ],
             [
                 'name' => '市场营销部',
-                'leader' => '孙市',
                 'phone' => '010-88880002',
                 'sort' => 20,
             ],
             [
                 'name' => '人力资源部',
-                'leader' => '周人',
                 'phone' => '010-88880003',
                 'sort' => 30,
             ],
             [
                 'name' => '财务部',
-                'leader' => '吴财',
                 'phone' => '010-88880004',
                 'sort' => 40,
                 'status' => 0,
@@ -650,7 +645,7 @@ class StarshipFoundationSeeder extends Seeder
                 ['parent_id' => $parentId, 'name' => (string) $node['name']],
                 array_merge(
                     [
-                        'leader' => null,
+                        'leader_id' => null,
                         'phone' => null,
                         'email' => null,
                         'sort' => 0,

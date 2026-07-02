@@ -13,7 +13,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('parent_id')->default(0)->comment('父级ID');
             $table->string('name', 100)->comment('部门名称');
-            $table->string('leader', 100)->nullable()->comment('负责人');
+            $table->unsignedBigInteger('leader_id')->nullable()->comment('部门负责人ID');
             $table->string('phone', 20)->nullable()->comment('联系电话');
             $table->string('email', 100)->nullable()->comment('邮箱');
             $table->integer('sort')->default(0)->comment('排序');

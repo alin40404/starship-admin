@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Modules\System\App\Models\Admin;
 use Modules\System\App\Models\Department;
 use Modules\System\App\Services\AdminPermissionService;
@@ -18,6 +19,7 @@ class DepartmentController extends Controller
     public function tree(Request $request): JsonResponse
     {
         $query = Department::query()
+            ->with('leader:id,nickname,real_name,username')
             ->orderBy('sort')
             ->orderBy('id');
 
@@ -36,21 +38,29 @@ class DepartmentController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = Department::query()->orderBy('sort')->orderBy('id');
+        $query = Department::query()
+            ->with('leader:id,nickname,real_name,username')
+            ->orderBy('sort')
+            ->orderBy('id');
 
         $admin = $request->user();
         if ($admin instanceof Admin) {
             app(DataScopeService::class)->applyDepartmentScope($query, $admin);
         }
 
-        return ApiResponse::success($query->paginate((int) $request->get('per_page', 15)));
+        $paginator = $query->paginate((int) $request->get('per_page', 15));
+        $paginator->getCollection()->transform(fn (Department $dept) => $this->formatDepartment($dept));
+
+        return ApiResponse::success($paginator);
     }
 
     public function show(int $id): JsonResponse
     {
-        $dept = Department::query()->findOrFail($id);
+        $dept = Department::query()
+            ->with('leader:id,nickname,real_name,username')
+            ->findOrFail($id);
 
-        return ApiResponse::success($dept);
+        return ApiResponse::success($this->formatDepartment($dept));
     }
 
     public function store(Request $request): JsonResponse
@@ -58,7 +68,7 @@ class DepartmentController extends Controller
         $data = $request->validate([
             'parent_id' => ['sometimes', 'integer', 'min:0'],
             'name' => ['required', 'string', 'max:100'],
-            'leader' => ['nullable', 'string', 'max:100'],
+            'leader_id' => ['nullable', 'integer', Rule::exists(Admin::class, 'id')],
             'phone' => ['nullable', 'string', 'max:20'],
             'email' => ['nullable', 'string', 'max:100'],
             'sort' => ['sometimes', 'integer'],
@@ -68,7 +78,10 @@ class DepartmentController extends Controller
 
         $dept = Department::query()->create($data);
 
-        return ApiResponse::success($dept, '创建成功');
+        return ApiResponse::success(
+            $this->formatDepartment($dept->load('leader:id,nickname,real_name,username')),
+            '创建成功',
+        );
     }
 
     public function update(Request $request, int $id): JsonResponse
@@ -77,7 +90,7 @@ class DepartmentController extends Controller
         $data = $request->validate([
             'parent_id' => ['sometimes', 'integer', 'min:0'],
             'name' => ['sometimes', 'string', 'max:100'],
-            'leader' => ['nullable', 'string', 'max:100'],
+            'leader_id' => ['nullable', 'integer', Rule::exists(Admin::class, 'id')],
             'phone' => ['nullable', 'string', 'max:20'],
             'email' => ['nullable', 'string', 'max:100'],
             'sort' => ['sometimes', 'integer'],
@@ -91,7 +104,10 @@ class DepartmentController extends Controller
 
         $dept->update($data);
 
-        return ApiResponse::success($dept->fresh(), '更新成功');
+        return ApiResponse::success(
+            $this->formatDepartment($dept->fresh()->load('leader:id,nickname,real_name,username')),
+            '更新成功',
+        );
     }
 
     public function updateStatus(Request $request, int $id): JsonResponse
@@ -103,7 +119,10 @@ class DepartmentController extends Controller
 
         $dept->update($data);
 
-        return ApiResponse::success($dept->fresh(), '状态已更新');
+        return ApiResponse::success(
+            $this->formatDepartment($dept->fresh()->load('leader:id,nickname,real_name,username')),
+            '状态已更新',
+        );
     }
 
     public function updateSort(Request $request, int $id): JsonResponse
@@ -115,7 +134,10 @@ class DepartmentController extends Controller
 
         $dept->update($data);
 
-        return ApiResponse::success($dept->fresh(), '排序已更新');
+        return ApiResponse::success(
+            $this->formatDepartment($dept->fresh()->load('leader:id,nickname,real_name,username')),
+            '排序已更新',
+        );
     }
 
     public function destroy(int $id): JsonResponse
@@ -190,23 +212,52 @@ class DepartmentController extends Controller
         $branch = [];
 
         foreach ($rows->where('parent_id', $parentId) as $item) {
+            $formatted = $this->formatDepartment($item);
             $branch[] = [
-                'id' => $item->id,
-                'parent_id' => $item->parent_id,
-                'name' => $item->name,
-                'leader' => $item->leader,
-                'phone' => $item->phone,
-                'email' => $item->email,
-                'sort' => $item->sort,
-                'status' => $item->status,
-                'remark' => $item->remark,
-                'created_at' => $item->created_at?->format('Y-m-d H:i:s'),
-                'updated_at' => $item->updated_at?->format('Y-m-d H:i:s'),
+                ...$formatted,
                 'children' => $this->buildTree($rows, (int) $item->id),
             ];
         }
 
         return $branch;
+    }
+
+    private function formatDepartment(Department $dept): array
+    {
+        $dept->loadMissing('leader:id,nickname,real_name,username');
+        $leader = $dept->leader;
+
+        return [
+            'id' => $dept->id,
+            'parent_id' => $dept->parent_id,
+            'name' => $dept->name,
+            'leader_id' => $dept->leader_id,
+            'leader' => $leader ? [
+                'id' => $leader->id,
+                'nickname' => $leader->nickname,
+                'real_name' => $leader->real_name,
+                'username' => $leader->username,
+            ] : null,
+            'leader_name' => $this->formatLeaderName($leader),
+            'phone' => $dept->phone,
+            'email' => $dept->email,
+            'sort' => $dept->sort,
+            'status' => $dept->status,
+            'remark' => $dept->remark,
+            'created_at' => $dept->created_at?->format('Y-m-d H:i:s'),
+            'updated_at' => $dept->updated_at?->format('Y-m-d H:i:s'),
+        ];
+    }
+
+    private function formatLeaderName(?Admin $leader): ?string
+    {
+        if (! $leader) {
+            return null;
+        }
+
+        $name = trim((string) ($leader->real_name ?: $leader->nickname ?: ''));
+
+        return $name !== '' ? $name : $leader->username;
     }
 
     private function canLoadUnscopedDeptTree(Admin $admin): bool

@@ -2,8 +2,7 @@
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { ConfigRow } from '#/api/system/config';
 
-import { useAccess } from '@vben/access';
-import { Page, useVbenDrawer } from '@vben/common-ui';
+import { useVbenDrawer } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
 import { Button } from 'ant-design-vue';
@@ -11,12 +10,12 @@ import { Button } from 'ant-design-vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchConfigs } from '#/api/system/config';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
-import { PARAM_PERMISSIONS } from '#/constants/param-permissions';
 
-import ParamForm from './modules/form.vue';
+import ParamForm from './param-form.vue';
 
-const { hasAccessByCodes } = useAccess();
-const canManage = () => hasAccessByCodes([PARAM_PERMISSIONS.MANAGE]);
+const props = defineProps<{
+  canManage: boolean;
+}>();
 
 const [ParamFormDrawer, paramFormDrawerApi] = useVbenDrawer({
   connectedComponent: ParamForm,
@@ -70,7 +69,14 @@ const [Grid, gridApi] = useVbenVxeGrid<ConfigRow>({
             onClick: onActionClick,
           },
           name: 'CellOperation',
-          options: [{ code: 'edit', text: '编辑', type: 'link' }],
+          options: [
+            {
+              code: 'edit',
+              show: () => props.canManage,
+              text: '编辑',
+              type: 'link',
+            },
+          ],
         },
         fixed: 'right',
         title: '操作',
@@ -94,15 +100,18 @@ const [Grid, gridApi] = useVbenVxeGrid<ConfigRow>({
 </script>
 
 <template>
-  <Page auto-content-height>
+  <div>
+    <div class="text-muted-foreground mb-4 text-sm">
+      维护可动态增删的运行参数，供业务代码按键读取。
+    </div>
     <ParamFormDrawer @success="onRefresh" />
     <Grid>
       <template #toolbar-actions>
-        <Button v-if="canManage()" type="primary" @click="onCreate">
+        <Button v-if="props.canManage" type="primary" @click="onCreate">
           <Plus class="size-4" />
           新增参数
         </Button>
       </template>
     </Grid>
-  </Page>
+  </div>
 </template>

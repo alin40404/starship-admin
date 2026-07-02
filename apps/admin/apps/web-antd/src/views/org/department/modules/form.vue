@@ -92,7 +92,7 @@ const [Modal, modalApi] = useVbenModal({
       const detail = await fetchDepartment(id);
       formApi.setValues({
         email: detail.email ?? '',
-        leader: detail.leader ?? '',
+        leader_id: detail.leader_id ?? undefined,
         name: detail.name,
         parent_id: detail.parent_id ?? 0,
         phone: detail.phone ?? '',
@@ -104,7 +104,7 @@ const [Modal, modalApi] = useVbenModal({
       const parentId = (data as { parent_id?: number })?.parent_id ?? 0;
       formApi.setValues({
         email: '',
-        leader: '',
+        leader_id: undefined,
         name: '',
         parent_id: parentId,
         phone: '',

@@ -13,7 +13,14 @@ export interface DepartmentRow {
   id: number;
   parent_id: number;
   name: string;
-  leader: string | null;
+  leader_id: number | null;
+  leader?: {
+    id: number;
+    nickname: string | null;
+    real_name: string | null;
+    username: string;
+  } | null;
+  leader_name?: string | null;
   phone: string | null;
   email: string | null;
   sort: number;
@@ -29,7 +36,7 @@ export type DepartmentTreeNode = DepartmentRow;
 export interface DepartmentSavePayload {
   parent_id?: number;
   name: string;
-  leader?: string;
+  leader_id?: number | null;
   phone?: string;
   email?: string;
   sort?: number;

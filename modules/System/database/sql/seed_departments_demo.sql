@@ -8,10 +8,10 @@ SET @root_id := (
 );
 
 INSERT INTO `sa_departments` (
-    `parent_id`, `name`, `leader`, `phone`, `email`, `sort`, `status`, `remark`,
+    `parent_id`, `name`, `phone`, `email`, `sort`, `status`, `remark`,
     `created_at`, `updated_at`
 )
-SELECT 0, '总公司', '张总', '010-88880000', 'ceo@starship.org', 0, 1, '集团总部', NOW(), NOW()
+SELECT 0, '总公司', '010-88880000', 'ceo@starship.org', 0, 1, '集团总部', NOW(), NOW()
 WHERE @root_id IS NULL;
 
 SET @root_id := (
@@ -21,17 +21,22 @@ SET @root_id := (
 );
 
 UPDATE `sa_departments`
-SET `leader` = '张总', `phone` = '010-88880000', `email` = 'ceo@starship.org',
+SET `phone` = '010-88880000', `email` = 'ceo@starship.org',
     `remark` = '集团总部', `updated_at` = NOW()
 WHERE `id` = @root_id;
 
-INSERT INTO `sa_departments` (`parent_id`, `name`, `leader`, `phone`, `sort`, `status`, `remark`, `created_at`, `updated_at`)
-SELECT @root_id, src.`name`, src.`leader`, src.`phone`, src.`sort`, src.`status`, src.`remark`, NOW(), NOW()
+UPDATE `sa_departments` AS d
+INNER JOIN `sa_admins` AS a ON a.`username` = 'admin' AND a.`deleted_at` IS NULL
+SET d.`leader_id` = a.`id`
+WHERE d.`id` = @root_id AND d.`leader_id` IS NULL;
+
+INSERT INTO `sa_departments` (`parent_id`, `name`, `phone`, `sort`, `status`, `remark`, `created_at`, `updated_at`)
+SELECT @root_id, src.`name`, src.`phone`, src.`sort`, src.`status`, src.`remark`, NOW(), NOW()
 FROM (
-    SELECT '研发中心' AS `name`, '李研' AS `leader`, '010-88880001' AS `phone`, 10 AS `sort`, 1 AS `status`, NULL AS `remark`
-    UNION ALL SELECT '市场营销部', '孙市', '010-88880002', 20, 1, NULL
-    UNION ALL SELECT '人力资源部', '周人', '010-88880003', 30, 1, NULL
-    UNION ALL SELECT '财务部', '吴财', '010-88880004', 40, 0, '示例：禁用状态'
+    SELECT '研发中心' AS `name`, '010-88880001' AS `phone`, 10 AS `sort`, 1 AS `status`, NULL AS `remark`
+    UNION ALL SELECT '市场营销部', '010-88880002', 20, 1, NULL
+    UNION ALL SELECT '人力资源部', '010-88880003', 30, 1, NULL
+    UNION ALL SELECT '财务部', '010-88880004', 40, 0, '示例：禁用状态'
 ) AS src
 WHERE @root_id IS NOT NULL
   AND NOT EXISTS (
@@ -44,12 +49,12 @@ SET @rd_id := (
     WHERE `parent_id` = @root_id AND `name` = '研发中心' AND `deleted_at` IS NULL LIMIT 1
 );
 
-INSERT INTO `sa_departments` (`parent_id`, `name`, `leader`, `sort`, `status`, `created_at`, `updated_at`)
-SELECT @rd_id, src.`name`, src.`leader`, src.`sort`, 1, NOW(), NOW()
+INSERT INTO `sa_departments` (`parent_id`, `name`, `sort`, `status`, `created_at`, `updated_at`)
+SELECT @rd_id, src.`name`, src.`sort`, 1, NOW(), NOW()
 FROM (
-    SELECT '前端组' AS `name`, '王前' AS `leader`, 1 AS `sort`
-    UNION ALL SELECT '后端组', '赵后', 2
-    UNION ALL SELECT '测试组', '钱测', 3
+    SELECT '前端组' AS `name`, 1 AS `sort`
+    UNION ALL SELECT '后端组', 2
+    UNION ALL SELECT '测试组', 3
 ) AS src
 WHERE @rd_id IS NOT NULL
   AND NOT EXISTS (

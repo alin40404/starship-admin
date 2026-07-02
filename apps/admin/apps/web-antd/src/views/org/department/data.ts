@@ -5,6 +5,7 @@ import type {
 } from '#/adapter/vxe-table';
 
 import type { DepartmentTreeNode } from '#/api/system/department';
+import { fetchAdminPage } from '#/api/system/admin';
 import { fetchDepartmentTree, mapDeptForTreeSelect } from '#/api/system/department';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { DEPARTMENT_PERMISSIONS } from '#/constants/department-permissions';
@@ -39,10 +40,11 @@ export function useColumns(
       treeNode: true,
     },
     {
-      field: 'leader',
+      align: 'left',
+      field: 'leader_name',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 100,
-      title: '负责人',
+      title: '部门负责人',
     },
     {
       field: 'phone',
@@ -128,6 +130,14 @@ export function useColumns(
   ];
 }
 
+async function loadAdminOptions() {
+  const page = await fetchAdminPage({ page: 1, per_page: 500 });
+  return page.data.map((a) => ({
+    label: `${a.nickname || a.username} (${a.username})`,
+    value: a.id,
+  }));
+}
+
 export function buildDepartmentFormSchema(params: {
   parentTreeLoader: () => Promise<ReturnType<typeof mapDeptForTreeSelect>>;
 }): VbenFormSchema[] {
@@ -157,10 +167,17 @@ export function buildDepartmentFormSchema(params: {
       rules: 'required',
     },
     {
-      component: 'Input',
-      componentProps: { class: 'w-full' },
-      fieldName: 'leader',
-      label: '负责人',
+      component: 'ApiSelect',
+      componentProps: {
+        allowClear: true,
+        api: loadAdminOptions,
+        class: 'w-full',
+        optionFilterProp: 'label',
+        placeholder: '选择部门负责人',
+        showSearch: true,
+      },
+      fieldName: 'leader_id',
+      label: '部门负责人',
     },
     {
       component: 'Input',
