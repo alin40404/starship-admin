@@ -82,6 +82,8 @@ const [Modal, modalApi] = useVbenModal({
 
 <template>
   <Modal :title="modalTitle" class="w-[560px] max-w-[92vw]">
-    <Form />
+    <div :style="{ paddingTop: 'calc(var(--spacing) * 4)' }">
+      <Form />
+    </div>
   </Modal>
 </template>
