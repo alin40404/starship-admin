@@ -96,8 +96,11 @@ export function useGridFormSchema(): VbenFormSchema[] {
 export function useColumns(
   onActionClick: OnActionClickFn<AttachmentRow>,
   access: AttachmentAccessChecker,
+  options: { showCategoryColumn?: boolean } = {},
 ): VxeTableGridColumns<AttachmentRow> {
-  return [
+  const { showCategoryColumn = true } = options;
+
+  const columns: VxeTableGridColumns<AttachmentRow> = [
     {
       align: 'center',
       fixed: 'left',
@@ -130,13 +133,19 @@ export function useColumns(
       sortable: true,
       title: '文件名',
     },
-    {
+  ];
+
+  if (showCategoryColumn) {
+    columns.push({
       align: 'left',
       field: 'category',
       formatter: ({ row }) => formatCategoryLabel(row as AttachmentRow),
       minWidth: 100,
       title: '分类',
-    },
+    });
+  }
+
+  columns.push(
     {
       field: 'file_ext',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
@@ -213,5 +222,7 @@ export function useColumns(
       title: '操作',
       width: 180,
     },
-  ];
+  );
+
+  return columns;
 }

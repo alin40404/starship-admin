@@ -2,7 +2,7 @@
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { AttachmentRow } from '#/api/system/attachment';
 
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { Page, useVbenModal } from '@vben/common-ui';
@@ -46,6 +46,24 @@ function resolveCategoryFilter() {
   return activeCategory.value;
 }
 
+const activeCategoryLabel = computed(() => {
+  if (activeCategory.value === ALL_CATEGORY_KEY) {
+    return '全部';
+  }
+  return (
+    categoryOptions.value.find((item) => item.value === activeCategory.value)
+      ?.label ?? activeCategory.value
+  );
+});
+
+function syncGridColumns() {
+  gridApi.setGridOptions({
+    columns: useColumns(onActionClick, attachmentAccess, {
+      showCategoryColumn: activeCategory.value === ALL_CATEGORY_KEY,
+    }),
+  } as VxeTableGridOptions<AttachmentRow>);
+}
+
 function syncSelection() {
   const records = gridApi?.grid?.getCheckboxRecords?.() ?? [];
   selectedRows.value = records as AttachmentRow[];
@@ -66,6 +84,7 @@ function onCategoryChange(value: string) {
   }
   activeCategory.value = value;
   clearSelection();
+  syncGridColumns();
   onRefresh();
 }
 
@@ -192,42 +211,28 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
       class="bg-card flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-border md:min-h-[520px] md:flex-row"
     >
       <aside
-        class="attachment-category-panel flex shrink-0 flex-col overflow-hidden border-b border-border md:w-[200px] md:border-b-0 md:border-r"
+        class="attachment-category-panel flex shrink-0 flex-col overflow-hidden border-b border-border md:w-[168px] md:border-b-0 md:border-r"
       >
-        <div
-          class="attachment-category-header flex h-11 shrink-0 items-center border-b border-border bg-accent px-3 text-sm font-medium text-foreground"
-        >
-          附件分类
-        </div>
-        <div
-          class="attachment-category-tabs flex flex-1 flex-row gap-1 overflow-x-auto overscroll-x-contain p-2 md:flex-col md:overflow-x-visible md:overflow-y-auto md:p-3"
-        >
-        <button
-          class="shrink-0 snap-start rounded-md px-3 py-2 text-center transition-colors md:w-full md:flex-none md:px-3 md:py-2.5 md:text-left"
-          :class="
-            activeCategory === ALL_CATEGORY_KEY
-              ? 'bg-primary/10 text-primary font-medium'
-              : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-          "
-          type="button"
-          @click="onCategoryChange(ALL_CATEGORY_KEY)"
-        >
-          <div class="whitespace-nowrap text-sm">全部</div>
-        </button>
-        <button
-          v-for="item in categoryOptions"
-          :key="item.value"
-          class="shrink-0 snap-start rounded-md px-3 py-2 text-center transition-colors md:w-full md:flex-none md:px-3 md:py-2.5 md:text-left"
-          :class="
-            activeCategory === item.value
-              ? 'bg-primary/10 text-primary font-medium'
-              : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-          "
-          type="button"
-          @click="onCategoryChange(item.value)"
-        >
-          <div class="whitespace-nowrap text-sm">{{ item.label }}</div>
-        </button>
+        <div class="attachment-category-header">附件分类</div>
+        <div class="attachment-category-tabs">
+          <button
+            class="attachment-category-item"
+            :class="{ 'is-active': activeCategory === ALL_CATEGORY_KEY }"
+            type="button"
+            @click="onCategoryChange(ALL_CATEGORY_KEY)"
+          >
+            全部
+          </button>
+          <button
+            v-for="item in categoryOptions"
+            :key="item.value"
+            class="attachment-category-item"
+            :class="{ 'is-active': activeCategory === item.value }"
+            type="button"
+            @click="onCategoryChange(item.value)"
+          >
+            {{ item.label }}
+          </button>
         </div>
       </aside>
 
@@ -235,28 +240,38 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
         <div class="min-h-0 flex-1">
           <Grid>
             <template #toolbar-actions>
-              <template v-if="selectedRows.length > 0">
+              <div class="flex flex-wrap items-center gap-3">
+                <span class="text-muted-foreground hidden text-sm sm:inline">
+                  当前分类：
+                  <span class="text-foreground font-medium">{{
+                    activeCategoryLabel
+                  }}</span>
+                </span>
+                <template v-if="selectedRows.length > 0">
+                  <Button
+                    v-if="
+                      attachmentAccess.can(ATTACHMENT_PERMISSIONS.BATCH_DELETE)
+                    "
+                    danger
+                    @click="onBatchDelete"
+                  >
+                    批量删除（{{ selectedRows.length }}）
+                  </Button>
+                  <Button class="ml-2" type="link" @click="clearSelection">
+                    取消选择
+                  </Button>
+                </template>
                 <Button
-                  v-if="
-                    attachmentAccess.can(ATTACHMENT_PERMISSIONS.BATCH_DELETE)
+                  v-else-if="
+                    attachmentAccess.can(ATTACHMENT_PERMISSIONS.UPLOAD)
                   "
-                  danger
-                  @click="onBatchDelete"
+                  type="primary"
+                  @click="onUpload"
                 >
-                  批量删除（{{ selectedRows.length }}）
+                  <Plus class="size-4" />
+                  上传附件
                 </Button>
-                <Button class="ml-2" type="link" @click="clearSelection">
-                  取消选择
-                </Button>
-              </template>
-              <Button
-                v-else-if="attachmentAccess.can(ATTACHMENT_PERMISSIONS.UPLOAD)"
-                type="primary"
-                @click="onUpload"
-              >
-                <Plus class="size-4" />
-                上传附件
-              </Button>
+              </div>
             </template>
           </Grid>
         </div>
@@ -266,7 +281,28 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
 </template>
 
 <style scoped>
+.attachment-category-header {
+  display: flex;
+  height: 44px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid hsl(var(--border));
+  background-color: hsl(var(--accent));
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+}
+
 .attachment-category-tabs {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  gap: 8px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding: 8px;
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x proximity;
   scrollbar-width: thin;
@@ -279,5 +315,74 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
 .attachment-category-tabs::-webkit-scrollbar-thumb {
   border-radius: 9999px;
   background-color: hsl(var(--border));
+}
+
+.attachment-category-item {
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  border: 1px solid hsl(var(--border));
+  border-radius: 9999px;
+  background: transparent;
+  padding: 6px 14px;
+  font-size: 14px;
+  line-height: 1.25;
+  color: hsl(var(--muted-foreground));
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.attachment-category-item:hover {
+  border-color: hsl(var(--primary) / 0.35);
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+.attachment-category-item.is-active {
+  border-color: hsl(var(--primary) / 0.25);
+  background-color: hsl(var(--primary) / 0.08);
+  color: hsl(var(--primary));
+  font-weight: 500;
+}
+
+@media (min-width: 768px) {
+  .attachment-category-header {
+    justify-content: flex-start;
+  }
+
+  .attachment-category-tabs {
+    flex-direction: column;
+    gap: 0;
+    overflow-x: visible;
+    overflow-y: auto;
+    padding: 0;
+  }
+
+  .attachment-category-item {
+    width: 100%;
+    border: 0;
+    border-left: 2px solid transparent;
+    border-radius: 0;
+    padding: 10px 12px;
+    text-align: left;
+    color: hsl(var(--foreground));
+  }
+
+  .attachment-category-item:hover {
+    border-color: transparent;
+    border-left-color: hsl(var(--border));
+    background-color: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+  }
+
+  .attachment-category-item.is-active {
+    border-color: transparent;
+    border-left-color: hsl(var(--primary));
+    background-color: hsl(var(--primary) / 0.08);
+    color: hsl(var(--primary));
+  }
 }
 </style>
