@@ -62,6 +62,8 @@ const [Modal, modalApi] = useVbenModal({
       return;
     }
     await loadCategories();
+    const data = modalApi.getData<{ category?: string }>();
+    category.value = data?.category;
   },
 });
 </script>

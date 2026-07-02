@@ -22,12 +22,15 @@ import { ATTACHMENT_PERMISSIONS } from '#/constants/attachment-permissions';
 import { useColumns, useGridFormSchema } from './data';
 import UploadForm from './modules/upload-form.vue';
 
+const ALL_CATEGORY_KEY = '__all__';
+
 const { hasAccessByCodes } = useAccess();
 
 const attachmentAccess = {
   can: (code: string) => hasAccessByCodes([code]),
 };
 
+const activeCategory = ref(ALL_CATEGORY_KEY);
 const categoryOptions = ref<{ label: string; value: string }[]>([]);
 const selectedRows = ref<AttachmentRow[]>([]);
 
@@ -35,6 +38,13 @@ const [UploadFormModal, uploadFormModalApi] = useVbenModal({
   connectedComponent: UploadForm,
   destroyOnClose: true,
 });
+
+function resolveCategoryFilter() {
+  if (activeCategory.value === ALL_CATEGORY_KEY) {
+    return undefined;
+  }
+  return activeCategory.value;
+}
 
 function syncSelection() {
   const records = gridApi?.grid?.getCheckboxRecords?.() ?? [];
@@ -50,8 +60,21 @@ function onRefresh() {
   gridApi.query();
 }
 
+function onCategoryChange(value: string) {
+  if (activeCategory.value === value) {
+    return;
+  }
+  activeCategory.value = value;
+  clearSelection();
+  onRefresh();
+}
+
 function onUpload() {
-  uploadFormModalApi.setData({}).open();
+  const category =
+    activeCategory.value === ALL_CATEGORY_KEY
+      ? undefined
+      : activeCategory.value;
+  uploadFormModalApi.setData({ category }).open();
 }
 
 function onActionClick({ code, row }: OnActionClickParams<AttachmentRow>) {
@@ -115,9 +138,6 @@ async function loadCategoryOptions() {
     label: item.label,
     value: item.value,
   }));
-  gridApi.formApi?.setState({
-    schema: useGridFormSchema(categoryOptions.value),
-  });
 }
 
 onMounted(() => {
@@ -148,7 +168,7 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
             per_page: page.pageSize,
             file_name: formValues?.file_name || undefined,
             file_ext: formValues?.file_ext || undefined,
-            category: formValues?.category || undefined,
+            category: resolveCategoryFilter(),
             storage: formValues?.storage || undefined,
             sort_field: sort?.field,
             sort_order:
@@ -168,29 +188,92 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
 <template>
   <Page auto-content-height>
     <UploadFormModal @success="onRefresh" />
-    <Grid>
-      <template #toolbar-actions>
-        <template v-if="selectedRows.length > 0">
-          <Button
-            v-if="attachmentAccess.can(ATTACHMENT_PERMISSIONS.BATCH_DELETE)"
-            danger
-            @click="onBatchDelete"
-          >
-            批量删除（{{ selectedRows.length }}）
-          </Button>
-          <Button class="ml-2" type="link" @click="clearSelection">
-            取消选择
-          </Button>
-        </template>
-        <Button
-          v-else-if="attachmentAccess.can(ATTACHMENT_PERMISSIONS.UPLOAD)"
-          type="primary"
-          @click="onUpload"
+    <div
+      class="bg-card flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-border md:min-h-[520px] md:flex-row"
+    >
+      <aside
+        class="attachment-category-tabs flex shrink-0 flex-row gap-1 overflow-x-auto overscroll-x-contain border-b border-border p-2 md:w-[200px] md:flex-col md:overflow-x-visible md:overflow-y-auto md:border-b-0 md:border-r md:p-3"
+      >
+        <div
+          class="text-muted-foreground hidden px-3 pb-1 text-xs font-medium md:block"
         >
-          <Plus class="size-4" />
-          上传附件
-        </Button>
-      </template>
-    </Grid>
+          附件分类
+        </div>
+        <button
+          class="shrink-0 snap-start rounded-md px-3 py-2 text-center transition-colors md:w-full md:flex-none md:px-3 md:py-2.5 md:text-left"
+          :class="
+            activeCategory === ALL_CATEGORY_KEY
+              ? 'bg-primary/10 text-primary font-medium'
+              : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+          "
+          type="button"
+          @click="onCategoryChange(ALL_CATEGORY_KEY)"
+        >
+          <div class="whitespace-nowrap text-sm">全部</div>
+        </button>
+        <button
+          v-for="item in categoryOptions"
+          :key="item.value"
+          class="shrink-0 snap-start rounded-md px-3 py-2 text-center transition-colors md:w-full md:flex-none md:px-3 md:py-2.5 md:text-left"
+          :class="
+            activeCategory === item.value
+              ? 'bg-primary/10 text-primary font-medium'
+              : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+          "
+          type="button"
+          @click="onCategoryChange(item.value)"
+        >
+          <div class="whitespace-nowrap text-sm">{{ item.label }}</div>
+        </button>
+      </aside>
+
+      <main class="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div class="min-h-0 flex-1">
+          <Grid>
+            <template #toolbar-actions>
+              <template v-if="selectedRows.length > 0">
+                <Button
+                  v-if="
+                    attachmentAccess.can(ATTACHMENT_PERMISSIONS.BATCH_DELETE)
+                  "
+                  danger
+                  @click="onBatchDelete"
+                >
+                  批量删除（{{ selectedRows.length }}）
+                </Button>
+                <Button class="ml-2" type="link" @click="clearSelection">
+                  取消选择
+                </Button>
+              </template>
+              <Button
+                v-else-if="attachmentAccess.can(ATTACHMENT_PERMISSIONS.UPLOAD)"
+                type="primary"
+                @click="onUpload"
+              >
+                <Plus class="size-4" />
+                上传附件
+              </Button>
+            </template>
+          </Grid>
+        </div>
+      </main>
+    </div>
   </Page>
 </template>
+
+<style scoped>
+.attachment-category-tabs {
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+}
+
+.attachment-category-tabs::-webkit-scrollbar {
+  height: 4px;
+}
+
+.attachment-category-tabs::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background-color: hsl(var(--border));
+}
+</style>

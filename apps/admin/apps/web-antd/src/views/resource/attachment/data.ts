@@ -65,9 +65,7 @@ export function formatCategoryLabel(row: AttachmentRow) {
   return row.category_label ?? row.category ?? TABLE_CELL_EMPTY;
 }
 
-export function useGridFormSchema(
-  categoryOptions: { label: string; value: string }[] = [],
-): VbenFormSchema[] {
+export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
@@ -80,17 +78,6 @@ export function useGridFormSchema(
       componentProps: { class: 'w-full', placeholder: '扩展名，如 png' },
       fieldName: 'file_ext',
       label: '扩展名',
-    },
-    {
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        class: 'w-full',
-        options: categoryOptions,
-        placeholder: '附件分类',
-      },
-      fieldName: 'category',
-      label: '分类',
     },
     {
       component: 'Select',
