@@ -4,7 +4,7 @@ import type { ConfigRow } from '#/api/system/config';
 
 import { useTemplateRef, watch } from 'vue';
 
-import { useVbenDrawer } from '@vben/common-ui';
+import { useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
 import { useElementSize } from '@vueuse/core';
@@ -23,17 +23,17 @@ const props = defineProps<{
 const gridWrapRef = useTemplateRef<HTMLElement>('gridWrapRef');
 const { height: gridWrapHeight } = useElementSize(gridWrapRef);
 
-const [ParamFormDrawer, paramFormDrawerApi] = useVbenDrawer({
+const [ParamFormModal, paramFormModalApi] = useVbenModal({
   connectedComponent: ParamForm,
   destroyOnClose: true,
 });
 
 function onCreate() {
-  paramFormDrawerApi.setData({}).open();
+  paramFormModalApi.setData({}).open();
 }
 
 function onEdit(row: ConfigRow) {
-  paramFormDrawerApi.setData(row).open();
+  paramFormModalApi.setData(row).open();
 }
 
 function onRefresh() {
@@ -119,7 +119,7 @@ watch(
 
 <template>
   <div class="flex h-full min-h-0 flex-col">
-    <ParamFormDrawer @success="onRefresh" />
+    <ParamFormModal @success="onRefresh" />
     <div ref="gridWrapRef" class="min-h-0 flex-1">
       <Grid>
         <template #toolbar-actions>

@@ -1,9 +1,10 @@
 <script lang="ts" setup>
 import type { ConfigRow } from '#/api/system/config';
+import type { VbenFormSchema } from '#/adapter/form';
 
 import { computed, ref } from 'vue';
 
-import { useVbenDrawer } from '@vben/common-ui';
+import { useVbenModal } from '@vben/common-ui';
 
 import { message } from 'ant-design-vue';
 
@@ -16,89 +17,90 @@ const emits = defineEmits<{ success: [] }>();
 
 const editingKey = ref<string | null>(null);
 
+const PARAM_FORM_SCHEMA: VbenFormSchema[] = [
+  {
+    component: 'Input',
+    componentProps: { class: 'w-full' },
+    fieldName: 'key',
+    label: '参数键',
+    rules: 'required',
+  },
+  {
+    component: 'Input',
+    componentProps: { class: 'w-full' },
+    fieldName: 'name',
+    label: '参数名称',
+    rules: 'required',
+  },
+  {
+    component: 'Input',
+    componentProps: { class: 'w-full' },
+    fieldName: 'value',
+    label: '参数值',
+  },
+  {
+    component: 'Select',
+    componentProps: {
+      class: 'w-full',
+      options: [
+        { label: '字符串', value: 'string' },
+        { label: '数字', value: 'number' },
+        { label: '布尔', value: 'bool' },
+        { label: 'JSON', value: 'json' },
+      ],
+    },
+    defaultValue: 'string',
+    fieldName: 'type',
+    label: '值类型',
+  },
+  {
+    component: 'InputNumber',
+    componentProps: { class: 'w-full', min: 0 },
+    defaultValue: 0,
+    fieldName: 'sort',
+    label: '排序',
+  },
+  {
+    component: 'Textarea',
+    componentProps: { class: 'w-full', rows: 2 },
+    fieldName: 'remark',
+    formItemClass: 'col-span-full w-full items-start',
+    label: '备注',
+  },
+];
+
 const [Form, formApi] = useVbenForm({
   commonConfig: {
     componentProps: { class: 'w-full' },
     labelClass: 'justify-start',
   },
   layout: 'vertical',
-  schema: [
-    {
-      component: 'Input',
-      componentProps: { class: 'w-full' },
-      dependencies: {
-        componentProps(values) {
-          return { disabled: !!values._isEdit };
-        },
-        triggerFields: ['_isEdit'],
-      },
-      fieldName: 'key',
-      label: '参数键',
-      rules: 'required',
-    },
-    {
-      component: 'Input',
-      componentProps: { class: 'w-full' },
-      fieldName: 'name',
-      label: '参数名称',
-      rules: 'required',
-    },
-    {
-      component: 'Input',
-      componentProps: { class: 'w-full' },
-      fieldName: 'value',
-      label: '参数值',
-    },
-    {
-      component: 'Select',
-      componentProps: {
-        class: 'w-full',
-        options: [
-          { label: '字符串', value: 'string' },
-          { label: '数字', value: 'number' },
-          { label: '布尔', value: 'bool' },
-          { label: 'JSON', value: 'json' },
-        ],
-      },
-      defaultValue: 'string',
-      fieldName: 'type',
-      label: '值类型',
-    },
-    {
-      component: 'InputNumber',
-      componentProps: { class: 'w-full', min: 0 },
-      defaultValue: 0,
-      fieldName: 'sort',
-      label: '排序',
-    },
-    {
-      component: 'Textarea',
-      componentProps: { class: 'w-full', rows: 2 },
-      fieldName: 'remark',
-      formItemClass: 'col-span-full w-full items-start',
-      label: '备注',
-    },
-    {
-      component: 'Input',
-      dependencies: { show: () => false, triggerFields: [] },
-      fieldName: '_isEdit',
-    },
-  ],
+  schema: PARAM_FORM_SCHEMA,
   showDefaultActions: false,
   wrapperClass: 'grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1',
 });
 
-const drawerTitle = computed(() =>
+const modalTitle = computed(() =>
   editingKey.value ? '编辑参数' : '新增参数',
 );
 
-const [Drawer, drawerApi] = useVbenDrawer({
+function syncKeyFieldDisabled(isEdit: boolean) {
+  formApi.updateSchema([
+    {
+      componentProps: { class: 'w-full', disabled: isEdit },
+      fieldName: 'key',
+    },
+  ]);
+}
+
+const [Modal, modalApi] = useVbenModal({
+  fullscreenButton: false,
   async onConfirm() {
     const { valid } = await formApi.validate();
     if (!valid) return;
 
     const values = await formApi.getValues();
-    drawerApi.lock();
+    modalApi.lock();
     try {
       await batchUpsertConfigs([
         {
@@ -112,21 +114,21 @@ const [Drawer, drawerApi] = useVbenDrawer({
         },
       ]);
       message.success('已保存');
-      drawerApi.close();
+      modalApi.close();
       emits('success');
     } finally {
-      drawerApi.unlock();
+      modalApi.unlock();
     }
   },
   onOpenChange(isOpen: boolean) {
     if (!isOpen) return;
     formApi.resetForm();
-    const data = drawerApi.getData<ConfigRow | Record<string, never>>();
+    const data = modalApi.getData<ConfigRow | Record<string, never>>();
     const row = data as ConfigRow;
     if (row?.key) {
       editingKey.value = row.key;
+      syncKeyFieldDisabled(true);
       formApi.setValues({
-        _isEdit: true,
         key: row.key,
         name: row.name,
         remark: row.remark ?? '',
@@ -136,8 +138,8 @@ const [Drawer, drawerApi] = useVbenDrawer({
       });
     } else {
       editingKey.value = null;
+      syncKeyFieldDisabled(false);
       formApi.setValues({
-        _isEdit: false,
         key: '',
         name: '',
         remark: '',
@@ -151,7 +153,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
 </script>
 
 <template>
-  <Drawer :title="drawerTitle" class="max-w-[560px] w-[92vw]">
+  <Modal :title="modalTitle" class="w-[560px] max-w-[92vw]">
     <Form />
-  </Drawer>
+  </Modal>
 </template>
