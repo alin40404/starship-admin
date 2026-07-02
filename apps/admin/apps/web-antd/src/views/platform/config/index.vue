@@ -1,8 +1,10 @@
 <script lang="ts" setup>
-import { computed, ref } from 'vue';
+import { computed, ref, useTemplateRef } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { Page } from '@vben/common-ui';
+
+import { Button } from 'ant-design-vue';
 
 import { CONFIG_PERMISSIONS } from '#/constants/config-permissions';
 import { PARAM_PERMISSIONS } from '#/constants/param-permissions';
@@ -25,10 +27,27 @@ interface ConfigSection {
 const { hasAccessByCodes } = useAccess();
 
 const activeSection = ref<ConfigSectionKey>('basic');
+const settingsFormRef = useTemplateRef<InstanceType<typeof SettingsForm>>(
+  'settingsFormRef',
+);
 
 const canManageSite = () => hasAccessByCodes([CONFIG_PERMISSIONS.MANAGE]);
 const canManageParams = () =>
   hasAccessByCodes([CONFIG_PERMISSIONS.MANAGE, PARAM_PERMISSIONS.MANAGE]);
+
+const showSettingsSave = computed(
+  () =>
+    (activeSection.value === 'basic' || activeSection.value === 'email') &&
+    canManageSite(),
+);
+
+const settingsSaving = computed(
+  () => settingsFormRef.value?.saving ?? false,
+);
+
+async function onSettingsSave() {
+  await settingsFormRef.value?.onSave();
+}
 
 const sections: ConfigSection[] = [
   {
@@ -84,21 +103,39 @@ const currentSection = computed(
       </aside>
 
       <main class="flex min-h-0 flex-1 flex-col overflow-hidden p-5">
-        <div class="mb-4 shrink-0">
-          <h3 class="text-base font-medium">{{ currentSection.label }}</h3>
-          <p class="text-muted-foreground mt-1 text-sm">
-            {{ currentSection.description }}
-          </p>
+        <div
+          class="mb-4 flex shrink-0 items-center justify-between gap-4 border-b border-border pb-4"
+        >
+          <div class="min-w-0">
+            <h3 class="text-base font-medium">{{ currentSection.label }}</h3>
+            <p
+              class="text-muted-foreground mt-1 truncate text-sm"
+              :title="currentSection.description"
+            >
+              {{ currentSection.description }}
+            </p>
+          </div>
+          <Button
+            v-if="showSettingsSave"
+            :loading="settingsSaving"
+            class="shrink-0"
+            type="primary"
+            @click="onSettingsSave"
+          >
+            保存配置
+          </Button>
         </div>
 
         <SettingsForm
           v-if="activeSection === 'basic'"
+          ref="settingsFormRef"
           class="min-h-0 flex-1"
           group-name="basic"
           :can-manage="canManageSite()"
         />
         <SettingsForm
           v-else-if="activeSection === 'email'"
+          ref="settingsFormRef"
           class="min-h-0 flex-1"
           group-name="email"
           :can-manage="canManageSite()"

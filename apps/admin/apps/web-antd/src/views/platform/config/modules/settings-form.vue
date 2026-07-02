@@ -4,12 +4,12 @@ import type { ConfigRow } from '#/api/system/config';
 import { computed, onMounted, ref, watch } from 'vue';
 
 import {
-  Button,
   Form,
   Input,
   InputNumber,
   message,
   Select,
+  Spin,
   Switch,
 } from 'ant-design-vue';
 
@@ -88,27 +88,21 @@ watch(
 onMounted(() => {
   loadConfigs();
 });
+
+defineExpose({
+  onSave,
+  saving: computed(() => saving.value),
+});
 </script>
 
 <template>
-  <div class="flex h-full min-h-0 flex-col">
-    <div class="mb-4 flex shrink-0 justify-end">
-      <Button
-        v-if="props.canManage"
-        :loading="saving"
-        type="primary"
-        @click="onSave"
-      >
-        保存配置
-      </Button>
-    </div>
-
-    <div v-if="loading" class="text-muted-foreground py-8 text-center">
-      加载中…
-    </div>
-
-    <div v-else class="min-h-0 flex-1 overflow-auto pb-4">
-      <Form class="max-w-3xl" layout="vertical">
+  <div class="flex h-full min-h-0 flex-col overflow-hidden">
+    <Spin
+      :spinning="loading"
+      tip="加载中…"
+      wrapper-class-name="config-settings-spin-wrap"
+    >
+      <Form class="config-settings-form max-w-3xl pb-4" layout="vertical">
         <Form.Item
           v-for="row in sortedRows"
           :key="row.key"
@@ -164,6 +158,27 @@ onMounted(() => {
           <div class="text-muted-foreground mt-1 text-xs">{{ row.key }}</div>
         </Form.Item>
       </Form>
-    </div>
+    </Spin>
   </div>
 </template>
+
+<style scoped>
+.config-settings-spin-wrap {
+  display: flex;
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  flex-direction: column;
+}
+
+.config-settings-spin-wrap :deep(.ant-spin-container) {
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.config-settings-form :deep(.ant-form-item-label) {
+  padding: 0 0 2px;
+}
+</style>
