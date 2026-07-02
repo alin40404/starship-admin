@@ -442,6 +442,36 @@ class StarshipFoundationSeeder extends Seeder
             ]);
         }
 
+        $attachmentMgmt = Menu::query()->create([
+            'parent_id' => $platform->id,
+            'type' => 2,
+            'name' => 'AttachmentMgmt',
+            'title' => '附件管理',
+            'path' => '/resource/attachments',
+            'component' => $this->defaultComponentForMenuPath('/resource/attachments'),
+            'permission' => 'system.attachments',
+            'icon' => 'ep:paperclip',
+            'sort' => 303,
+            'other_settings' => $this->menuOther(1, 1),
+            'status' => 1,
+        ]);
+
+        foreach (AttachmentPermissions::buttonDefinitions() as $btn) {
+            Menu::query()->create([
+                'parent_id' => $attachmentMgmt->id,
+                'type' => 3,
+                'name' => $btn['name'],
+                'title' => $btn['title'],
+                'path' => null,
+                'component' => null,
+                'permission' => $btn['permission'],
+                'icon' => null,
+                'sort' => $btn['sort'],
+                'other_settings' => $this->menuOther(0),
+                'status' => 1,
+            ]);
+        }
+
         $regionMgmt = Menu::query()->create([
             'parent_id' => $platform->id,
             'type' => 2,
@@ -459,50 +489,6 @@ class StarshipFoundationSeeder extends Seeder
         foreach (AreaPermissions::buttonDefinitions() as $btn) {
             Menu::query()->create([
                 'parent_id' => $regionMgmt->id,
-                'type' => 3,
-                'name' => $btn['name'],
-                'title' => $btn['title'],
-                'path' => null,
-                'component' => null,
-                'permission' => $btn['permission'],
-                'icon' => null,
-                'sort' => $btn['sort'],
-                'other_settings' => $this->menuOther(0),
-                'status' => 1,
-            ]);
-        }
-
-        $resource = Menu::query()->create([
-            'parent_id' => 0,
-            'type' => 1,
-            'name' => 'Resource',
-            'title' => '资源管理',
-            'path' => '/resource',
-            'component' => null,
-            'permission' => null,
-            'icon' => 'ep:folder-opened',
-            'sort' => 400,
-            'other_settings' => $this->menuOther(1),
-            'status' => 1,
-        ]);
-
-        $attachmentMgmt = Menu::query()->create([
-            'parent_id' => $resource->id,
-            'type' => 2,
-            'name' => 'AttachmentMgmt',
-            'title' => '附件管理',
-            'path' => '/resource/attachments',
-            'component' => $this->defaultComponentForMenuPath('/resource/attachments'),
-            'permission' => 'system.attachments',
-            'icon' => 'ep:paperclip',
-            'sort' => 401,
-            'other_settings' => $this->menuOther(1, 1),
-            'status' => 1,
-        ]);
-
-        foreach (AttachmentPermissions::buttonDefinitions() as $btn) {
-            Menu::query()->create([
-                'parent_id' => $attachmentMgmt->id,
                 'type' => 3,
                 'name' => $btn['name'],
                 'title' => $btn['title'],

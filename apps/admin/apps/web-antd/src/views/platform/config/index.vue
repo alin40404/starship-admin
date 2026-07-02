@@ -233,7 +233,7 @@ const currentSection = computed(
     border: 0;
     border-left: 2px solid transparent;
     border-radius: 0;
-    padding: 10px 12px;
+    padding: 17px 12px;
     text-align: left;
     color: hsl(var(--foreground));
   }
