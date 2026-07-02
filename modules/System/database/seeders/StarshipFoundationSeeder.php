@@ -98,8 +98,8 @@ class StarshipFoundationSeeder extends Seeder
             '/org/departments' => '/org/department/index',
             '/org/posts' => '/org/post/index',
             '/org/user-groups' => '/org/user-group/index',
-            '/platform/dicts' => '/platform/dict/index',
             '/platform/configs' => '/platform/config/index',
+            '/platform/dicts' => '/platform/dict/index',
             '/platform/regions' => '/platform/region/index',
             '/platform/notifications' => '/platform/notification/index',
         ];
@@ -378,8 +378,8 @@ class StarshipFoundationSeeder extends Seeder
 
         foreach (
             [
-                ['name' => 'DictMgmt', 'title' => '字典管理', 'path' => '/platform/dicts', 'permission' => 'system.dicts', 'sort' => 301, 'icon' => 'ep:collection'],
-                ['name' => 'ConfigMgmt', 'title' => '系统配置', 'path' => '/platform/configs', 'permission' => 'system.configs', 'sort' => 302, 'icon' => 'ep:setting'],
+                ['name' => 'ConfigMgmt', 'title' => '系统配置', 'path' => '/platform/configs', 'permission' => 'system.configs', 'sort' => 301, 'icon' => 'ep:setting'],
+                ['name' => 'DictMgmt', 'title' => '字典管理', 'path' => '/platform/dicts', 'permission' => 'system.dicts', 'sort' => 302, 'icon' => 'ep:collection'],
                 ['name' => 'RegionMgmt', 'title' => '区域管理', 'path' => '/platform/regions', 'permission' => 'system.regions', 'sort' => 304, 'icon' => 'ep:location'],
                 ['name' => 'NotifyMgmt', 'title' => '通知配置', 'path' => '/platform/notifications', 'permission' => 'system.notifications', 'sort' => 305, 'icon' => 'ep:bell'],
             ] as $m
