@@ -6,7 +6,7 @@ use Modules\System\App\Models\DictItem;
 use Modules\System\App\Models\DictType;
 
 /**
- * 附件分类（参考 FastAdmin attachmentcategory 字典配置）。
+ * 附件分类（字典配置）。
  */
 final class AttachmentCategory
 {

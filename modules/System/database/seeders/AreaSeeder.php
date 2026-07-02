@@ -10,7 +10,7 @@ class AreaSeeder extends Seeder
     public function run(): void
     {
 
-        // 完整省市区请执行 database/sql/seed_areas.sql（3748 条 FastAdmin 数据）
+        // 完整省市区请执行 database/sql/seed_areas.sql（3748 条）
         if (Area::query()->exists()) {
             return;
         }

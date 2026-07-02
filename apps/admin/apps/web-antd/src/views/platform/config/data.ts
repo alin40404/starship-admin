@@ -1,4 +1,4 @@
-/** 站点配置分组（参考 FastAdmin basic / email 分组） */
+/** 站点配置分组（basic / email 分组） */
 export const CONFIG_GROUP_LABELS: Record<string, string> = {
   basic: '基础配置',
   sms: '短信配置',
@@ -69,7 +69,7 @@ export function isStorageFieldVisible(key: string, driver: string): boolean {
   return true;
 }
 
-/** 下拉类配置项选项（参考 FastAdmin mail_type / mail_verify_type） */
+/** 下拉类配置项选项（mail_type / mail_verify_type） */
 export const CONFIG_SELECT_OPTIONS: Record<
   string,
   { label: string; value: string }[]

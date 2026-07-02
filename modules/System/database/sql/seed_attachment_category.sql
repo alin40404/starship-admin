@@ -1,8 +1,8 @@
--- 附件分类字典（参考 FastAdmin attachmentcategory，已有库可执行，幂等）
+-- 附件分类字典（已有库可执行，幂等）
 -- 表前缀默认 sa_
 
 INSERT INTO `sa_dict_types` (`name`, `code`, `status`, `remark`, `created_at`, `updated_at`)
-SELECT '附件分类', 'attachment_category', 1, '附件管理分类，参考 FastAdmin attachmentcategory', NOW(), NOW()
+SELECT '附件分类', 'attachment_category', 1, '附件管理分类', NOW(), NOW()
 WHERE NOT EXISTS (
     SELECT 1 FROM `sa_dict_types` AS t WHERE t.`code` = 'attachment_category' AND t.`deleted_at` IS NULL
 );

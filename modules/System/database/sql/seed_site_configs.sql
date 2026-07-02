@@ -1,4 +1,4 @@
--- 系统配置默认项（参考 FastAdmin / BuildAdmin，已有库可执行，幂等）
+-- 系统配置默认项（已有库可执行，幂等）
 -- 表前缀默认 sa_
 
 UPDATE `sa_configs` SET `group_name` = 'basic', `updated_at` = NOW()

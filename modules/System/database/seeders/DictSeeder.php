@@ -35,7 +35,7 @@ class DictSeeder extends Seeder
             [
                 'name' => '附件分类',
                 'status' => 1,
-                'remark' => '附件管理分类，参考 FastAdmin attachmentcategory',
+                'remark' => '附件管理分类',
             ]
         );
 
@@ -67,7 +67,7 @@ class DictSeeder extends Seeder
             [
                 'name' => '栏目类型',
                 'status' => 1,
-                'remark' => '分类管理栏目类型，参考 FastAdmin categorytype',
+                'remark' => '分类管理栏目类型',
             ]
         );
 

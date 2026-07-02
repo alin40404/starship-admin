@@ -2,7 +2,7 @@
 
 Starship Admin 是一个基于 **Laravel + Vue 3** 的企业级后台开发框架，目标是提供一套 **开箱即用、可扩展、易二开、适合长期维护** 的中后台开发底座。
 
-它参考 FastAdmin、BuildAdmin 等后台框架的设计思路，结合 Laravel 现代后端生态与 Vue 3 前端工程化能力，为企业管理系统、运营后台、CMS 系统、SaaS 平台管理端、商家工作台、电商后台、O2O 系统、门店管理系统等独立业务系统提供统一的后台基础能力、权限体系、模块化机制和 CRUD 代码生成能力。
+它借鉴主流后台框架的设计思路，结合 Laravel 现代后端生态与 Vue 3 前端工程化能力，为企业管理系统、运营后台、CMS 系统、SaaS 平台管理端、商家工作台、电商后台、O2O 系统、门店管理系统等独立业务系统提供统一的后台基础能力、权限体系、模块化机制和 CRUD 代码生成能力。
 
 ---
 
@@ -1708,10 +1708,27 @@ php artisan key:generate
 
 php artisan migrate --seed
 
+# 创建 public/storage 软链接（附件 public 磁盘必需，详见 docs/deployment/public-storage-link.md）
+php artisan storage:link
+
 php artisan serve
 ```
 
-### 25.2 前端启动
+### 25.2 public/storage 软链接
+
+使用 **public 磁盘** 上传附件时，需将 `backend/public/storage` 链接到 `backend/storage/app/public`，否则上传后的图片/文件 URL 会 404。
+
+**推荐命令（在 `backend` 目录下）：**
+
+```bash
+php artisan storage:link
+```
+
+本地前后端分离开发时，Vite 会把 `/storage` 代理到 `http://127.0.0.1:8000`，因此软链接只需在后端创建一次。
+
+完整说明（含 Windows 手动创建、生产部署、排错）见：[docs/deployment/public-storage-link.md](docs/deployment/public-storage-link.md)
+
+### 25.3 前端启动
 
 ```bash
 cd apps/admin
@@ -1721,7 +1738,7 @@ pnpm install
 pnpm dev
 ```
 
-### 25.3 常用地址
+### 25.4 常用地址
 
 ```text
 后台前端：http://localhost:5173

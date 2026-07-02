@@ -1,4 +1,4 @@
--- 分类管理（FastAdmin category 模块）表结构与种子数据，已有库可执行，幂等
+-- 分类管理表结构与种子数据，已有库可执行，幂等
 -- 表前缀默认 sa_
 
 CREATE TABLE IF NOT EXISTS `sa_categories` (
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS `sa_categories` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='分类表';
 
 INSERT INTO `sa_dict_types` (`name`, `code`, `status`, `remark`, `created_at`, `updated_at`)
-SELECT '栏目类型', 'category_type', 1, '分类管理栏目类型，参考 FastAdmin categorytype', NOW(), NOW()
+SELECT '栏目类型', 'category_type', 1, '分类管理栏目类型', NOW(), NOW()
 WHERE NOT EXISTS (
     SELECT 1 FROM `sa_dict_types` AS t WHERE t.`code` = 'category_type' AND t.`deleted_at` IS NULL
 );
@@ -67,7 +67,7 @@ FROM (
 ) AS src
 WHERE NOT EXISTS (SELECT 1 FROM `sa_categories` LIMIT 1);
 
--- 分类管理按钮权限（FastAdmin category 对齐）
+-- 分类管理按钮权限
 SET @category_menu_id := (
     SELECT `id` FROM `sa_menus`
     WHERE `path` = '/platform/categories' AND `type` = 2 AND `deleted_at` IS NULL LIMIT 1
