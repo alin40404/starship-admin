@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\System\App\Http\Controllers\Admin\AdminUserController;
+use Modules\System\App\Http\Controllers\Admin\AreaController;
 use Modules\System\App\Http\Controllers\Admin\AttachmentController;
 use Modules\System\App\Http\Controllers\Admin\AuthController;
 use Modules\System\App\Http\Controllers\Admin\ConfigController;
@@ -154,6 +155,13 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
         Route::post('dict-items', [DictItemController::class, 'store']);
         Route::put('dict-items/{id}', [DictItemController::class, 'update']);
         Route::delete('dict-items/{id}', [DictItemController::class, 'destroy']);
+
+        Route::get('areas/tree', [AreaController::class, 'tree']);
+        Route::get('areas/children', [AreaController::class, 'children']);
+        Route::get('areas/{id}', [AreaController::class, 'show']);
+        Route::post('areas', [AreaController::class, 'store']);
+        Route::put('areas/{id}', [AreaController::class, 'update']);
+        Route::delete('areas/{id}', [AreaController::class, 'destroy']);
 
         Route::get('attachments', [AttachmentController::class, 'index']);
         Route::post('attachments', [AttachmentController::class, 'store']);

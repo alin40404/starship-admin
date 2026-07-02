@@ -1,5 +1,6 @@
 export * from './config';
 export * from './dict';
+export * from './region';
 export * from './admin';
 export * from './department';
 export * from './menu';
