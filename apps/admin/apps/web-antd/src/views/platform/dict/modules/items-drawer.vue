@@ -73,6 +73,7 @@ function onItemActionClick({ code, row }: OnActionClickParams<DictItemRow>) {
 }
 
 const [ItemModal, itemModalApi] = useVbenModal({
+  animationType: 'scale',
   confirmText: '保存',
   fullscreenButton: false,
   async onConfirm() {
@@ -186,7 +187,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
     <Grid />
   </Drawer>
 
-  <ItemModal :title="itemModalTitle" class="w-[640px] max-w-[92vw]">
+  <ItemModal :title="itemModalTitle" class="w-[520px] max-w-[calc(100vw-32px)]">
     <ItemForm />
   </ItemModal>
 </template>
