@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { AreaTreeNode } from '#/api/system/region';
+import type { AreaTreeNode, AreaTreeQuery } from '#/api/system/region';
+
+import { ref } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { Page, useVbenModal } from '@vben/common-ui';
@@ -9,7 +11,11 @@ import { Plus } from '@vben/icons';
 import { Button, message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { deleteArea, fetchAreaTree } from '#/api/system/region';
+import {
+  deleteArea,
+  fetchAreaChildren,
+  fetchAreaTree,
+} from '#/api/system/region';
 import { REGION_PERMISSIONS } from '#/constants/region-permissions';
 
 import { useAreaColumns, useAreaGridFormSchema } from './data';
@@ -18,10 +24,42 @@ import AreaForm from './modules/form.vue';
 const { hasAccessByCodes } = useAccess();
 const canManage = () => hasAccessByCodes([REGION_PERMISSIONS.MANAGE]);
 
+const isSearchMode = ref(false);
+
 const [AreaFormModal, areaFormModalApi] = useVbenModal({
   connectedComponent: AreaForm,
   destroyOnClose: true,
 });
+
+function hasSearchFilters(formValues?: AreaTreeQuery) {
+  return !!(
+    formValues?.name ||
+    formValues?.pinyin ||
+    (formValues?.level !== undefined && formValues?.level !== null)
+  );
+}
+
+function setTreeLazyMode(searchMode: boolean) {
+  if (isSearchMode.value === searchMode) {
+    return;
+  }
+  isSearchMode.value = searchMode;
+  gridApi.setGridOptions({
+    treeConfig: {
+      childrenField: 'children',
+      expandAll: searchMode,
+      hasChild: 'has_child',
+      lazy: !searchMode,
+      loadMethod: searchMode ? undefined : loadAreaChildren,
+      rowField: 'id',
+      transform: false,
+    },
+  });
+}
+
+async function loadAreaChildren({ row }: { row: AreaTreeNode }) {
+  return fetchAreaChildren(row.id);
+}
 
 function onCreate() {
   areaFormModalApi.setData({}).open();
@@ -36,6 +74,8 @@ function onEdit(row: AreaTreeNode) {
 }
 
 function onRefresh() {
+  gridApi.grid?.clearTreeExpandLoaded?.();
+  gridApi.grid?.clearTreeExpand?.();
   gridApi.query();
 }
 
@@ -73,22 +113,32 @@ const [Grid, gridApi] = useVbenVxeGrid<AreaTreeNode>({
     pagerConfig: { enabled: false },
     proxyConfig: {
       ajax: {
-        query: async (_params, formValues) =>
-          fetchAreaTree({
-            level:
-              formValues?.level === undefined || formValues?.level === null
-                ? undefined
-                : Number(formValues.level),
-            name: formValues?.name || undefined,
-            pinyin: formValues?.pinyin || undefined,
-          }),
+        query: async (_params, formValues) => {
+          const searchMode = hasSearchFilters(formValues);
+          setTreeLazyMode(searchMode);
+
+          if (searchMode) {
+            return fetchAreaTree({
+              level:
+                formValues?.level === undefined || formValues?.level === null
+                  ? undefined
+                  : Number(formValues.level),
+              name: formValues?.name || undefined,
+              pinyin: formValues?.pinyin || undefined,
+            });
+          }
+
+          return fetchAreaChildren(0);
+        },
       },
     },
     rowConfig: { keyField: 'id' },
     toolbarConfig: { custom: true, refresh: true, search: true, zoom: true },
     treeConfig: {
       childrenField: 'children',
-      expandAll: true,
+      hasChild: 'has_child',
+      lazy: true,
+      loadMethod: loadAreaChildren,
       rowField: 'id',
       transform: false,
     },

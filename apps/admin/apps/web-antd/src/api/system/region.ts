@@ -13,6 +13,7 @@ export interface AreaTreeNode {
   first: string | null;
   lng: string | null;
   lat: string | null;
+  has_child?: boolean;
   children?: AreaTreeNode[];
 }
 

@@ -14,6 +14,12 @@ export const AREA_LEVEL_OPTIONS = [
   { label: '区/县', value: 3 },
 ] as const;
 
+export const AREA_LEVEL_TAG_OPTIONS = [
+  { color: 'processing', label: '省', value: 1 },
+  { color: 'success', label: '市', value: 2 },
+  { color: 'default', label: '区/县', value: 3 },
+];
+
 export function formatAreaLevel(level: AreaTreeNode['level']) {
   if (level === 1) return '省';
   if (level === 2) return '市';
@@ -70,8 +76,8 @@ export function useAreaColumns(
     },
     {
       align: 'center',
+      cellRender: { name: 'CellTag', options: AREA_LEVEL_TAG_OPTIONS },
       field: 'level',
-      formatter: ({ cellValue }) => formatAreaLevel(cellValue as number | null),
       title: '层级',
       width: 88,
     },

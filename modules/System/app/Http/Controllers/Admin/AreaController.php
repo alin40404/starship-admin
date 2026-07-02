@@ -45,10 +45,22 @@ class AreaController extends Controller
         $rows = Area::query()
             ->where('pid', $pid)
             ->orderBy('id')
-            ->get()
-            ->map(fn (Area $area) => $this->formatArea($area));
+            ->get();
 
-        return ApiResponse::success($rows);
+        $childCounts = Area::query()
+            ->whereIn('pid', $rows->pluck('id'))
+            ->selectRaw('pid, COUNT(*) as aggregate')
+            ->groupBy('pid')
+            ->pluck('aggregate', 'pid');
+
+        $list = $rows->map(function (Area $area) use ($childCounts) {
+            return [
+                ...$this->formatArea($area),
+                'has_child' => (int) ($childCounts[$area->id] ?? 0) > 0,
+            ];
+        });
+
+        return ApiResponse::success($list);
     }
 
     public function show(int $id): JsonResponse
@@ -125,10 +137,15 @@ class AreaController extends Controller
 
         foreach ($rows->where('pid', $pid) as $item) {
             $formatted = $this->formatArea($item);
-            $branch[] = [
-                ...$formatted,
-                'children' => $this->buildTree($rows, (int) $item->id),
-            ];
+            $children = $this->buildTree($rows, (int) $item->id);
+            $node = [...$formatted];
+            if ($children !== []) {
+                $node['children'] = $children;
+                $node['has_child'] = true;
+            } else {
+                $node['has_child'] = false;
+            }
+            $branch[] = $node;
         }
 
         return $branch;
