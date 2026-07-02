@@ -8,7 +8,7 @@ import { useAccess } from '@vben/access';
 import { Page, useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
-import { Button, message, Modal, Tabs } from 'ant-design-vue';
+import { Button, message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
@@ -37,20 +37,22 @@ const activeType = ref(ALL_TYPE_KEY);
 const typeOptions = ref<CategoryTypeOption[]>([]);
 const selectedRows = ref<CategoryTreeNode[]>([]);
 
-const typeTabs = computed(() => [
-  { key: ALL_TYPE_KEY, label: '全部' },
-  ...typeOptions.value.map((item) => ({
-    key: item.value,
-    label: item.label,
-  })),
-]);
-
 const typeTagOptions = computed(() =>
   typeOptions.value.map((item) => ({
     label: item.label,
     value: item.value,
   })),
 );
+
+const activeTypeLabel = computed(() => {
+  if (activeType.value === ALL_TYPE_KEY) {
+    return '全部';
+  }
+  return (
+    typeOptions.value.find((item) => item.value === activeType.value)?.label ??
+    activeType.value
+  );
+});
 
 const [CategoryFormModal, categoryFormModalApi] = useVbenModal({
   connectedComponent: CategoryForm,
@@ -70,7 +72,10 @@ function syncGridColumns() {
       onActionClick,
       onCategoryStatusToggle,
       categoryAccess,
-      typeTagOptions.value,
+      {
+        showTypeColumn: activeType.value === ALL_TYPE_KEY,
+        typeTagOptions: typeTagOptions.value,
+      },
     ),
   } as VxeTableGridOptions<CategoryTreeNode>);
 }
@@ -89,9 +94,13 @@ function onRefresh() {
   gridApi.query();
 }
 
-function onTypeChange(key: string | number) {
-  activeType.value = String(key);
+function onTypeChange(value: string) {
+  if (activeType.value === value) {
+    return;
+  }
+  activeType.value = value;
   clearSelection();
+  syncGridColumns();
   onRefresh();
 }
 
@@ -271,7 +280,7 @@ const [Grid, gridApi] = useVbenVxeGrid<CategoryTreeNode>({
       onActionClick,
       onCategoryStatusToggle,
       categoryAccess,
-      [],
+      { typeTagOptions: [] },
     ),
     editConfig: {
       beforeEditMethod({ column }) {
@@ -310,67 +319,193 @@ const [Grid, gridApi] = useVbenVxeGrid<CategoryTreeNode>({
 <template>
   <Page auto-content-height>
     <CategoryFormModal @success="onRefresh" />
-    <div class="flex h-full min-h-0 flex-col gap-3">
-      <Tabs
-        :active-key="activeType"
-        class="category-type-tabs"
-        type="card"
-        @change="onTypeChange"
+    <div
+      class="bg-card flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-border md:min-h-[520px] md:flex-row"
+    >
+      <aside
+        class="category-type-panel flex shrink-0 flex-col overflow-hidden border-b border-border md:w-[168px] md:border-b-0 md:border-r"
       >
-        <Tabs.TabPane
-          v-for="item in typeTabs"
-          :key="item.key"
-          :tab="item.label"
-        />
-      </Tabs>
+        <div class="category-type-header">栏目类型</div>
+        <div class="category-type-tabs">
+          <button
+            class="category-type-item"
+            :class="{ 'is-active': activeType === ALL_TYPE_KEY }"
+            type="button"
+            @click="onTypeChange(ALL_TYPE_KEY)"
+          >
+            全部
+          </button>
+          <button
+            v-for="item in typeOptions"
+            :key="item.value"
+            class="category-type-item"
+            :class="{ 'is-active': activeType === item.value }"
+            type="button"
+            @click="onTypeChange(item.value)"
+          >
+            {{ item.label }}
+          </button>
+        </div>
+      </aside>
 
-      <div class="min-h-0 flex-1">
-        <Grid>
-          <template #toolbar-actions>
-            <template v-if="selectedRows.length > 0">
-              <Button
-                v-if="categoryAccess.can(CATEGORY_PERMISSIONS.BATCH_DELETE)"
-                danger
-                @click="onBatchDelete"
-              >
-                批量删除（{{ selectedRows.length }}）
-              </Button>
-              <Button
-                v-if="categoryAccess.can(CATEGORY_PERMISSIONS.BATCH_STATUS)"
-                class="ml-2"
-                @click="onBatchUpdateStatus('normal')"
-              >
-                批量正常
-              </Button>
-              <Button
-                v-if="categoryAccess.can(CATEGORY_PERMISSIONS.BATCH_STATUS)"
-                class="ml-2"
-                @click="onBatchUpdateStatus('hidden')"
-              >
-                批量隐藏
-              </Button>
-              <Button class="ml-2" type="link" @click="clearSelection">
-                取消选择
-              </Button>
+      <main class="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div class="min-h-0 flex-1">
+          <Grid>
+            <template #toolbar-actions>
+              <div class="flex flex-wrap items-center gap-3">
+                <span class="text-muted-foreground hidden text-sm sm:inline">
+                  当前类型：
+                  <span class="text-foreground font-medium">{{
+                    activeTypeLabel
+                  }}</span>
+                </span>
+                <template v-if="selectedRows.length > 0">
+                  <Button
+                    v-if="categoryAccess.can(CATEGORY_PERMISSIONS.BATCH_DELETE)"
+                    danger
+                    @click="onBatchDelete"
+                  >
+                    批量删除（{{ selectedRows.length }}）
+                  </Button>
+                  <Button
+                    v-if="categoryAccess.can(CATEGORY_PERMISSIONS.BATCH_STATUS)"
+                    class="ml-2"
+                    @click="onBatchUpdateStatus('normal')"
+                  >
+                    批量正常
+                  </Button>
+                  <Button
+                    v-if="categoryAccess.can(CATEGORY_PERMISSIONS.BATCH_STATUS)"
+                    class="ml-2"
+                    @click="onBatchUpdateStatus('hidden')"
+                  >
+                    批量隐藏
+                  </Button>
+                  <Button class="ml-2" type="link" @click="clearSelection">
+                    取消选择
+                  </Button>
+                </template>
+                <Button
+                  v-else-if="categoryAccess.can(CATEGORY_PERMISSIONS.CREATE)"
+                  type="primary"
+                  @click="onCreate"
+                >
+                  <Plus class="size-4" />
+                  新增分类
+                </Button>
+              </div>
             </template>
-            <Button
-              v-else-if="categoryAccess.can(CATEGORY_PERMISSIONS.CREATE)"
-              type="primary"
-              @click="onCreate"
-            >
-              <Plus class="size-4" />
-              新增分类
-            </Button>
-          </template>
-        </Grid>
-      </div>
+          </Grid>
+        </div>
+      </main>
     </div>
   </Page>
 </template>
 
 <style scoped>
-.category-type-tabs :deep(.ant-tabs-nav) {
-  margin-bottom: 0;
+.category-type-header {
+  display: flex;
+  height: 44px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid hsl(var(--border));
+  background-color: hsl(var(--accent));
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+}
+
+.category-type-tabs {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  gap: 8px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding: 8px;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+}
+
+.category-type-tabs::-webkit-scrollbar {
+  height: 4px;
+}
+
+.category-type-tabs::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background-color: hsl(var(--border));
+}
+
+.category-type-item {
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  border: 1px solid hsl(var(--border));
+  border-radius: 9999px;
+  background: transparent;
+  padding: 6px 14px;
+  font-size: 14px;
+  line-height: 1.25;
+  color: hsl(var(--muted-foreground));
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.category-type-item:hover {
+  border-color: hsl(var(--primary) / 0.35);
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+.category-type-item.is-active {
+  border-color: hsl(var(--primary) / 0.25);
+  background-color: hsl(var(--primary) / 0.08);
+  color: hsl(var(--primary));
+  font-weight: 500;
+}
+
+@media (min-width: 768px) {
+  .category-type-header {
+    justify-content: flex-start;
+  }
+
+  .category-type-tabs {
+    flex-direction: column;
+    gap: 0;
+    overflow-x: visible;
+    overflow-y: auto;
+    padding: 0;
+  }
+
+  .category-type-item {
+    width: 100%;
+    border: 0;
+    border-left: 2px solid transparent;
+    border-radius: 0;
+    padding: 10px 12px;
+    text-align: left;
+    color: hsl(var(--foreground));
+  }
+
+  .category-type-item:hover {
+    border-color: transparent;
+    border-left-color: hsl(var(--border));
+    background-color: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+  }
+
+  .category-type-item.is-active {
+    border-color: transparent;
+    border-left-color: hsl(var(--primary));
+    background-color: hsl(var(--primary) / 0.08);
+    color: hsl(var(--primary));
+  }
 }
 </style>
 

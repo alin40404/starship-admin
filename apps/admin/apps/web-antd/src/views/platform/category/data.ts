@@ -34,20 +34,19 @@ export function useGridFormSchema(): VbenFormSchema[] {
 }
 
 export function buildFormSchema(params: {
-  parentTreeLoader: () => Promise<
-    ReturnType<typeof mapCategoryForTreeSelect>
-  >;
+  excludeId?: number;
   typeOptions: CategoryTypeOption[];
-  isEdit?: boolean;
   onTypeChange?: (value: string) => void;
 }): VbenFormSchema[] {
+  const { excludeId, onTypeChange, typeOptions } = params;
+
   return [
     {
       component: 'Select',
       componentProps: {
         class: 'w-full',
-        onChange: (value: string) => params.onTypeChange?.(value),
-        options: params.typeOptions.map((item) => ({
+        onChange: (value: string) => onTypeChange?.(value),
+        options: typeOptions.map((item) => ({
           label: item.label,
           value: item.value,
         })),
@@ -61,14 +60,40 @@ export function buildFormSchema(params: {
       component: 'ApiTreeSelect',
       componentProps: {
         allowClear: true,
-        api: params.parentTreeLoader,
+        api: async (queryParams?: { excludeId?: number; typeKey?: string }) =>
+          loadCategoryTreeForParent(
+            queryParams?.typeKey || undefined,
+            queryParams?.excludeId,
+          ),
         class: 'w-full',
         fieldNames: { children: 'children', label: 'label', value: 'value' },
+        params: {
+          excludeId,
+          typeKey: '',
+        },
         placeholder: '上级分类（留空为顶级）',
+        shouldFetch: (queryParams?: { typeKey?: string }) =>
+          Boolean(queryParams?.typeKey),
         showSearch: true,
         treeDefaultExpandAll: true,
         treeIcon: false,
         treeLine: false,
+      },
+      dependencies: {
+        componentProps(values) {
+          const type = values.type as string | undefined;
+          return {
+            disabled: !type,
+            params: {
+              excludeId,
+              typeKey: type ?? '',
+            },
+            placeholder: type
+              ? '上级分类（留空为顶级）'
+              : '请先选择栏目类型',
+          };
+        },
+        triggerFields: ['type'],
       },
       defaultValue: 0,
       fieldName: 'parent_id',
@@ -157,12 +182,16 @@ export function useColumns(
     row: CategoryTreeNode,
   ) => Promise<boolean>,
   access: CategoryAccessChecker,
-  typeTagOptions: Array<{ label: string; value: string }>,
+  options: {
+    showTypeColumn?: boolean;
+    typeTagOptions?: Array<{ label: string; value: string }>;
+  } = {},
 ): VxeTableGridColumns<CategoryTreeNode> {
+  const { showTypeColumn = true, typeTagOptions = [] } = options;
   const canStatus = access.can(CATEGORY_PERMISSIONS.STATUS);
   const canSort = access.can(CATEGORY_PERMISSIONS.SORT);
 
-  return [
+  const columns: VxeTableGridColumns<CategoryTreeNode> = [
     {
       align: 'center',
       fixed: 'left',
@@ -170,7 +199,10 @@ export function useColumns(
       width: 48,
     },
     { field: 'id', title: 'ID', width: 72 },
-    {
+  ];
+
+  if (showTypeColumn) {
+    columns.push({
       align: 'center',
       cellRender: {
         name: 'CellTag',
@@ -179,7 +211,10 @@ export function useColumns(
       field: 'type',
       title: '类型',
       width: 100,
-    },
+    });
+  }
+
+  columns.push(
     {
       align: 'left',
       field: 'name',
@@ -300,7 +335,9 @@ export function useColumns(
       title: '操作',
       width: 220,
     },
-  ];
+  );
+
+  return columns;
 }
 
 export async function loadCategoryTreeForParent(

@@ -19,13 +19,24 @@ import {
   updateCategory,
 } from '#/api/system/category';
 
-import { buildFormSchema, loadCategoryTreeForParent } from '../data';
+import { buildFormSchema } from '../data';
 
 const emits = defineEmits<{ success: [] }>();
 
 const editingId = ref<number | null>(null);
 const typeOptions = ref<CategoryTypeOption[]>([]);
-const selectedType = ref<string>('');
+
+function refreshFormSchema() {
+  formApi.setState({
+    schema: buildFormSchema({
+      excludeId: editingId.value ?? undefined,
+      onTypeChange: () => {
+        formApi.setFieldValue('parent_id', 0);
+      },
+      typeOptions: typeOptions.value,
+    }),
+  });
+}
 
 const [Form, formApi] = useVbenForm(
   reactive({
@@ -35,16 +46,9 @@ const [Form, formApi] = useVbenForm(
     },
     layout: 'vertical' as const,
     schema: buildFormSchema({
-      isEdit: false,
-      onTypeChange: (value: string) => {
-        selectedType.value = value;
+      onTypeChange: () => {
         formApi.setFieldValue('parent_id', 0);
       },
-      parentTreeLoader: () =>
-        loadCategoryTreeForParent(
-          selectedType.value || undefined,
-          editingId.value ?? undefined,
-        ),
       typeOptions: [],
     }),
     showDefaultActions: false,
@@ -52,30 +56,8 @@ const [Form, formApi] = useVbenForm(
   }) as any,
 );
 
-function refreshFormSchema(isEdit = false) {
-  formApi.setState({
-    schema: buildFormSchema({
-      isEdit,
-      onTypeChange: (value: string) => {
-        selectedType.value = value;
-        formApi.setFieldValue('parent_id', 0);
-      },
-      parentTreeLoader: () =>
-        loadCategoryTreeForParent(
-          selectedType.value || undefined,
-          editingId.value ?? undefined,
-        ),
-      typeOptions: typeOptions.value,
-    }),
-  });
-}
-
-watch([editingId, typeOptions, selectedType], () => {
-  refreshFormSchema(!!editingId.value);
-});
-
-watch(selectedType, () => {
-  formApi.setFieldValue('parent_id', 0);
+watch([editingId, typeOptions], () => {
+  refreshFormSchema();
 });
 
 const modalTitle = computed(() =>
@@ -109,7 +91,6 @@ const [Modal, modalApi] = useVbenModal({
   async onOpenChange(isOpen: boolean) {
     if (!isOpen) {
       editingId.value = null;
-      selectedType.value = '';
       return;
     }
 
@@ -126,11 +107,10 @@ const [Modal, modalApi] = useVbenModal({
         ? (data as CategoryTreeNode).id
         : null;
     editingId.value = id;
-    refreshFormSchema(!!id);
+    refreshFormSchema();
 
     if (id) {
       const detail = await fetchCategory(id);
-      selectedType.value = detail.type;
       formApi.setValues({
         description: detail.description ?? '',
         diyname: detail.diyname ?? '',
@@ -146,7 +126,6 @@ const [Modal, modalApi] = useVbenModal({
       });
     } else {
       const preset = data as { parent_id?: number; type?: string };
-      selectedType.value = preset.type ?? typeOptions.value[0]?.value ?? '';
       formApi.setValues({
         description: '',
         diyname: '',
@@ -158,7 +137,7 @@ const [Modal, modalApi] = useVbenModal({
         parent_id: preset.parent_id ?? 0,
         sort: 0,
         status: 'normal',
-        type: selectedType.value,
+        type: preset.type ?? typeOptions.value[0]?.value ?? '',
       });
     }
   },
