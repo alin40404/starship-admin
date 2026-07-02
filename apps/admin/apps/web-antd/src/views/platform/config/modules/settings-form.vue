@@ -36,6 +36,8 @@ const scrollStyle = computed(() => ({
   overflowY: 'auto' as const,
 }));
 
+const fieldControlClass = 'config-field-control';
+
 const sortedRows = computed(() =>
   [...rows.value].sort((a, b) => a.sort - b.sort || a.id - b.id),
 );
@@ -131,7 +133,7 @@ defineExpose({
               <InputNumber
                 v-else-if="row.type === 'number'"
                 :disabled="!props.canManage"
-                class="w-full md:max-w-md"
+                :class="fieldControlClass"
                 :value="Number(draftValues[row.key] || 0)"
                 @update:value="
                   (val) => (draftValues[row.key] = String(val ?? ''))
@@ -140,7 +142,7 @@ defineExpose({
               <Select
                 v-else-if="isSelectField(row)"
                 :disabled="!props.canManage"
-                class="w-full md:max-w-md"
+                :class="fieldControlClass"
                 :options="selectOptions(row.key)"
                 :value="draftValues[row.key] || undefined"
                 @update:value="
@@ -150,6 +152,7 @@ defineExpose({
               <Input.TextArea
                 v-else-if="row.type === 'text' || row.type === 'json'"
                 :disabled="!props.canManage"
+                :class="fieldControlClass"
                 :rows="row.type === 'json' ? 4 : 3"
                 :value="draftValues[row.key]"
                 @update:value="(val) => (draftValues[row.key] = val)"
@@ -157,7 +160,7 @@ defineExpose({
               <Input
                 v-else
                 :disabled="!props.canManage"
-                class="w-full md:max-w-md"
+                :class="fieldControlClass"
                 :value="draftValues[row.key]"
                 @update:value="(val) => (draftValues[row.key] = val)"
               />
@@ -176,5 +179,11 @@ defineExpose({
 <style scoped>
 .config-settings-form :deep(.ant-form-item-label) {
   padding: 0 0 2px;
+}
+
+.config-settings-form :deep(.config-field-control),
+.config-settings-form :deep(.config-field-control.ant-input-textarea) {
+  width: 100%;
+  max-width: 28rem;
 }
 </style>
