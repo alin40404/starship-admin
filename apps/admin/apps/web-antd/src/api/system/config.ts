@@ -35,3 +35,14 @@ export function fetchConfigs(groupName?: string) {
 export function batchUpsertConfigs(items: ConfigUpsertItem[]) {
   return requestClient.put('/system/configs', { items });
 }
+
+export function deleteConfig(id: number) {
+  return requestClient.delete(`/system/configs/${id}`);
+}
+
+export function batchDeleteConfigs(ids: number[]) {
+  return requestClient.post<{ deleted: number }>(
+    '/system/configs/batch-destroy',
+    { ids },
+  );
+}

@@ -6,6 +6,8 @@ export const CONFIG_PERMISSIONS = {
   MANAGE: 'system.configs',
   QUERY: 'system.configs.query',
   UPDATE: 'system.configs.update',
+  DELETE: 'system.configs.delete',
+  BATCH_DELETE: 'system.configs.batch_delete',
 } as const;
 
 export type ConfigPermissionCode =

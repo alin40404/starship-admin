@@ -60,4 +60,35 @@ class ConfigController extends Controller
 
         return ApiResponse::success(null, '配置已保存');
     }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $config = Setting::query()
+            ->whereKey($id)
+            ->where('group_name', 'param')
+            ->firstOrFail();
+
+        $config->delete();
+
+        return ApiResponse::success(null, '已删除');
+    }
+
+    public function batchDestroy(Request $request): JsonResponse
+    {
+        $ids = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+        ])['ids'];
+
+        $deleted = Setting::query()
+            ->where('group_name', 'param')
+            ->whereIn('id', $ids)
+            ->delete();
+
+        if ($deleted === 0) {
+            return ApiResponse::error('未找到可删除的运行参数', 422);
+        }
+
+        return ApiResponse::success(['deleted' => $deleted], '已批量删除');
+    }
 }

@@ -150,6 +150,10 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
             ->middleware('admin.permission:'.ConfigPermissions::QUERY);
         Route::put('configs', [ConfigController::class, 'batchUpsert'])
             ->middleware('admin.permission:'.ConfigPermissions::UPDATE);
+        Route::post('configs/batch-destroy', [ConfigController::class, 'batchDestroy'])
+            ->middleware('admin.permission:'.ConfigPermissions::BATCH_DELETE);
+        Route::delete('configs/{id}', [ConfigController::class, 'destroy'])
+            ->middleware('admin.permission:'.ConfigPermissions::DELETE);
 
         Route::get('dict-types', [DictTypeController::class, 'index'])
             ->middleware('admin.permission:'.DictPermissions::QUERY);

@@ -15,6 +15,8 @@ SELECT @config_parent_id, 3, src.`name`, src.`title`, NULL, NULL, src.`permissio
 FROM (
     SELECT 'Query' AS `name`, '查询' AS `title`, 'system.configs.query' AS `permission`, 1 AS `sort`
     UNION ALL SELECT 'Update', '保存配置', 'system.configs.update', 2
+    UNION ALL SELECT 'Delete', '删除', 'system.configs.delete', 3
+    UNION ALL SELECT 'BatchDelete', '批量删除', 'system.configs.batch_delete', 4
 ) AS src
 WHERE @config_parent_id IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM `sa_menus` m WHERE m.`permission` = src.`permission` AND m.`deleted_at` IS NULL);

@@ -11,6 +11,10 @@ final class ConfigPermissions
 
     public const UPDATE = 'system.configs.update';
 
+    public const DELETE = 'system.configs.delete';
+
+    public const BATCH_DELETE = 'system.configs.batch_delete';
+
     /**
      * @return list<array{name: string, title: string, permission: string, sort: int}>
      */
@@ -19,6 +23,8 @@ final class ConfigPermissions
         return [
             ['name' => 'Query', 'title' => '查询', 'permission' => self::QUERY, 'sort' => 1],
             ['name' => 'Update', 'title' => '保存配置', 'permission' => self::UPDATE, 'sort' => 2],
+            ['name' => 'Delete', 'title' => '删除', 'permission' => self::DELETE, 'sort' => 3],
+            ['name' => 'BatchDelete', 'title' => '批量删除', 'permission' => self::BATCH_DELETE, 'sort' => 4],
         ];
     }
 }
