@@ -1,30 +1,81 @@
 <script lang="ts" setup>
-import type { CategoryRow, CategorySavePayload } from '#/api/system/category';
+import type {
+  CategorySavePayload,
+  CategoryTreeNode,
+  CategoryTypeOption,
+} from '#/api/system/category';
 
-import { computed, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
 
 import { message } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
-import { createCategory, updateCategory } from '#/api/system/category';
+import {
+  createCategory,
+  fetchCategory,
+  fetchCategoryTypes,
+  updateCategory,
+} from '#/api/system/category';
 
-import { buildFormSchema } from '../data';
+import { buildFormSchema, loadCategoryTreeForParent } from '../data';
 
 const emits = defineEmits<{ success: [] }>();
 
 const editingId = ref<number | null>(null);
+const typeOptions = ref<CategoryTypeOption[]>([]);
+const selectedType = ref<string>('');
 
-const [Form, formApi] = useVbenForm({
-  commonConfig: {
-    componentProps: { class: 'w-full' },
-    labelClass: 'justify-start',
-  },
-  layout: 'vertical',
-  schema: buildFormSchema(),
-  showDefaultActions: false,
-  wrapperClass: 'grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1',
+const [Form, formApi] = useVbenForm(
+  reactive({
+    commonConfig: {
+      componentProps: { class: 'w-full' },
+      labelClass: 'justify-start',
+    },
+    layout: 'vertical' as const,
+    schema: buildFormSchema({
+      isEdit: false,
+      onTypeChange: (value: string) => {
+        selectedType.value = value;
+        formApi.setFieldValue('parent_id', 0);
+      },
+      parentTreeLoader: () =>
+        loadCategoryTreeForParent(
+          selectedType.value || undefined,
+          editingId.value ?? undefined,
+        ),
+      typeOptions: [],
+    }),
+    showDefaultActions: false,
+    wrapperClass: 'grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1',
+  }) as any,
+);
+
+function refreshFormSchema(isEdit = false) {
+  formApi.setState({
+    schema: buildFormSchema({
+      isEdit,
+      onTypeChange: (value: string) => {
+        selectedType.value = value;
+        formApi.setFieldValue('parent_id', 0);
+      },
+      parentTreeLoader: () =>
+        loadCategoryTreeForParent(
+          selectedType.value || undefined,
+          editingId.value ?? undefined,
+        ),
+      typeOptions: typeOptions.value,
+    }),
+  });
+}
+
+watch([editingId, typeOptions, selectedType], () => {
+  refreshFormSchema(!!editingId.value);
+});
+
+watch(selectedType, () => {
+  formApi.setFieldValue('parent_id', 0);
 });
 
 const modalTitle = computed(() =>
@@ -38,6 +89,8 @@ const [Modal, modalApi] = useVbenModal({
     if (!valid) return;
 
     const values = (await formApi.getValues()) as CategorySavePayload;
+    if (!values.parent_id) values.parent_id = 0;
+
     modalApi.lock();
     try {
       if (!editingId.value) {
@@ -53,37 +106,59 @@ const [Modal, modalApi] = useVbenModal({
       modalApi.unlock();
     }
   },
-  onOpenChange(isOpen: boolean) {
+  async onOpenChange(isOpen: boolean) {
     if (!isOpen) {
       editingId.value = null;
+      selectedType.value = '';
       return;
     }
 
     formApi.resetForm();
-    const data = modalApi.getData<CategoryRow | Record<string, never>>();
+    if (typeOptions.value.length === 0) {
+      typeOptions.value = await fetchCategoryTypes();
+    }
+
+    const data = modalApi.getData<
+      (CategoryTreeNode & { parent_id?: number; type?: string }) | Record<string, never>
+    >();
     const id =
-      data && typeof (data as CategoryRow).id === 'number'
-        ? (data as CategoryRow).id
+      data && typeof (data as CategoryTreeNode).id === 'number'
+        ? (data as CategoryTreeNode).id
         : null;
     editingId.value = id;
-    formApi.setState({ schema: buildFormSchema(!!id) });
+    refreshFormSchema(!!id);
 
     if (id) {
-      const row = data as CategoryRow;
+      const detail = await fetchCategory(id);
+      selectedType.value = detail.type;
       formApi.setValues({
-        label: row.label,
-        remark: row.remark ?? '',
-        sort: row.sort ?? 0,
-        status: row.status,
-        value: row.value,
+        description: detail.description ?? '',
+        diyname: detail.diyname ?? '',
+        flag: detail.flag ?? [],
+        image: detail.image ?? '',
+        keywords: detail.keywords ?? '',
+        name: detail.name,
+        nickname: detail.nickname,
+        parent_id: detail.parent_id ?? 0,
+        sort: detail.sort ?? 0,
+        status: detail.status,
+        type: detail.type,
       });
     } else {
+      const preset = data as { parent_id?: number; type?: string };
+      selectedType.value = preset.type ?? typeOptions.value[0]?.value ?? '';
       formApi.setValues({
-        label: '',
-        remark: '',
+        description: '',
+        diyname: '',
+        flag: [],
+        image: '',
+        keywords: '',
+        name: '',
+        nickname: '',
+        parent_id: preset.parent_id ?? 0,
         sort: 0,
-        status: 1,
-        value: '',
+        status: 'normal',
+        type: selectedType.value,
       });
     }
   },
@@ -91,7 +166,10 @@ const [Modal, modalApi] = useVbenModal({
 </script>
 
 <template>
-  <Modal :title="modalTitle" class="w-[560px] max-w-[92vw]">
+  <Modal :title="modalTitle" class="w-[720px] max-w-[92vw]">
+    <div class="mb-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+      栏目类型请在「字典管理」中维护 <code>category_type</code>；分类支持无限级，上级分类需与当前栏目类型一致。
+    </div>
     <Form />
   </Modal>
 </template>

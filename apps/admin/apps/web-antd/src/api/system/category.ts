@@ -1,51 +1,119 @@
-import type { LaravelPaginate } from './types';
-
 import { requestClient } from '#/api/request';
 
-export interface CategoryRow {
-  id: number;
-  dict_type_id: number;
+export type CategoryStatus = 'hidden' | 'normal';
+
+export interface CategoryTypeOption {
   label: string;
-  value: string;
   sort: number;
-  status: number;
-  remark: string | null;
-  created_at: string;
-  updated_at: string;
+  value: string;
 }
 
-export interface CategoryPageQuery {
-  page: number;
-  per_page: number;
-  label?: string;
-  value?: string;
-  status?: number;
-  sort_field?: string;
-  sort_order?: 'asc' | 'desc';
+export interface CategoryTreeNode {
+  id: number;
+  parent_id: number;
+  type: string;
+  type_label?: string;
+  name: string;
+  nickname: string;
+  flag: string[];
+  flag_labels?: string[];
+  image: string | null;
+  keywords: string | null;
+  description: string | null;
+  diyname: string | null;
+  sort: number;
+  status: CategoryStatus;
+  created_at?: string;
+  updated_at?: string;
+  children?: CategoryTreeNode[];
+}
+
+export interface CategoryTreeQuery {
+  type?: string;
+  search?: string;
 }
 
 export interface CategorySavePayload {
-  label: string;
-  value: string;
+  parent_id?: number;
+  type: string;
+  name: string;
+  nickname: string;
+  flag?: string[];
+  image?: string | null;
+  keywords?: string | null;
+  description?: string | null;
+  diyname?: string | null;
   sort?: number;
-  status?: number;
-  remark?: string | null;
+  status?: CategoryStatus;
 }
 
-export function fetchCategoryPage(params: CategoryPageQuery) {
-  return requestClient.get<LaravelPaginate<CategoryRow>>('/system/categories', {
+export function fetchCategoryTypes() {
+  return requestClient.get<CategoryTypeOption[]>('/system/categories/types');
+}
+
+export function fetchCategoryTree(params?: CategoryTreeQuery) {
+  return requestClient.get<CategoryTreeNode[]>('/system/categories/tree', {
     params,
   });
 }
 
-export function createCategory(data: CategorySavePayload) {
-  return requestClient.post<CategoryRow>('/system/categories', data);
+export function fetchCategory(id: number) {
+  return requestClient.get<CategoryTreeNode>(`/system/categories/${id}`);
 }
 
-export function updateCategory(id: number, data: Partial<CategorySavePayload>) {
-  return requestClient.put<CategoryRow>(`/system/categories/${id}`, data);
+export function createCategory(data: CategorySavePayload) {
+  return requestClient.post<CategoryTreeNode>('/system/categories', data);
+}
+
+export function updateCategory(
+  id: number,
+  data: Partial<CategorySavePayload>,
+) {
+  return requestClient.put<CategoryTreeNode>(`/system/categories/${id}`, data);
+}
+
+export function updateCategoryStatus(id: number, status: CategoryStatus) {
+  return requestClient.put<CategoryTreeNode>(
+    `/system/categories/${id}/status`,
+    { status },
+  );
+}
+
+export function updateCategorySort(id: number, sort: number) {
+  return requestClient.put<CategoryTreeNode>(`/system/categories/${id}/sort`, {
+    sort,
+  });
 }
 
 export function deleteCategory(id: number) {
   return requestClient.delete(`/system/categories/${id}`);
+}
+
+export function batchDeleteCategories(ids: number[]) {
+  return requestClient.post<{ deleted: number; skipped: number }>(
+    '/system/categories/batch-destroy',
+    { ids },
+  );
+}
+
+export function batchUpdateCategoryStatus(
+  ids: number[],
+  status: CategoryStatus,
+) {
+  return requestClient.put<{ updated: number }>(
+    '/system/categories/batch-status',
+    { ids, status },
+  );
+}
+
+export function mapCategoryForTreeSelect(
+  nodes: CategoryTreeNode[],
+): Array<{ label: string; value: number; children?: ReturnType<typeof mapCategoryForTreeSelect> }> {
+  return nodes.map((node) => ({
+    label: node.name,
+    value: node.id,
+    children: node.children?.length
+      ? mapCategoryForTreeSelect(node.children)
+      : undefined,
+  }));
 }

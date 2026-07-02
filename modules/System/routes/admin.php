@@ -208,10 +208,22 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
         Route::delete('attachments/{id}', [AttachmentController::class, 'destroy'])
             ->middleware('admin.permission:'.AttachmentPermissions::DELETE);
 
-        Route::get('categories', [CategoryController::class, 'index'])
+        Route::get('categories/types', [CategoryController::class, 'types'])
+            ->middleware('admin.permission:'.CategoryPermissions::QUERY);
+        Route::get('categories/tree', [CategoryController::class, 'tree'])
+            ->middleware('admin.permission:'.CategoryPermissions::QUERY);
+        Route::get('categories/{id}', [CategoryController::class, 'show'])
             ->middleware('admin.permission:'.CategoryPermissions::QUERY);
         Route::post('categories', [CategoryController::class, 'store'])
             ->middleware('admin.permission:'.CategoryPermissions::CREATE);
+        Route::post('categories/batch-destroy', [CategoryController::class, 'batchDestroy'])
+            ->middleware('admin.permission:'.CategoryPermissions::BATCH_DELETE);
+        Route::put('categories/batch-status', [CategoryController::class, 'batchUpdateStatus'])
+            ->middleware('admin.permission:'.CategoryPermissions::BATCH_STATUS);
+        Route::put('categories/{id}/status', [CategoryController::class, 'updateStatus'])
+            ->middleware('admin.permission:'.CategoryPermissions::STATUS);
+        Route::put('categories/{id}/sort', [CategoryController::class, 'updateSort'])
+            ->middleware('admin.permission:'.CategoryPermissions::SORT);
         Route::put('categories/{id}', [CategoryController::class, 'update'])
             ->middleware('admin.permission:'.CategoryPermissions::UPDATE);
         Route::delete('categories/{id}', [CategoryController::class, 'destroy'])

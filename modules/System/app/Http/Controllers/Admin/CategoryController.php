@@ -7,128 +7,308 @@ use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Modules\System\App\Models\Attachment;
-use Modules\System\App\Models\DictItem;
-use Modules\System\App\Models\DictType;
-use Modules\System\App\Support\AttachmentCategory;
+use Modules\System\App\Models\Category;
+use Modules\System\App\Support\CategoryType;
 
 class CategoryController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    private const FLAG_OPTIONS = ['hot', 'index', 'recommend'];
+
+    public function types(): JsonResponse
     {
-        $type = $this->resolveDictType();
+        return ApiResponse::success(CategoryType::options());
+    }
 
-        $query = DictItem::query()
-            ->where('dict_type_id', $type->id)
-            ->orderBy('sort')
-            ->orderBy('id');
+    public function tree(Request $request): JsonResponse
+    {
+        $query = Category::query()->orderByDesc('sort')->orderByDesc('id');
 
-        if ($request->filled('label')) {
-            $query->where('label', 'like', '%'.$request->get('label').'%');
-        }
-        if ($request->filled('value')) {
-            $query->where('value', 'like', '%'.$request->get('value').'%');
-        }
-        if ($request->has('status') && $request->get('status') !== '' && $request->get('status') !== null) {
-            $query->where('status', (int) $request->get('status'));
+        $type = $request->get('type');
+        if (is_string($type) && $type !== '' && $type !== 'all') {
+            $query->where('type', $type);
         }
 
-        return ApiResponse::success($query->paginate((int) $request->get('per_page', 15)));
+        if ($request->filled('search')) {
+            $search = (string) $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('nickname', 'like', '%'.$search.'%');
+            });
+        }
+
+        $rows = $query->get();
+
+        return ApiResponse::success($this->buildTree($rows));
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return ApiResponse::success($this->formatCategory(Category::query()->findOrFail($id)));
     }
 
     public function store(Request $request): JsonResponse
     {
-        $type = $this->resolveDictType();
+        $data = $this->validatePayload($request);
 
-        $data = $request->validate([
-            'label' => ['required', 'string', 'max:100'],
-            'value' => [
-                'required',
-                'string',
-                'max:50',
-                'regex:/^[a-z][a-z0-9_]*$/',
-                Rule::unique(DictItem::class, 'value')->where('dict_type_id', $type->id),
-            ],
-            'sort' => ['sometimes', 'integer'],
-            'status' => ['sometimes', 'integer', 'in:0,1'],
-            'remark' => ['nullable', 'string', 'max:255'],
-        ]);
+        $category = Category::query()->create($data);
 
-        $item = DictItem::query()->create([
-            ...$data,
-            'dict_type_id' => $type->id,
-        ]);
-
-        return ApiResponse::success($item, '创建成功');
+        return ApiResponse::success($this->formatCategory($category->fresh()), '创建成功');
     }
 
     public function update(Request $request, int $id): JsonResponse
     {
-        $type = $this->resolveDictType();
-        $item = $this->findCategoryItem($type->id, $id);
+        $category = Category::query()->findOrFail($id);
+        $data = $this->validatePayload($request, true);
 
-        $data = $request->validate([
-            'label' => ['sometimes', 'string', 'max:100'],
-            'value' => [
-                'sometimes',
-                'string',
-                'max:50',
-                'regex:/^[a-z][a-z0-9_]*$/',
-                Rule::unique(DictItem::class, 'value')
-                    ->where('dict_type_id', $type->id)
-                    ->ignore($item->id),
-            ],
-            'sort' => ['sometimes', 'integer'],
-            'status' => ['sometimes', 'integer', 'in:0,1'],
-            'remark' => ['nullable', 'string', 'max:255'],
-        ]);
-
-        if (isset($data['value']) && $data['value'] !== $item->value) {
-            $inUse = Attachment::query()->where('category', $item->value)->exists();
-            if ($inUse) {
-                return ApiResponse::error('该分类下已有附件，不能修改分类标识', 422);
+        if (isset($data['parent_id']) && (int) $data['parent_id'] !== (int) $category->parent_id) {
+            $parentId = (int) $data['parent_id'];
+            if ($parentId === (int) $category->id) {
+                return ApiResponse::error('上级分类不能为自身', 422);
+            }
+            if ($parentId > 0 && in_array($parentId, $this->descendantIds($category->id), true)) {
+                return ApiResponse::error('上级分类不能为下级或自身', 422);
             }
         }
 
-        $item->update($data);
+        $category->update($data);
 
-        return ApiResponse::success($item->fresh(), '更新成功');
+        return ApiResponse::success($this->formatCategory($category->fresh()), '更新成功');
+    }
+
+    public function updateStatus(Request $request, int $id): JsonResponse
+    {
+        $category = Category::query()->findOrFail($id);
+        $data = $request->validate([
+            'status' => ['required', 'string', Rule::in(['normal', 'hidden'])],
+        ]);
+
+        $category->update($data);
+
+        return ApiResponse::success($this->formatCategory($category->fresh()), '状态已更新');
+    }
+
+    public function updateSort(Request $request, int $id): JsonResponse
+    {
+        $category = Category::query()->findOrFail($id);
+        $data = $request->validate([
+            'sort' => ['required', 'integer', 'min:0'],
+        ]);
+
+        $category->update($data);
+
+        return ApiResponse::success($this->formatCategory($category->fresh()), '排序已更新');
     }
 
     public function destroy(int $id): JsonResponse
     {
-        $type = $this->resolveDictType();
-        $item = $this->findCategoryItem($type->id, $id);
+        $category = Category::query()->whereKey($id)->firstOrFail();
 
-        $inUse = Attachment::query()->where('category', $item->value)->exists();
-        if ($inUse) {
-            return ApiResponse::error('该分类下还有附件，无法删除', 422);
+        if (Category::query()->where('parent_id', $category->id)->exists()) {
+            return ApiResponse::error('存在下级分类，无法删除', 422);
         }
 
-        $item->delete();
+        $category->delete();
 
         return ApiResponse::success(null, '已删除');
     }
 
-    private function resolveDictType(): DictType
+    public function batchDestroy(Request $request): JsonResponse
     {
-        $type = DictType::query()
-            ->where('code', AttachmentCategory::DICT_TYPE_CODE)
-            ->where('status', 1)
-            ->first();
+        $ids = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+        ])['ids'];
 
-        if (! $type) {
-            abort(422, '附件分类字典未初始化，请先执行数据种子');
+        $deletableIds = [];
+        foreach ($ids as $id) {
+            if (Category::query()->where('parent_id', $id)->exists()) {
+                continue;
+            }
+            $deletableIds[] = (int) $id;
         }
 
-        return $type;
+        if ($deletableIds === []) {
+            return ApiResponse::error('所选分类存在下级，无法删除', 422);
+        }
+
+        $deleted = Category::query()->whereIn('id', $deletableIds)->delete();
+        $skipped = count($ids) - count($deletableIds);
+
+        return ApiResponse::success(
+            ['deleted' => $deleted, 'skipped' => $skipped],
+            $skipped > 0 ? "已删除 {$deleted} 个，{$skipped} 个因存在下级未删除" : '已批量删除',
+        );
     }
 
-    private function findCategoryItem(int $dictTypeId, int $id): DictItem
+    public function batchUpdateStatus(Request $request): JsonResponse
     {
-        return DictItem::query()
-            ->where('dict_type_id', $dictTypeId)
-            ->whereKey($id)
-            ->firstOrFail();
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+            'status' => ['required', 'string', Rule::in(['normal', 'hidden'])],
+        ]);
+
+        $updated = Category::query()
+            ->whereIn('id', $data['ids'])
+            ->update(['status' => $data['status']]);
+
+        return ApiResponse::success(['updated' => $updated], '状态已批量更新');
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection<int, Category>  $rows
+     * @return array<int, mixed>
+     */
+    private function buildTree($rows, int $parentId = 0): array
+    {
+        $branch = [];
+
+        foreach ($rows as $item) {
+            if ((int) $item->parent_id !== $parentId) {
+                continue;
+            }
+
+            $formatted = $this->formatCategory($item);
+            $children = $this->buildTree($rows, (int) $item->id);
+            if ($children !== []) {
+                $formatted['children'] = $children;
+            }
+
+            $branch[] = $formatted;
+        }
+
+        return $branch;
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function descendantIds(int $id): array
+    {
+        $ids = [];
+        $stack = [$id];
+
+        while ($stack !== []) {
+            $current = array_pop($stack);
+            $children = Category::query()->where('parent_id', $current)->pluck('id')->all();
+            foreach ($children as $childId) {
+                $ids[] = (int) $childId;
+                $stack[] = (int) $childId;
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function formatCategory(Category $category): array
+    {
+        $typeLabels = CategoryType::labelMap();
+        $flags = $this->normalizeFlags($category->flag);
+
+        return [
+            'id' => $category->id,
+            'parent_id' => (int) $category->parent_id,
+            'type' => (string) $category->type,
+            'type_label' => $typeLabels[$category->type] ?? $category->type,
+            'name' => (string) $category->name,
+            'nickname' => (string) $category->nickname,
+            'flag' => $flags,
+            'flag_labels' => $this->flagLabels($flags),
+            'image' => $category->image,
+            'keywords' => $category->keywords,
+            'description' => $category->description,
+            'diyname' => $category->diyname,
+            'sort' => (int) $category->sort,
+            'status' => (string) $category->status,
+            'created_at' => $category->created_at,
+            'updated_at' => $category->updated_at,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function validatePayload(Request $request, bool $partial = false): array
+    {
+        $rules = [
+            'parent_id' => ['sometimes', 'integer', 'min:0'],
+            'type' => ['sometimes', 'string', 'max:30'],
+            'name' => ['sometimes', 'string', 'max:30'],
+            'nickname' => ['sometimes', 'string', 'max:50'],
+            'flag' => ['nullable', 'array'],
+            'flag.*' => ['string', Rule::in(self::FLAG_OPTIONS)],
+            'image' => ['nullable', 'string', 'max:255'],
+            'keywords' => ['nullable', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:255'],
+            'diyname' => ['nullable', 'string', 'max:30'],
+            'sort' => ['sometimes', 'integer', 'min:0'],
+            'status' => ['sometimes', 'string', Rule::in(['normal', 'hidden'])],
+        ];
+
+        if (! $partial) {
+            $rules['type'] = ['required', 'string', 'max:30'];
+            $rules['name'] = ['required', 'string', 'max:30'];
+            $rules['nickname'] = ['required', 'string', 'max:50'];
+        }
+
+        $data = $request->validate($rules);
+
+        if (array_key_exists('type', $data) && ! CategoryType::isValid($data['type'])) {
+            abort(422, '无效的栏目类型，请先在字典管理维护 category_type');
+        }
+
+        if (array_key_exists('flag', $data)) {
+            $data['flag'] = $this->encodeFlags($data['flag']);
+        }
+
+        if (! array_key_exists('parent_id', $data)) {
+            $data['parent_id'] = 0;
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param  list<string>|null  $flags
+     */
+    private function encodeFlags(?array $flags): ?string
+    {
+        if ($flags === null || $flags === []) {
+            return null;
+        }
+
+        $flags = array_values(array_intersect($flags, self::FLAG_OPTIONS));
+
+        return $flags === [] ? null : implode(',', $flags);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function normalizeFlags(?string $flag): array
+    {
+        if ($flag === null || $flag === '') {
+            return [];
+        }
+
+        return array_values(array_intersect(explode(',', $flag), self::FLAG_OPTIONS));
+    }
+
+    /**
+     * @param  list<string>  $flags
+     * @return list<string>
+     */
+    private function flagLabels(array $flags): array
+    {
+        $map = [
+            'hot' => '热门',
+            'index' => '首页',
+            'recommend' => '推荐',
+        ];
+
+        return array_values(array_map(fn ($flag) => $map[$flag] ?? $flag, $flags));
     }
 }
