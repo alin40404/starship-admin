@@ -534,17 +534,151 @@ class StarshipFoundationSeeder extends Seeder
 
     private function seedConfigBasics(): void
     {
-        Setting::query()->updateOrCreate(
-            ['key' => 'site.name'],
+        $siteConfigs = [
             [
+                'key' => 'site.name',
                 'name' => '站点名称',
                 'value' => 'Starship Admin',
-                'group_name' => 'site',
+                'group_name' => 'basic',
                 'type' => 'string',
-                'sort' => 0,
-                'remark' => '后台左上角展示名称',
-            ]
-        );
+                'sort' => 10,
+                'remark' => '后台左上角及浏览器标题展示名称',
+            ],
+            [
+                'key' => 'site.logo',
+                'name' => '站点 Logo',
+                'value' => '',
+                'group_name' => 'basic',
+                'type' => 'string',
+                'sort' => 20,
+                'remark' => '建议尺寸 128×128，留空则使用默认图标',
+            ],
+            [
+                'key' => 'site.beian',
+                'name' => '备案号',
+                'value' => '',
+                'group_name' => 'basic',
+                'type' => 'string',
+                'sort' => 30,
+                'remark' => '网站 ICP 备案号，如：粤ICP备15000000号-1',
+            ],
+            [
+                'key' => 'site.cdn_url',
+                'name' => 'CDN 地址',
+                'value' => '',
+                'group_name' => 'basic',
+                'type' => 'string',
+                'sort' => 40,
+                'remark' => '全站静态资源使用第三方 CDN 时填写',
+            ],
+            [
+                'key' => 'site.version',
+                'name' => '版本号',
+                'value' => '1.0.1',
+                'group_name' => 'basic',
+                'type' => 'string',
+                'sort' => 50,
+                'remark' => '静态资源变更时可递增，用于缓存刷新',
+            ],
+            [
+                'key' => 'site.timezone',
+                'name' => '时区',
+                'value' => 'Asia/Shanghai',
+                'group_name' => 'basic',
+                'type' => 'string',
+                'sort' => 60,
+                'remark' => 'PHP 时区标识，如 Asia/Shanghai',
+            ],
+            [
+                'key' => 'site.forbidden_ip',
+                'name' => '禁止 IP',
+                'value' => '',
+                'group_name' => 'basic',
+                'type' => 'text',
+                'sort' => 70,
+                'remark' => '一行一条，匹配后将拒绝访问',
+            ],
+            [
+                'key' => 'site.fixed_page',
+                'name' => '默认主页',
+                'value' => 'dashboard',
+                'group_name' => 'basic',
+                'type' => 'string',
+                'sort' => 80,
+                'remark' => '登录后默认打开的菜单路由',
+            ],
+            [
+                'key' => 'mail.type',
+                'name' => '邮件发送方式',
+                'value' => '1',
+                'group_name' => 'email',
+                'type' => 'select',
+                'sort' => 10,
+                'remark' => '目前支持 SMTP',
+            ],
+            [
+                'key' => 'mail.smtp_host',
+                'name' => 'SMTP 服务器',
+                'value' => 'smtp.qq.com',
+                'group_name' => 'email',
+                'type' => 'string',
+                'sort' => 20,
+                'remark' => '错误的配置可能导致邮件发送超时',
+            ],
+            [
+                'key' => 'mail.smtp_port',
+                'name' => 'SMTP 端口',
+                'value' => '465',
+                'group_name' => 'email',
+                'type' => 'string',
+                'sort' => 30,
+                'remark' => '不加密默认 25，SSL 默认 465，TLS 默认 587',
+            ],
+            [
+                'key' => 'mail.smtp_user',
+                'name' => 'SMTP 用户名',
+                'value' => '',
+                'group_name' => 'email',
+                'type' => 'string',
+                'sort' => 40,
+                'remark' => '填写完整邮箱账号',
+            ],
+            [
+                'key' => 'mail.smtp_pass',
+                'name' => 'SMTP 密码',
+                'value' => '',
+                'group_name' => 'email',
+                'type' => 'string',
+                'sort' => 50,
+                'remark' => '邮箱密码或 SMTP 授权码',
+            ],
+            [
+                'key' => 'mail.verify_type',
+                'name' => 'SMTP 验证方式',
+                'value' => '2',
+                'group_name' => 'email',
+                'type' => 'select',
+                'sort' => 60,
+                'remark' => '推荐使用 SSL',
+            ],
+            [
+                'key' => 'mail.from',
+                'name' => '发件人邮箱',
+                'value' => '',
+                'group_name' => 'email',
+                'type' => 'string',
+                'sort' => 70,
+                'remark' => '系统邮件的发件地址',
+            ],
+        ];
+
+        foreach ($siteConfigs as $config) {
+            $key = $config['key'];
+            unset($config['key']);
+            Setting::query()->updateOrCreate(['key' => $key], $config);
+        }
+
+        Setting::query()->where('key', 'site.name')->update(['group_name' => 'basic']);
 
         Setting::query()->updateOrCreate(
             ['key' => 'app.page_size'],

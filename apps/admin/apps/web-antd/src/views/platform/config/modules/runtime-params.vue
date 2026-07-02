@@ -2,9 +2,12 @@
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { ConfigRow } from '#/api/system/config';
 
+import { useTemplateRef, watch } from 'vue';
+
 import { useVbenDrawer } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
+import { useElementSize } from '@vueuse/core';
 import { Button } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -16,6 +19,9 @@ import ParamForm from './param-form.vue';
 const props = defineProps<{
   canManage: boolean;
 }>();
+
+const gridWrapRef = useTemplateRef<HTMLElement>('gridWrapRef');
+const { height: gridWrapHeight } = useElementSize(gridWrapRef);
 
 const [ParamFormDrawer, paramFormDrawerApi] = useVbenDrawer({
   connectedComponent: ParamForm,
@@ -39,6 +45,8 @@ function onActionClick({ code, row }: OnActionClickParams<ConfigRow>) {
 }
 
 const [Grid, gridApi] = useVbenVxeGrid<ConfigRow>({
+  class: 'h-full min-h-0',
+  gridClass: 'p-0',
   gridOptions: {
     columns: [
       { align: 'left', field: 'name', minWidth: 140, title: '名称' },
@@ -83,7 +91,7 @@ const [Grid, gridApi] = useVbenVxeGrid<ConfigRow>({
         width: 100,
       },
     ],
-    height: 'auto',
+    height: 360,
     proxyConfig: {
       ajax: {
         query: async () => {
@@ -97,21 +105,30 @@ const [Grid, gridApi] = useVbenVxeGrid<ConfigRow>({
     toolbarConfig: { refresh: true },
   } as VxeTableGridOptions<ConfigRow>,
 });
+
+watch(
+  gridWrapHeight,
+  (height) => {
+    gridApi.setGridOptions({
+      height: Math.max(Math.floor(height), 280),
+    });
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
-  <div>
-    <div class="text-muted-foreground mb-4 text-sm">
-      维护可动态增删的运行参数，供业务代码按键读取。
-    </div>
+  <div class="flex h-full min-h-0 flex-col">
     <ParamFormDrawer @success="onRefresh" />
-    <Grid>
-      <template #toolbar-actions>
-        <Button v-if="props.canManage" type="primary" @click="onCreate">
-          <Plus class="size-4" />
-          新增参数
-        </Button>
-      </template>
-    </Grid>
+    <div ref="gridWrapRef" class="min-h-0 flex-1">
+      <Grid>
+        <template #toolbar-actions>
+          <Button v-if="props.canManage" type="primary" @click="onCreate">
+            <Plus class="size-4" />
+            新增参数
+          </Button>
+        </template>
+      </Grid>
+    </div>
   </div>
 </template>
