@@ -75,15 +75,15 @@ const currentSection = computed(
 <template>
   <Page auto-content-height>
     <div
-      class="bg-card flex h-full min-h-[520px] overflow-hidden rounded-lg border border-border"
+      class="bg-card flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-border md:min-h-[520px] md:flex-row"
     >
       <aside
-        class="flex w-[200px] shrink-0 flex-col gap-1 border-r border-border p-3"
+        class="flex shrink-0 flex-row gap-1 overflow-x-auto border-b border-border p-2 md:w-[200px] md:flex-col md:overflow-x-visible md:border-b-0 md:border-r md:p-3"
       >
         <button
           v-for="item in sections"
           :key="item.key"
-          class="w-full rounded-md px-3 py-2.5 text-left transition-colors"
+          class="min-w-[88px] flex-1 rounded-md px-2 py-2 text-center transition-colors md:w-full md:flex-none md:px-3 md:py-2.5 md:text-left"
           :class="
             activeSection === item.key
               ? 'bg-primary/10 text-primary font-medium'
@@ -94,7 +94,7 @@ const currentSection = computed(
         >
           <div class="truncate text-sm">{{ item.label }}</div>
           <div
-            class="text-muted-foreground mt-0.5 truncate text-xs leading-5"
+            class="text-muted-foreground mt-0.5 hidden truncate text-xs leading-5 md:block"
             :title="item.description"
           >
             {{ item.description }}
@@ -102,9 +102,9 @@ const currentSection = computed(
         </button>
       </aside>
 
-      <main class="flex min-h-0 flex-1 flex-col overflow-hidden p-5">
+      <main class="flex min-h-0 flex-1 flex-col overflow-hidden">
         <div
-          class="mb-4 flex shrink-0 items-center justify-between gap-4 border-b border-border pb-4"
+          class="flex shrink-0 flex-col gap-3 border-b border-border px-5 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
         >
           <div class="min-w-0">
             <h3 class="text-base font-medium">{{ currentSection.label }}</h3>
@@ -118,7 +118,7 @@ const currentSection = computed(
           <Button
             v-if="showSettingsSave"
             :loading="settingsSaving"
-            class="shrink-0"
+            class="w-full shrink-0 sm:w-auto"
             type="primary"
             @click="onSettingsSave"
           >
@@ -129,20 +129,20 @@ const currentSection = computed(
         <SettingsForm
           v-if="activeSection === 'basic'"
           ref="settingsFormRef"
-          class="min-h-0 flex-1"
+          class="min-h-0 flex-1 px-5 py-3"
           group-name="basic"
           :can-manage="canManageSite()"
         />
         <SettingsForm
           v-else-if="activeSection === 'email'"
           ref="settingsFormRef"
-          class="min-h-0 flex-1"
+          class="min-h-0 flex-1 px-5 py-3"
           group-name="email"
           :can-manage="canManageSite()"
         />
         <RuntimeParams
           v-else-if="activeSection === 'param'"
-          class="min-h-0 flex-1"
+          class="min-h-0 flex-1 px-5 py-3"
           :can-manage="canManageParams()"
         />
       </main>

@@ -1,8 +1,9 @@
 <script lang="ts" setup>
 import type { ConfigRow } from '#/api/system/config';
 
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
 
+import { useElementSize } from '@vueuse/core';
 import {
   Form,
   Input,
@@ -22,10 +23,18 @@ const props = defineProps<{
   groupName: string;
 }>();
 
+const scrollWrapRef = useTemplateRef<HTMLElement>('scrollWrapRef');
+const { height: scrollWrapHeight } = useElementSize(scrollWrapRef);
+
 const loading = ref(false);
 const saving = ref(false);
 const rows = ref<ConfigRow[]>([]);
 const draftValues = ref<Record<string, string>>({});
+
+const scrollStyle = computed(() => ({
+  height: `${Math.max(Math.floor(scrollWrapHeight.value), 280)}px`,
+  overflowY: 'auto' as const,
+}));
 
 const sortedRows = computed(() =>
   [...rows.value].sort((a, b) => a.sort - b.sort || a.id - b.id),
@@ -97,87 +106,74 @@ defineExpose({
 
 <template>
   <div class="flex h-full min-h-0 flex-col overflow-hidden">
-    <Spin
-      :spinning="loading"
-      tip="加载中…"
-      wrapper-class-name="config-settings-spin-wrap"
-    >
-      <Form class="config-settings-form max-w-3xl pb-4" layout="vertical">
-        <Form.Item
-          v-for="row in sortedRows"
-          :key="row.key"
-          :label="row.name"
-        >
-          <template v-if="row.remark" #extra>
-            {{ row.remark }}
-          </template>
+    <div ref="scrollWrapRef" class="min-h-0 flex-1">
+      <Spin :spinning="loading" tip="加载中…">
+        <div :style="scrollStyle">
+          <Form class="config-settings-form w-full max-w-3xl pb-4" layout="vertical">
+            <Form.Item
+              v-for="row in sortedRows"
+              :key="row.key"
+              :label="row.name"
+            >
+              <template v-if="row.remark" #extra>
+                {{ row.remark }}
+              </template>
 
-          <Switch
-            v-if="row.type === 'bool'"
-            :checked="draftValues[row.key] === '1'"
-            :disabled="!props.canManage"
-            @update:checked="
-              (checked: boolean) =>
-                (draftValues[row.key] = checked ? '1' : '0')
-            "
-          />
-          <InputNumber
-            v-else-if="row.type === 'number'"
-            :disabled="!props.canManage"
-            class="w-full max-w-md"
-            :value="Number(draftValues[row.key] || 0)"
-            @update:value="
-              (val) => (draftValues[row.key] = String(val ?? ''))
-            "
-          />
-          <Select
-            v-else-if="isSelectField(row)"
-            :disabled="!props.canManage"
-            class="w-full max-w-md"
-            :options="selectOptions(row.key)"
-            :value="draftValues[row.key] || undefined"
-            @update:value="
-              (val) => (draftValues[row.key] = String(val ?? ''))
-            "
-          />
-          <Input.TextArea
-            v-else-if="row.type === 'text' || row.type === 'json'"
-            :disabled="!props.canManage"
-            :rows="row.type === 'json' ? 4 : 3"
-            :value="draftValues[row.key]"
-            @update:value="(val) => (draftValues[row.key] = val)"
-          />
-          <Input
-            v-else
-            :disabled="!props.canManage"
-            class="max-w-md"
-            :value="draftValues[row.key]"
-            @update:value="(val) => (draftValues[row.key] = val)"
-          />
+              <Switch
+                v-if="row.type === 'bool'"
+                :checked="draftValues[row.key] === '1'"
+                :disabled="!props.canManage"
+                @update:checked="
+                  (checked: boolean) =>
+                    (draftValues[row.key] = checked ? '1' : '0')
+                "
+              />
+              <InputNumber
+                v-else-if="row.type === 'number'"
+                :disabled="!props.canManage"
+                class="w-full md:max-w-md"
+                :value="Number(draftValues[row.key] || 0)"
+                @update:value="
+                  (val) => (draftValues[row.key] = String(val ?? ''))
+                "
+              />
+              <Select
+                v-else-if="isSelectField(row)"
+                :disabled="!props.canManage"
+                class="w-full md:max-w-md"
+                :options="selectOptions(row.key)"
+                :value="draftValues[row.key] || undefined"
+                @update:value="
+                  (val) => (draftValues[row.key] = String(val ?? ''))
+                "
+              />
+              <Input.TextArea
+                v-else-if="row.type === 'text' || row.type === 'json'"
+                :disabled="!props.canManage"
+                :rows="row.type === 'json' ? 4 : 3"
+                :value="draftValues[row.key]"
+                @update:value="(val) => (draftValues[row.key] = val)"
+              />
+              <Input
+                v-else
+                :disabled="!props.canManage"
+                class="w-full md:max-w-md"
+                :value="draftValues[row.key]"
+                @update:value="(val) => (draftValues[row.key] = val)"
+              />
 
-          <div class="text-muted-foreground mt-1 text-xs">{{ row.key }}</div>
-        </Form.Item>
-      </Form>
-    </Spin>
+              <div class="text-muted-foreground mt-1 text-xs">
+                {{ row.key }}
+              </div>
+            </Form.Item>
+          </Form>
+        </div>
+      </Spin>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.config-settings-spin-wrap {
-  display: flex;
-  flex: 1;
-  height: 100%;
-  min-height: 0;
-  overflow: hidden;
-  flex-direction: column;
-}
-
-.config-settings-spin-wrap :deep(.ant-spin-container) {
-  height: 100%;
-  min-height: 0;
-  overflow-y: auto;
-}
-
 .config-settings-form :deep(.ant-form-item-label) {
   padding: 0 0 2px;
 }
