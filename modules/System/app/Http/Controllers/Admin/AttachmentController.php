@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Modules\System\App\Models\Attachment;
 use Modules\System\App\Support\AttachmentCategory;
+use Modules\System\App\Support\StorageConfigRegistrar;
 
 class AttachmentController extends Controller
 {
@@ -78,8 +79,12 @@ class AttachmentController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        StorageConfigRegistrar::apply();
+
+        $maxKb = StorageConfigRegistrar::maxUploadSizeKb();
+
         $request->validate([
-            'file' => ['required', 'file', 'max:51200'],
+            'file' => ['required', 'file', 'max:'.$maxKb],
             'storage' => ['sometimes', 'string', 'max:50'],
             'category' => ['nullable', 'string', 'max:50'],
         ]);
@@ -89,16 +94,26 @@ class AttachmentController extends Controller
             return ApiResponse::error('无效的附件分类', 422);
         }
 
-        $disk = $request->get('storage', 'public');
-        if (! is_string($disk) || $disk === '') {
-            $disk = 'public';
+        $file = $request->file('file');
+        $ext = strtolower((string) $file->getClientOriginalExtension());
+        $allowedExt = StorageConfigRegistrar::allowedExtensions();
+        if ($allowedExt !== [] && ! in_array($ext, $allowedExt, true)) {
+            return ApiResponse::error('不允许上传该类型的文件', 422);
         }
 
-        $file = $request->file('file');
+        $disk = StorageConfigRegistrar::resolveDisk($request->get('storage'));
+
+        if (in_array($disk, StorageConfigRegistrar::CLOUD_DISKS, true)
+            && ! StorageConfigRegistrar::isCloudDiskReady($disk)) {
+            return ApiResponse::error('云存储未配置完整，请先在系统配置 → 存储配置中填写接入参数', 422);
+        }
+
         $path = $file->store('uploads/'.date('Y/m/d'), $disk);
 
-        $fullPath = Storage::disk($disk)->path($path);
-        $hash = is_file($fullPath) ? hash_file('sha256', $fullPath) : null;
+        $realPath = $file->getRealPath();
+        $hash = is_string($realPath) && is_file($realPath)
+            ? hash_file('sha256', $realPath)
+            : null;
 
         $admin = $request->user();
 
@@ -152,7 +167,9 @@ class AttachmentController extends Controller
 
     private function deletePhysicalFile(Attachment $attachment): void
     {
-        $disk = $attachment->storage ?: 'public';
+        StorageConfigRegistrar::apply();
+
+        $disk = $attachment->storage ?: StorageConfigRegistrar::defaultDisk();
         $path = $attachment->file_path;
 
         if ($path && Storage::disk($disk)->exists($path)) {

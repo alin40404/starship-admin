@@ -7,6 +7,7 @@ use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\System\App\Models\Setting;
+use Modules\System\App\Support\StorageConfigRegistrar;
 
 class ConfigController extends Controller
 {
@@ -57,6 +58,9 @@ class ConfigController extends Controller
                 ], $payload)
             );
         }
+
+        StorageConfigRegistrar::reset();
+        StorageConfigRegistrar::apply();
 
         return ApiResponse::success(null, '配置已保存');
     }

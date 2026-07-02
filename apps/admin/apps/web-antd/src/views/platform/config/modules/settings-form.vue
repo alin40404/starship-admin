@@ -16,7 +16,7 @@ import {
 
 import { batchUpsertConfigs, fetchConfigs } from '#/api/system/config';
 
-import { CONFIG_SELECT_OPTIONS } from '../data';
+import { CONFIG_SELECT_OPTIONS, isStorageFieldVisible, STORAGE_DRIVER_KEY } from '../data';
 
 const props = defineProps<{
   canManage: boolean;
@@ -41,6 +41,18 @@ const fieldControlClass = 'config-field-control';
 const sortedRows = computed(() =>
   [...rows.value].sort((a, b) => a.sort - b.sort || a.id - b.id),
 );
+
+const visibleRows = computed(() => {
+  if (props.groupName !== 'storage') {
+    return sortedRows.value;
+  }
+
+  const driver = draftValues.value[STORAGE_DRIVER_KEY] || 'public';
+
+  return sortedRows.value.filter((row) =>
+    isStorageFieldVisible(row.key, driver),
+  );
+});
 
 function syncDraftFromRows(list: ConfigRow[]) {
   const next: Record<string, string> = {};
@@ -113,7 +125,7 @@ defineExpose({
         <div :style="scrollStyle">
           <Form class="config-settings-form w-full max-w-3xl pb-4" layout="vertical">
             <Form.Item
-              v-for="row in sortedRows"
+              v-for="row in visibleRows"
               :key="row.key"
               :label="row.name"
             >

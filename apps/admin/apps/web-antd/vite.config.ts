@@ -12,6 +12,11 @@ export default defineConfig(async () => {
             target: 'http://127.0.0.1:8000',
             ws: true,
           },
+          // 公共附件（public 磁盘）走 Laravel public/storage 软链
+          '/storage': {
+            changeOrigin: true,
+            target: 'http://127.0.0.1:8000',
+          },
         },
       },
     },

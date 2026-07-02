@@ -9,6 +9,7 @@ use Modules\System\App\Http\Middleware\EnsureAdminAreaStorePermission;
 use Modules\System\App\Http\Middleware\EnsureAdminDepartmentStorePermission;
 use Modules\System\App\Http\Middleware\EnsureAdminMenuStorePermission;
 use Modules\System\App\Http\Middleware\EnsureAdminPermission;
+use Modules\System\App\Support\StorageConfigRegistrar;
 
 class SystemServiceProvider extends ServiceProvider
 {
@@ -31,5 +32,13 @@ class SystemServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
         $this->loadViewsFrom(__DIR__.'/../../resources/views', 'system');
         $this->loadTranslationsFrom(__DIR__.'/../../resources/lang', 'system');
+
+        $this->app->booted(static function (): void {
+            try {
+                StorageConfigRegistrar::apply();
+            } catch (\Throwable) {
+                // 数据库未就绪时（如 migrate）忽略
+            }
+        });
     }
 }

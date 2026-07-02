@@ -42,3 +42,7 @@ WHERE r.`code` = 'super_admin'
 -- 文件分组已合并至字典 attachment_category，移除独立菜单
 UPDATE `sa_menus` SET `deleted_at` = NOW(), `updated_at` = NOW()
 WHERE `path` = '/resource/file-groups' AND `type` = 2 AND `deleted_at` IS NULL;
+
+-- 存储配置已合并至平台设置 / 系统配置，移除独立菜单
+UPDATE `sa_menus` SET `deleted_at` = NOW(), `updated_at` = NOW()
+WHERE `path` = '/resource/storage' AND `type` = 2 AND `deleted_at` IS NULL;

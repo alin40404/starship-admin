@@ -15,11 +15,17 @@ export type AttachmentAccessChecker = {
 export const ATTACHMENT_STORAGE_OPTIONS = [
   { label: '公共存储', value: 'public' },
   { label: '本地存储', value: 'local' },
+  { label: '阿里云 OSS', value: 'oss' },
+  { label: '腾讯云 COS', value: 'cos' },
+  { label: 'AWS S3', value: 's3' },
 ] as const;
 
 export const ATTACHMENT_STORAGE_TAG_OPTIONS = [
   { color: 'processing', label: '公共存储', value: 'public' },
   { color: 'default', label: '本地存储', value: 'local' },
+  { color: 'orange', label: '阿里云 OSS', value: 'oss' },
+  { color: 'blue', label: '腾讯云 COS', value: 'cos' },
+  { color: 'purple', label: 'AWS S3', value: 's3' },
 ] as const;
 
 const CATEGORY_TAG_COLORS = [

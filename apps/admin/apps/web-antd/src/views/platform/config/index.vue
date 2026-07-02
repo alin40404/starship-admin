@@ -83,6 +83,11 @@ const sections: ConfigSection[] = [
     label: CONFIG_GROUP_LABELS.email!,
     description: CONFIG_GROUP_DESCRIPTIONS.email!,
   },
+  {
+    key: 'storage',
+    label: CONFIG_GROUP_LABELS.storage!,
+    description: CONFIG_GROUP_DESCRIPTIONS.storage!,
+  },
 ];
 
 const currentSection = computed(
