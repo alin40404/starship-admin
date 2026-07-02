@@ -19,10 +19,12 @@ const editingId = ref<number | null>(null);
 const [Form, formApi] = useVbenForm({
   commonConfig: {
     componentProps: { class: 'w-full' },
+    labelClass: 'justify-start',
   },
+  layout: 'vertical',
   schema: buildDictTypeFormSchema(),
   showDefaultActions: false,
-  wrapperClass: 'grid-cols-1',
+  wrapperClass: 'grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1',
 });
 
 const modalTitle = computed(() =>
@@ -81,9 +83,7 @@ const [Modal, modalApi] = useVbenModal({
 </script>
 
 <template>
-  <Modal :title="modalTitle" class="w-[560px] max-w-[92vw]">
-    <div :style="{ paddingTop: 'calc(var(--spacing) * 4)' }">
-      <Form />
-    </div>
+  <Modal :title="modalTitle" class="w-[640px] max-w-[92vw]">
+    <Form />
   </Modal>
 </template>

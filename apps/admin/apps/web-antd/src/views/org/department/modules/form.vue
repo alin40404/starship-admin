@@ -6,7 +6,7 @@ import type {
 
 import { computed, reactive, ref, watch } from 'vue';
 
-import { useVbenDrawer } from '@vben/common-ui';
+import { useVbenModal } from '@vben/common-ui';
 
 import { message } from 'ant-design-vue';
 
@@ -47,11 +47,12 @@ watch(editingId, () => {
   });
 });
 
-const drawerTitle = computed(() =>
+const modalTitle = computed(() =>
   editingId.value ? '编辑部门' : '新增部门',
 );
 
-const [Drawer, drawerApi] = useVbenDrawer({
+const [Modal, modalApi] = useVbenModal({
+  fullscreenButton: false,
   async onConfirm() {
     const { valid } = await formApi.validate();
     if (!valid) return;
@@ -59,7 +60,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
     const values = (await formApi.getValues()) as DepartmentSavePayload;
     if (!values.parent_id) values.parent_id = 0;
 
-    drawerApi.lock();
+    modalApi.lock();
     try {
       if (!editingId.value) {
         await createDepartment(values);
@@ -68,17 +69,17 @@ const [Drawer, drawerApi] = useVbenDrawer({
         await updateDepartment(editingId.value, values);
         message.success('已保存');
       }
-      drawerApi.close();
+      modalApi.close();
       emits('success');
     } finally {
-      drawerApi.unlock();
+      modalApi.unlock();
     }
   },
   async onOpenChange(isOpen: boolean) {
     if (!isOpen) return;
     formApi.resetForm();
 
-    const data = drawerApi.getData<
+    const data = modalApi.getData<
       (DepartmentTreeNode & { parent_id?: number }) | Record<string, never>
     >();
     const id =
@@ -117,7 +118,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
 </script>
 
 <template>
-  <Drawer :title="drawerTitle" class="max-w-[640px] w-[92vw]">
+  <Modal :title="modalTitle" class="w-[640px] max-w-[92vw]">
     <Form />
-  </Drawer>
+  </Modal>
 </template>

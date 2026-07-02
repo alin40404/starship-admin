@@ -312,7 +312,7 @@ function handleClosed() {
       <div
         ref="wrapperRef"
         :class="
-          cn('relative min-h-40 flex-1 overflow-y-auto p-3', contentClass, {
+          cn('relative min-h-40 flex-1 overflow-y-auto p-5', contentClass, {
             'pointer-events-none': showLoading || submitting,
           })
         "
@@ -334,7 +334,7 @@ function handleClosed() {
         v-if="showFooter"
         :class="
           cn(
-            'flex-row items-center justify-end p-2',
+            'flex-row items-center justify-end px-5 py-2',
             {
               'border-t': bordered,
             },

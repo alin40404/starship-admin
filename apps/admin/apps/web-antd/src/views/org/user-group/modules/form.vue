@@ -3,7 +3,7 @@ import type { UserGroupRow, UserGroupSavePayload } from '#/api/system/user-group
 
 import { computed, ref } from 'vue';
 
-import { useVbenDrawer } from '@vben/common-ui';
+import { useVbenModal } from '@vben/common-ui';
 
 import { message } from 'ant-design-vue';
 
@@ -32,7 +32,7 @@ const [Form, formApi] = useVbenForm({
   wrapperClass: 'grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1',
 });
 
-const drawerTitle = computed(() =>
+const modalTitle = computed(() =>
   editingId.value ? '编辑用户组' : '新增用户组',
 );
 
@@ -41,7 +41,8 @@ function stripPayload(values: Record<string, unknown>): UserGroupSavePayload {
   return rest as UserGroupSavePayload;
 }
 
-const [Drawer, drawerApi] = useVbenDrawer({
+const [Modal, modalApi] = useVbenModal({
+  fullscreenButton: false,
   async onConfirm() {
     const { valid } = await formApi.validate();
     if (!valid) return;
@@ -50,7 +51,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
     const adminIds = ((raw.admin_ids as number[] | undefined) ?? []).map(Number);
     const values = stripPayload(raw);
 
-    drawerApi.lock();
+    modalApi.lock();
     try {
       if (!editingId.value) {
         const created = await createUserGroup(values);
@@ -61,17 +62,17 @@ const [Drawer, drawerApi] = useVbenDrawer({
         await syncUserGroupAdmins(editingId.value, adminIds);
         message.success('已保存');
       }
-      drawerApi.close();
+      modalApi.close();
       emits('success');
     } finally {
-      drawerApi.unlock();
+      modalApi.unlock();
     }
   },
   async onOpenChange(isOpen: boolean) {
     if (!isOpen) return;
     formApi.resetForm();
 
-    const data = drawerApi.getData<UserGroupRow | Record<string, never>>();
+    const data = modalApi.getData<UserGroupRow | Record<string, never>>();
     const id =
       data && typeof (data as UserGroupRow).id === 'number'
         ? (data as UserGroupRow).id
@@ -103,7 +104,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
 </script>
 
 <template>
-  <Drawer :title="drawerTitle" class="max-w-[640px] w-[92vw]">
+  <Modal :title="modalTitle" class="w-[640px] max-w-[92vw]">
     <Form />
-  </Drawer>
+  </Modal>
 </template>

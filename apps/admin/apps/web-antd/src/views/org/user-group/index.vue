@@ -5,7 +5,7 @@ import type { UserGroupRow } from '#/api/system/user-group';
 import { ref } from 'vue';
 
 import { useAccess } from '@vben/access';
-import { Page, useVbenDrawer } from '@vben/common-ui';
+import { Page, useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
 import { Button, message, Modal } from 'ant-design-vue';
@@ -27,7 +27,7 @@ const groupAccess = {
   can: (code: string) => hasAccessByCodes([code]),
 };
 
-const [UserGroupFormDrawer, groupFormDrawerApi] = useVbenDrawer({
+const [UserGroupFormModal, groupFormModalApi] = useVbenModal({
   connectedComponent: UserGroupForm,
   destroyOnClose: true,
 });
@@ -45,11 +45,11 @@ function clearSelection() {
 }
 
 function onCreate() {
-  groupFormDrawerApi.setData({}).open();
+  groupFormModalApi.setData({}).open();
 }
 
 function onEdit(row: UserGroupRow) {
-  groupFormDrawerApi.setData(row).open();
+  groupFormModalApi.setData(row).open();
 }
 
 function onRefresh() {
@@ -131,7 +131,7 @@ const [Grid, gridApi] = useVbenVxeGrid<UserGroupRow>({
 
 <template>
   <Page auto-content-height>
-    <UserGroupFormDrawer @success="onRefresh" />
+    <UserGroupFormModal @success="onRefresh" />
     <Grid>
       <template #toolbar-actions>
         <template v-if="selectedRows.length > 0">

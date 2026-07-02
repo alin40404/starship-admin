@@ -3,7 +3,7 @@ import type { PostRow, PostSavePayload } from '#/api/system/post';
 
 import { computed, ref } from 'vue';
 
-import { useVbenDrawer } from '@vben/common-ui';
+import { useVbenModal } from '@vben/common-ui';
 
 import { message } from 'ant-design-vue';
 
@@ -28,22 +28,23 @@ const [Form, formApi] = useVbenForm({
   wrapperClass: 'grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1',
 });
 
-const drawerTitle = computed(() => {
+const modalTitle = computed(() => {
   if (readonly.value) return '查看岗位';
   return editingId.value ? '编辑岗位' : '新增岗位';
 });
 
-const [Drawer, drawerApi] = useVbenDrawer({
+const [Modal, modalApi] = useVbenModal({
+  fullscreenButton: false,
   async onConfirm() {
     if (readonly.value) {
-      drawerApi.close();
+      modalApi.close();
       return;
     }
     const { valid } = await formApi.validate();
     if (!valid) return;
 
     const values = (await formApi.getValues()) as PostSavePayload;
-    drawerApi.lock();
+    modalApi.lock();
     try {
       if (!editingId.value) {
         await createPost(values);
@@ -52,16 +53,16 @@ const [Drawer, drawerApi] = useVbenDrawer({
         await updatePost(editingId.value, values);
         message.success('已保存');
       }
-      drawerApi.close();
+      modalApi.close();
       emits('success');
     } finally {
-      drawerApi.unlock();
+      modalApi.unlock();
     }
   },
   async onOpenChange(isOpen: boolean) {
     if (!isOpen) return;
     formApi.resetForm();
-    const data = drawerApi.getData<PostRow | Record<string, never>>();
+    const data = modalApi.getData<PostRow | Record<string, never>>();
     const id = data && typeof (data as PostRow).id === 'number' ? (data as PostRow).id : null;
     editingId.value = id;
     readonly.value = false;
@@ -89,7 +90,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
 </script>
 
 <template>
-  <Drawer :title="drawerTitle" class="max-w-[560px] w-[92vw]">
+  <Modal :title="modalTitle" class="w-[560px] max-w-[92vw]">
     <Form />
-  </Drawer>
+  </Modal>
 </template>

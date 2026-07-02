@@ -5,7 +5,7 @@ import type { PostRow } from '#/api/system/post';
 import { ref } from 'vue';
 
 import { useAccess } from '@vben/access';
-import { Page, useVbenDrawer } from '@vben/common-ui';
+import { Page, useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
 import { Button, message, Modal } from 'ant-design-vue';
@@ -30,7 +30,7 @@ const postAccess = {
   canAny: (codes: string[]) => hasAccessByCodes(codes),
 };
 
-const [PostFormDrawer, postFormDrawerApi] = useVbenDrawer({
+const [PostFormModal, postFormModalApi] = useVbenModal({
   connectedComponent: PostForm,
   destroyOnClose: true,
 });
@@ -48,11 +48,11 @@ function clearSelection() {
 }
 
 function onCreate() {
-  postFormDrawerApi.setData({}).open();
+  postFormModalApi.setData({}).open();
 }
 
 function onEdit(row: PostRow) {
-  postFormDrawerApi.setData(row).open();
+  postFormModalApi.setData(row).open();
 }
 
 function onRefresh() {
@@ -177,7 +177,7 @@ const [Grid, gridApi] = useVbenVxeGrid<PostRow>({
 
 <template>
   <Page auto-content-height>
-    <PostFormDrawer @success="onRefresh" />
+    <PostFormModal @success="onRefresh" />
     <Grid>
       <template #toolbar-actions>
         <template v-if="selectedRows.length > 0">

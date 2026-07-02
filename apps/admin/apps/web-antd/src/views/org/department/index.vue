@@ -5,7 +5,7 @@ import type { DepartmentTreeNode } from '#/api/system/department';
 import { ref } from 'vue';
 
 import { useAccess } from '@vben/access';
-import { Page, useVbenDrawer } from '@vben/common-ui';
+import { Page, useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
 import { Button, message, Modal } from 'ant-design-vue';
@@ -30,7 +30,7 @@ const deptAccess = {
   can: (code: string) => hasAccessByCodes([code]),
 };
 
-const [DepartmentFormDrawer, deptFormDrawerApi] = useVbenDrawer({
+const [DepartmentFormModal, deptFormModalApi] = useVbenModal({
   connectedComponent: DepartmentForm,
   destroyOnClose: true,
 });
@@ -48,15 +48,15 @@ function clearSelection() {
 }
 
 function onCreate() {
-  deptFormDrawerApi.setData({}).open();
+  deptFormModalApi.setData({}).open();
 }
 
 function onAppend(row: DepartmentTreeNode) {
-  deptFormDrawerApi.setData({ parent_id: row.id }).open();
+  deptFormModalApi.setData({ parent_id: row.id }).open();
 }
 
 function onEdit(row: DepartmentTreeNode) {
-  deptFormDrawerApi.setData(row).open();
+  deptFormModalApi.setData(row).open();
 }
 
 function onRefresh() {
@@ -224,7 +224,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
 
 <template>
   <Page auto-content-height>
-    <DepartmentFormDrawer @success="onRefresh" />
+    <DepartmentFormModal @success="onRefresh" />
     <Grid>
       <template #toolbar-actions>
         <template v-if="selectedRows.length > 0">

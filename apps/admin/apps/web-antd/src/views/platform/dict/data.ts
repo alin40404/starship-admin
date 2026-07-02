@@ -118,6 +118,7 @@ export function buildDictTypeFormSchema(): VbenFormSchema[] {
       component: 'RadioGroup',
       componentProps: {
         buttonStyle: 'solid',
+        class: 'w-full',
         optionType: 'button',
         options: [
           { label: '启用', value: 1 },
@@ -126,6 +127,7 @@ export function buildDictTypeFormSchema(): VbenFormSchema[] {
       },
       defaultValue: 1,
       fieldName: 'status',
+      formItemClass: 'col-span-full w-full',
       label: '状态',
     },
     {
@@ -135,6 +137,7 @@ export function buildDictTypeFormSchema(): VbenFormSchema[] {
         rows: 2,
       },
       fieldName: 'remark',
+      formItemClass: 'col-span-full w-full items-start',
       label: '备注',
     },
   ];
