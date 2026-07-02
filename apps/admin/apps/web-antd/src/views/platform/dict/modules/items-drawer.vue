@@ -8,9 +8,9 @@ import type {
 
 import { computed, ref } from 'vue';
 
-import { useVbenDrawer } from '@vben/common-ui';
+import { useVbenDrawer, useVbenModal } from '@vben/common-ui';
 
-import { Button, message, Modal } from 'ant-design-vue';
+import { Button, message } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -26,13 +26,16 @@ import { buildDictItemFormSchema, useDictItemColumns } from '../data';
 const emits = defineEmits<{ success: [] }>();
 
 const activeType = ref<DictTypeRow | null>(null);
-const itemModalOpen = ref(false);
 const editingItemId = ref<number | null>(null);
 
 const drawerTitle = computed(() => {
   const name = activeType.value?.name ?? '';
   return name ? `字典项：${name}` : '字典项';
 });
+
+const itemModalTitle = computed(() =>
+  editingItemId.value ? '编辑字典项' : '新增字典项',
+);
 
 const [ItemForm, itemFormApi] = useVbenForm({
   commonConfig: {
@@ -51,28 +54,11 @@ function onRefresh() {
 }
 
 function onCreateItem() {
-  editingItemId.value = null;
-  itemFormApi.resetForm();
-  itemFormApi.setValues({
-    label: '',
-    remark: '',
-    sort: 0,
-    status: 1,
-    value: '',
-  });
-  itemModalOpen.value = true;
+  itemModalApi.setData({}).open();
 }
 
 function onEditItem(row: DictItemRow) {
-  editingItemId.value = row.id;
-  itemFormApi.setValues({
-    label: row.label,
-    remark: row.remark ?? '',
-    sort: row.sort ?? 0,
-    status: row.status,
-    value: row.value,
-  });
-  itemModalOpen.value = true;
+  itemModalApi.setData(row).open();
 }
 
 async function onDeleteItem(row: DictItemRow) {
@@ -86,32 +72,74 @@ function onItemActionClick({ code, row }: OnActionClickParams<DictItemRow>) {
   else if (code === 'delete') onDeleteItem(row);
 }
 
-async function submitItemForm() {
-  if (!activeType.value) return;
-  const { valid } = await itemFormApi.validate();
-  if (!valid) return;
+const [ItemModal, itemModalApi] = useVbenModal({
+  confirmText: '保存',
+  fullscreenButton: false,
+  async onConfirm() {
+    if (!activeType.value) return;
+    const { valid } = await itemFormApi.validate();
+    if (!valid) return;
 
-  const values = (await itemFormApi.getValues()) as Omit<
-    DictItemSavePayload,
-    'dict_type_id'
-  >;
-  const payload: DictItemSavePayload = {
-    ...values,
-    dict_type_id: activeType.value.id,
-  };
+    const values = (await itemFormApi.getValues()) as Omit<
+      DictItemSavePayload,
+      'dict_type_id'
+    >;
+    const payload: DictItemSavePayload = {
+      ...values,
+      dict_type_id: activeType.value.id,
+    };
 
-  if (!editingItemId.value) {
-    await createDictItem(payload);
-    message.success('创建成功');
-  } else {
-    await updateDictItem(editingItemId.value, payload);
-    message.success('已保存');
-  }
-  itemModalOpen.value = false;
-  onRefresh();
-}
+    itemModalApi.lock();
+    try {
+      if (!editingItemId.value) {
+        await createDictItem(payload);
+        message.success('创建成功');
+      } else {
+        await updateDictItem(editingItemId.value, payload);
+        message.success('已保存');
+      }
+      itemModalApi.close();
+      onRefresh();
+    } finally {
+      itemModalApi.unlock();
+    }
+  },
+  onOpenChange(isOpen: boolean) {
+    if (!isOpen) {
+      editingItemId.value = null;
+      return;
+    }
+    itemFormApi.resetForm();
+    const data = itemModalApi.getData<DictItemRow | Record<string, never>>();
+    const id =
+      data && typeof (data as DictItemRow).id === 'number'
+        ? (data as DictItemRow).id
+        : null;
+    editingItemId.value = id;
+
+    if (id) {
+      const row = data as DictItemRow;
+      itemFormApi.setValues({
+        label: row.label,
+        remark: row.remark ?? '',
+        sort: row.sort ?? 0,
+        status: row.status,
+        value: row.value,
+      });
+    } else {
+      itemFormApi.setValues({
+        label: '',
+        remark: '',
+        sort: 0,
+        status: 1,
+        value: '',
+      });
+    }
+  },
+});
 
 const [Grid, gridApi] = useVbenVxeGrid<DictItemRow>({
+  gridClass: 'p-0',
   gridOptions: {
     columns: useDictItemColumns(onItemActionClick),
     height: 420,
@@ -158,13 +186,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
     <Grid />
   </Drawer>
 
-  <Modal
-    v-model:open="itemModalOpen"
-    :title="editingItemId ? '编辑字典项' : '新增字典项'"
-    ok-text="保存"
-    cancel-text="取消"
-    @ok="submitItemForm"
-  >
+  <ItemModal :title="itemModalTitle" class="w-[640px] max-w-[92vw]">
     <ItemForm />
-  </Modal>
+  </ItemModal>
 </template>
