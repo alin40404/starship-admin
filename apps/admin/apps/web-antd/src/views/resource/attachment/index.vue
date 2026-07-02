@@ -19,7 +19,7 @@ import {
 } from '#/api/system/attachment';
 import { ATTACHMENT_PERMISSIONS } from '#/constants/attachment-permissions';
 
-import { useColumns, useGridFormSchema } from './data';
+import { buildCategoryTagOptions, useColumns, useGridFormSchema } from './data';
 import UploadForm from './modules/upload-form.vue';
 
 const ALL_CATEGORY_KEY = '__all__';
@@ -59,6 +59,7 @@ const activeCategoryLabel = computed(() => {
 function syncGridColumns() {
   gridApi.setGridOptions({
     columns: useColumns(onActionClick, attachmentAccess, {
+      categoryTagOptions: buildCategoryTagOptions(categoryOptions.value),
       showCategoryColumn: activeCategory.value === ALL_CATEGORY_KEY,
     }),
   } as VxeTableGridOptions<AttachmentRow>);
@@ -157,6 +158,7 @@ async function loadCategoryOptions() {
     label: item.label,
     value: item.value,
   }));
+  syncGridColumns();
 }
 
 onMounted(() => {

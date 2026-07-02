@@ -17,6 +17,92 @@ export const ATTACHMENT_STORAGE_OPTIONS = [
   { label: '本地存储', value: 'local' },
 ] as const;
 
+export const ATTACHMENT_STORAGE_TAG_OPTIONS = [
+  { color: 'processing', label: '公共存储', value: 'public' },
+  { color: 'default', label: '本地存储', value: 'local' },
+] as const;
+
+const CATEGORY_TAG_COLORS = [
+  'blue',
+  'cyan',
+  'geekblue',
+  'purple',
+  'magenta',
+  'volcano',
+  'orange',
+  'gold',
+  'lime',
+  'green',
+] as const;
+
+export type AttachmentTagOption = {
+  color: string;
+  label: string;
+  value: string;
+};
+
+export function buildCategoryTagOptions(
+  items: { label: string; value: string }[] = [],
+): AttachmentTagOption[] {
+  return items.map((item, index) => ({
+    color: CATEGORY_TAG_COLORS[index % CATEGORY_TAG_COLORS.length]!,
+    label: item.label,
+    value: item.value,
+  }));
+}
+
+export function getFileExtTagColor(ext: string | null | undefined) {
+  if (!ext) {
+    return 'default';
+  }
+  const normalized = ext.toLowerCase();
+  if (['bmp', 'gif', 'ico', 'jpeg', 'jpg', 'png', 'svg', 'webp'].includes(normalized)) {
+    return 'green';
+  }
+  if (['avi', 'mkv', 'mov', 'mp4', 'webm'].includes(normalized)) {
+    return 'purple';
+  }
+  if (
+    ['doc', 'docx', 'md', 'pdf', 'ppt', 'pptx', 'txt', 'xls', 'xlsx'].includes(
+      normalized,
+    )
+  ) {
+    return 'blue';
+  }
+  if (['7z', 'gz', 'rar', 'tar', 'zip'].includes(normalized)) {
+    return 'orange';
+  }
+  return 'default';
+}
+
+export function getMimeTagColor(mime: string | null | undefined) {
+  if (!mime) {
+    return 'default';
+  }
+  if (mime.startsWith('image/')) {
+    return 'green';
+  }
+  if (mime.startsWith('video/')) {
+    return 'purple';
+  }
+  if (mime.startsWith('audio/')) {
+    return 'magenta';
+  }
+  if (
+    mime.includes('pdf') ||
+    mime.includes('document') ||
+    mime.includes('word') ||
+    mime.includes('sheet') ||
+    mime.includes('presentation')
+  ) {
+    return 'blue';
+  }
+  if (mime.startsWith('text/')) {
+    return 'cyan';
+  }
+  return 'default';
+}
+
 const STORAGE_LABEL_MAP = Object.fromEntries(
   ATTACHMENT_STORAGE_OPTIONS.map((item) => [item.value, item.label]),
 ) as Record<string, string>;
@@ -96,9 +182,12 @@ export function useGridFormSchema(): VbenFormSchema[] {
 export function useColumns(
   onActionClick: OnActionClickFn<AttachmentRow>,
   access: AttachmentAccessChecker,
-  options: { showCategoryColumn?: boolean } = {},
+  options: {
+    categoryTagOptions?: AttachmentTagOption[];
+    showCategoryColumn?: boolean;
+  } = {},
 ): VxeTableGridColumns<AttachmentRow> {
-  const { showCategoryColumn = true } = options;
+  const { categoryTagOptions = [], showCategoryColumn = true } = options;
 
   const columns: VxeTableGridColumns<AttachmentRow> = [
     {
@@ -137,9 +226,15 @@ export function useColumns(
 
   if (showCategoryColumn) {
     columns.push({
-      align: 'left',
+      align: 'center',
+      cellRender: {
+        attrs: {
+          getLabel: (row: AttachmentRow) => formatCategoryLabel(row),
+        },
+        name: 'CellTag',
+        options: [...categoryTagOptions],
+      },
       field: 'category',
-      formatter: ({ row }) => formatCategoryLabel(row as AttachmentRow),
       minWidth: 100,
       title: '分类',
     });
@@ -147,16 +242,27 @@ export function useColumns(
 
   columns.push(
     {
+      align: 'center',
+      cellRender: {
+        attrs: {
+          getColor: (row: AttachmentRow) => getFileExtTagColor(row.file_ext),
+        },
+        name: 'CellTag',
+      },
       field: 'file_ext',
-      formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       title: '扩展名',
-      width: 88,
+      width: 96,
     },
     {
-      align: 'left',
+      align: 'center',
+      cellRender: {
+        attrs: {
+          getColor: (row: AttachmentRow) => getMimeTagColor(row.mime_type),
+        },
+        name: 'CellTag',
+      },
       field: 'mime_type',
-      formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
-      minWidth: 140,
+      minWidth: 148,
       title: 'MIME',
     },
     {
@@ -168,11 +274,15 @@ export function useColumns(
       width: 96,
     },
     {
+      align: 'center',
+      cellRender: {
+        name: 'CellTag',
+        options: [...ATTACHMENT_STORAGE_TAG_OPTIONS],
+      },
       field: 'storage',
-      formatter: ({ cellValue }) => formatStorageLabel(cellValue as string),
       sortable: true,
       title: '存储',
-      width: 96,
+      width: 108,
     },
     {
       align: 'left',
@@ -183,6 +293,7 @@ export function useColumns(
     },
     {
       field: 'created_at',
+      formatter: 'formatDateTime',
       minWidth: 170,
       sortable: true,
       title: '上传时间',

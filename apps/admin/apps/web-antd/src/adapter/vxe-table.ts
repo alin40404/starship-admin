@@ -77,20 +77,32 @@ setupVbenVxeTable({
     });
 
     vxeUI.renderer.add('CellTag', {
-      renderTableDefault({ options, props }, { column, row }) {
+      renderTableDefault({ options, props, attrs }, { column, row }) {
         const value = get(row, column.field);
+        if (value === null || value === undefined || value === '') {
+          return h('span', { class: 'text-muted-foreground' }, '--');
+        }
         const tagOptions = options ?? [
           { color: 'success', label: $t('common.enabled'), value: 1 },
           { color: 'error', label: $t('common.disabled'), value: 0 },
         ];
         const tagItem = tagOptions.find((item) => item.value === value);
+        const label =
+          typeof attrs?.getLabel === 'function'
+            ? attrs.getLabel(row, column)
+            : (tagItem?.label ?? value);
+        const color =
+          typeof attrs?.getColor === 'function'
+            ? attrs.getColor(row, column)
+            : (tagItem?.color ?? props?.color ?? 'default');
         return h(
           Tag,
           {
             ...props,
-            ...objectOmit(tagItem ?? {}, ['label']),
+            color,
+            ...objectOmit(tagItem ?? {}, ['label', 'color']),
           },
-          { default: () => tagItem?.label ?? value },
+          { default: () => label },
         );
       },
     });
