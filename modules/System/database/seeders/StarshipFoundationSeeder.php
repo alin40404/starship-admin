@@ -8,6 +8,7 @@ use Modules\System\App\Models\Department;
 use Modules\System\App\Models\DictItem;
 use Modules\System\App\Models\DictType;
 use Modules\System\App\Models\Menu;
+use Modules\System\App\Models\Post;
 use Modules\System\App\Support\AdminPermissions;
 use Modules\System\App\Support\DepartmentPermissions;
 use Modules\System\App\Support\MenuPermissions;
@@ -41,6 +42,7 @@ class StarshipFoundationSeeder extends Seeder
         $password = (string) env('SYSTEM_ADMIN_PASSWORD', 'admin123');
 
         $dept = $this->seedDepartments();
+        $this->seedPosts();
 
         $admin = Admin::query()->updateOrCreate(
             ['username' => 'admin'],
@@ -589,6 +591,33 @@ class StarshipFoundationSeeder extends Seeder
         ], (int) $root->id);
 
         return $root;
+    }
+
+    private function seedPosts(): void
+    {
+        $posts = [
+            ['name' => '总经理', 'code' => 'ceo', 'sort' => 0, 'status' => 1, 'remark' => '公司最高管理者'],
+            ['name' => '研发总监', 'code' => 'rd_director', 'sort' => 10, 'status' => 1, 'remark' => '研发中心负责人'],
+            ['name' => '前端工程师', 'code' => 'frontend_engineer', 'sort' => 11, 'status' => 1, 'remark' => '对应前端组'],
+            ['name' => '后端工程师', 'code' => 'backend_engineer', 'sort' => 12, 'status' => 1, 'remark' => '对应后端组'],
+            ['name' => '测试工程师', 'code' => 'qa_engineer', 'sort' => 13, 'status' => 1, 'remark' => '对应测试组'],
+            ['name' => '市场经理', 'code' => 'marketing_manager', 'sort' => 20, 'status' => 1, 'remark' => '市场营销部'],
+            ['name' => '销售专员', 'code' => 'sales_specialist', 'sort' => 21, 'status' => 1, 'remark' => null],
+            ['name' => '人事专员', 'code' => 'hr_specialist', 'sort' => 30, 'status' => 1, 'remark' => '人力资源部'],
+            ['name' => '财务专员', 'code' => 'finance_specialist', 'sort' => 40, 'status' => 0, 'remark' => '示例：禁用状态'],
+        ];
+
+        foreach ($posts as $post) {
+            Post::query()->updateOrCreate(
+                ['code' => $post['code']],
+                [
+                    'name' => $post['name'],
+                    'sort' => $post['sort'],
+                    'status' => $post['status'],
+                    'remark' => $post['remark'],
+                ],
+            );
+        }
     }
 
     /**
