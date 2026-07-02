@@ -12,6 +12,7 @@ use Modules\System\App\Models\Menu;
 use Modules\System\App\Models\Post;
 use Modules\System\App\Support\AdminPermissions;
 use Modules\System\App\Support\AreaPermissions;
+use Modules\System\App\Support\AttachmentPermissions;
 use Modules\System\App\Support\ConfigPermissions;
 use Modules\System\App\Support\DepartmentPermissions;
 use Modules\System\App\Support\DictPermissions;
@@ -106,6 +107,7 @@ class StarshipFoundationSeeder extends Seeder
             '/platform/configs' => '/platform/config/index',
             '/platform/dicts' => '/platform/dict/index',
             '/platform/regions' => '/platform/region/index',
+            '/resource/attachments' => '/resource/attachment/index',
         ];
         if (isset($permission[$path])) {
             return $permission[$path];
@@ -484,11 +486,39 @@ class StarshipFoundationSeeder extends Seeder
             'status' => 1,
         ]);
 
+        $attachmentMgmt = Menu::query()->create([
+            'parent_id' => $resource->id,
+            'type' => 2,
+            'name' => 'AttachmentMgmt',
+            'title' => '附件管理',
+            'path' => '/resource/attachments',
+            'component' => $this->defaultComponentForMenuPath('/resource/attachments'),
+            'permission' => 'system.attachments',
+            'icon' => 'ep:paperclip',
+            'sort' => 401,
+            'other_settings' => $this->menuOther(1, 1),
+            'status' => 1,
+        ]);
+
+        foreach (AttachmentPermissions::buttonDefinitions() as $btn) {
+            Menu::query()->create([
+                'parent_id' => $attachmentMgmt->id,
+                'type' => 3,
+                'name' => $btn['name'],
+                'title' => $btn['title'],
+                'path' => null,
+                'component' => null,
+                'permission' => $btn['permission'],
+                'icon' => null,
+                'sort' => $btn['sort'],
+                'other_settings' => $this->menuOther(0),
+                'status' => 1,
+            ]);
+        }
+
         foreach (
             [
-                ['name' => 'AttachmentMgmt', 'title' => '附件管理', 'path' => '/resource/attachments', 'permission' => 'system.attachments', 'sort' => 401, 'icon' => 'ep:paperclip'],
-                ['name' => 'FileGroupMgmt', 'title' => '文件分组', 'path' => '/resource/file-groups', 'permission' => 'system.file_groups', 'sort' => 402, 'icon' => 'ep:files'],
-                ['name' => 'StorageMgmt', 'title' => '存储配置', 'path' => '/resource/storage', 'permission' => 'system.storage', 'sort' => 403, 'icon' => 'ep:coin'],
+                ['name' => 'StorageMgmt', 'title' => '存储配置', 'path' => '/resource/storage', 'permission' => 'system.storage', 'sort' => 402, 'icon' => 'ep:coin'],
             ] as $m
         ) {
             Menu::query()->create([
@@ -601,6 +631,38 @@ class StarshipFoundationSeeder extends Seeder
             ['dict_type_id' => $type->id, 'value' => '0'],
             ['label' => '禁用', 'sort' => 2, 'status' => 1]
         );
+
+        $attachmentCategory = DictType::query()->updateOrCreate(
+            ['code' => 'attachment_category'],
+            [
+                'name' => '附件分类',
+                'status' => 1,
+                'remark' => '附件管理分类，参考 FastAdmin attachmentcategory',
+            ]
+        );
+
+        $categories = [
+            ['value' => 'default', 'label' => '默认', 'sort' => 0],
+            ['value' => 'image', 'label' => '图片', 'sort' => 10],
+            ['value' => 'video', 'label' => '视频', 'sort' => 20],
+            ['value' => 'document', 'label' => '文档', 'sort' => 30],
+            ['value' => 'avatar', 'label' => '头像', 'sort' => 40],
+            ['value' => 'resources', 'label' => '资源', 'sort' => 50],
+        ];
+
+        foreach ($categories as $item) {
+            DictItem::query()->updateOrCreate(
+                [
+                    'dict_type_id' => $attachmentCategory->id,
+                    'value' => $item['value'],
+                ],
+                [
+                    'label' => $item['label'],
+                    'sort' => $item['sort'],
+                    'status' => 1,
+                ],
+            );
+        }
     }
 
     private function seedConfigBasics(): void

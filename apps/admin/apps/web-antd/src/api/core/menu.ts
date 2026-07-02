@@ -48,6 +48,7 @@ const PERMISSION_PAGE_BY_PATH: Record<string, string> = {
   '/platform/configs': 'views/platform/config/index.vue',
   '/platform/dicts': 'views/platform/dict/index.vue',
   '/platform/regions': 'views/platform/region/index.vue',
+  '/resource/attachments': 'views/resource/attachment/index.vue',
 };
 
 /** 路由 meta 用：库内为 Iconify `collection:name`（如 ep:menu），空则用占位 */

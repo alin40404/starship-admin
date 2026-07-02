@@ -15,6 +15,7 @@ use Modules\System\App\Http\Controllers\Admin\RoleController;
 use Modules\System\App\Http\Controllers\Admin\UserGroupController;
 use Modules\System\App\Support\AdminPermissions;
 use Modules\System\App\Support\AreaPermissions;
+use Modules\System\App\Support\AttachmentPermissions;
 use Modules\System\App\Support\ConfigPermissions;
 use Modules\System\App\Support\DepartmentPermissions;
 use Modules\System\App\Support\DictPermissions;
@@ -194,7 +195,15 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
         Route::delete('areas/{id}', [AreaController::class, 'destroy'])
             ->middleware('admin.permission:'.AreaPermissions::DELETE);
 
-        Route::get('attachments', [AttachmentController::class, 'index']);
-        Route::post('attachments', [AttachmentController::class, 'store']);
+        Route::get('attachments/categories', [AttachmentController::class, 'categories'])
+            ->middleware('admin.permission:'.AttachmentPermissions::QUERY);
+        Route::get('attachments', [AttachmentController::class, 'index'])
+            ->middleware('admin.permission:'.AttachmentPermissions::QUERY);
+        Route::post('attachments', [AttachmentController::class, 'store'])
+            ->middleware('admin.permission:'.AttachmentPermissions::UPLOAD);
+        Route::post('attachments/batch-destroy', [AttachmentController::class, 'batchDestroy'])
+            ->middleware('admin.permission:'.AttachmentPermissions::BATCH_DELETE);
+        Route::delete('attachments/{id}', [AttachmentController::class, 'destroy'])
+            ->middleware('admin.permission:'.AttachmentPermissions::DELETE);
     });
 });
