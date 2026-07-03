@@ -2,8 +2,10 @@
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { PostRow } from '#/api/system/post';
 
+import { ref } from 'vue';
+
 import { useAccess } from '@vben/access';
-import { Page, useVbenModal } from '@vben/common-ui';
+import { Page } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
 import { Button, message, Modal } from 'ant-design-vue';
@@ -25,6 +27,8 @@ import {
 } from './data';
 import PostForm from './modules/form.vue';
 
+const postFormRef = ref<InstanceType<typeof PostForm>>();
+
 const { hasAccessByCodes } = useAccess();
 
 const postAccess = {
@@ -32,17 +36,12 @@ const postAccess = {
   canAny: (codes: string[]) => hasAccessByCodes(codes),
 };
 
-const [PostFormModal, postFormModalApi] = useVbenModal({
-  connectedComponent: PostForm,
-  destroyOnClose: true,
-});
-
 function onCreate() {
-  postFormModalApi.setData({}).open();
+  postFormRef.value?.open({});
 }
 
 function onEdit(row: PostRow) {
-  postFormModalApi.setData(row).open();
+  postFormRef.value?.open(row);
 }
 
 function onActionClick({ code, row }: OnActionClickParams<PostRow>) {
@@ -195,7 +194,7 @@ function onBatchUpdateStatus(status: 0 | 1) {
 
 <template>
   <Page auto-content-height>
-    <PostFormModal @success="onRefresh" />
+    <PostForm ref="postFormRef" @success="onRefresh" />
     <CrudView>
       <template #toolbar-actions>
         <div
