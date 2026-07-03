@@ -37,8 +37,11 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
+  change: [value: string | string[]];
   'update:value': [value: string | string[]];
 }>();
+
+defineOptions({ inheritAttrs: false });
 
 const { hasAccessByCodes } = useAccess();
 const canUpload = computed(() =>
@@ -60,16 +63,16 @@ const inputText = computed({
     return valueToInputText(props.value, props.multiple);
   },
   set(text: string) {
-    emit('update:value', parseInputText(text, props.multiple));
+    const nextValue = parseInputText(text, props.multiple);
+    emit('update:value', nextValue);
+    emit('change', nextValue);
   },
 });
 
 function emitValue(urls: string[]) {
-  if (props.multiple) {
-    emit('update:value', urls);
-    return;
-  }
-  emit('update:value', urls[0] ?? '');
+  const nextValue = props.multiple ? urls : (urls[0] ?? '');
+  emit('update:value', nextValue);
+  emit('change', nextValue);
 }
 
 function onUploadClick() {
@@ -160,6 +163,7 @@ function onRemoveUrl(url: string) {
   <div class="attachment-field w-full min-w-0">
     <Space.Compact block class="attachment-field__compact w-full">
       <Input
+        v-bind="$attrs"
         v-model:value="inputText"
         class="attachment-field__input min-w-0 flex-1"
         :disabled="disabled"
@@ -227,15 +231,15 @@ function onRemoveUrl(url: string) {
       :multiple="multiple"
       @change="onFileInputChange"
     />
-  </div>
 
-  <AttachmentPickerModal
-    v-model:open="pickerOpen"
-    :accept="accept"
-    :initial-urls="currentUrls"
-    :multiple="multiple"
-    @confirm="onPickerConfirm"
-  />
+    <AttachmentPickerModal
+      v-model:open="pickerOpen"
+      :accept="accept"
+      :initial-urls="currentUrls"
+      :multiple="multiple"
+      @confirm="onPickerConfirm"
+    />
+  </div>
 </template>
 
 <style scoped>

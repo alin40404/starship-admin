@@ -14,16 +14,28 @@ import {
   isImageAttachment,
 } from '../data';
 
-const props = defineProps<{
-  canDelete?: boolean;
-  rows: AttachmentRow[];
-  selectedIds: number[];
-}>();
+const props = withDefaults(
+  defineProps<{
+    canDelete?: boolean;
+    rows: AttachmentRow[];
+    selectedIds: number[];
+    showActions?: boolean;
+    showCopy?: boolean;
+    singlePick?: boolean;
+  }>(),
+  {
+    canDelete: false,
+    showActions: true,
+    showCopy: true,
+    singlePick: false,
+  },
+);
 
 const emit = defineEmits<{
   copy: [row: AttachmentRow];
   delete: [row: AttachmentRow];
   open: [row: AttachmentRow];
+  pick: [row: AttachmentRow];
   'update:selectedIds': [ids: number[]];
 }>();
 
@@ -47,6 +59,10 @@ function isSelected(id: number) {
 }
 
 function onCardClick(row: AttachmentRow) {
+  if (props.singlePick) {
+    emit('pick', row);
+    return;
+  }
   toggleSelect(row.id);
 }
 
@@ -108,7 +124,7 @@ function onPreviewVisibleChange(visible: boolean) {
         <IconifyIcon class="size-3.5" icon="lucide:check" />
       </div>
 
-      <div class="attachment-flow-item__overlay">
+      <div v-if="showActions" class="attachment-flow-item__overlay">
         <div class="attachment-flow-item__actions">
           <Tooltip
             v-if="isImageAttachment(row) && row.file_url"
@@ -131,7 +147,7 @@ function onPreviewVisibleChange(visible: boolean) {
               <IconifyIcon class="size-3.5" icon="lucide:external-link" />
             </button>
           </Tooltip>
-          <Tooltip v-if="row.file_url" title="复制链接">
+          <Tooltip v-if="showCopy && row.file_url" title="复制链接">
             <button
               class="attachment-flow-item__action"
               type="button"
@@ -151,6 +167,14 @@ function onPreviewVisibleChange(visible: boolean) {
           </Tooltip>
         </div>
 
+        <Tooltip :title="`${row.file_name} · ${formatFileSize(row.file_size)}`">
+          <div class="attachment-flow-item__name">{{ row.file_name }}</div>
+        </Tooltip>
+      </div>
+      <div
+        v-else
+        class="attachment-flow-item__overlay attachment-flow-item__overlay--picker"
+      >
         <Tooltip :title="`${row.file_name} · ${formatFileSize(row.file_size)}`">
           <div class="attachment-flow-item__name">{{ row.file_name }}</div>
         </Tooltip>
@@ -308,6 +332,20 @@ function onPreviewVisibleChange(visible: boolean) {
 
 .attachment-flow-item:hover .attachment-flow-item__overlay,
 .attachment-flow-item.is-selected .attachment-flow-item__overlay {
+  opacity: 1;
+}
+
+.attachment-flow-item__overlay--picker {
+  justify-content: flex-end;
+  opacity: 0;
+  background: linear-gradient(
+    to top,
+    rgb(0 0 0 / 52%) 0%,
+    transparent 72%
+  );
+}
+
+.attachment-flow-item:hover .attachment-flow-item__overlay--picker {
   opacity: 1;
 }
 

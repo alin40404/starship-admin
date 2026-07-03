@@ -5,22 +5,22 @@ import type { AttachmentRow } from '#/api/system/attachment';
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
+import { IconifyIcon } from '@vben/icons';
 
-import { useElementSize } from '@vueuse/core';
-import { message } from 'ant-design-vue';
+import { useDebounceFn, useElementSize } from '@vueuse/core';
+import { Button, Input, message, Tooltip } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import {
-  fetchAttachmentPickerCategories,
-  fetchAttachmentPickerPage,
-} from '#/api/system/attachment';
-import { buildCategoryTagOptions } from '#/views/resource/attachment/data';
+import { fetchAttachmentPickerPage } from '#/api/system/attachment';
+import AttachmentFlowView from '#/views/resource/attachment/modules/flow-view.vue';
 
-import { usePickerColumns, usePickerGridFormSchema } from './picker-data';
+import { usePickerColumns } from './picker-data';
 import type { AttachmentAcceptMode } from './types';
 import { isAttachmentAcceptable, resolveMimeFilter } from './utils';
 
-const ALL_CATEGORY_KEY = '__all__';
+const ATTACHMENT_PICKER_VIEW_MODE_KEY = 'attachment-picker-view-mode';
+
+type AttachmentViewMode = 'flow' | 'list';
 
 const props = withDefaults(
   defineProps<{
@@ -42,24 +42,48 @@ const emit = defineEmits<{
   'update:open': [open: boolean];
 }>();
 
-const activeCategory = ref(ALL_CATEGORY_KEY);
-const categoryOptions = ref<{ label: string; value: string }[]>([]);
+const fileNameQuery = ref('');
 const selectedRows = ref<AttachmentRow[]>([]);
+const flowRows = ref<AttachmentRow[]>([]);
+const layoutRef = ref<HTMLElement>();
+const flowTeleportTarget = ref<HTMLElement | null>(null);
 const gridWrapRef = useTemplateRef<HTMLElement>('gridWrapRef');
 const { height: gridWrapHeight } = useElementSize(gridWrapRef);
 
-const categoryTagOptions = computed(() =>
-  buildCategoryTagOptions(categoryOptions.value),
+const viewMode = ref<AttachmentViewMode>(
+  (localStorage.getItem(ATTACHMENT_PICKER_VIEW_MODE_KEY) as AttachmentViewMode) ||
+    'list',
 );
 
-function resolveCategoryFilter() {
-  if (activeCategory.value === ALL_CATEGORY_KEY) {
-    return undefined;
+const selectedFlowIds = computed({
+  get: () => selectedRows.value.map((row) => row.id),
+  set: (ids: number[]) => {
+    const normalizedIds = props.multiple ? ids : ids.slice(-1);
+    selectedRows.value = flowRows.value.filter((row) =>
+      normalizedIds.includes(row.id),
+    );
+  },
+});
+
+const isFlowMode = computed(() => viewMode.value === 'flow');
+const hasSelection = computed(() => selectedRows.value.length > 0);
+
+async function syncFlowTeleportTarget() {
+  await nextTick();
+  await nextTick();
+  if (!isFlowMode.value || !layoutRef.value) {
+    flowTeleportTarget.value = null;
+    return;
   }
-  return activeCategory.value;
+  flowTeleportTarget.value = layoutRef.value.querySelector(
+    '.vxe-grid--layout-body-content-wrapper',
+  ) as HTMLElement | null;
 }
 
 function syncSelection() {
+  if (isFlowMode.value) {
+    return;
+  }
   if (props.multiple) {
     const records = gridApi?.grid?.getCheckboxRecords?.() ?? [];
     selectedRows.value = records as AttachmentRow[];
@@ -70,19 +94,22 @@ function syncSelection() {
 }
 
 function clearSelection() {
-  gridApi?.grid?.clearCheckboxRow?.();
-  gridApi?.grid?.clearRadioRow?.();
+  if (!isFlowMode.value) {
+    gridApi?.grid?.clearCheckboxRow?.();
+    gridApi?.grid?.clearRadioRow?.();
+  }
   selectedRows.value = [];
 }
 
-function onCategoryChange(value: string) {
-  if (activeCategory.value === value) {
+function setViewMode(mode: AttachmentViewMode) {
+  if (viewMode.value === mode) {
     return;
   }
-  activeCategory.value = value;
+  viewMode.value = mode;
+  localStorage.setItem(ATTACHMENT_PICKER_VIEW_MODE_KEY, mode);
   clearSelection();
-  syncGridColumns();
   void refreshGrid();
+  syncFlowTeleportTarget();
 }
 
 function buildSelectionColumn() {
@@ -112,10 +139,7 @@ function syncGridColumns() {
       : undefined,
     columns: [
       buildSelectionColumn(),
-      ...usePickerColumns({
-        categoryTagOptions: categoryTagOptions.value,
-        showCategoryColumn: activeCategory.value === ALL_CATEGORY_KEY,
-      }),
+      ...usePickerColumns({ showCategoryColumn: true }),
     ],
     radioConfig: props.multiple
       ? undefined
@@ -132,34 +156,73 @@ async function refreshGrid() {
   await gridApi.query();
   await nextTick();
   restoreInitialSelection();
+  syncFlowTeleportTarget();
 }
+
+const debouncedRefreshGrid = useDebounceFn(() => {
+  void refreshGrid();
+}, 400);
+
+watch(fileNameQuery, () => {
+  debouncedRefreshGrid();
+});
 
 function restoreInitialSelection() {
   if (props.initialUrls.length === 0) {
     return;
   }
-  const tableData = (gridApi?.grid?.getData?.() ?? []) as AttachmentRow[];
-  for (const row of tableData) {
-    if (!row.file_url || !props.initialUrls.includes(row.file_url)) {
-      continue;
+  const tableData = isFlowMode.value
+    ? flowRows.value
+    : ((gridApi?.grid?.getData?.() ?? []) as AttachmentRow[]);
+  const matched = tableData.filter(
+    (row) => row.file_url && props.initialUrls.includes(row.file_url),
+  );
+  if (props.multiple) {
+    if (isFlowMode.value) {
+      selectedRows.value = matched;
+    } else {
+      for (const row of matched) {
+        gridApi?.grid?.setCheckboxRow?.(row, true);
+      }
     }
-    if (props.multiple) {
-      gridApi?.grid?.setCheckboxRow?.(row, true);
+  } else {
+    const row = matched[0];
+    if (!row) {
+      return;
+    }
+    if (isFlowMode.value) {
+      selectedRows.value = [row];
     } else {
       gridApi?.grid?.setRadioRow?.(row);
-      break;
     }
   }
   syncSelection();
 }
 
-async function loadCategories() {
-  const rows = await fetchAttachmentPickerCategories();
-  categoryOptions.value = rows.map((item) => ({
-    label: item.label,
-    value: item.value,
-  }));
-  syncGridColumns();
+function confirmWithRows(rows: AttachmentRow[]) {
+  const urls = rows
+    .map((row) => row.file_url)
+    .filter((url): url is string => Boolean(url));
+  if (urls.length === 0) {
+    message.warning(props.multiple ? '请至少选择一个附件' : '请选择一个附件');
+    return;
+  }
+  emit('confirm', props.multiple ? urls : [urls[0]!]);
+  modalApi.close();
+}
+
+function handleConfirm() {
+  if (!hasSelection.value) {
+    return;
+  }
+  confirmWithRows(selectedRows.value);
+}
+
+function onOpenAttachment(row: AttachmentRow) {
+  if (!row.file_url) {
+    return;
+  }
+  window.open(row.file_url, '_blank', 'noopener,noreferrer');
 }
 
 const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
@@ -170,12 +233,6 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
     checkboxChange: syncSelection,
     radioChange: syncSelection,
   },
-  formOptions: {
-    commonConfig: { componentProps: { class: 'w-full' } },
-    schema: usePickerGridFormSchema(),
-    submitOnChange: true,
-    submitButtonOptions: { content: '查询' },
-  },
   gridOptions: {
     columns: [
       buildSelectionColumn(),
@@ -184,78 +241,66 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
     height: 360,
     proxyConfig: {
       ajax: {
-        query: async ({ page }, formValues) => {
+        query: async ({ page }) => {
           const result = await fetchAttachmentPickerPage({
             page: page.currentPage,
             per_page: page.pageSize,
-            file_name: formValues?.file_name || undefined,
-            category: resolveCategoryFilter(),
+            file_name: fileNameQuery.value.trim() || undefined,
             mime_type: resolveMimeFilter(props.accept),
           });
-          if (props.accept === 'image') {
-            return {
-              ...result,
-              data: result.data.filter((row) =>
-                isAttachmentAcceptable(row, props.accept),
-              ),
-            };
-          }
-          return result;
+          const data =
+            props.accept === 'image'
+              ? result.data.filter((row) =>
+                  isAttachmentAcceptable(row, props.accept),
+                )
+              : result.data;
+          flowRows.value = data;
+          return props.accept === 'image' ? { ...result, data } : result;
         },
       },
     },
     rowConfig: { keyField: 'id' },
-    toolbarConfig: { refresh: true, search: true },
+    toolbarConfig: { refresh: true },
   } as VxeTableGridOptions<AttachmentRow>,
 });
 
 watch(
-  gridWrapHeight,
-  (height) => {
+  [gridWrapHeight, isFlowMode],
+  ([height, flow]) => {
     gridApi.setGridOptions({
-      height: Math.max(Math.floor(height), 240),
+      height: flow ? 'auto' : Math.max(Math.floor(height), 240),
     });
   },
   { immediate: true },
 );
+
+watch(flowRows, () => {
+  if (isFlowMode.value) {
+    syncFlowTeleportTarget();
+  }
+});
+
+const [Modal, modalApi] = useVbenModal({
+  fullscreenButton: false,
+  onOpenChange(isOpen: boolean) {
+    emit('update:open', isOpen);
+    if (!isOpen) {
+      fileNameQuery.value = '';
+      clearSelection();
+      return;
+    }
+    syncGridColumns();
+    void refreshGrid();
+  },
+});
 
 watch(
   () => props.multiple,
   () => {
     syncGridColumns();
   },
+  { immediate: true },
 );
-
-function handleConfirm() {
-  const urls = selectedRows.value
-    .map((row) => row.file_url)
-    .filter((url): url is string => Boolean(url));
-  if (urls.length === 0) {
-    message.warning(props.multiple ? '请至少选择一个附件' : '请选择一个附件');
-    return;
-  }
-  if (!props.multiple && urls.length > 1) {
-    emit('confirm', [urls[0]!]);
-  } else {
-    emit('confirm', urls);
-  }
-  modalApi.close();
-}
-
-const [Modal, modalApi] = useVbenModal({
-  confirmText: '确定',
-  fullscreenButton: false,
-  onConfirm: handleConfirm,
-  onOpenChange(isOpen: boolean) {
-    emit('update:open', isOpen);
-    if (!isOpen) {
-      activeCategory.value = ALL_CATEGORY_KEY;
-      clearSelection();
-      return;
-    }
-    void loadCategories().then(() => refreshGrid());
-  },
-});
 
 watch(
   () => props.open,
@@ -271,117 +316,214 @@ watch(
 
 <template>
   <Modal
-    class="w-[920px] max-w-[96vw]"
+    class="w-[1180px] max-w-[96vw]"
     content-class="flex min-h-0 flex-1 flex-col overflow-hidden !p-0"
     title="选择附件"
   >
     <div
-      class="bg-card flex h-[min(72vh,640px)] min-h-[420px] flex-col overflow-hidden md:flex-row"
+      class="bg-card flex h-[min(76vh,720px)] min-h-[460px] flex-col overflow-hidden p-3"
     >
-      <aside
-        class="attachment-picker-panel flex shrink-0 flex-col overflow-hidden border-b border-border md:w-[168px] md:border-b-0 md:border-r"
+      <div
+        ref="gridWrapRef"
+        class="attachment-picker-layout min-h-0 flex-1"
+        :class="{ 'attachment-picker-layout--flow': isFlowMode }"
       >
-        <div class="attachment-picker-header">附件分类</div>
-        <div class="attachment-picker-tabs">
-          <button
-            class="attachment-picker-item"
-            :class="{ 'is-active': activeCategory === ALL_CATEGORY_KEY }"
-            type="button"
-            @click="onCategoryChange(ALL_CATEGORY_KEY)"
-          >
-            全部
-          </button>
-          <button
-            v-for="item in categoryOptions"
-            :key="item.value"
-            class="attachment-picker-item"
-            :class="{ 'is-active': activeCategory === item.value }"
-            type="button"
-            @click="onCategoryChange(item.value)"
-          >
-            {{ item.label }}
-          </button>
-        </div>
-      </aside>
+        <div
+          ref="layoutRef"
+          class="attachment-picker-layout__inner h-full min-h-0"
+          :class="{ 'attachment-picker-layout__inner--flow': isFlowMode }"
+        >
+          <Grid>
+            <template #toolbar-actions>
+              <div class="attachment-picker-search">
+                <span class="attachment-picker-search__label">文件名</span>
+                <Input
+                  v-model:value="fileNameQuery"
+                  allow-clear
+                  class="attachment-picker-search__input"
+                  placeholder="文件名"
+                />
+              </div>
+            </template>
+            <template #toolbar-tools>
+              <div class="attachment-view-toggle ml-2">
+                <Tooltip title="列表视图">
+                  <button
+                    class="attachment-view-toggle__btn"
+                    :class="{ 'is-active': viewMode === 'list' }"
+                    type="button"
+                    @click="setViewMode('list')"
+                  >
+                    <IconifyIcon class="size-4" icon="lucide:list" />
+                  </button>
+                </Tooltip>
+                <Tooltip title="流式视图">
+                  <button
+                    class="attachment-view-toggle__btn"
+                    :class="{ 'is-active': viewMode === 'flow' }"
+                    type="button"
+                    @click="setViewMode('flow')"
+                  >
+                    <IconifyIcon class="size-4" icon="lucide:layout-grid" />
+                  </button>
+                </Tooltip>
+              </div>
+            </template>
+          </Grid>
 
-      <main class="flex min-h-0 flex-1 flex-col overflow-hidden p-3">
-        <div ref="gridWrapRef" class="min-h-0 flex-1">
-          <Grid />
+          <Teleport
+            v-if="isFlowMode && flowTeleportTarget"
+            :to="flowTeleportTarget"
+          >
+            <AttachmentFlowView
+              v-model:selected-ids="selectedFlowIds"
+              class="attachment-flow-panel"
+              show-actions
+              :show-copy="false"
+              :rows="flowRows"
+              @open="onOpenAttachment"
+            />
+          </Teleport>
         </div>
-      </main>
+      </div>
     </div>
+
+    <template #footer>
+      <Button @click="modalApi.close()">取消</Button>
+      <Button
+        type="primary"
+        class="attachment-picker-confirm"
+        :class="{ 'is-inactive': !hasSelection }"
+        @click="handleConfirm"
+      >
+        确定
+      </Button>
+    </template>
   </Modal>
 </template>
 
 <style scoped>
-.attachment-picker-header {
+.attachment-picker-confirm.is-inactive {
+  cursor: not-allowed;
+  background: #91caff;
+  border-color: #91caff;
+}
+
+.attachment-picker-confirm.is-inactive:hover {
+  background: #91caff !important;
+  border-color: #91caff !important;
+  color: #fff !important;
+}
+.attachment-picker-layout {
   display: flex;
-  height: 44px;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.attachment-picker-layout__inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.attachment-picker-layout__inner :deep(.h-full.rounded-md.bg-card) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.attachment-picker-layout--flow :deep(.vxe-grid) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.attachment-picker-layout--flow :deep(.vxe-grid--layout-body-wrapper) {
+  flex: 1;
+  min-height: 0;
+}
+
+.attachment-picker-layout--flow :deep(.vxe-grid--layout-body-content-wrapper) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.attachment-picker-layout--flow :deep(.vxe-grid--toolbar-wrapper) {
   flex-shrink: 0;
+  order: 1;
+}
+
+.attachment-picker-layout--flow :deep(.vxe-grid--table-container) {
+  display: none !important;
+}
+
+.attachment-picker-layout--flow :deep(.vxe-grid--pager-wrapper) {
+  flex-shrink: 0;
+  order: 3;
+}
+
+.attachment-flow-panel {
+  flex: 1 1 0;
+  min-height: 0;
+  order: 2;
+  padding: 0 2px 8px;
+}
+
+.attachment-picker-search {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  border-bottom: 1px solid hsl(var(--border));
-  background-color: hsl(var(--accent));
-  padding: 0 12px;
+  gap: 8px;
+  min-width: 0;
+}
+
+.attachment-picker-search__label {
+  flex-shrink: 0;
   font-size: 14px;
-  font-weight: 500;
   color: hsl(var(--foreground));
 }
 
-.attachment-picker-tabs {
-  display: flex;
-  flex: 1;
-  flex-direction: row;
-  gap: 8px;
-  overflow-x: auto;
-  padding: 8px;
+.attachment-picker-search__input {
+  width: 220px;
 }
 
-.attachment-picker-item {
-  flex-shrink: 0;
+.attachment-view-toggle {
+  display: inline-flex;
+  overflow: hidden;
   border: 1px solid hsl(var(--border));
-  border-radius: 9999px;
-  background: transparent;
-  padding: 6px 14px;
-  font-size: 14px;
+  border-radius: 6px;
+}
+
+.attachment-view-toggle__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   color: hsl(var(--muted-foreground));
-  white-space: nowrap;
   cursor: pointer;
+  background: transparent;
+  border: 0;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
-.attachment-picker-item.is-active {
-  border-color: hsl(var(--primary) / 0.25);
-  background-color: hsl(var(--primary) / 0.08);
+.attachment-view-toggle__btn + .attachment-view-toggle__btn {
+  border-left: 1px solid hsl(var(--border));
+}
+
+.attachment-view-toggle__btn:hover {
+  background: hsl(var(--accent));
+  color: hsl(var(--foreground));
+}
+
+.attachment-view-toggle__btn.is-active {
+  background: hsl(var(--primary) / 0.1);
   color: hsl(var(--primary));
-  font-weight: 500;
-}
-
-@media (min-width: 768px) {
-  .attachment-picker-header {
-    justify-content: flex-start;
-  }
-
-  .attachment-picker-tabs {
-    flex-direction: column;
-    gap: 0;
-    overflow-y: auto;
-    padding: 0;
-  }
-
-  .attachment-picker-item {
-    width: 100%;
-    border: 0;
-    border-left: 2px solid transparent;
-    border-radius: 0;
-    padding: 10px 12px;
-    text-align: left;
-    color: hsl(var(--foreground));
-  }
-
-  .attachment-picker-item.is-active {
-    border-left-color: hsl(var(--primary));
-    background-color: hsl(var(--primary) / 0.08);
-    color: hsl(var(--primary));
-  }
 }
 </style>
