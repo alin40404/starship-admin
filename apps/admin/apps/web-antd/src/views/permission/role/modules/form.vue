@@ -582,6 +582,15 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
   color: hsl(var(--foreground) / 0.78);
 }
 
+@media (max-width: 767px) {
+  /* 移动端：按钮权限 checkbox 每行 3 列 */
+  .role-drawer-form :deep(.permission-tree .tree-node.permission-tree-btn) {
+    width: 33.3333% !important;
+    max-width: 33.3333%;
+    padding-inline: 0.25rem 0.375rem;
+  }
+}
+
 .role-drawer-form :deep(.role-dept-field) {
   width: 100%;
   min-width: 0;
