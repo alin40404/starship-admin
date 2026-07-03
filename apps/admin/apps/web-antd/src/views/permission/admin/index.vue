@@ -2,15 +2,13 @@
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { AdminRow } from '#/api/system/admin';
 
-import { ref } from 'vue';
-
 import { useAccess } from '@vben/access';
 import { Page, useVbenDrawer } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
 import { Button, message, Modal } from 'ant-design-vue';
 
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { useResponsiveCrud } from '#/adapter/mobile-list';
 import {
   batchDeleteAdmins,
   batchUpdateAdminStatus,
@@ -20,7 +18,11 @@ import {
 } from '#/api/system/admin';
 import { ADMIN_PERMISSIONS } from '#/constants/admin-permissions';
 
-import { useColumns, useGridFormSchema } from './data';
+import {
+  buildAdminMobileCrudConfig,
+  useColumns,
+  useGridFormSchema,
+} from './data';
 import AdminForm from './modules/form.vue';
 
 const { hasAccessByCodes } = useAccess();
@@ -34,28 +36,12 @@ const [AdminFormDrawer, adminFormDrawerApi] = useVbenDrawer({
   destroyOnClose: true,
 });
 
-const selectedRows = ref<AdminRow[]>([]);
-
-function syncSelection() {
-  const records = gridApi?.grid?.getCheckboxRecords?.() ?? [];
-  selectedRows.value = records as AdminRow[];
-}
-
-function clearSelection() {
-  gridApi?.grid?.clearCheckboxRow?.();
-  selectedRows.value = [];
-}
-
 function onCreate() {
   adminFormDrawerApi.setData({}).open();
 }
 
 function onEdit(row: AdminRow) {
   adminFormDrawerApi.setData(row).open();
-}
-
-function onRefresh() {
-  gridApi.query();
 }
 
 function onActionClick({ code, row }: OnActionClickParams<AdminRow>) {
@@ -91,6 +77,101 @@ async function onAdminStatusToggle(nextStatus: number, row: AdminRow) {
       },
     });
   });
+}
+
+const columns = useColumns(onActionClick, onAdminStatusToggle, adminAccess);
+
+const [CrudView, crudApi] = useResponsiveCrud<AdminRow>({
+  formOptions: {
+    commonConfig: {
+      componentProps: {
+        class: 'w-full',
+      },
+    },
+    fieldMappingTime: [
+      [
+        'updatedTime',
+        ['updated_start', 'updated_end'],
+        ['YYYY-MM-DD', 'YYYY-MM-DD'],
+      ],
+    ],
+    schema: useGridFormSchema(),
+    submitOnChange: true,
+    submitButtonOptions: {
+      content: '查询',
+    },
+  },
+  gridOptions: {
+    checkboxConfig: {
+      checkMethod: ({ row }) => (row as AdminRow).is_super !== 1,
+      highlight: true,
+    },
+    columns: columns as VxeTableGridOptions<AdminRow>['columns'],
+    height: 'auto',
+    keepSource: true,
+    proxyConfig: {
+      ajax: {
+        query: async ({ page, sort }, formValues) => {
+          const order = sort?.order;
+          return await fetchAdminPage({
+            page: page.currentPage,
+            per_page: page.pageSize,
+            sort_field: sort?.field,
+            sort_order:
+              order === 'asc' || order === 'desc' ? order : undefined,
+            dept_id: formValues?.dept_id,
+            email: formValues?.email || undefined,
+            mobile: formValues?.mobile || undefined,
+            name: formValues?.name || undefined,
+            updated_end: formValues?.updated_end || undefined,
+            updated_start: formValues?.updated_start || undefined,
+            username: formValues?.username || undefined,
+          });
+        },
+      },
+      sort: true,
+    },
+    rowConfig: {
+      keyField: 'id',
+    },
+    sortConfig: {
+      remote: true,
+    },
+    toolbarConfig: {
+      custom: true,
+      refresh: true,
+      search: true,
+      zoom: true,
+    },
+  } as VxeTableGridOptions<AdminRow>,
+  mobile: buildAdminMobileCrudConfig({
+    columns,
+    query: async ({ filters, keyword, page, pageSize, sortField, sortOrder }) => {
+      const result = await fetchAdminPage({
+        page,
+        per_page: pageSize,
+        sort_field: sortField,
+        sort_order: sortOrder,
+        dept_id: filters?.dept_id,
+        email: filters?.email || undefined,
+        mobile: filters?.mobile || undefined,
+        name: keyword || filters?.name || undefined,
+        updated_end: filters?.updated_end || undefined,
+        updated_start: filters?.updated_start || undefined,
+        username: keyword || filters?.username || undefined,
+      });
+      return {
+        data: result.data,
+        total: result.total,
+      };
+    },
+  }),
+});
+
+const { clearSelection, reload, selectedRows } = crudApi;
+
+function onRefresh() {
+  reload();
 }
 
 async function onDelete(row: AdminRow) {
@@ -139,83 +220,17 @@ function onBatchUpdateStatus(status: 0 | 1) {
     },
   });
 }
-
-const [Grid, gridApi] = useVbenVxeGrid<AdminRow>({
-  formOptions: {
-    commonConfig: {
-      componentProps: {
-        class: 'w-full',
-      },
-    },
-    fieldMappingTime: [
-      [
-        'updatedTime',
-        ['updated_start', 'updated_end'],
-        ['YYYY-MM-DD', 'YYYY-MM-DD'],
-      ],
-    ],
-    schema: useGridFormSchema(),
-    submitOnChange: true,
-    submitButtonOptions: {
-      content: '查询',
-    },
-  },
-  gridEvents: {
-    checkboxAll: syncSelection,
-    checkboxChange: syncSelection,
-  },
-  gridOptions: {
-    checkboxConfig: {
-      checkMethod: ({ row }) => (row as AdminRow).is_super !== 1,
-      highlight: true,
-    },
-    columns: useColumns(onActionClick, onAdminStatusToggle, adminAccess),
-    height: 'auto',
-    keepSource: true,
-    proxyConfig: {
-      ajax: {
-        query: async ({ page, sort }, formValues) => {
-          const order = sort?.order;
-          return await fetchAdminPage({
-            page: page.currentPage,
-            per_page: page.pageSize,
-            sort_field: sort?.field,
-            sort_order:
-              order === 'asc' || order === 'desc' ? order : undefined,
-            dept_id: formValues?.dept_id,
-            email: formValues?.email || undefined,
-            mobile: formValues?.mobile || undefined,
-            name: formValues?.name || undefined,
-            updated_end: formValues?.updated_end || undefined,
-            updated_start: formValues?.updated_start || undefined,
-            username: formValues?.username || undefined,
-          });
-        },
-      },
-      sort: true,
-    },
-    rowConfig: {
-      keyField: 'id',
-    },
-    sortConfig: {
-      remote: true,
-    },
-    toolbarConfig: {
-      custom: true,
-      refresh: true,
-      search: true,
-      zoom: true,
-    },
-  } as VxeTableGridOptions<AdminRow>,
-});
 </script>
 
 <template>
   <Page auto-content-height>
     <AdminFormDrawer class="w-[560px]" @success="onRefresh" />
-    <Grid>
+    <CrudView>
       <template #toolbar-actions>
-        <div v-if="selectedRows.length > 0" class="vxe-grid-batch-toolbar">
+        <div
+          v-if="selectedRows.length > 0"
+          class="vxe-grid-batch-toolbar"
+        >
           <Button
             v-if="adminAccess.can(ADMIN_PERMISSIONS.BATCH_DELETE)"
             danger
@@ -250,30 +265,34 @@ const [Grid, gridApi] = useVbenVxeGrid<AdminRow>({
           新增管理员
         </Button>
       </template>
-    </Grid>
+    </CrudView>
   </Page>
 </template>
 
 <style lang="scss">
-.vxe-grid .admin-batch-btn-enable.ant-btn {
+.vxe-grid .admin-batch-btn-enable.ant-btn,
+.mobile-crud-list .admin-batch-btn-enable.ant-btn {
   color: #fff;
   background-color: #52c41a;
   border-color: #52c41a;
 }
 
-.vxe-grid .admin-batch-btn-enable.ant-btn:not(:disabled):hover {
+.vxe-grid .admin-batch-btn-enable.ant-btn:not(:disabled):hover,
+.mobile-crud-list .admin-batch-btn-enable.ant-btn:not(:disabled):hover {
   color: #fff;
   background-color: #73d13d;
   border-color: #73d13d;
 }
 
-.vxe-grid .admin-batch-btn-disable.ant-btn {
+.vxe-grid .admin-batch-btn-disable.ant-btn,
+.mobile-crud-list .admin-batch-btn-disable.ant-btn {
   color: #fff;
   background-color: #fa8c16;
   border-color: #fa8c16;
 }
 
-.vxe-grid .admin-batch-btn-disable.ant-btn:not(:disabled):hover {
+.vxe-grid .admin-batch-btn-disable.ant-btn:not(:disabled):hover,
+.mobile-crud-list .admin-batch-btn-disable.ant-btn:not(:disabled):hover {
   color: #fff;
   background-color: #ffa940;
   border-color: #ffa940;

@@ -1,7 +1,11 @@
 import type { VbenFormSchema } from '#/adapter/form';
 import type {
+  CrudGridColumn,
+  MobileCrudListConfig,
+} from '#/adapter/mobile-list';
+import { buildMobileCrudFromColumns } from '#/adapter/mobile-list';
+import type {
   OnActionClickFn,
-  VxeTableGridColumns,
 } from '#/adapter/vxe-table';
 
 import type { AdminRow } from '#/api/system/admin';
@@ -9,6 +13,7 @@ import type { DeptNode } from '#/api/system/department';
 
 import { z } from '@vben/common-ui';
 import { preferences } from '@vben/preferences';
+import { formatDateTime } from '@vben/utils';
 
 import { fetchDepartmentTree } from '#/api/system/department';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
@@ -24,6 +29,85 @@ export function mapDeptForTreeSelect(
       ? mapDeptForTreeSelect(n.children)
       : undefined,
   }));
+}
+
+export function useAdminMobileFilterSchema(): VbenFormSchema[] {
+  return [
+    {
+      component: 'Input',
+      componentProps: {
+        class: 'w-full',
+        placeholder: '搜索邮箱',
+      },
+      fieldName: 'email',
+      label: '邮箱',
+    },
+    {
+      component: 'Input',
+      componentProps: {
+        class: 'w-full',
+        placeholder: '搜索手机',
+      },
+      fieldName: 'mobile',
+      label: '手机',
+    },
+    {
+      component: 'ApiTreeSelect',
+      componentProps: {
+        allowClear: true,
+        api: async () => mapDeptForTreeSelect(await fetchDepartmentTree()),
+        class: 'w-full',
+        fieldNames: { children: 'children', label: 'label', value: 'value' },
+        placeholder: '请选择部门',
+        treeIcon: false,
+        treeLine: false,
+      },
+      fieldName: 'dept_id',
+      label: '部门',
+    },
+    {
+      component: 'RangePicker',
+      componentProps: {
+        allowClear: true,
+        class: 'w-full',
+      },
+      fieldName: 'updatedTime',
+      label: '更新时间',
+    },
+  ];
+}
+
+function formatAdminRoles(row: AdminRow) {
+  return (row.roles ?? []).map((role) => role.name).join('、') || TABLE_CELL_EMPTY;
+}
+
+export function buildAdminMobileCrudConfig(params: {
+  columns: CrudGridColumn<AdminRow>[];
+  query: MobileCrudListConfig<AdminRow>['query'];
+}): MobileCrudListConfig<AdminRow> {
+  return buildMobileCrudFromColumns({
+    columns: params.columns,
+    defaultPageSize: 20,
+    defaultSort: { field: 'updated_at', order: 'desc' },
+    query: params.query,
+    rowKey: 'id',
+    search: {
+      fieldMappingTime: [
+        [
+          'updatedTime',
+          ['updated_start', 'updated_end'],
+          ['YYYY-MM-DD', 'YYYY-MM-DD'],
+        ],
+      ],
+      filterSchema: useAdminMobileFilterSchema(),
+      keywordFields: ['username', 'name'],
+      placeholder: '搜索用户名/昵称',
+    },
+    selection: {
+      checkable: (row) => row.is_super !== 1,
+      enabled: true,
+    },
+  });
 }
 
 export function useGridFormSchema(): VbenFormSchema[] {
@@ -99,7 +183,7 @@ export function useColumns(
   onActionClick: OnActionClickFn<AdminRow>,
   onStatusBeforeChange: (newVal: number, row: AdminRow) => Promise<boolean>,
   access: AdminAccessChecker,
-): VxeTableGridColumns {
+): CrudGridColumn<AdminRow>[] {
   const canStatus = access.can(ADMIN_PERMISSIONS.STATUS);
 
   return [
@@ -110,7 +194,12 @@ export function useColumns(
       width: 48,
     },
     { field: 'id', sortable: true, title: 'ID', width: 70 },
-    { field: 'username', minWidth: 120, sortable: true, title: '用户名' },
+    {
+      field: 'username',
+      minWidth: 120,
+      sortable: true,
+      title: '用户名',
+    },
     {
       field: 'real_name',
       minWidth: 120,
@@ -118,7 +207,12 @@ export function useColumns(
       title: '真实姓名',
       visible: false,
     },
-    { field: 'nickname', minWidth: 100, sortable: true, title: '昵称' },
+    {
+      field: 'nickname',
+      minWidth: 100,
+      sortable: true,
+      title: '昵称',
+    },
     {
       field: 'avatar',
       title: '头像',
@@ -146,30 +240,31 @@ export function useColumns(
     },
     {
       field: 'dept_id',
-      formatter: ({ row }) =>
-        (row as AdminRow).department?.name ?? TABLE_CELL_EMPTY,
+      formatter: ({ row }: { row: AdminRow }) =>
+        row.department?.name ?? TABLE_CELL_EMPTY,
       minWidth: 120,
       sortable: true,
       title: '部门',
     },
     {
       field: 'roles',
-      formatter: ({ row }) =>
-        ((row as AdminRow).roles ?? [])
-          .map((r) => r.name)
-          .join('、') || TABLE_CELL_EMPTY,
+      formatter: ({ row }: { row: AdminRow }) => formatAdminRoles(row),
       minWidth: 160,
       sortable: false,
       title: '角色',
     },
     {
       field: 'updated_at',
+      formatter: ({ row }: { row: AdminRow }) =>
+        row.updated_at ? formatDateTime(row.updated_at) : TABLE_CELL_EMPTY,
       minWidth: 170,
       sortable: true,
       title: '更新时间',
     },
     {
       field: 'created_at',
+      formatter: ({ row }: { row: AdminRow }) =>
+        row.created_at ? formatDateTime(row.created_at) : TABLE_CELL_EMPTY,
       minWidth: 170,
       sortable: true,
       title: '创建时间',
@@ -225,7 +320,7 @@ export function useColumns(
       title: '操作',
       width: 160,
     },
-  ];
+  ] as CrudGridColumn<AdminRow>[];
 }
 
 export function buildAdminFormSchema(params: {
