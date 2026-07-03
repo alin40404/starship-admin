@@ -135,19 +135,18 @@ export function buildFormSchema(params: {
       component: 'AttachmentField',
       componentProps: {
         accept: 'image',
-        class: 'w-full',
         multiple: false,
         placeholder: '图片 URL',
       },
       fieldName: 'image',
-      formItemClass: 'col-span-full w-full items-start',
+      formItemClass: 'items-start',
       label: '图片',
     },
     {
       component: 'Textarea',
-      componentProps: { class: 'w-full', rows: 2 },
+      componentProps: { rows: 2 },
       fieldName: 'description',
-      formItemClass: 'col-span-full w-full items-start',
+      formItemClass: 'items-start',
       label: '描述',
     },
     {

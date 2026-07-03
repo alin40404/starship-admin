@@ -4,7 +4,7 @@ import { computed, ref, useTemplateRef } from 'vue';
 import { useAccess } from '@vben/access';
 import { IconifyIcon } from '@vben/icons';
 
-import { Button, Input, message, Space } from 'ant-design-vue';
+import { Button, Image, Input, message, Space } from 'ant-design-vue';
 
 import { uploadAttachment } from '#/api/system/attachment';
 import { ATTACHMENT_PERMISSIONS } from '#/constants/attachment-permissions';
@@ -52,6 +52,8 @@ const pickerOpen = ref(false);
 const uploading = ref(false);
 const fileInputRef = useTemplateRef<HTMLInputElement>('fileInputRef');
 const brokenImageUrls = ref<Set<string>>(new Set());
+const previewUrl = ref('');
+const previewVisible = ref(false);
 
 const currentUrls = computed(() => {
   const normalized = normalizeFieldValue(props.value, props.multiple);
@@ -157,6 +159,28 @@ function onRemoveUrl(url: string) {
     [...brokenImageUrls.value].filter((item) => item !== url),
   );
 }
+
+function onPreviewUrl(url: string) {
+  if (!url || !shouldShowImagePreview(url)) {
+    return;
+  }
+  previewUrl.value = url;
+  previewVisible.value = true;
+}
+
+function onOpenUrl(url: string) {
+  if (!url) {
+    return;
+  }
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+function onPreviewVisibleChange(visible: boolean) {
+  previewVisible.value = visible;
+  if (!visible) {
+    previewUrl.value = '';
+  }
+}
 </script>
 
 <template>
@@ -219,6 +243,25 @@ function onRemoveUrl(url: string) {
         >
           <IconifyIcon class="size-3" icon="lucide:x" />
         </button>
+        <button
+          class="attachment-field__preview-open"
+          :title="shouldShowImagePreview(url) ? '预览' : '打开'"
+          type="button"
+          @click="
+            shouldShowImagePreview(url)
+              ? onPreviewUrl(url)
+              : onOpenUrl(url)
+          "
+        >
+          <IconifyIcon
+            class="size-3"
+            :icon="
+              shouldShowImagePreview(url)
+                ? 'lucide:eye'
+                : 'lucide:external-link'
+            "
+          />
+        </button>
       </div>
     </div>
 
@@ -238,6 +281,22 @@ function onRemoveUrl(url: string) {
       :initial-urls="currentUrls"
       :multiple="multiple"
       @confirm="onPickerConfirm"
+    />
+
+    <Image
+      v-if="previewUrl"
+      :preview="{
+        visible: previewVisible,
+        onVisibleChange: onPreviewVisibleChange,
+      }"
+      :src="previewUrl"
+      :style="{
+        position: 'fixed',
+        width: 0,
+        height: 0,
+        opacity: 0,
+        pointerEvents: 'none',
+      }"
     />
   </div>
 </template>
@@ -326,6 +385,34 @@ function onRemoveUrl(url: string) {
 .attachment-field__preview-item:hover .attachment-field__preview-remove,
 .attachment-field__preview-remove:focus-visible {
   opacity: 1;
+}
+
+.attachment-field__preview-open {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  color: #fff;
+  cursor: pointer;
+  background: rgb(0 0 0 / 55%);
+  border: none;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.attachment-field__preview-item:hover .attachment-field__preview-open,
+.attachment-field__preview-open:focus-visible {
+  opacity: 1;
+}
+
+.attachment-field__preview-open:hover {
+  background: rgb(0 0 0 / 72%);
 }
 
 .attachment-field__preview-image {
