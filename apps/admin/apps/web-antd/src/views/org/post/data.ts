@@ -1,10 +1,15 @@
 import type { VbenFormSchema } from '#/adapter/form';
 import type {
-  OnActionClickFn,
-  VxeTableGridColumns,
-} from '#/adapter/vxe-table';
+  CrudGridColumn,
+  MobileCrudListConfig,
+} from '#/adapter/mobile-list';
+import { buildMobileCrudFromColumns } from '#/adapter/mobile-list';
+import type { OnActionClickFn } from '#/adapter/vxe-table';
 
 import type { PostRow } from '#/api/system/post';
+
+import { formatDateTime } from '@vben/utils';
+
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { POST_PERMISSIONS } from '#/constants/post-permissions';
 
@@ -44,11 +49,31 @@ export function useGridFormSchema(): VbenFormSchema[] {
   ];
 }
 
+export function buildPostMobileCrudConfig(params: {
+  columns: CrudGridColumn<PostRow>[];
+  query: MobileCrudListConfig<PostRow>['query'];
+}): MobileCrudListConfig<PostRow> {
+  return buildMobileCrudFromColumns({
+    columns: params.columns,
+    defaultPageSize: 20,
+    query: params.query,
+    rowKey: 'id',
+    search: {
+      filterSchema: useGridFormSchema(),
+      keywordFields: ['name', 'code'],
+      placeholder: '搜索名称/编码',
+    },
+    selection: {
+      enabled: true,
+    },
+  });
+}
+
 export function useColumns(
   onActionClick: OnActionClickFn<PostRow>,
   onStatusBeforeChange: (newVal: number, row: PostRow) => Promise<boolean>,
   access: PostAccessChecker,
-): VxeTableGridColumns {
+): CrudGridColumn<PostRow>[] {
   const canUpdate = access.can(POST_PERMISSIONS.UPDATE);
 
   return [
@@ -87,6 +112,8 @@ export function useColumns(
     },
     {
       field: 'updated_at',
+      formatter: ({ row }: { row: PostRow }) =>
+        row.updated_at ? formatDateTime(row.updated_at) : TABLE_CELL_EMPTY,
       minWidth: 170,
       sortable: true,
       title: '更新时间',
@@ -120,7 +147,7 @@ export function useColumns(
       title: '操作',
       width: 140,
     },
-  ];
+  ] as CrudGridColumn<PostRow>[];
 }
 
 export function buildPostFormSchema(readonly = false): VbenFormSchema[] {

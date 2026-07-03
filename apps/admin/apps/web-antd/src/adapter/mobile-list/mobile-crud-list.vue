@@ -62,6 +62,7 @@ const {
   reload,
   selectedRows,
   toggleRowSelection,
+  toggleSelectAll,
   total,
 } = useMobileCrudList(configRef);
 
@@ -126,7 +127,7 @@ async function handleSwitchChange(
   }
 }
 
-function handleCardClick(row: T) {
+function handleSelectToggle(row: T) {
   if (!selectionEnabled.value || !isRowCheckable(row)) {
     return;
   }
@@ -139,6 +140,7 @@ const searchPlaceholder = computed(
 
 const showSearchBar = computed(
   () =>
+    selectionEnabled.value ||
     !!props.config.search?.keywordFields?.length ||
     !!props.config.search?.filterSchema?.length,
 );
@@ -204,8 +206,21 @@ onMounted(() => {
       <slot name="toolbar"></slot>
     </div>
 
-    <div v-if="showSearchBar" class="mobile-crud-list__search mb-3 shrink-0">
+    <div v-if="showSearchBar" class="mobile-crud-list__search shrink-0 pb-3">
       <Space.Compact block class="mobile-crud-list__search-compact w-full">
+        <Button
+          v-if="selectionEnabled"
+          class="mobile-crud-list__search-btn mobile-crud-list__search-btn--select-all"
+          :class="{
+            'mobile-crud-list__search-btn--last':
+              !config.search?.keywordFields?.length &&
+              !config.search?.filterSchema?.length,
+          }"
+          size="small"
+          @click="toggleSelectAll"
+        >
+          全选
+        </Button>
         <Input
           v-if="config.search?.keywordFields?.length"
           v-model:value="keyword"
@@ -229,8 +244,7 @@ onMounted(() => {
           <Button
             class="mobile-crud-list__search-btn mobile-crud-list__search-btn--filter"
             :class="{
-              'mobile-crud-list__search-btn--last':
-                !config.search?.keywordFields?.length,
+              'mobile-crud-list__search-btn--last': true,
             }"
             size="small"
             @click="filterDrawerOpen = true"
@@ -239,20 +253,6 @@ onMounted(() => {
             <span>筛选</span>
           </Button>
         </Badge>
-        <Button
-          class="mobile-crud-list__search-btn mobile-crud-list__search-btn--refresh"
-          :class="{
-            'mobile-crud-list__search-btn--last': true,
-            'mobile-crud-list__search-btn--only-action':
-              !config.search?.keywordFields?.length &&
-              !config.search?.filterSchema?.length,
-          }"
-          size="small"
-          @click="reload"
-        >
-          <IconifyIcon class="size-3.5" icon="lucide:refresh-cw" />
-          <span>{{ $t('common.refresh') }}</span>
-        </Button>
       </Space.Compact>
     </div>
 
@@ -267,19 +267,30 @@ onMounted(() => {
             <div
               class="mobile-crud-list__card"
               :class="{
-                'mobile-crud-list__card--selectable':
-                  selectionEnabled && isRowCheckable(row),
                 'mobile-crud-list__card--selected':
                   selectionEnabled && isRowSelected(row),
+                'mobile-crud-list__card--with-select': selectionEnabled,
               }"
-              @click="handleCardClick(row)"
             >
-              <div
-                v-if="selectionEnabled && isRowSelected(row)"
-                class="mobile-crud-list__card-check"
+              <button
+                v-if="selectionEnabled"
+                type="button"
+                class="mobile-crud-list__card-select-btn"
+                :class="{
+                  'mobile-crud-list__card-select-btn--disabled':
+                    !isRowCheckable(row),
+                  'mobile-crud-list__card-select-btn--selected':
+                    isRowCheckable(row) && isRowSelected(row),
+                }"
+                :disabled="!isRowCheckable(row)"
+                @click.stop="handleSelectToggle(row)"
               >
-                <IconifyIcon class="mobile-crud-list__card-check-icon" icon="lucide:check" />
-              </div>
+                <IconifyIcon
+                  v-if="isRowCheckable(row) && isRowSelected(row)"
+                  class="mobile-crud-list__card-select-btn-icon"
+                  icon="lucide:check"
+                />
+              </button>
               <div
                 v-if="config.item.fields.some((field) => (field.show ? field.show(row) : true))"
                 class="mobile-crud-list__card-body"
@@ -378,12 +389,12 @@ onMounted(() => {
     </div>
 
     <div v-if="total > 0" class="mobile-crud-list__pager">
+      <span class="mobile-crud-list__pager-total">共 {{ total }} 条</span>
       <Pagination
         :current="currentPage"
         :page-size="pageSize"
-        :page-size-options="['10', '20', '30', '50']"
-        :show-size-changer="true"
-        :show-total="(value) => `共 ${value} 条`"
+        :show-size-changer="false"
+        :show-total="false"
         :total="total"
         size="small"
         @change="handlePageChange"

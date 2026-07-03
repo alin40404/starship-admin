@@ -86,6 +86,37 @@ export function useMobileCrudList<T extends Record<string, any>>(
     selectedRows.value = [];
   }
 
+  function getCheckableRows() {
+    return list.value.filter((row) => isRowCheckable(row));
+  }
+
+  function isAllCheckableSelected() {
+    const checkableRows = getCheckableRows();
+    if (checkableRows.length === 0) {
+      return false;
+    }
+    return checkableRows.every((row) => isRowSelected(row));
+  }
+
+  function toggleSelectAll() {
+    const checkableRows = getCheckableRows();
+    if (checkableRows.length === 0) {
+      return;
+    }
+    const nextSet = new Set(selectedKeySet.value);
+    if (isAllCheckableSelected()) {
+      for (const row of checkableRows) {
+        nextSet.delete(resolveRowKey(row, configRef.value.rowKey));
+      }
+    } else {
+      for (const row of checkableRows) {
+        nextSet.add(resolveRowKey(row, configRef.value.rowKey));
+      }
+    }
+    selectedKeySet.value = nextSet;
+    syncSelectedRows();
+  }
+
   function isOperationEnabled(row: T, operation: MobileListOperation<T>) {
     return resolveOperationShow(operation, row);
   }
@@ -167,6 +198,7 @@ export function useMobileCrudList<T extends Record<string, any>>(
     handleKeywordSearch,
     handleOperationClick,
     handlePageChange,
+    isAllCheckableSelected,
     isOperationEnabled,
     isRowCheckable,
     isRowSelected,
@@ -178,6 +210,7 @@ export function useMobileCrudList<T extends Record<string, any>>(
     reload,
     selectedRows,
     toggleRowSelection,
+    toggleSelectAll,
     total,
   };
 }

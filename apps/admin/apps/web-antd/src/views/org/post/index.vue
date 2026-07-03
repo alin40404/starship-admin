@@ -2,15 +2,13 @@
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { PostRow } from '#/api/system/post';
 
-import { ref } from 'vue';
-
 import { useAccess } from '@vben/access';
 import { Page, useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
 import { Button, message, Modal } from 'ant-design-vue';
 
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { useResponsiveCrud } from '#/adapter/mobile-list';
 import {
   batchDeletePosts,
   batchUpdatePostStatus,
@@ -20,7 +18,11 @@ import {
 } from '#/api/system/post';
 import { POST_PERMISSIONS } from '#/constants/post-permissions';
 
-import { useColumns, useGridFormSchema } from './data';
+import {
+  buildPostMobileCrudConfig,
+  useColumns,
+  useGridFormSchema,
+} from './data';
 import PostForm from './modules/form.vue';
 
 const { hasAccessByCodes } = useAccess();
@@ -35,18 +37,6 @@ const [PostFormModal, postFormModalApi] = useVbenModal({
   destroyOnClose: true,
 });
 
-const selectedRows = ref<PostRow[]>([]);
-
-function syncSelection() {
-  const records = gridApi?.grid?.getCheckboxRecords?.() ?? [];
-  selectedRows.value = records as PostRow[];
-}
-
-function clearSelection() {
-  gridApi?.grid?.clearCheckboxRow?.();
-  selectedRows.value = [];
-}
-
 function onCreate() {
   postFormModalApi.setData({}).open();
 }
@@ -55,13 +45,12 @@ function onEdit(row: PostRow) {
   postFormModalApi.setData(row).open();
 }
 
-function onRefresh() {
-  gridApi.query();
-}
-
 function onActionClick({ code, row }: OnActionClickParams<PostRow>) {
-  if (code === 'edit') onEdit(row);
-  else if (code === 'delete') onDelete(row);
+  if (code === 'edit') {
+    onEdit(row);
+  } else if (code === 'delete') {
+    onDelete(row);
+  }
 }
 
 async function onPostStatusToggle(nextStatus: number, row: PostRow) {
@@ -88,63 +77,18 @@ async function onPostStatusToggle(nextStatus: number, row: PostRow) {
   });
 }
 
-async function onDelete(row: PostRow) {
-  await deletePost(row.id);
-  message.success('已删除');
-  clearSelection();
-  gridApi.query();
-}
+const columns = useColumns(onActionClick, onPostStatusToggle, postAccess);
 
-function onBatchDelete() {
-  const ids = selectedRows.value.map((row) => row.id);
-  if (ids.length === 0) return;
-  Modal.confirm({
-    content: `确定删除选中的 ${ids.length} 条岗位吗？`,
-    okText: '删除',
-    okType: 'danger',
-    cancelText: '取消',
-    title: '批量删除',
-    async onOk() {
-      await batchDeletePosts(ids);
-      message.success('已批量删除');
-      clearSelection();
-      onRefresh();
-    },
-  });
-}
-
-function onBatchUpdateStatus(status: 0 | 1) {
-  const ids = selectedRows.value.map((row) => row.id);
-  if (ids.length === 0) return;
-  const label = status === 1 ? '启用' : '禁用';
-  Modal.confirm({
-    content: `确定将选中的 ${ids.length} 条岗位批量【${label}】吗？`,
-    okText: '确定',
-    cancelText: '取消',
-    title: `批量${label}`,
-    async onOk() {
-      await batchUpdatePostStatus(ids, status);
-      message.success(`已批量${label}`);
-      clearSelection();
-      onRefresh();
-    },
-  });
-}
-
-const [Grid, gridApi] = useVbenVxeGrid<PostRow>({
+const [CrudView, crudApi] = useResponsiveCrud<PostRow>({
   formOptions: {
     commonConfig: { componentProps: { class: 'w-full' } },
     schema: useGridFormSchema(),
     submitOnChange: true,
     submitButtonOptions: { content: '查询' },
   },
-  gridEvents: {
-    checkboxAll: syncSelection,
-    checkboxChange: syncSelection,
-  },
   gridOptions: {
     checkboxConfig: { highlight: true },
-    columns: useColumns(onActionClick, onPostStatusToggle, postAccess),
+    columns: columns as VxeTableGridOptions<PostRow>['columns'],
     height: 'auto',
     keepSource: true,
     proxyConfig: {
@@ -172,15 +116,92 @@ const [Grid, gridApi] = useVbenVxeGrid<PostRow>({
     sortConfig: { remote: true },
     toolbarConfig: { custom: true, refresh: true, search: true, zoom: true },
   } as VxeTableGridOptions<PostRow>,
+  mobile: buildPostMobileCrudConfig({
+    columns,
+    query: async ({ filters, keyword, page, pageSize, sortField, sortOrder }) => {
+      const result = await fetchPostPage({
+        page,
+        per_page: pageSize,
+        sort_field: sortField,
+        sort_order: sortOrder,
+        code: keyword || filters?.code || undefined,
+        name: keyword || filters?.name || undefined,
+        status:
+          filters?.status === undefined || filters?.status === null
+            ? undefined
+            : filters.status,
+      });
+      return {
+        data: result.data,
+        total: result.total,
+      };
+    },
+  }),
 });
+
+const { clearSelection, reload, selectedRows } = crudApi;
+
+function onRefresh() {
+  reload();
+}
+
+async function onDelete(row: PostRow) {
+  await deletePost(row.id);
+  message.success('已删除');
+  clearSelection();
+  onRefresh();
+}
+
+function onBatchDelete() {
+  const ids = selectedRows.value.map((row) => row.id);
+  if (ids.length === 0) {
+    return;
+  }
+  Modal.confirm({
+    content: `确定删除选中的 ${ids.length} 条岗位吗？`,
+    okText: '删除',
+    okType: 'danger',
+    cancelText: '取消',
+    title: '批量删除',
+    async onOk() {
+      await batchDeletePosts(ids);
+      message.success('已批量删除');
+      clearSelection();
+      onRefresh();
+    },
+  });
+}
+
+function onBatchUpdateStatus(status: 0 | 1) {
+  const ids = selectedRows.value.map((row) => row.id);
+  if (ids.length === 0) {
+    return;
+  }
+  const label = status === 1 ? '启用' : '禁用';
+  Modal.confirm({
+    content: `确定将选中的 ${ids.length} 条岗位批量【${label}】吗？`,
+    okText: '确定',
+    cancelText: '取消',
+    title: `批量${label}`,
+    async onOk() {
+      await batchUpdatePostStatus(ids, status);
+      message.success(`已批量${label}`);
+      clearSelection();
+      onRefresh();
+    },
+  });
+}
 </script>
 
 <template>
   <Page auto-content-height>
     <PostFormModal @success="onRefresh" />
-    <Grid>
+    <CrudView>
       <template #toolbar-actions>
-        <div v-if="selectedRows.length > 0" class="vxe-grid-batch-toolbar">
+        <div
+          v-if="selectedRows.length > 0"
+          class="vxe-grid-batch-toolbar"
+        >
           <Button
             v-if="postAccess.can(POST_PERMISSIONS.BATCH_DELETE)"
             danger
@@ -215,18 +236,20 @@ const [Grid, gridApi] = useVbenVxeGrid<PostRow>({
           新增岗位
         </Button>
       </template>
-    </Grid>
+    </CrudView>
   </Page>
 </template>
 
 <style lang="scss">
-.vxe-grid .org-batch-btn-enable.ant-btn {
+.vxe-grid .org-batch-btn-enable.ant-btn,
+.mobile-crud-list .org-batch-btn-enable.ant-btn {
   color: #fff;
   background-color: #52c41a;
   border-color: #52c41a;
 }
 
-.vxe-grid .org-batch-btn-disable.ant-btn {
+.vxe-grid .org-batch-btn-disable.ant-btn,
+.mobile-crud-list .org-batch-btn-disable.ant-btn {
   color: #fff;
   background-color: #fa8c16;
   border-color: #fa8c16;
