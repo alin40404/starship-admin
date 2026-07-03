@@ -151,27 +151,32 @@ const [FilterForm, filterFormApi] = useVbenForm(
       componentProps: {
         class: 'w-full',
       },
+      labelClass: 'justify-start',
     },
     fieldMappingTime: props.config.search?.fieldMappingTime,
-    handleReset: async () => {
-      await filterFormApi.resetForm();
-      const values = await filterFormApi.getValues();
-      handleFilterSubmit(values ?? {});
-    },
-    handleSubmit: async () => {
-      const values = await filterFormApi.getValues();
-      handleFilterSubmit(values ?? {});
-      filterDrawerOpen.value = false;
-    },
+    layout: 'vertical',
     schema: computed(() => props.config.search?.filterSchema ?? []),
     showCollapseButton: false,
-    showDefaultActions: true,
-    submitButtonOptions: {
-      content: computed(() => $t('common.search')),
-    },
+    showDefaultActions: false,
     wrapperClass: 'grid-cols-1',
   }),
 );
+
+async function handleFilterReset() {
+  await filterFormApi.resetForm();
+  const values = await filterFormApi.getValues();
+  handleFilterSubmit(values ?? {});
+}
+
+async function handleFilterSearch() {
+  const { valid } = await filterFormApi.validate();
+  if (!valid) {
+    return;
+  }
+  const values = await filterFormApi.getValues();
+  handleFilterSubmit(values ?? {});
+  filterDrawerOpen.value = false;
+}
 
 watch(
   selectedRows,
@@ -403,11 +408,22 @@ onMounted(() => {
     <Drawer
       v-if="config.search?.filterSchema?.length"
       v-model:open="filterDrawerOpen"
-      :height="420"
+      class="mobile-crud-list__filter-drawer"
+      :height="480"
       placement="bottom"
       title="筛选"
     >
       <FilterForm />
+      <template #footer>
+        <div class="mobile-crud-list__filter-footer">
+          <Button @click="handleFilterReset">
+            {{ $t('common.reset') }}
+          </Button>
+          <Button type="primary" @click="handleFilterSearch">
+            {{ $t('common.search') }}
+          </Button>
+        </div>
+      </template>
     </Drawer>
   </div>
 </template>
