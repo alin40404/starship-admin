@@ -74,9 +74,15 @@ const tabsValue = defineModel<string>('modelValue');
           </TabsList>
         </Tabs>
       </Card>
-      <Card class="w-full min-w-0 flex-auto p-4 sm:p-6 lg:p-8">
+      <Card class="profile-page-form w-full min-w-0 flex-auto p-4 sm:p-6 lg:p-8">
         <slot name="content"></slot>
       </Card>
     </div>
   </Page>
 </template>
+
+<style scoped>
+.profile-page-form :deep(.relative.flex.shrink-0.pb-4) {
+  padding-bottom: 1.25rem;
+}
+</style>

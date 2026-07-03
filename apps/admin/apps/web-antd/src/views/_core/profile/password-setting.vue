@@ -4,6 +4,7 @@ import type { VbenFormSchema } from '#/adapter/form';
 import { computed } from 'vue';
 
 import { ProfilePasswordSetting, z } from '@vben/common-ui';
+import { $t } from '@vben/locales';
 
 import { message } from 'ant-design-vue';
 
@@ -12,13 +13,17 @@ import { useAuthStore } from '#/store';
 
 const authStore = useAuthStore();
 
+/** 与基本设置 Ant Design Input 默认高度（32px）对齐 */
+const passwordInputClass = 'h-8 py-1';
+
 const formSchema = computed((): VbenFormSchema[] => {
   return [
     {
       fieldName: 'oldPassword',
       label: '旧密码',
-      component: 'InputPassword',
+      component: 'VbenInputPassword',
       componentProps: {
+        class: passwordInputClass,
         placeholder: '请输入旧密码',
       },
       rules: 'required',
@@ -26,19 +31,25 @@ const formSchema = computed((): VbenFormSchema[] => {
     {
       fieldName: 'newPassword',
       label: '新密码',
-      component: 'InputPassword',
+      component: 'VbenInputPassword',
       componentProps: {
+        class: passwordInputClass,
         passwordStrength: true,
         placeholder: '请输入新密码',
+      },
+      renderComponentContent() {
+        return {
+          strengthText: () => $t('authentication.passwordStrength'),
+        };
       },
       rules: 'required',
     },
     {
       fieldName: 'confirmPassword',
       label: '确认密码',
-      component: 'InputPassword',
+      component: 'VbenInputPassword',
       componentProps: {
-        passwordStrength: true,
+        class: passwordInputClass,
         placeholder: '请再次输入新密码',
       },
       dependencies: {
