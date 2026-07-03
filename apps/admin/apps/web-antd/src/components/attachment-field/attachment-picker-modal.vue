@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { VxeTableGridOptions } from '#/adapter/vxe-table';
+import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { AttachmentRow } from '#/api/system/attachment';
 
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
@@ -128,6 +128,16 @@ function buildSelectionColumn() {
       };
 }
 
+function buildPickerColumns() {
+  return [
+    buildSelectionColumn(),
+    ...usePickerColumns({
+      onActionClick,
+      showCategoryColumn: true,
+    }),
+  ];
+}
+
 function syncGridColumns() {
   gridApi.setGridOptions({
     checkboxConfig: props.multiple
@@ -137,10 +147,7 @@ function syncGridColumns() {
           highlight: true,
         }
       : undefined,
-    columns: [
-      buildSelectionColumn(),
-      ...usePickerColumns({ showCategoryColumn: true }),
-    ],
+    columns: buildPickerColumns(),
     radioConfig: props.multiple
       ? undefined
       : {
@@ -225,6 +232,26 @@ function onOpenAttachment(row: AttachmentRow) {
   window.open(row.file_url, '_blank', 'noopener,noreferrer');
 }
 
+async function onCopyLink(row: AttachmentRow) {
+  if (!row.file_url) {
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(row.file_url);
+    message.success('链接已复制');
+  } catch {
+    message.error('复制失败，请手动复制');
+  }
+}
+
+function onActionClick({ code, row }: OnActionClickParams<AttachmentRow>) {
+  if (code === 'open') {
+    onOpenAttachment(row);
+  } else if (code === 'copy') {
+    void onCopyLink(row);
+  }
+}
+
 const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
   class: 'h-full min-h-0',
   gridClass: 'p-0',
@@ -234,19 +261,20 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
     radioChange: syncSelection,
   },
   gridOptions: {
-    columns: [
-      buildSelectionColumn(),
-      ...usePickerColumns({ showCategoryColumn: true }),
-    ],
+    columns: buildPickerColumns(),
     height: 360,
     proxyConfig: {
       ajax: {
-        query: async ({ page }) => {
+        query: async ({ page, sort }) => {
+          const order = sort?.order;
           const result = await fetchAttachmentPickerPage({
             page: page.currentPage,
             per_page: page.pageSize,
             file_name: fileNameQuery.value.trim() || undefined,
             mime_type: resolveMimeFilter(props.accept),
+            sort_field: sort?.field,
+            sort_order:
+              order === 'asc' || order === 'desc' ? order : undefined,
           });
           const data =
             props.accept === 'image'
@@ -258,8 +286,10 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
           return props.accept === 'image' ? { ...result, data } : result;
         },
       },
+      sort: true,
     },
     rowConfig: { keyField: 'id' },
+    sortConfig: { remote: true },
     toolbarConfig: { refresh: true },
   } as VxeTableGridOptions<AttachmentRow>,
 });
@@ -336,12 +366,11 @@ watch(
           <Grid>
             <template #toolbar-actions>
               <div class="attachment-picker-search">
-                <span class="attachment-picker-search__label">文件名</span>
                 <Input
                   v-model:value="fileNameQuery"
                   allow-clear
                   class="attachment-picker-search__input"
-                  placeholder="文件名"
+                  placeholder="搜索文件名"
                 />
               </div>
             </template>
@@ -477,14 +506,7 @@ watch(
 .attachment-picker-search {
   display: flex;
   align-items: center;
-  gap: 8px;
   min-width: 0;
-}
-
-.attachment-picker-search__label {
-  flex-shrink: 0;
-  font-size: 14px;
-  color: hsl(var(--foreground));
 }
 
 .attachment-picker-search__input {

@@ -44,16 +44,6 @@ const typeTagOptions = computed(() =>
   })),
 );
 
-const activeTypeLabel = computed(() => {
-  if (activeType.value === ALL_TYPE_KEY) {
-    return '全部';
-  }
-  return (
-    typeOptions.value.find((item) => item.value === activeType.value)?.label ??
-    activeType.value
-  );
-});
-
 const [CategoryFormModal, categoryFormModalApi] = useVbenModal({
   connectedComponent: CategoryForm,
   destroyOnClose: true,
@@ -353,12 +343,6 @@ const [Grid, gridApi] = useVbenVxeGrid<CategoryTreeNode>({
           <Grid>
             <template #toolbar-actions>
               <div class="flex flex-wrap items-center gap-3">
-                <span class="text-muted-foreground hidden text-sm sm:inline">
-                  当前类型：
-                  <span class="text-foreground font-medium">{{
-                    activeTypeLabel
-                  }}</span>
-                </span>
                 <template v-if="selectedRows.length > 0">
                   <Button
                     v-if="categoryAccess.can(CATEGORY_PERMISSIONS.BATCH_DELETE)"

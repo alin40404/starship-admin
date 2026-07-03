@@ -244,8 +244,10 @@ function onRemoveUrl(url: string) {
 
 <style scoped>
 .attachment-field__compact :deep(.ant-input) {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
+  border-start-start-radius: var(--radius);
+  border-end-start-radius: var(--radius);
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
 }
 
 .attachment-field__btn {
@@ -278,8 +280,8 @@ function onRemoveUrl(url: string) {
 }
 
 .attachment-field__btn--select-last {
-  border-top-right-radius: 6px;
-  border-bottom-right-radius: 6px;
+  border-start-end-radius: var(--radius);
+  border-end-end-radius: var(--radius);
 }
 
 .attachment-field__btn--select:hover:not(:disabled) {
@@ -298,7 +300,7 @@ function onRemoveUrl(url: string) {
   width: 64px;
   height: 64px;
   border: 1px solid hsl(var(--border));
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   background: hsl(var(--background));
 }
 

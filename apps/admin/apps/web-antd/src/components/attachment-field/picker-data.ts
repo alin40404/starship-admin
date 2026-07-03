@@ -1,5 +1,5 @@
+import type { OnActionClickFn, VxeTableGridColumns } from '#/adapter/vxe-table';
 import type { VbenFormSchema } from '#/adapter/form';
-import type { VxeTableGridColumns } from '#/adapter/vxe-table';
 
 import type { AttachmentRow } from '#/api/system/attachment';
 
@@ -26,12 +26,17 @@ export function usePickerGridFormSchema(): VbenFormSchema[] {
 
 export function usePickerColumns(options: {
   categoryTagOptions?: ReturnType<typeof buildCategoryTagOptions>;
+  onActionClick: OnActionClickFn<AttachmentRow>;
   showCategoryColumn?: boolean;
 }): VxeTableGridColumns<AttachmentRow> {
-  const { categoryTagOptions = [], showCategoryColumn = true } = options;
+  const {
+    categoryTagOptions = [],
+    onActionClick,
+    showCategoryColumn = true,
+  } = options;
 
   const columns: VxeTableGridColumns<AttachmentRow> = [
-    { field: 'id', title: 'ID', width: 72 },
+    { field: 'id', sortable: true, title: 'ID', width: 72 },
     {
       align: 'center',
       field: 'file_url',
@@ -57,6 +62,7 @@ export function usePickerColumns(options: {
       align: 'left',
       field: 'file_name',
       minWidth: 200,
+      sortable: true,
       title: '文件名',
     },
   ];
@@ -94,14 +100,45 @@ export function usePickerColumns(options: {
       align: 'right',
       field: 'file_size',
       formatter: ({ cellValue }) => formatFileSize(cellValue as number),
+      sortable: true,
       title: '大小',
       width: 96,
     },
     {
-      align: 'left',
-      field: 'file_url',
-      minWidth: 180,
+      field: 'created_at',
+      formatter: 'formatDateTime',
+      minWidth: 170,
+      sortable: true,
+      title: '上传时间',
+    },
+    {
+      align: 'center',
+      cellRender: {
+        attrs: {
+          nameField: 'file_name',
+          nameTitle: '附件',
+          onClick: onActionClick,
+        },
+        name: 'CellOperation',
+        options: [
+          {
+            code: 'open',
+            show: (row: AttachmentRow) => !!row.file_url,
+            text: '打开',
+            type: 'link',
+          },
+          {
+            code: 'copy',
+            show: (row: AttachmentRow) => !!row.file_url,
+            text: '复制链接',
+            type: 'link',
+          },
+        ],
+      },
+      field: 'actions',
+      fixed: 'right',
       title: '链接',
+      width: 150,
     },
   );
 
