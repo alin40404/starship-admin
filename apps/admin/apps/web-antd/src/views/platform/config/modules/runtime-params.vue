@@ -208,7 +208,7 @@ watch(
     <div ref="gridWrapRef" class="min-h-0 flex-1">
       <Grid>
         <template #toolbar-actions>
-          <template v-if="selectedRows.length > 0">
+          <div v-if="selectedRows.length > 0" class="vxe-grid-batch-toolbar">
             <Button
               v-if="paramAccess.can(CONFIG_PERMISSIONS.BATCH_DELETE)"
               danger
@@ -219,7 +219,7 @@ watch(
             <Button class="ml-2" type="link" @click="clearSelection">
               取消选择
             </Button>
-          </template>
+          </div>
           <Button
             v-else-if="props.canManage"
             type="primary"

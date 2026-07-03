@@ -293,7 +293,7 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
           <Grid>
             <template #toolbar-actions>
               <div class="flex flex-wrap items-center gap-3">
-                <template v-if="selectedRows.length > 0">
+                <div v-if="selectedRows.length > 0" class="vxe-grid-batch-toolbar">
                   <Button
                     v-if="
                       attachmentAccess.can(ATTACHMENT_PERMISSIONS.BATCH_DELETE)
@@ -306,7 +306,7 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
                   <Button class="ml-2" type="link" @click="clearSelection">
                     取消选择
                   </Button>
-                </template>
+                </div>
                 <Button
                   v-else-if="
                     attachmentAccess.can(ATTACHMENT_PERMISSIONS.UPLOAD)

@@ -117,3 +117,52 @@
 .vxe-grid--layout-body-content-wrapper {
   overflow: hidden;
 }
+
+.vxe-grid-batch-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+}
+
+.vxe-toolbar:has(.vxe-grid-batch-toolbar) .vxe-tools--operate,
+.vxe-toolbar:has(.vxe-grid-batch-toolbar) .vxe-tools--wrapper {
+  display: none !important;
+}
+
+.vxe-toolbar:has(.vxe-grid-batch-toolbar) {
+  max-width: 100%;
+}
+
+.vxe-toolbar:has(.vxe-grid-batch-toolbar) .vxe-buttons--wrapper {
+  flex: 1 1 0%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 767px) {
+  .vxe-toolbar:has(.vxe-grid-batch-toolbar) .vxe-buttons--wrapper {
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .vxe-toolbar:has(.vxe-grid-batch-toolbar) .vxe-buttons--wrapper::-webkit-scrollbar {
+    display: none;
+  }
+
+  .vxe-grid-batch-toolbar {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    width: max-content;
+    max-width: none;
+    overflow: visible;
+  }
+
+  .vxe-grid-batch-toolbar > * {
+    flex-shrink: 0;
+  }
+}

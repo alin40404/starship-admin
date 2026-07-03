@@ -180,7 +180,7 @@ const [Grid, gridApi] = useVbenVxeGrid<PostRow>({
     <PostFormModal @success="onRefresh" />
     <Grid>
       <template #toolbar-actions>
-        <template v-if="selectedRows.length > 0">
+        <div v-if="selectedRows.length > 0" class="vxe-grid-batch-toolbar">
           <Button
             v-if="postAccess.can(POST_PERMISSIONS.BATCH_DELETE)"
             danger
@@ -205,7 +205,7 @@ const [Grid, gridApi] = useVbenVxeGrid<PostRow>({
           <Button class="ml-2" type="link" @click="clearSelection">
             取消选择
           </Button>
-        </template>
+        </div>
         <Button
           v-else-if="postAccess.can(POST_PERMISSIONS.CREATE)"
           type="primary"

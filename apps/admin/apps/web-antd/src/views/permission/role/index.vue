@@ -215,7 +215,7 @@ const [Grid, gridApi] = useVbenVxeGrid<RoleRow>({
     <RoleFormDrawer class="max-w-[720px] w-[92vw]" @success="onRefresh" />
     <Grid>
       <template #toolbar-actions>
-        <template v-if="selectedRows.length > 0">
+        <div v-if="selectedRows.length > 0" class="vxe-grid-batch-toolbar">
           <Button
             v-if="roleAccess.can(ROLE_PERMISSIONS.BATCH_DELETE)"
             danger
@@ -240,7 +240,7 @@ const [Grid, gridApi] = useVbenVxeGrid<RoleRow>({
           <Button class="ml-2" type="link" @click="clearSelection">
             取消选择
           </Button>
-        </template>
+        </div>
         <Button
           v-else-if="roleAccess.can(ROLE_PERMISSIONS.CREATE)"
           type="primary"

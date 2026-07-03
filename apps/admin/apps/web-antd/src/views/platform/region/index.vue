@@ -196,7 +196,7 @@ const [Grid, gridApi] = useVbenVxeGrid<AreaTreeNode>({
     <AreaFormModal @success="onRefresh" />
     <Grid>
       <template #toolbar-actions>
-        <template v-if="selectedRows.length > 0">
+        <div v-if="selectedRows.length > 0" class="vxe-grid-batch-toolbar">
           <Button
             v-if="areaAccess.can(REGION_PERMISSIONS.BATCH_DELETE)"
             danger
@@ -207,7 +207,7 @@ const [Grid, gridApi] = useVbenVxeGrid<AreaTreeNode>({
           <Button class="ml-2" type="link" @click="clearSelection">
             取消选择
           </Button>
-        </template>
+        </div>
         <Button
           v-else-if="areaAccess.can(REGION_PERMISSIONS.CREATE)"
           type="primary"

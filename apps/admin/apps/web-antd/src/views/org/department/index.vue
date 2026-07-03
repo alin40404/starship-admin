@@ -227,7 +227,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
     <DepartmentFormModal @success="onRefresh" />
     <Grid>
       <template #toolbar-actions>
-        <template v-if="selectedRows.length > 0">
+        <div v-if="selectedRows.length > 0" class="vxe-grid-batch-toolbar">
           <Button
             v-if="deptAccess.can(DEPARTMENT_PERMISSIONS.BATCH_DELETE)"
             danger
@@ -252,7 +252,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
           <Button class="ml-2" type="link" @click="clearSelection">
             取消选择
           </Button>
-        </template>
+        </div>
         <Button
           v-else-if="deptAccess.can(DEPARTMENT_PERMISSIONS.CREATE)"
           type="primary"

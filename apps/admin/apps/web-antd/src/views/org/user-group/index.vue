@@ -134,7 +134,7 @@ const [Grid, gridApi] = useVbenVxeGrid<UserGroupRow>({
     <UserGroupFormModal @success="onRefresh" />
     <Grid>
       <template #toolbar-actions>
-        <template v-if="selectedRows.length > 0">
+        <div v-if="selectedRows.length > 0" class="vxe-grid-batch-toolbar">
           <Button
             v-if="groupAccess.can(USER_GROUP_PERMISSIONS.BATCH_DELETE)"
             danger
@@ -145,7 +145,7 @@ const [Grid, gridApi] = useVbenVxeGrid<UserGroupRow>({
           <Button class="ml-2" type="link" @click="clearSelection">
             取消选择
           </Button>
-        </template>
+        </div>
         <Button
           v-else-if="groupAccess.can(USER_GROUP_PERMISSIONS.CREATE)"
           type="primary"
