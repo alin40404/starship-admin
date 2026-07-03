@@ -128,6 +128,7 @@ onMounted(async () => {
 <template>
   <ProfileBaseSetting
     ref="profileBaseSettingRef"
+    class="w-full max-w-xl"
     :form-schema="formSchema"
     @submit="handleSubmit"
   />
