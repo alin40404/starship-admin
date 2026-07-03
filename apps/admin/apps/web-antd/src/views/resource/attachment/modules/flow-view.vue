@@ -71,7 +71,8 @@ function onPreviewVisibleChange(visible: boolean) {
 </script>
 
 <template>
-  <div v-if="rows.length > 0" class="attachment-flow-grid">
+  <div class="attachment-flow-view h-full min-h-0">
+    <div v-if="rows.length > 0" class="attachment-flow-grid">
     <article
       v-for="row in rows"
       :key="row.id"
@@ -155,35 +156,47 @@ function onPreviewVisibleChange(visible: boolean) {
         </Tooltip>
       </div>
     </article>
-  </div>
-  <div v-else class="attachment-flow-empty">
-    <IconifyIcon class="mx-auto size-16 text-muted-foreground/40" icon="lucide:inbox" />
-    <div class="mt-2 text-sm text-muted-foreground">暂无附件</div>
-  </div>
+    </div>
+    <div v-else class="attachment-flow-empty">
+      <IconifyIcon class="mx-auto size-16 text-muted-foreground/40" icon="lucide:inbox" />
+      <div class="mt-2 text-sm text-muted-foreground">暂无附件</div>
+    </div>
 
-  <Image
-    v-if="previewUrl"
-    :preview="{
-      visible: previewVisible,
-      onVisibleChange: onPreviewVisibleChange,
-    }"
-    :src="previewUrl"
-    :style="{
-      position: 'fixed',
-      width: 0,
-      height: 0,
-      opacity: 0,
-      pointerEvents: 'none',
-    }"
-  />
+    <Image
+      v-if="previewUrl"
+      :preview="{
+        visible: previewVisible,
+        onVisibleChange: onPreviewVisibleChange,
+      }"
+      :src="previewUrl"
+      :style="{
+        position: 'fixed',
+        width: 0,
+        height: 0,
+        opacity: 0,
+        pointerEvents: 'none',
+      }"
+    />
+  </div>
 </template>
 
 <style scoped>
+.attachment-flow-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid hsl(var(--border));
+  border-radius: 6px;
+  background-color: hsl(var(--card));
+}
+
 .attachment-flow-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
   gap: 10px;
-  padding: 10px 10px 0;
+  padding: 10px;
 }
 
 .attachment-flow-item {
@@ -343,6 +356,7 @@ function onPreviewVisibleChange(visible: boolean) {
 
 .attachment-flow-empty {
   display: flex;
+  flex: 1;
   flex-direction: column;
   align-items: center;
   justify-content: center;

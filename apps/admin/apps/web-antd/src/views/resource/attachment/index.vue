@@ -2,7 +2,7 @@
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { AttachmentRow } from '#/api/system/attachment';
 
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { Page, useVbenModal } from '@vben/common-ui';
@@ -51,10 +51,31 @@ const selectedFlowIds = computed({
 });
 
 const isFlowMode = computed(() => viewMode.value === 'flow');
+const layoutRef = ref<HTMLElement>();
+const flowTeleportTarget = ref<HTMLElement | null>(null);
+
+async function syncFlowTeleportTarget() {
+  await nextTick();
+  await nextTick();
+  if (!isFlowMode.value || !layoutRef.value) {
+    flowTeleportTarget.value = null;
+    return;
+  }
+  flowTeleportTarget.value = layoutRef.value.querySelector(
+    '.vxe-grid--layout-body-content-wrapper',
+  ) as HTMLElement | null;
+}
 
 watch(viewMode, (mode) => {
   localStorage.setItem(ATTACHMENT_VIEW_MODE_KEY, mode);
   clearSelection();
+  syncFlowTeleportTarget();
+});
+
+watch(flowRows, () => {
+  if (isFlowMode.value) {
+    syncFlowTeleportTarget();
+  }
 });
 
 const [UploadFormModal, uploadFormModalApi] = useVbenModal({
@@ -68,16 +89,6 @@ function resolveCategoryFilter() {
   }
   return activeCategory.value;
 }
-
-const activeCategoryLabel = computed(() => {
-  if (activeCategory.value === ALL_CATEGORY_KEY) {
-    return '全部';
-  }
-  return (
-    categoryOptions.value.find((item) => item.value === activeCategory.value)
-      ?.label ?? activeCategory.value
-  );
-});
 
 function syncGridColumns() {
   gridApi.setGridOptions({
@@ -195,6 +206,7 @@ async function loadCategoryOptions() {
 
 onMounted(() => {
   loadCategoryOptions();
+  syncFlowTeleportTarget();
 });
 
 const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
@@ -274,18 +286,13 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
 
       <main class="flex min-h-0 flex-1 flex-col overflow-hidden">
         <div
+          ref="layoutRef"
           class="attachment-layout min-h-0 flex-1"
           :class="{ 'attachment-layout--flow': isFlowMode }"
         >
           <Grid>
             <template #toolbar-actions>
               <div class="flex flex-wrap items-center gap-3">
-                <span class="text-muted-foreground hidden text-sm sm:inline">
-                  当前分类：
-                  <span class="text-foreground font-medium">{{
-                    activeCategoryLabel
-                  }}</span>
-                </span>
                 <template v-if="selectedRows.length > 0">
                   <Button
                     v-if="
@@ -338,16 +345,17 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
             </template>
           </Grid>
 
-          <AttachmentFlowView
-            v-if="isFlowMode"
-            v-model:selected-ids="selectedFlowIds"
-            class="attachment-flow-panel"
-            :can-delete="attachmentAccess.can(ATTACHMENT_PERMISSIONS.DELETE)"
-            :rows="flowRows"
-            @copy="onCopyLink"
-            @delete="onDelete"
-            @open="onOpen"
-          />
+          <Teleport v-if="isFlowMode && flowTeleportTarget" :to="flowTeleportTarget">
+            <AttachmentFlowView
+              v-model:selected-ids="selectedFlowIds"
+              class="attachment-flow-panel"
+              :can-delete="attachmentAccess.can(ATTACHMENT_PERMISSIONS.DELETE)"
+              :rows="flowRows"
+              @copy="onCopyLink"
+              @delete="onDelete"
+              @open="onOpen"
+            />
+          </Teleport>
         </div>
       </main>
     </div>
@@ -368,14 +376,45 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
   min-height: 0;
 }
 
-.attachment-layout--flow :deep(.vxe-table) {
-  display: none;
+.attachment-layout--flow :deep(.vxe-grid) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.attachment-layout--flow :deep(.vxe-grid--layout-body-wrapper) {
+  flex: 1;
+  min-height: 0;
+}
+
+.attachment-layout--flow :deep(.vxe-grid--layout-body-content-wrapper) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.attachment-layout--flow :deep(.vxe-grid--toolbar-wrapper) {
+  flex-shrink: 0;
+  order: 1;
+}
+
+.attachment-layout--flow :deep(.vxe-grid--table-container) {
+  display: none !important;
+}
+
+.attachment-layout--flow :deep(.vxe-grid--pager-wrapper) {
+  flex-shrink: 0;
+  order: 3;
 }
 
 .attachment-flow-panel {
-  flex: 1;
+  flex: 1 1 0;
   min-height: 0;
-  overflow: auto;
+  order: 2;
+  padding: 0 2px 8px;
 }
 
 .attachment-view-toggle {
