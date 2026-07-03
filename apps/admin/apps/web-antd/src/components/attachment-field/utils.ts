@@ -3,6 +3,32 @@ import { isImageAttachment } from '#/views/resource/attachment/data';
 
 import type { AttachmentAcceptMode } from './types';
 
+const IMAGE_EXTENSIONS = new Set([
+  'bmp',
+  'gif',
+  'jpeg',
+  'jpg',
+  'png',
+  'svg',
+  'webp',
+]);
+
+/** 根据 URL 后缀判断是否为图片资源 */
+export function isImageUrl(url: string): boolean {
+  const trimmed = url?.trim();
+  if (!trimmed) {
+    return false;
+  }
+  try {
+    const pathname = new URL(trimmed, 'http://localhost').pathname;
+    const ext = pathname.split('.').pop()?.toLowerCase();
+    return ext ? IMAGE_EXTENSIONS.has(ext) : false;
+  } catch {
+    const ext = trimmed.split('?')[0]?.split('.').pop()?.toLowerCase();
+    return ext ? IMAGE_EXTENSIONS.has(ext) : false;
+  }
+}
+
 export function resolveUploadAccept(accept: AttachmentAcceptMode = 'all') {
   return accept === 'image' ? 'image/*' : undefined;
 }

@@ -61,7 +61,33 @@ setupVbenVxeTable({
           typeof attrs?.getSrc === 'function'
             ? attrs.getSrc(row, column)
             : row[column.field];
-        return h(Image, { src, ...props });
+        const width = props?.width ?? 40;
+        const height = props?.height ?? 40;
+        return h(
+          'div',
+          {
+            class: 'inline-flex items-center justify-center',
+            style: {
+              height: `${height}px`,
+              width: `${width}px`,
+            },
+          },
+          src
+            ? h(Image, {
+                ...props,
+                height,
+                preview: props?.preview,
+                src,
+                style: {
+                  maxHeight: '100%',
+                  maxWidth: '100%',
+                  objectFit: 'contain',
+                  ...(typeof props?.style === 'object' ? props.style : {}),
+                },
+                width,
+              })
+            : undefined,
+        );
       },
     });
 

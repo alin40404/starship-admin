@@ -126,6 +126,12 @@ export function buildFormSchema(params: {
       label: '分类标志',
     },
     {
+      component: 'Input',
+      componentProps: { class: 'w-full' },
+      fieldName: 'keywords',
+      label: '关键字',
+    },
+    {
       component: 'AttachmentField',
       componentProps: {
         accept: 'image',
@@ -135,14 +141,8 @@ export function buildFormSchema(params: {
         placeholder: '图片 URL',
       },
       fieldName: 'image',
-      label: '图片',
-    },
-    {
-      component: 'Input',
-      componentProps: { class: 'w-full' },
-      fieldName: 'keywords',
       formItemClass: 'col-span-full w-full items-start',
-      label: '关键字',
+      label: '图片',
     },
     {
       component: 'Textarea',
