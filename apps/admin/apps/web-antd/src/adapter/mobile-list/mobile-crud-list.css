@@ -1,6 +1,11 @@
 .mobile-crud-list {
   /* 与 Ant Design Button/Input 的 borderRadius 一致（--radius） */
   --mobile-crud-card-radius: var(--radius);
+  /* 与 VxeGrid size=small 单元格字号一致 */
+  --mobile-crud-card-font-size: var(
+    --vxe-ui-font-size-small,
+    var(--text-sm, 0.875rem)
+  );
 }
 
 .mobile-crud-list__toolbar .ant-btn {
@@ -197,8 +202,8 @@
   grid-template-columns: 4.25rem minmax(0, 1fr);
   gap: 0.375rem 0.625rem;
   padding: 0.75rem;
-  font-size: 0.8125rem;
-  line-height: 1.45;
+  font-size: var(--mobile-crud-card-font-size);
+  line-height: 1.5715;
 }
 
 .mobile-crud-list__field-label {
@@ -218,8 +223,15 @@
 }
 
 .mobile-crud-list__field-value--switch {
+  display: flex;
+  align-items: center;
   overflow: visible;
   white-space: normal;
+}
+
+/* 与 VxeGrid CellSwitch 一致：默认尺寸，不走 size=small */
+.mobile-crud-list__field-value--switch .mobile-crud-list__field-switch.ant-switch {
+  flex-shrink: 0;
 }
 
 .mobile-crud-list__card-actions {

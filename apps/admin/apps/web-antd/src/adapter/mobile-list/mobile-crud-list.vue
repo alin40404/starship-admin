@@ -324,8 +324,8 @@ onMounted(() => {
                       />
                       <Switch
                         v-else-if="field.render === 'switch' && field.switch"
+                        class="mobile-crud-list__field-switch"
                         :checked="getSwitchChecked(field, row)"
-                        size="small"
                         v-bind="resolveSwitchProps(field, row)"
                         @update:checked="handleSwitchChange(field, row, $event)"
                         @click.stop
