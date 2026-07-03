@@ -26,8 +26,8 @@ const tabsValue = defineModel<string>('modelValue');
 </script>
 <template>
   <Page auto-content-height>
-    <div class="flex size-full min-h-0 flex-col gap-4 lg:flex-row">
-      <Card class="w-full flex-none lg:w-1/6">
+    <div class="flex min-h-0 flex-col gap-4 lg:size-full lg:flex-row">
+      <Card class="w-full shrink-0 lg:w-1/6">
         <div
           class="mt-4 flex items-center gap-4 px-4 lg:h-40 lg:flex-col lg:justify-center lg:px-0"
         >
@@ -74,7 +74,9 @@ const tabsValue = defineModel<string>('modelValue');
           </TabsList>
         </Tabs>
       </Card>
-      <Card class="profile-page-form w-full min-w-0 flex-auto p-4 sm:p-6 lg:p-8">
+      <Card
+        class="profile-page-form w-full min-w-0 p-4 pb-6 sm:p-6 sm:pb-6 lg:flex-auto lg:p-8"
+      >
         <slot name="content"></slot>
       </Card>
     </div>
