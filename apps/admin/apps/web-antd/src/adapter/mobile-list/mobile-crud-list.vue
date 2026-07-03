@@ -394,7 +394,6 @@ onMounted(() => {
         :current="currentPage"
         :page-size="pageSize"
         :show-size-changer="false"
-        :show-total="false"
         :total="total"
         size="small"
         @change="handlePageChange"
