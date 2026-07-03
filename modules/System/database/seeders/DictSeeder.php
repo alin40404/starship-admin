@@ -40,12 +40,11 @@ class DictSeeder extends Seeder
         );
 
         $categories = [
-            ['value' => 'default', 'label' => '默认', 'sort' => 0],
             ['value' => 'image', 'label' => '图片', 'sort' => 10],
             ['value' => 'video', 'label' => '视频', 'sort' => 20],
+            ['value' => 'audio', 'label' => '音频', 'sort' => 25],
             ['value' => 'document', 'label' => '文档', 'sort' => 30],
-            ['value' => 'avatar', 'label' => '头像', 'sort' => 40],
-            ['value' => 'resources', 'label' => '资源', 'sort' => 50],
+            ['value' => 'resources', 'label' => '资源', 'sort' => 40],
         ];
 
         foreach ($categories as $item) {
@@ -61,6 +60,11 @@ class DictSeeder extends Seeder
                 ],
             );
         }
+
+        DictItem::query()
+            ->where('dict_type_id', $attachmentCategory->id)
+            ->whereIn('value', ['default', 'avatar'])
+            ->update(['status' => 0]);
 
         $categoryType = DictType::query()->updateOrCreate(
             ['code' => 'category_type'],
@@ -91,5 +95,5 @@ class DictSeeder extends Seeder
                 ],
             );
         }
-        }
+    }
 }

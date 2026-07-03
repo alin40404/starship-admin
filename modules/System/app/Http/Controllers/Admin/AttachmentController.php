@@ -117,13 +117,7 @@ class AttachmentController extends Controller
         $request->validate([
             'file' => ['required', 'file', 'max:'.$maxKb],
             'storage' => ['sometimes', 'string', 'max:50'],
-            'category' => ['nullable', 'string', 'max:50'],
         ]);
-
-        $category = AttachmentCategory::normalize($request->get('category'));
-        if ($request->filled('category') && $category === null) {
-            return ApiResponse::error('无效的附件分类', 422);
-        }
 
         $file = $request->file('file');
         $ext = strtolower((string) $file->getClientOriginalExtension());
@@ -131,6 +125,11 @@ class AttachmentController extends Controller
         if ($allowedExt !== [] && ! in_array($ext, $allowedExt, true)) {
             return ApiResponse::error('不允许上传该类型的文件', 422);
         }
+
+        $category = AttachmentCategory::resolveFromFile(
+            $file->getClientMimeType(),
+            $file->getClientOriginalExtension(),
+        );
 
         $disk = StorageConfigRegistrar::resolveDisk($request->get('storage'));
 

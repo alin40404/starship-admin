@@ -2,13 +2,13 @@
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { AttachmentRow } from '#/api/system/attachment';
 
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { Page, useVbenModal } from '@vben/common-ui';
-import { Plus } from '@vben/icons';
+import { IconifyIcon, Plus } from '@vben/icons';
 
-import { Button, message, Modal } from 'ant-design-vue';
+import { Button, message, Modal, Tooltip } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
@@ -20,9 +20,13 @@ import {
 import { ATTACHMENT_PERMISSIONS } from '#/constants/attachment-permissions';
 
 import { buildCategoryTagOptions, useColumns, useGridFormSchema } from './data';
+import AttachmentFlowView from './modules/flow-view.vue';
 import UploadForm from './modules/upload-form.vue';
 
 const ALL_CATEGORY_KEY = '__all__';
+const ATTACHMENT_VIEW_MODE_KEY = 'attachment-view-mode';
+
+type AttachmentViewMode = 'flow' | 'list';
 
 const { hasAccessByCodes } = useAccess();
 
@@ -33,6 +37,25 @@ const attachmentAccess = {
 const activeCategory = ref(ALL_CATEGORY_KEY);
 const categoryOptions = ref<{ label: string; value: string }[]>([]);
 const selectedRows = ref<AttachmentRow[]>([]);
+const flowRows = ref<AttachmentRow[]>([]);
+const viewMode = ref<AttachmentViewMode>(
+  (localStorage.getItem(ATTACHMENT_VIEW_MODE_KEY) as AttachmentViewMode) ||
+    'list',
+);
+
+const selectedFlowIds = computed({
+  get: () => selectedRows.value.map((row) => row.id),
+  set: (ids: number[]) => {
+    selectedRows.value = flowRows.value.filter((row) => ids.includes(row.id));
+  },
+});
+
+const isFlowMode = computed(() => viewMode.value === 'flow');
+
+watch(viewMode, (mode) => {
+  localStorage.setItem(ATTACHMENT_VIEW_MODE_KEY, mode);
+  clearSelection();
+});
 
 const [UploadFormModal, uploadFormModalApi] = useVbenModal({
   connectedComponent: UploadForm,
@@ -66,12 +89,25 @@ function syncGridColumns() {
 }
 
 function syncSelection() {
+  if (isFlowMode.value) {
+    return;
+  }
   const records = gridApi?.grid?.getCheckboxRecords?.() ?? [];
   selectedRows.value = records as AttachmentRow[];
 }
 
+function setViewMode(mode: AttachmentViewMode) {
+  if (viewMode.value === mode) {
+    return;
+  }
+  viewMode.value = mode;
+  onRefresh();
+}
+
 function clearSelection() {
-  gridApi?.grid?.clearCheckboxRow?.();
+  if (!isFlowMode.value) {
+    gridApi?.grid?.clearCheckboxRow?.();
+  }
   selectedRows.value = [];
 }
 
@@ -90,11 +126,7 @@ function onCategoryChange(value: string) {
 }
 
 function onUpload() {
-  const category =
-    activeCategory.value === ALL_CATEGORY_KEY
-      ? undefined
-      : activeCategory.value;
-  uploadFormModalApi.setData({ category }).open();
+  uploadFormModalApi.open();
 }
 
 function onActionClick({ code, row }: OnActionClickParams<AttachmentRow>) {
@@ -184,7 +216,7 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
       ajax: {
         query: async ({ page, sort }, formValues) => {
           const order = sort?.order;
-          return await fetchAttachmentPage({
+          const result = await fetchAttachmentPage({
             page: page.currentPage,
             per_page: page.pageSize,
             file_name: formValues?.file_name || undefined,
@@ -195,6 +227,8 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
             sort_order:
               order === 'asc' || order === 'desc' ? order : undefined,
           });
+          flowRows.value = result.data ?? [];
+          return result;
         },
       },
       sort: true,
@@ -239,7 +273,10 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
       </aside>
 
       <main class="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <div class="min-h-0 flex-1">
+        <div
+          class="attachment-layout min-h-0 flex-1"
+          :class="{ 'attachment-layout--flow': isFlowMode }"
+        >
           <Grid>
             <template #toolbar-actions>
               <div class="flex flex-wrap items-center gap-3">
@@ -275,7 +312,42 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
                 </Button>
               </div>
             </template>
+            <template #toolbar-tools>
+              <div class="attachment-view-toggle ml-2">
+                <Tooltip title="列表视图">
+                  <button
+                    class="attachment-view-toggle__btn"
+                    :class="{ 'is-active': viewMode === 'list' }"
+                    type="button"
+                    @click="setViewMode('list')"
+                  >
+                    <IconifyIcon class="size-4" icon="lucide:list" />
+                  </button>
+                </Tooltip>
+                <Tooltip title="流式视图">
+                  <button
+                    class="attachment-view-toggle__btn"
+                    :class="{ 'is-active': viewMode === 'flow' }"
+                    type="button"
+                    @click="setViewMode('flow')"
+                  >
+                    <IconifyIcon class="size-4" icon="lucide:layout-grid" />
+                  </button>
+                </Tooltip>
+              </div>
+            </template>
           </Grid>
+
+          <AttachmentFlowView
+            v-if="isFlowMode"
+            v-model:selected-ids="selectedFlowIds"
+            class="attachment-flow-panel"
+            :can-delete="attachmentAccess.can(ATTACHMENT_PERMISSIONS.DELETE)"
+            :rows="flowRows"
+            @copy="onCopyLink"
+            @delete="onDelete"
+            @open="onOpen"
+          />
         </div>
       </main>
     </div>
@@ -283,6 +355,65 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
 </template>
 
 <style scoped>
+.attachment-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.attachment-layout :deep(.h-full.rounded-md.bg-card) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.attachment-layout--flow :deep(.vxe-table) {
+  display: none;
+}
+
+.attachment-flow-panel {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.attachment-view-toggle {
+  display: inline-flex;
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  border-radius: 6px;
+}
+
+.attachment-view-toggle__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.attachment-view-toggle__btn + .attachment-view-toggle__btn {
+  border-left: 1px solid hsl(var(--border));
+}
+
+.attachment-view-toggle__btn:hover {
+  background: hsl(var(--accent));
+  color: hsl(var(--foreground));
+}
+
+.attachment-view-toggle__btn.is-active {
+  background: hsl(var(--primary) / 0.1);
+  color: hsl(var(--primary));
+}
+
 .attachment-category-header {
   display: flex;
   height: 44px;

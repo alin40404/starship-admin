@@ -3,7 +3,6 @@ export type AttachmentAcceptMode = 'all' | 'image' | 'resource';
 
 export interface AttachmentFieldProps {
   accept?: AttachmentAcceptMode;
-  category?: string;
   disabled?: boolean;
   multiple?: boolean;
   placeholder?: string;

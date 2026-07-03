@@ -22,7 +22,6 @@ import {
 const props = withDefaults(
   defineProps<{
     accept?: AttachmentAcceptMode;
-    category?: string;
     disabled?: boolean;
     multiple?: boolean;
     placeholder?: string;
@@ -30,7 +29,6 @@ const props = withDefaults(
   }>(),
   {
     accept: 'all',
-    category: undefined,
     disabled: false,
     multiple: false,
     placeholder: '请选择或上传附件',
@@ -109,7 +107,7 @@ async function onFileInputChange(event: Event) {
   try {
     const uploadedUrls: string[] = [];
     for (const file of uploadFiles) {
-      const row = await uploadAttachment(file, props.category);
+      const row = await uploadAttachment(file);
       if (row.file_url) {
         uploadedUrls.push(row.file_url);
       }

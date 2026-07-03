@@ -129,6 +129,115 @@ export function isImageAttachment(row: AttachmentRow) {
   return ['bmp', 'gif', 'jpeg', 'jpg', 'png', 'svg', 'webp'].includes(ext);
 }
 
+/** 非图片附件按扩展名 / MIME 返回预览图标 */
+export function getAttachmentFileIcon(
+  row: Pick<AttachmentRow, 'file_ext' | 'mime_type'>,
+) {
+  const ext = (row.file_ext ?? '').toLowerCase();
+  const mime = (row.mime_type ?? '').toLowerCase();
+
+  if (
+    mime.startsWith('video/') ||
+    ['avi', 'mkv', 'mov', 'mp4', 'webm'].includes(ext)
+  ) {
+    return 'lucide:file-video';
+  }
+  if (
+    mime.startsWith('audio/') ||
+    ['aac', 'flac', 'mp3', 'ogg', 'wav'].includes(ext)
+  ) {
+    return 'lucide:file-audio';
+  }
+  if (ext === 'pdf' || mime.includes('pdf')) {
+    return 'lucide:file-text';
+  }
+  if (
+    ['doc', 'docx'].includes(ext) ||
+    mime.includes('word') ||
+    mime.includes('document')
+  ) {
+    return 'lucide:file-text';
+  }
+  if (
+    ['csv', 'xls', 'xlsx'].includes(ext) ||
+    mime.includes('sheet') ||
+    mime.includes('excel')
+  ) {
+    return 'lucide:file-spreadsheet';
+  }
+  if (['ppt', 'pptx'].includes(ext) || mime.includes('presentation')) {
+    return 'lucide:presentation';
+  }
+  if (
+    ['7z', 'gz', 'rar', 'tar', 'zip'].includes(ext) ||
+    mime.includes('zip') ||
+    mime.includes('compressed')
+  ) {
+    return 'lucide:file-archive';
+  }
+  if (
+    [
+      'css',
+      'go',
+      'html',
+      'java',
+      'js',
+      'json',
+      'jsx',
+      'php',
+      'py',
+      'rs',
+      'ts',
+      'tsx',
+      'vue',
+      'xml',
+    ].includes(ext)
+  ) {
+    return 'lucide:file-code';
+  }
+  if (['log', 'md', 'txt'].includes(ext) || mime.startsWith('text/')) {
+    return 'lucide:file-text';
+  }
+  return 'lucide:file';
+}
+
+export function getAttachmentFileIconClass(
+  row: Pick<AttachmentRow, 'file_ext' | 'mime_type'>,
+) {
+  const ext = (row.file_ext ?? '').toLowerCase();
+  const mime = (row.mime_type ?? '').toLowerCase();
+
+  if (
+    mime.startsWith('video/') ||
+    ['avi', 'mkv', 'mov', 'mp4', 'webm'].includes(ext)
+  ) {
+    return 'text-purple-500';
+  }
+  if (mime.startsWith('audio/')) {
+    return 'text-pink-500';
+  }
+  if (ext === 'pdf' || mime.includes('pdf')) {
+    return 'text-red-500';
+  }
+  if (['doc', 'docx'].includes(ext) || mime.includes('word')) {
+    return 'text-blue-600';
+  }
+  if (
+    ['csv', 'xls', 'xlsx'].includes(ext) ||
+    mime.includes('sheet') ||
+    mime.includes('excel')
+  ) {
+    return 'text-green-600';
+  }
+  if (['ppt', 'pptx'].includes(ext) || mime.includes('presentation')) {
+    return 'text-orange-500';
+  }
+  if (['7z', 'gz', 'rar', 'tar', 'zip'].includes(ext)) {
+    return 'text-amber-600';
+  }
+  return 'text-muted-foreground';
+}
+
 export function formatFileSize(bytes: number) {
   if (!bytes || bytes < 0) {
     return TABLE_CELL_EMPTY;
@@ -211,6 +320,9 @@ export function useColumns(
       cellRender: {
         name: 'CellImage',
         attrs: {
+          getFileIcon: (row: AttachmentRow) => getAttachmentFileIcon(row),
+          getFileIconClass: (row: AttachmentRow) =>
+            getAttachmentFileIconClass(row),
           getSrc: (row: AttachmentRow) =>
             isImageAttachment(row) ? (row.file_url ?? '') : '',
         },

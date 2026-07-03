@@ -63,6 +63,14 @@ setupVbenVxeTable({
             : row[column.field];
         const width = props?.width ?? 40;
         const height = props?.height ?? 40;
+        const fileIcon =
+          typeof attrs?.getFileIcon === 'function'
+            ? attrs.getFileIcon(row, column)
+            : '';
+        const fileIconClass =
+          typeof attrs?.getFileIconClass === 'function'
+            ? attrs.getFileIconClass(row, column)
+            : 'text-muted-foreground';
         return h(
           'div',
           {
@@ -86,7 +94,12 @@ setupVbenVxeTable({
                 },
                 width,
               })
-            : undefined,
+            : fileIcon
+              ? h(IconifyIcon, {
+                  class: `size-5 ${fileIconClass}`,
+                  icon: fileIcon,
+                })
+              : undefined,
         );
       },
     });

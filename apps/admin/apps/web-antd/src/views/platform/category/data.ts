@@ -135,7 +135,6 @@ export function buildFormSchema(params: {
       component: 'AttachmentField',
       componentProps: {
         accept: 'image',
-        category: 'image',
         class: 'w-full',
         multiple: false,
         placeholder: '图片 URL',

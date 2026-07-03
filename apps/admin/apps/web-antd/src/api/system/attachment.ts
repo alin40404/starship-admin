@@ -71,16 +71,13 @@ export function fetchAttachmentPickerPage(params: AttachmentPageQuery) {
   );
 }
 
-export async function uploadAttachment(file: any, category?: string) {
+export async function uploadAttachment(file: any) {
   const rawFile = file?.originFileObj ?? file;
   if (!(rawFile instanceof Blob)) {
     throw new Error('无效的上传文件');
   }
   const formData = new FormData();
   formData.append('file', rawFile, (rawFile as File).name ?? 'upload-file');
-  if (category) {
-    formData.append('category', category);
-  }
   return requestClient.post<AttachmentRow>('/system/attachments', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',

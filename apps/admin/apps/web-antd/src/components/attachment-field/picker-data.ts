@@ -7,6 +7,8 @@ import {
   buildCategoryTagOptions,
   formatCategoryLabel,
   formatFileSize,
+  getAttachmentFileIcon,
+  getAttachmentFileIconClass,
   getFileExtTagColor,
   isImageAttachment,
 } from '#/views/resource/attachment/data';
@@ -38,6 +40,9 @@ export function usePickerColumns(options: {
       cellRender: {
         name: 'CellImage',
         attrs: {
+          getFileIcon: (row: AttachmentRow) => getAttachmentFileIcon(row),
+          getFileIconClass: (row: AttachmentRow) =>
+            getAttachmentFileIconClass(row),
           getSrc: (row: AttachmentRow) =>
             isImageAttachment(row) ? (row.file_url ?? '') : '',
         },

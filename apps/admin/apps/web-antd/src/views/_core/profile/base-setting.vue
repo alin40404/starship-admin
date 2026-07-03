@@ -32,7 +32,7 @@ function onAvatarChange(_event: any) {}
 
 async function onAvatarUpload(options: any) {
   try {
-    const row = await uploadAttachment(options?.file, 'avatar');
+    const row = await uploadAttachment(options?.file);
     options?.onSuccess?.(row);
   } catch (error) {
     options?.onError?.(error);
