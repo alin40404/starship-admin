@@ -210,6 +210,7 @@ onMounted(() => {
 });
 
 const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
+  showSearchForm: false,
   formOptions: {
     commonConfig: { componentProps: { class: 'w-full' } },
     schema: useGridFormSchema(),
@@ -292,8 +293,12 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
         >
           <Grid>
             <template #toolbar-actions>
-              <div class="flex flex-wrap items-center gap-3">
-                <div v-if="selectedRows.length > 0" class="vxe-grid-batch-toolbar">
+              <div class="attachment-toolbar-actions">
+                <div
+                  v-show="selectedRows.length > 0"
+                  class="attachment-toolbar-actions__panel"
+                  :class="{ 'vxe-grid-batch-toolbar': selectedRows.length > 0 }"
+                >
                   <Button
                     v-if="
                       attachmentAccess.can(ATTACHMENT_PERMISSIONS.BATCH_DELETE)
@@ -308,9 +313,11 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
                   </Button>
                 </div>
                 <Button
-                  v-else-if="
+                  v-show="
+                    selectedRows.length === 0 &&
                     attachmentAccess.can(ATTACHMENT_PERMISSIONS.UPLOAD)
                   "
+                  class="attachment-toolbar-actions__panel"
                   type="primary"
                   @click="onUpload"
                 >
@@ -396,9 +403,50 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
   overflow: hidden;
 }
 
-.attachment-layout--flow :deep(.vxe-grid--toolbar-wrapper) {
+.attachment-layout :deep(.vxe-grid--toolbar-wrapper) {
   flex-shrink: 0;
+  /* 固定高度，避免批量切换时 flex 内容区重算导致上下跳动 */
+  height: calc(34px + 1.2em);
+  overflow: hidden;
+}
+
+.attachment-layout :deep(.vxe-toolbar) {
+  flex-wrap: nowrap;
+  align-items: center;
+  height: 100%;
+}
+
+.attachment-layout :deep(.vxe-grid-batch-toolbar) {
+  flex-wrap: nowrap;
+}
+
+/* 桌面端：工具区占位隐藏，避免 display:none 后工具栏变矮 */
+@media (min-width: 768px) {
+  .attachment-layout :deep(.vxe-toolbar:has(.vxe-grid-batch-toolbar) .vxe-tools--operate),
+  .attachment-layout :deep(.vxe-toolbar:has(.vxe-grid-batch-toolbar) .vxe-tools--wrapper) {
+    display: flex !important;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+.attachment-layout--flow :deep(.vxe-grid--toolbar-wrapper) {
   order: 1;
+}
+
+.attachment-toolbar-actions {
+  display: flex;
+  align-items: center;
+  height: 34px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.attachment-toolbar-actions__panel {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  height: 34px;
 }
 
 .attachment-layout--flow :deep(.vxe-grid--table-container) {
@@ -493,7 +541,7 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
   flex-shrink: 0;
   scroll-snap-align: start;
   border: 1px solid hsl(var(--border));
-  border-radius: 9999px;
+  border-radius: var(--radius);
   background: transparent;
   padding: 6px 14px;
   font-size: 14px;
