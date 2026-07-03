@@ -7,6 +7,8 @@ import { computed, reactive } from 'vue';
 
 import { $t } from '@vben/locales';
 
+import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
+
 import { useVbenForm } from '@vben-core/form-ui';
 import { VbenButton } from '@vben-core/shadcn-ui';
 
@@ -22,6 +24,9 @@ const emit = defineEmits<{
   submit: [Recordable<any>];
 }>();
 
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const isMobile = breakpoints.smaller('md');
+
 const [Form, formApi] = useVbenForm(
   reactive({
     commonConfig: {
@@ -30,7 +35,7 @@ const [Form, formApi] = useVbenForm(
         class: 'w-full',
       },
     },
-    layout: 'horizontal',
+    layout: computed(() => (isMobile.value ? 'vertical' : 'horizontal')),
     schema: computed(() => props.formSchema),
     showDefaultActions: false,
   }),

@@ -69,7 +69,7 @@ async function handleSubmit(values: Record<string, string>) {
 </script>
 <template>
   <ProfilePasswordSetting
-    class="w-1/3"
+    class="w-full max-w-xl"
     :form-schema="formSchema"
     @submit="handleSubmit"
   />
