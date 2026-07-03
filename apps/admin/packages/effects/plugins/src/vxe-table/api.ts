@@ -25,7 +25,7 @@ function getDefaultState(): VxeGridProps {
     gridOptions: {},
     gridEvents: {},
     formOptions: undefined,
-    showSearchForm: true,
+    showSearchForm: undefined,
   };
 }
 

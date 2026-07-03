@@ -79,10 +79,20 @@ const {
 } = usePriorityValues(props, state);
 
 const { isMobile } = usePreferences();
+
+/** 未显式配置时：PC 展开、移动端收起 */
+const resolvedShowSearchForm = computed(() => {
+  const configured = showSearchForm.value;
+  if (isBoolean(configured)) {
+    return configured;
+  }
+  return !isMobile.value;
+});
+
 const isSeparator = computed(() => {
   if (
     !formOptions.value ||
-    showSearchForm.value === false ||
+    resolvedShowSearchForm.value === false ||
     separator.value === false
   ) {
     return false;
@@ -149,8 +159,8 @@ const toolbarOptions = computed(() => {
     code: 'search',
     icon: 'vxe-icon-search',
     circle: true,
-    status: showSearchForm.value ? 'primary' : undefined,
-    title: showSearchForm.value
+    status: resolvedShowSearchForm.value ? 'primary' : undefined,
+    title: resolvedShowSearchForm.value
       ? $t('common.hideSearchPanel')
       : $t('common.showSearchPanel'),
   };
@@ -247,7 +257,7 @@ function onToolbarToolClick(event: VxeGridDefines.ToolbarToolClickEventParams) {
 }
 
 function onSearchBtnClick() {
-  props.api?.toggleSearchForm?.();
+  props.api?.toggleSearchForm?.(!resolvedShowSearchForm.value);
 }
 
 const events = computed(() => {
@@ -407,7 +417,7 @@ onUnmounted(() => {
           circle
           class="ml-2"
           v-if="gridOptions?.toolbarConfig?.search && !!formOptions"
-          :status="showSearchForm ? 'primary' : undefined"
+          :status="resolvedShowSearchForm ? 'primary' : undefined"
           :title="$t('common.search')"
           @click="onSearchBtnClick"
         />
@@ -417,7 +427,7 @@ onUnmounted(() => {
       <template #form>
         <div
           v-if="formOptions"
-          v-show="showSearchForm !== false"
+          v-show="resolvedShowSearchForm"
           :class="
             cn(
               'relative rounded-sm py-3',
