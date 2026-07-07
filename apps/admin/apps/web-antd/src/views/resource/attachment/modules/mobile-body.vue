@@ -218,116 +218,68 @@ defineExpose({ clearSelection, reload });
 
 <template>
   <div class="attachment-mobile-body flex min-h-0 flex-1 flex-col overflow-hidden">
+    <div class="attachment-mobile-toolbar mb-2 shrink-0">
+      <div class="attachment-toolbar-actions">
+        <div
+          v-if="selectedRows.length > 0"
+          class="attachment-toolbar-actions__panel"
+        >
+          <Button v-if="canBatchDelete" danger @click="emit('batchDelete')">
+            批量删除（{{ selectedRows.length }}）
+          </Button>
+          <Button class="ml-2" type="link" @click="clearSelection">
+            取消选择
+          </Button>
+        </div>
+        <Button
+          v-else-if="canUpload"
+          class="attachment-toolbar-actions__panel"
+          type="primary"
+          @click="emit('upload')"
+        >
+          <Plus class="size-4" />
+          上传附件
+        </Button>
+      </div>
+      <div
+        class="attachment-view-toggle"
+        :class="{ 'attachment-view-toggle--hidden': selectedRows.length > 0 }"
+      >
+        <Tooltip title="列表视图">
+          <button
+            class="attachment-view-toggle__btn"
+            :class="{ 'is-active': viewMode === 'list' }"
+            type="button"
+            @click="setViewMode('list')"
+          >
+            <IconifyIcon class="size-4" icon="lucide:list" />
+          </button>
+        </Tooltip>
+        <Tooltip title="流式视图">
+          <button
+            class="attachment-view-toggle__btn"
+            :class="{ 'is-active': viewMode === 'flow' }"
+            type="button"
+            @click="setViewMode('flow')"
+          >
+            <IconifyIcon class="size-4" icon="lucide:layout-grid" />
+          </button>
+        </Tooltip>
+      </div>
+    </div>
+
     <MobileCrudList
       v-if="!isFlowMode"
       ref="mobileListRef"
       v-model:selected-rows="selectedRows"
+      class="min-h-0 flex-1"
       :config="mobileConfig"
+    />
+
+    <div
+      v-else
+      class="attachment-mobile-flow flex min-h-0 flex-1 flex-col overflow-hidden"
     >
-      <template #toolbar>
-        <div class="attachment-mobile-toolbar">
-          <div class="attachment-toolbar-actions">
-            <div
-              v-if="selectedRows.length > 0"
-              class="attachment-toolbar-actions__panel"
-            >
-              <Button v-if="canBatchDelete" danger @click="emit('batchDelete')">
-                批量删除（{{ selectedRows.length }}）
-              </Button>
-              <Button class="ml-2" type="link" @click="clearSelection">
-                取消选择
-              </Button>
-            </div>
-            <Button
-              v-else-if="canUpload"
-              class="attachment-toolbar-actions__panel"
-              type="primary"
-              @click="emit('upload')"
-            >
-              <Plus class="size-4" />
-              上传附件
-            </Button>
-          </div>
-          <div
-            class="attachment-view-toggle"
-            :class="{ 'attachment-view-toggle--hidden': selectedRows.length > 0 }"
-          >
-            <Tooltip title="列表视图">
-              <button
-                class="attachment-view-toggle__btn"
-                :class="{ 'is-active': viewMode === 'list' }"
-                type="button"
-                @click="setViewMode('list')"
-              >
-                <IconifyIcon class="size-4" icon="lucide:list" />
-              </button>
-            </Tooltip>
-            <Tooltip title="流式视图">
-              <button
-                class="attachment-view-toggle__btn"
-                :class="{ 'is-active': viewMode === 'flow' }"
-                type="button"
-                @click="setViewMode('flow')"
-              >
-                <IconifyIcon class="size-4" icon="lucide:layout-grid" />
-              </button>
-            </Tooltip>
-          </div>
-        </div>
-      </template>
-    </MobileCrudList>
-
-    <template v-else>
-      <div class="attachment-mobile-toolbar mb-2 shrink-0">
-        <div class="attachment-toolbar-actions">
-          <div
-            v-if="selectedRows.length > 0"
-            class="attachment-toolbar-actions__panel"
-          >
-            <Button v-if="canBatchDelete" danger @click="emit('batchDelete')">
-              批量删除（{{ selectedRows.length }}）
-            </Button>
-            <Button class="ml-2" type="link" @click="clearSelection">
-              取消选择
-            </Button>
-          </div>
-          <Button
-            v-else-if="canUpload"
-            class="attachment-toolbar-actions__panel"
-            type="primary"
-            @click="emit('upload')"
-          >
-            <Plus class="size-4" />
-            上传附件
-          </Button>
-        </div>
-        <div
-          class="attachment-view-toggle"
-          :class="{ 'attachment-view-toggle--hidden': selectedRows.length > 0 }"
-        >
-          <Tooltip title="列表视图">
-            <button
-              class="attachment-view-toggle__btn"
-              :class="{ 'is-active': viewMode === 'list' }"
-              type="button"
-              @click="setViewMode('list')"
-            >
-              <IconifyIcon class="size-4" icon="lucide:list" />
-            </button>
-          </Tooltip>
-          <Tooltip title="流式视图">
-            <button
-              class="attachment-view-toggle__btn"
-              :class="{ 'is-active': viewMode === 'flow' }"
-              type="button"
-              @click="setViewMode('flow')"
-            >
-              <IconifyIcon class="size-4" icon="lucide:layout-grid" />
-            </button>
-          </Tooltip>
-        </div>
-      </div>
-
       <div v-if="showFlowSearchBar" class="mobile-crud-list__search shrink-0 pb-3">
         <Space.Compact block class="mobile-crud-list__search-compact w-full">
           <Button
@@ -374,11 +326,11 @@ defineExpose({ clearSelection, reload });
         </Space.Compact>
       </div>
 
-      <div class="min-h-0 flex-1 overflow-hidden">
+      <div class="attachment-mobile-flow__content min-h-0 flex-1 overflow-y-auto">
         <Spin :spinning="loading">
           <AttachmentFlowView
             v-model:selected-ids="selectedFlowIds"
-            class="attachment-flow-panel h-full"
+            class="attachment-flow-panel"
             :can-delete="canDelete"
             :rows="flowList"
             @copy="emit('copy', $event)"
@@ -388,7 +340,7 @@ defineExpose({ clearSelection, reload });
         </Spin>
       </div>
 
-      <div v-if="total > 0" class="mobile-crud-list__pager">
+      <div v-if="total > 0" class="mobile-crud-list__pager shrink-0">
         <span class="mobile-crud-list__pager-total">共 {{ total }} 条</span>
         <Pagination
           :current="currentPage"
@@ -416,7 +368,7 @@ defineExpose({ clearSelection, reload });
           </div>
         </template>
       </Drawer>
-    </template>
+    </div>
   </div>
 </template>
 
@@ -434,6 +386,12 @@ defineExpose({ clearSelection, reload });
   justify-content: space-between;
   flex-shrink: 0;
   min-height: 32px;
+}
+
+.attachment-mobile-toolbar .ant-btn {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--vben-table-action-button-font-size, 13px) !important;
 }
 
 .attachment-toolbar-actions {
@@ -490,5 +448,11 @@ defineExpose({ clearSelection, reload });
 .attachment-flow-panel {
   min-height: 240px;
   padding: 0;
+}
+
+.attachment-mobile-flow__content :deep(.attachment-flow-view) {
+  height: auto;
+  min-height: 240px;
+  overflow: visible;
 }
 </style>
