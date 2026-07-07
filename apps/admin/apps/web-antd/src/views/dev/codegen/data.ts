@@ -12,6 +12,11 @@ export type GeneratorAccessChecker = {
   can: (code: string) => boolean;
 };
 
+export const GENERATOR_STATUS_TAG_OPTIONS = [
+  { color: 'default', label: '草稿', value: 'draft' },
+  { color: 'success', label: '已生成', value: 'generated' },
+] as const;
+
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
@@ -61,8 +66,11 @@ export function useColumns(
     },
     {
       align: 'center',
+      cellRender: {
+        name: 'CellTag',
+        options: [...GENERATOR_STATUS_TAG_OPTIONS],
+      },
       field: 'status',
-      formatter: ({ cellValue }) => (cellValue === 'generated' ? '已生成' : '草稿'),
       title: '状态',
       width: 90,
     },

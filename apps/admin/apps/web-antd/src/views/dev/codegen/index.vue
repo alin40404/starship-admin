@@ -34,7 +34,8 @@ const generateSyncMenu = ref(true);
 const { hasAccessByCodes } = useAccess();
 
 const codegenAccess = {
-  can: (code: string) => hasAccessByCodes([code]),
+  can: (code: string) =>
+    hasAccessByCodes([GENERATOR_PERMISSIONS.MANAGE, code]),
 };
 
 function onImport() {
