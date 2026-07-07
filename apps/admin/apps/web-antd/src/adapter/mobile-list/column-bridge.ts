@@ -8,9 +8,20 @@ import type {
 } from './types';
 
 import { $t } from '@vben/locales';
-import { get, isFunction } from '@vben/utils';
+import { formatDate, formatDateTime, get, isFunction } from '@vben/utils';
 
 import { TABLE_CELL_EMPTY } from '#/constants/table';
+
+const VXE_STRING_FORMATTERS: Record<string, (value: unknown) => string> = {
+  formatDate: (value) => {
+    const formatted = formatDate(value as Parameters<typeof formatDate>[0]);
+    return formatted ?? TABLE_CELL_EMPTY;
+  },
+  formatDateTime: (value) => {
+    const formatted = formatDateTime(value as Parameters<typeof formatDateTime>[0]);
+    return formatted ?? TABLE_CELL_EMPTY;
+  },
+};
 
 /** 扩展 vxe 列：移动端卡片语义（与 PC columns 同处维护） */
 export interface CrudColumnMobileMeta<T = Record<string, any>> {
@@ -71,11 +82,18 @@ function formatColumnCellValue<T>(column: CrudGridColumn<T>, row: T): string {
   }
   if (column.formatter) {
     const cellValue = column.field ? get(row, column.field) : undefined;
-    const formatted = column.formatter({ row, cellValue });
-    if (formatted === null || formatted === undefined || formatted === '') {
-      return TABLE_CELL_EMPTY;
+    if (typeof column.formatter === 'string') {
+      const stringFormatter = VXE_STRING_FORMATTERS[column.formatter];
+      if (stringFormatter) {
+        return stringFormatter(cellValue);
+      }
+    } else if (isFunction(column.formatter)) {
+      const formatted = column.formatter({ row, cellValue });
+      if (formatted === null || formatted === undefined || formatted === '') {
+        return TABLE_CELL_EMPTY;
+      }
+      return String(formatted);
     }
-    return String(formatted);
   }
   if (!column.field) {
     return TABLE_CELL_EMPTY;

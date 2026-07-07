@@ -1,7 +1,8 @@
 import type { VbenFormSchema } from '#/adapter/form';
+import type { CrudGridColumn, MobileCrudListConfig } from '#/adapter/mobile-list';
+import { buildMobileCrudFromColumns } from '#/adapter/mobile-list';
 import type {
   OnActionClickFn,
-  VxeTableGridColumns,
 } from '#/adapter/vxe-table';
 
 import type { AttachmentRow } from '#/api/system/attachment';
@@ -294,6 +295,26 @@ export function useGridFormSchema(): VbenFormSchema[] {
   ];
 }
 
+export function buildAttachmentMobileCrudConfig(params: {
+  columns: CrudGridColumn<AttachmentRow>[];
+  query: MobileCrudListConfig<AttachmentRow>['query'];
+}): MobileCrudListConfig<AttachmentRow> {
+  return buildMobileCrudFromColumns({
+    columns: params.columns,
+    defaultPageSize: 20,
+    query: params.query,
+    rowKey: 'id',
+    search: {
+      filterSchema: useGridFormSchema(),
+      keywordFields: ['file_name'],
+      placeholder: '搜索文件名',
+    },
+    selection: {
+      enabled: true,
+    },
+  });
+}
+
 export function useColumns(
   onActionClick: OnActionClickFn<AttachmentRow>,
   access: AttachmentAccessChecker,
@@ -301,17 +322,17 @@ export function useColumns(
     categoryTagOptions?: AttachmentTagOption[];
     showCategoryColumn?: boolean;
   } = {},
-): VxeTableGridColumns<AttachmentRow> {
+): CrudGridColumn<AttachmentRow>[] {
   const { categoryTagOptions = [], showCategoryColumn = true } = options;
 
-  const columns: VxeTableGridColumns<AttachmentRow> = [
+  const columns: CrudGridColumn<AttachmentRow>[] = [
     {
       align: 'center',
       fixed: 'left',
       type: 'checkbox',
       width: 48,
     },
-    { field: 'id', sortable: true, title: 'ID', width: 72 },
+    { field: 'id', sortable: true, title: 'ID', visible: false, width: 72 },
     {
       align: 'center',
       field: 'file_url',
@@ -354,6 +375,9 @@ export function useColumns(
       },
       field: 'category',
       minWidth: 100,
+      mobile: {
+        format: (row) => formatCategoryLabel(row),
+      },
       title: '分类',
     });
   }
@@ -382,6 +406,7 @@ export function useColumns(
       field: 'mime_type',
       minWidth: 148,
       title: 'MIME',
+      visible: false,
     },
     {
       align: 'right',
@@ -398,6 +423,9 @@ export function useColumns(
         options: [...ATTACHMENT_STORAGE_TAG_OPTIONS],
       },
       field: 'storage',
+      mobile: {
+        format: (row) => formatStorageLabel(row.storage),
+      },
       sortable: true,
       title: '存储',
       width: 108,

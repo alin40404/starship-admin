@@ -7,6 +7,7 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useAccess } from '@vben/access';
 import { Page, useVbenModal } from '@vben/common-ui';
 import { IconifyIcon, Plus } from '@vben/icons';
+import { usePreferences } from '@vben/preferences';
 
 import { Button, message, Modal, Tooltip } from 'ant-design-vue';
 
@@ -21,6 +22,7 @@ import { ATTACHMENT_PERMISSIONS } from '#/constants/attachment-permissions';
 
 import { buildCategoryTagOptions, useColumns, useGridFormSchema } from './data';
 import AttachmentFlowView from './modules/flow-view.vue';
+import AttachmentMobileBody from './modules/mobile-body.vue';
 import UploadForm from './modules/upload-form.vue';
 
 const ALL_CATEGORY_KEY = '__all__';
@@ -29,6 +31,7 @@ const ATTACHMENT_VIEW_MODE_KEY = 'attachment-view-mode';
 type AttachmentViewMode = 'flow' | 'list';
 
 const { hasAccessByCodes } = useAccess();
+const { isMobile } = usePreferences();
 
 const attachmentAccess = {
   can: (code: string) => hasAccessByCodes([code]),
@@ -53,8 +56,13 @@ const selectedFlowIds = computed({
 const isFlowMode = computed(() => viewMode.value === 'flow');
 const layoutRef = ref<HTMLElement>();
 const flowTeleportTarget = ref<HTMLElement | null>(null);
+const mobileBodyRef = ref<InstanceType<typeof AttachmentMobileBody> | null>(null);
 
 async function syncFlowTeleportTarget() {
+  if (isMobile.value) {
+    flowTeleportTarget.value = null;
+    return;
+  }
   await nextTick();
   await nextTick();
   if (!isFlowMode.value || !layoutRef.value) {
@@ -69,6 +77,10 @@ async function syncFlowTeleportTarget() {
 watch(viewMode, (mode) => {
   localStorage.setItem(ATTACHMENT_VIEW_MODE_KEY, mode);
   clearSelection();
+  syncFlowTeleportTarget();
+});
+
+watch(isMobile, () => {
   syncFlowTeleportTarget();
 });
 
@@ -92,15 +104,12 @@ function resolveCategoryFilter() {
 
 function syncGridColumns() {
   gridApi.setGridOptions({
-    columns: useColumns(onActionClick, attachmentAccess, {
-      categoryTagOptions: buildCategoryTagOptions(categoryOptions.value),
-      showCategoryColumn: activeCategory.value === ALL_CATEGORY_KEY,
-    }),
+    columns: columns.value as VxeTableGridOptions<AttachmentRow>['columns'],
   } as VxeTableGridOptions<AttachmentRow>);
 }
 
 function syncSelection() {
-  if (isFlowMode.value) {
+  if (isMobile.value || isFlowMode.value) {
     return;
   }
   const records = gridApi?.grid?.getCheckboxRecords?.() ?? [];
@@ -112,10 +121,17 @@ function setViewMode(mode: AttachmentViewMode) {
     return;
   }
   viewMode.value = mode;
-  onRefresh();
+  if (!isMobile.value) {
+    onRefresh();
+  }
 }
 
 function clearSelection() {
+  if (isMobile.value) {
+    mobileBodyRef.value?.clearSelection();
+    selectedRows.value = [];
+    return;
+  }
   if (!isFlowMode.value) {
     gridApi?.grid?.clearCheckboxRow?.();
   }
@@ -123,6 +139,10 @@ function clearSelection() {
 }
 
 function onRefresh() {
+  if (isMobile.value) {
+    mobileBodyRef.value?.reload();
+    return;
+  }
   gridApi.query();
 }
 
@@ -169,12 +189,16 @@ function onDelete(row: AttachmentRow) {
     cancelText: '取消',
     title: '删除附件',
     async onOk() {
-      await deleteAttachment(row.id);
-      message.success('已删除');
-      clearSelection();
-      onRefresh();
+      await performDelete(row);
     },
   });
+}
+
+async function performDelete(row: AttachmentRow) {
+  await deleteAttachment(row.id);
+  message.success('已删除');
+  clearSelection();
+  onRefresh();
 }
 
 function onBatchDelete() {
@@ -209,6 +233,13 @@ onMounted(() => {
   syncFlowTeleportTarget();
 });
 
+const columns = computed(() =>
+  useColumns(onActionClick, attachmentAccess, {
+    categoryTagOptions: buildCategoryTagOptions(categoryOptions.value),
+    showCategoryColumn: activeCategory.value === ALL_CATEGORY_KEY,
+  }),
+);
+
 const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
   showSearchForm: false,
   formOptions: {
@@ -223,7 +254,7 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
   },
   gridOptions: {
     checkboxConfig: { highlight: true },
-    columns: useColumns(onActionClick, attachmentAccess),
+    columns: columns.value as VxeTableGridOptions<AttachmentRow>['columns'],
     height: 'auto',
     proxyConfig: {
       ajax: {
@@ -286,7 +317,28 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
       </aside>
 
       <main class="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <AttachmentMobileBody
+          v-if="isMobile"
+          ref="mobileBodyRef"
+          v-model:selected-rows="selectedRows"
+          v-model:view-mode="viewMode"
+          :active-category="activeCategory"
+          :can-batch-delete="
+            attachmentAccess.can(ATTACHMENT_PERMISSIONS.BATCH_DELETE)
+          "
+          :can-delete="attachmentAccess.can(ATTACHMENT_PERMISSIONS.DELETE)"
+          :can-upload="attachmentAccess.can(ATTACHMENT_PERMISSIONS.UPLOAD)"
+          :columns="columns"
+          :resolve-category-filter="resolveCategoryFilter"
+          @batch-delete="onBatchDelete"
+          @copy="onCopyLink"
+          @delete="performDelete"
+          @open="onOpen"
+          @upload="onUpload"
+        />
+
         <div
+          v-else
           ref="layoutRef"
           class="attachment-layout min-h-0 flex-1"
           :class="{ 'attachment-layout--flow': isFlowMode }"
