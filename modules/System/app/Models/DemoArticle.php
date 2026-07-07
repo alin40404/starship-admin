@@ -5,14 +5,12 @@ namespace Modules\System\App\Models;
 use App\Models\Concerns\HasStarshipTable;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
-
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 
 class DemoArticle extends Model
 {
     use HasStarshipTable;
-
     use SoftDeletes;
 
 

@@ -67,7 +67,9 @@ class FileWriter
 
         $start = "        // @generator:{$marker}:start";
         $end = "        // @generator:{$marker}:end";
-        $block = $start.PHP_EOL.rtrim($snippet).PHP_EOL.$end;
+        $snippet = str_replace("\r\n", "\n", $snippet);
+        $snippet = (string) preg_replace("/\n{2,}/", "\n", rtrim($snippet));
+        $block = $start."\n".$snippet."\n".$end;
 
         $controllerClass = $this->extractControllerClass($snippet);
         if ($controllerClass !== null) {

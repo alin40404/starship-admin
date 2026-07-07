@@ -6,9 +6,7 @@ export const SYSTEM_DEMO_ARTICLES_PERMISSIONS = {
   DELETE: 'system.demo_articles.delete',
   QUERY: 'system.demo_articles.query',
   UPDATE: 'system.demo_articles.update',
-
   BATCH_DELETE: 'system.demo_articles.batch_delete',
-
 
   BATCH_STATUS: 'system.demo_articles.batch_status',
 

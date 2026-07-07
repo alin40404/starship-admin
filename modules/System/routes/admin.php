@@ -238,14 +238,10 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
             ->middleware('admin.permission:'.DemoArticlePermissions::QUERY);
         Route::post('demo_articles', [DemoArticleController::class, 'store'])
             ->middleware('admin.permission:'.DemoArticlePermissions::CREATE);
-
         Route::post('demo_articles/batch-destroy', [DemoArticleController::class, 'batchDestroy'])
             ->middleware('admin.permission:'.DemoArticlePermissions::BATCH_DELETE);
-
-
         Route::put('demo_articles/batch-status', [DemoArticleController::class, 'batchUpdateStatus'])
             ->middleware('admin.permission:'.DemoArticlePermissions::BATCH_STATUS);
-
         Route::put('demo_articles/{id}', [DemoArticleController::class, 'update'])
             ->middleware('admin.permission:'.DemoArticlePermissions::UPDATE);
         Route::delete('demo_articles/{id}', [DemoArticleController::class, 'destroy'])

@@ -13,7 +13,6 @@ class DemoArticleController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = DemoArticle::query();
-
         if ($request->filled('keyword')) {
             $keyword = (string) $request->get('keyword');
             $query->where(function ($q) use ($keyword): void {
@@ -72,8 +71,6 @@ class DemoArticleController extends Controller
 
         return ApiResponse::success(null, '已删除');
     }
-
-
     public function batchDestroy(Request $request): JsonResponse
     {
         $ids = $request->validate([
@@ -85,8 +82,6 @@ class DemoArticleController extends Controller
 
         return ApiResponse::success(['deleted' => $deleted], '已批量删除');
     }
-
-
 
     public function batchUpdateStatus(Request $request): JsonResponse
     {

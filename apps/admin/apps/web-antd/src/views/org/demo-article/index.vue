@@ -12,9 +12,7 @@ import { Button, message, Modal } from 'ant-design-vue';
 
 import { useResponsiveCrud } from '#/adapter/mobile-list';
 import {
-
   batchDeleteDemoArticles,
-
 
   batchUpdateDemoArticleStatus,
 
@@ -55,7 +53,6 @@ function onActionClick({ code, row }: OnActionClickParams<DemoArticleRow>) {
     onDelete(row);
   }
 }
-
 
 async function onDemoArticleStatusToggle(nextStatus: number, row: DemoArticleRow) {
   return new Promise<boolean>((resolve) => {

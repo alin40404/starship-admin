@@ -40,20 +40,34 @@ class TemplateRenderer
     {
         return (string) preg_replace_callback(
             '/@if\(\$(\w+)\)(.*?)@endif/s',
-            static function (array $matches) use ($data): string {
+            function (array $matches) use ($data): string {
                 $key = $matches[1];
                 $body = $matches[2];
 
                 if (str_contains($body, '@else')) {
                     [$ifPart, $elsePart] = explode('@else', $body, 2);
 
-                    return ! empty($data[$key]) ? $ifPart : $elsePart;
+                    return $this->renderIfBody(
+                        ! empty($data[$key]) ? $ifPart : $elsePart,
+                        true,
+                    );
                 }
 
-                return ! empty($data[$key]) ? $body : '';
+                return $this->renderIfBody($body, ! empty($data[$key]));
             },
             $content,
         );
+    }
+
+    protected function renderIfBody(string $body, bool $include): string
+    {
+        if (! $include) {
+            return '';
+        }
+
+        $body = trim($body, "\r\n");
+
+        return $body === '' ? '' : $body."\n";
     }
 
     /**

@@ -16,7 +16,6 @@ export interface DemoArticleRow {
 export interface DemoArticlePageQuery {
   page: number;
   per_page: number;
-
   keyword?: string;
 
   title?: string;
@@ -51,16 +50,12 @@ export function updateDemoArticle(id: number, data: Partial<DemoArticleSavePaylo
 export function deleteDemoArticle(id: number) {
   return requestClient.delete(`/system/demo_articles/${id}`);
 }
-
-
 export function batchDeleteDemoArticles(ids: number[]) {
   return requestClient.post<{ deleted: number }>(
     '/system/demo_articles/batch-destroy',
     { ids },
   );
 }
-
-
 
 export function batchUpdateDemoArticleStatus(ids: number[], status: 0 | 1) {
   return requestClient.put<{ updated: number }>('/system/demo_articles/batch-status', {
