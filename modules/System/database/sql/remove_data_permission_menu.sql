@@ -1,6 +1,6 @@
 -- 删除「数据权限」菜单（/permission/data-permission）
 -- 数据范围改在角色管理中配置，由 DataScopeService 在接口层生效
--- 表前缀默认 sa_，若 config('starship.table_prefix') 不同请自行替换
+-- 表前缀默认 sa_，若 DB_PREFIX 环境变量 不同请自行替换
 
 SET @menu_id := (
     SELECT `id`

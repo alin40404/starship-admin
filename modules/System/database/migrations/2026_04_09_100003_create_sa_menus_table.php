@@ -1,6 +1,5 @@
 <?php
 
-use App\Support\StarshipTables;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -9,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create(StarshipTables::table('menus'), function (Blueprint $table) {
+        Schema::create('menus', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('parent_id')->default(0)->comment('父级ID');
             $table->tinyInteger('type')->comment('类型:1目录,2菜单,3按钮,4内嵌,5外链');
@@ -47,6 +46,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists(StarshipTables::table('menus'));
+        Schema::dropIfExists('menus');
     }
 };

@@ -8,9 +8,15 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Generator\App\Models\GeneratorTable;
 use Modules\Generator\App\Services\TableConfigService;
+use Modules\Generator\App\Support\ModulePathResolver;
 
 class TableConfigController extends Controller
 {
+    public function modules(ModulePathResolver $modulePathResolver): JsonResponse
+    {
+        return ApiResponse::success($modulePathResolver->availableModules());
+    }
+
     public function index(): JsonResponse
     {
         $items = GeneratorTable::query()

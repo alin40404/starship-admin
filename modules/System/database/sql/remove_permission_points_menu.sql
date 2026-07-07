@@ -1,6 +1,6 @@
 -- 删除「权限点管理」菜单（/permission/permission-points）及其按钮子节点
 -- 该页面未实现，权限点由「菜单管理」中 type=3 按钮维护
--- 表前缀默认 sa_，若 config('starship.table_prefix') 不同请自行替换
+-- 表前缀默认 sa_，若 DB_PREFIX 环境变量 不同请自行替换
 
 SET @menu_id := (
     SELECT `id`

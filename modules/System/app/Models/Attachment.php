@@ -2,7 +2,6 @@
 
 namespace Modules\System\App\Models;
 
-use App\Models\Concerns\HasStarshipTable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
@@ -10,12 +9,8 @@ use Modules\System\App\Support\StorageConfigRegistrar;
 
 class Attachment extends Model
 {
-    use HasStarshipTable;
 
-    protected static function starshipTableSuffix(): string
-    {
-        return 'attachments';
-    }
+    protected $table = 'attachments';
 
     protected $guarded = [];
 

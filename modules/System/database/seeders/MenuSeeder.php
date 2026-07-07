@@ -16,6 +16,7 @@ use Modules\System\App\Support\PostPermissions;
 use Modules\System\App\Support\RolePermissions;
 use Modules\System\App\Support\UserGroupPermissions;
 use Modules\System\Database\Seeders\Concerns\SeedsMenus;
+use Modules\Generator\App\Support\GeneratorPermissions;
 
 class MenuSeeder extends Seeder
 {
@@ -497,7 +498,7 @@ class MenuSeeder extends Seeder
                 ['name' => 'ApiDocs', 'title' => '接口文档', 'path' => '/dev/api-docs', 'permission' => 'system.api_docs', 'sort' => 603, 'icon' => 'ep:link'],
             ] as $m
         ) {
-            Menu::query()->create([
+            $devMenu = Menu::query()->create([
                 'parent_id' => $dev->id,
                 'type' => 2,
                 'name' => $m['name'],
@@ -510,6 +511,24 @@ class MenuSeeder extends Seeder
                 'other_settings' => $this->menuOther(1, 1),
                 'status' => 1,
             ]);
+
+            if ($m['path'] === '/dev/codegen') {
+                foreach (GeneratorPermissions::buttonDefinitions() as $btn) {
+                    Menu::query()->create([
+                        'parent_id' => $devMenu->id,
+                        'type' => 3,
+                        'name' => $btn['name'],
+                        'title' => $btn['title'],
+                        'path' => null,
+                        'component' => null,
+                        'permission' => $btn['permission'],
+                        'icon' => null,
+                        'sort' => $btn['sort'],
+                        'other_settings' => $this->menuOther(0),
+                        'status' => 1,
+                    ]);
+                }
+            }
         }
         }
 }

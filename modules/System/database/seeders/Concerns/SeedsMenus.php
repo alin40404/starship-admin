@@ -44,6 +44,7 @@ trait SeedsMenus
             '/platform/categories' => '/platform/category/index',
             '/platform/regions' => '/platform/region/index',
             '/resource/attachments' => '/resource/attachment/index',
+            '/dev/codegen' => '/dev/codegen/index',
         ];
         if (isset($permission[$path])) {
             return $permission[$path];

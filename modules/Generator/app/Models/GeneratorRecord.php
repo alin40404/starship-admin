@@ -2,13 +2,11 @@
 
 namespace Modules\Generator\App\Models;
 
-use App\Models\Concerns\HasStarshipTable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class GeneratorRecord extends Model
 {
-    use HasStarshipTable;
 
     protected $casts = [
         'files' => 'array',
@@ -17,10 +15,7 @@ class GeneratorRecord extends Model
 
     protected $guarded = [];
 
-    protected static function starshipTableSuffix(): string
-    {
-        return 'generator_records';
-    }
+    protected $table = 'generator_records';
 
     public function tableConfig(): BelongsTo
     {

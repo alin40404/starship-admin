@@ -3,13 +3,12 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use App\Support\StarshipTables;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create(StarshipTables::table('dict_items'), function (Blueprint $table) {
+        Schema::create('dict_items', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('dict_type_id')->comment('字典类型ID');
             $table->string('label', 100)->comment('显示文本');
@@ -29,6 +28,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists(StarshipTables::table('dict_items'));
+        Schema::dropIfExists('dict_items');
     }
 };

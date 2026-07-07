@@ -50,6 +50,7 @@ const PERMISSION_PAGE_BY_PATH: Record<string, string> = {
   '/platform/categories': 'views/platform/category/index.vue',
   '/platform/regions': 'views/platform/region/index.vue',
   '/resource/attachments': 'views/resource/attachment/index.vue',
+  '/dev/codegen': 'views/dev/codegen/index.vue',
 };
 
 /** 路由 meta 用：库内为 Iconify `collection:name`（如 ep:menu），空则用占位 */
@@ -76,6 +77,10 @@ function resolvePageComponent(path: string | null): string {
 
 /** 数据库 `component` 优先，否则与历史逻辑一致按 path 解析 */
 function resolveMenuPageComponent(node: StarshipMenuNode): string {
+  const path = node.path;
+  if (path && PERMISSION_PAGE_BY_PATH[path]) {
+    return PERMISSION_PAGE_BY_PATH[path]!;
+  }
   const fromDb = node.component?.trim();
   if (fromDb) {
     return fromDb;

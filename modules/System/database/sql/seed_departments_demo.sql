@@ -1,5 +1,5 @@
 -- 部门管理演示数据（已有库可执行，幂等）
--- 表前缀默认 sa_，若 config('starship.table_prefix') 不同请自行替换
+-- 表前缀默认 sa_，若 DB_PREFIX 环境变量 不同请自行替换
 
 SET @root_id := (
     SELECT `id` FROM `sa_departments`

@@ -1,6 +1,5 @@
 <?php
 
-use App\Support\StarshipTables;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -9,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create(StarshipTables::table('generator_tables'), function (Blueprint $table) {
+        Schema::create('generator_tables', function (Blueprint $table) {
             $table->id();
             $table->string('table_name', 128)->comment('物理表名');
             $table->string('class_name', 100)->comment('模型/控制器类名');
@@ -31,7 +30,7 @@ return new class extends Migration
             $table->index('status');
         });
 
-        Schema::create(StarshipTables::table('generator_columns'), function (Blueprint $table) {
+        Schema::create('generator_columns', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('generator_table_id')->comment('表配置ID');
             $table->string('column_name', 100)->comment('字段名');
@@ -52,7 +51,7 @@ return new class extends Migration
             $table->unique(['generator_table_id', 'column_name']);
         });
 
-        Schema::create(StarshipTables::table('generator_records'), function (Blueprint $table) {
+        Schema::create('generator_records', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('generator_table_id')->comment('表配置ID');
             $table->json('files')->comment('生成文件清单');
@@ -69,8 +68,8 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists(StarshipTables::table('generator_records'));
-        Schema::dropIfExists(StarshipTables::table('generator_columns'));
-        Schema::dropIfExists(StarshipTables::table('generator_tables'));
+        Schema::dropIfExists('generator_records');
+        Schema::dropIfExists('generator_columns');
+        Schema::dropIfExists('generator_tables');
     }
 };

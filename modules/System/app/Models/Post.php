@@ -6,18 +6,12 @@ use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Concerns\HasStarshipTable;
-use App\Support\StarshipTables;
 
 class Post extends Model
 {
-    use HasStarshipTable;
     use SoftDeletes;
 
-    protected static function starshipTableSuffix(): string
-    {
-        return 'posts';
-    }
+    protected $table = 'posts';
 
     protected $guarded = [];
 
@@ -28,6 +22,6 @@ class Post extends Model
 
     public function admins(): BelongsToMany
     {
-        return $this->belongsToMany(Admin::class, StarshipTables::table('admin_post'), 'post_id', 'admin_id');
+        return $this->belongsToMany(Admin::class, 'admin_post', 'post_id', 'admin_id');
     }
 }

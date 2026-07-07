@@ -8,19 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
-use App\Models\Concerns\HasStarshipTable;
-use App\Support\StarshipTables;
 
 class Admin extends Authenticatable
 {
     use HasApiTokens;
-    use HasStarshipTable;
     use SoftDeletes;
 
-    protected static function starshipTableSuffix(): string
-    {
-        return 'admins';
-    }
+    protected $table = 'admins';
 
     protected $fillable = [
         'username',
@@ -60,19 +54,19 @@ class Admin extends Authenticatable
 
     public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(Role::class, StarshipTables::table('admin_role'), 'admin_id', 'role_id');
+        return $this->belongsToMany(Role::class, 'admin_role', 'admin_id', 'role_id');
     }
 
     public function posts(): BelongsToMany
     {
-        return $this->belongsToMany(Post::class, StarshipTables::table('admin_post'), 'admin_id', 'post_id');
+        return $this->belongsToMany(Post::class, 'admin_post', 'admin_id', 'post_id');
     }
 
     public function userGroups(): BelongsToMany
     {
         return $this->belongsToMany(
             UserGroup::class,
-            StarshipTables::table('admin_user_group'),
+            'admin_user_group',
             'admin_id',
             'user_group_id',
         );

@@ -3,13 +3,12 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use App\Support\StarshipTables;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        $tableName = StarshipTables::table('role_dept');
+        $tableName = 'role_dept';
         if (Schema::hasTable($tableName)) {
             return;
         }
@@ -26,6 +25,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists(StarshipTables::table('role_dept'));
+        Schema::dropIfExists('role_dept');
     }
 };

@@ -1,6 +1,5 @@
 <?php
 
-use App\Support\StarshipTables;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -9,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create(StarshipTables::table('areas'), function (Blueprint $table) {
+        Schema::create('areas', function (Blueprint $table) {
             $table->increments('id')->comment('ID');
             $table->unsignedInteger('pid')->default(0)->comment('父级ID');
             $table->string('shortname', 100)->nullable()->comment('简称');
@@ -31,6 +30,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists(StarshipTables::table('areas'));
+        Schema::dropIfExists('areas');
     }
 };

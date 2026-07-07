@@ -6,17 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Concerns\HasStarshipTable;
 
 class Department extends Model
 {
-    use HasStarshipTable;
     use SoftDeletes;
 
-    protected static function starshipTableSuffix(): string
-    {
-        return 'departments';
-    }
+    protected $table = 'departments';
 
     protected $guarded = [];
 

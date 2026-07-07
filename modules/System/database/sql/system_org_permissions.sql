@@ -1,6 +1,6 @@
 -- 组织架构（部门 / 岗位 / 用户组）按钮权限
 -- 权限标识与 modules/System/app/Support/*Permissions.php 保持一致
--- 表前缀默认 sa_，若 config('starship.table_prefix') 不同请自行替换
+-- 表前缀默认 sa_，若 DB_PREFIX 环境变量 不同请自行替换
 
 SET @btn_other_settings := '{"hide_menu":1,"hide_submenu":0,"hide_in_breadcrumb":0,"hide_in_tab":0,"affix_tab":0,"keep_alive":0}';
 

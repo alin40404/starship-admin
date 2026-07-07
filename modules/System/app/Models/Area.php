@@ -2,21 +2,16 @@
 
 namespace Modules\System\App\Models;
 
-use App\Models\Concerns\HasStarshipTable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Area extends Model
 {
-    use HasStarshipTable;
 
     public $timestamps = false;
 
-    protected static function starshipTableSuffix(): string
-    {
-        return 'areas';
-    }
+    protected $table = 'areas';
 
     protected $guarded = [];
 

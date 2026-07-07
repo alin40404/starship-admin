@@ -13,6 +13,9 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
         Route::get('schemas/tables/{tableName}/columns', [SchemaController::class, 'columns'])
             ->middleware('admin.permission:'.GeneratorPermissions::QUERY);
 
+        Route::get('modules', [TableConfigController::class, 'modules'])
+            ->middleware('admin.permission:'.GeneratorPermissions::QUERY);
+
         Route::get('tables', [TableConfigController::class, 'index'])
             ->middleware('admin.permission:'.GeneratorPermissions::QUERY);
         Route::get('tables/{id}', [TableConfigController::class, 'show'])

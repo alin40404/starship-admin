@@ -1,5 +1,5 @@
 -- 角色自定义数据范围关联表（data_scope = 5）
--- 表前缀默认 sa_，若 config('starship.table_prefix') 不同请自行替换
+-- 表前缀默认 sa_，若 DB_PREFIX 环境变量 不同请自行替换
 -- 适用：无法执行 migrate 时手动建表
 
 CREATE TABLE IF NOT EXISTS `sa_role_dept` (

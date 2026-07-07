@@ -1,6 +1,5 @@
 <?php
 
-use App\Support\StarshipTables;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -9,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create(StarshipTables::table('system_demo_article'), function (Blueprint $table) {
+        Schema::create('system_demo_article', function (Blueprint $table) {
             $table->id();
             $table->string('title', 200)->comment('标题');
             $table->string('author', 100)->nullable()->comment('作者');
@@ -27,6 +26,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists(StarshipTables::table('system_demo_article'));
+        Schema::dropIfExists('system_demo_article');
     }
 };

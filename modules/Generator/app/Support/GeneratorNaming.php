@@ -2,7 +2,7 @@
 
 namespace Modules\Generator\App\Support;
 
-use App\Support\StarshipTables;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 final class GeneratorNaming
@@ -24,7 +24,7 @@ final class GeneratorNaming
      */
     public static function fromTableName(string $tableName, ?string $moduleSlug = null): array
     {
-        $prefix = StarshipTables::prefix();
+        $prefix = Schema::getConnection()->getTablePrefix();
         $withoutPrefix = Str::startsWith($tableName, $prefix)
             ? Str::after($tableName, $prefix)
             : $tableName;

@@ -5,16 +5,11 @@ namespace Modules\System\App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Concerns\HasStarshipTable;
 
 class Category extends Model
 {
-    use HasStarshipTable;
 
-    protected static function starshipTableSuffix(): string
-    {
-        return 'categories';
-    }
+    protected $table = 'categories';
 
     protected $guarded = [];
 

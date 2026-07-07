@@ -2,7 +2,6 @@
 
 namespace {{ $module_namespace }}\Models;
 
-use App\Models\Concerns\HasStarshipTable;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
 @if($has_soft_delete)
@@ -11,15 +10,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class {{ $model_class }} extends Model
 {
-    use HasStarshipTable;
 @if($has_soft_delete)
     use SoftDeletes;
 @endif
 
-    protected static function starshipTableSuffix(): string
-    {
-        return '{{ $table_suffix }}';
-    }
+    protected $table = '{{ $table_suffix }}';
 
     protected $guarded = [];
 

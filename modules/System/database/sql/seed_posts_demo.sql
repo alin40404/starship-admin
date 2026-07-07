@@ -1,5 +1,5 @@
 -- 岗位管理演示数据（已有库可执行，幂等）
--- 表前缀默认 sa_，若 config('starship.table_prefix') 不同请自行替换
+-- 表前缀默认 sa_，若 DB_PREFIX 环境变量 不同请自行替换
 
 INSERT INTO `sa_posts` (`name`, `code`, `sort`, `status`, `remark`, `created_at`, `updated_at`)
 SELECT src.`name`, src.`code`, src.`sort`, src.`status`, src.`remark`, NOW(), NOW()

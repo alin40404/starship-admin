@@ -2,13 +2,11 @@
 
 namespace Modules\Generator\App\Models;
 
-use App\Models\Concerns\HasStarshipTable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class GeneratorTable extends Model
 {
-    use HasStarshipTable;
 
     protected $casts = [
         'options' => 'array',
@@ -17,10 +15,7 @@ class GeneratorTable extends Model
 
     protected $guarded = [];
 
-    protected static function starshipTableSuffix(): string
-    {
-        return 'generator_tables';
-    }
+    protected $table = 'generator_tables';
 
     public function columns(): HasMany
     {

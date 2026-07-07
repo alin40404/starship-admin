@@ -1,6 +1,6 @@
 -- 角色管理（/permission/roles）按钮权限
 -- 权限标识与 modules/System/app/Support/RolePermissions.php 保持一致
--- 表前缀默认 sa_，若 config('starship.table_prefix') 不同请自行替换
+-- 表前缀默认 sa_，若 DB_PREFIX 环境变量 不同请自行替换
 -- 适用：已初始化库、System 模块 Seeder 已跑过但未包含角色按钮权限时执行
 
 SET @role_parent_id := (

@@ -2,7 +2,6 @@
 
 namespace Modules\System\App\Services;
 
-use App\Support\StarshipTables;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Modules\System\App\Models\Admin;
@@ -29,7 +28,7 @@ class AdminPermissionService
         }
 
         $menuIds = collect(
-            DB::table(StarshipTables::table('role_menu'))
+            DB::table('role_menu')
                 ->whereIn('role_id', $roleIds)
                 ->pluck('menu_id')
         )->unique()->values();

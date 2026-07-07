@@ -2,13 +2,11 @@
 
 namespace Modules\Generator\App\Models;
 
-use App\Models\Concerns\HasStarshipTable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class GeneratorColumn extends Model
 {
-    use HasStarshipTable;
 
     protected $casts = [
         'is_pk' => 'boolean',
@@ -20,10 +18,7 @@ class GeneratorColumn extends Model
 
     protected $guarded = [];
 
-    protected static function starshipTableSuffix(): string
-    {
-        return 'generator_columns';
-    }
+    protected $table = 'generator_columns';
 
     public function tableConfig(): BelongsTo
     {

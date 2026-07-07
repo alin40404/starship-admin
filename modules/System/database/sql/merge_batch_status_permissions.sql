@@ -1,5 +1,5 @@
 -- 将 batch_enable / batch_disable 合并为 batch_status（已有库迁移）
--- 表前缀默认 sa_，若 config('starship.table_prefix') 不同请自行替换
+-- 表前缀默认 sa_，若 DB_PREFIX 环境变量 不同请自行替换
 -- 执行后请重新登录以刷新权限
 
 SET @btn_other_settings := '{"hide_menu":1,"hide_submenu":0,"hide_in_breadcrumb":0,"hide_in_tab":0,"affix_tab":0,"keep_alive":0}';
