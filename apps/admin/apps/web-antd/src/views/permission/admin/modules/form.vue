@@ -9,6 +9,7 @@ import { computed, nextTick, reactive, ref, watch } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { useVbenDrawer } from '@vben/common-ui';
+import { usePreferences } from '@vben/preferences';
 
 import { message } from 'ant-design-vue';
 
@@ -25,6 +26,7 @@ import { buildAdminFormSchema, mapDeptForTreeSelect } from '../data';
 const emits = defineEmits<{ success: [] }>();
 
 const { hasAccessByCodes } = useAccess();
+const { isMobile } = usePreferences();
 
 const editingId = ref<number | null>(null);
 const editingIsSuperAdmin = ref(false);
@@ -73,6 +75,20 @@ const [Form, formApi] = useVbenForm(
     showDefaultActions: false,
     wrapperClass: 'grid-cols-1',
   }) as any,
+);
+
+watch(
+  isMobile,
+  (mobile) => {
+    formApi.setState({
+      commonConfig: {
+        componentProps: { class: 'w-full' },
+        labelClass: mobile ? 'justify-start' : undefined,
+      },
+      layout: mobile ? 'vertical' : 'horizontal',
+    });
+  },
+  { immediate: true },
 );
 
 watch(
