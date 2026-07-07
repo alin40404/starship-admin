@@ -322,6 +322,9 @@ onMounted(() => {
       <template v-if="$slots.toolbar" #buttons>
         <slot name="toolbar"></slot>
       </template>
+      <template v-if="$slots['toolbar-tools']" #tools>
+        <slot name="toolbar-tools"></slot>
+      </template>
     </VxeToolbar>
 
     <div v-if="showSearchBar" class="mobile-crud-list__search shrink-0 pb-3">

@@ -55,7 +55,7 @@
 }
 
 .mobile-crud-list__toolbar:has(.vxe-tools--wrapper:not(:empty)) .vxe-tools--operate {
-  margin-left: 0;
+  margin-left: 0.5rem;
 }
 
 .mobile-crud-list__toolbar .vxe-tools--operate {

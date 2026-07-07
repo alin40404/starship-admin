@@ -2,7 +2,7 @@
 import type { CrudGridColumn } from '#/adapter/mobile-list';
 import type { AttachmentRow } from '#/api/system/attachment';
 
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, provide, reactive, ref, watch } from 'vue';
 
 import { IconifyIcon, Plus } from '@vben/icons';
 import { $t } from '@vben/locales';
@@ -12,6 +12,7 @@ import {
   MobileCrudList,
   useMobileCrudList,
 } from '#/adapter/mobile-list';
+import { VxeToolbar } from '@vben/plugins/vxe-table';
 import { fetchAttachmentPage } from '#/api/system/attachment';
 import {
   Badge,
@@ -58,6 +59,24 @@ const mobileListRef = ref<{
 } | null>(null);
 const filterDrawerOpen = ref(false);
 const isFlowMode = computed(() => props.viewMode === 'flow');
+const isMaximized = ref(false);
+
+const listToolbarConfig = {
+  custom: true,
+  refresh: true,
+  zoom: true,
+};
+
+const flowToolbarRefreshOptions = {
+  queryMethod: () => reloadFlow(),
+};
+
+provide('$xeGrid', {
+  isMaximized: () => isMaximized.value,
+  triggerZoomEvent: () => {
+    isMaximized.value = !isMaximized.value;
+  },
+});
 
 const mobileConfig = computed(() => {
   const base = buildAttachmentMobileCrudConfig({
@@ -218,12 +237,22 @@ defineExpose({ clearSelection, reload });
 </script>
 
 <template>
-  <div class="attachment-mobile-body flex min-h-0 flex-1 flex-col overflow-hidden">
-    <div class="attachment-mobile-toolbar mb-2 shrink-0">
-      <div class="attachment-toolbar-actions">
+  <div
+    class="attachment-mobile-body flex min-h-0 flex-1 flex-col overflow-hidden"
+    :class="{ 'mobile-crud-list--maximize': isMaximized }"
+  >
+    <MobileCrudList
+      v-if="!isFlowMode"
+      ref="mobileListRef"
+      v-model:selected-rows="selectedRows"
+      class="min-h-0 flex-1"
+      :config="mobileConfig"
+      :toolbar-config="listToolbarConfig"
+    >
+      <template #toolbar>
         <div
           v-if="selectedRows.length > 0"
-          class="attachment-toolbar-actions__panel"
+          class="attachment-toolbar-actions__panel vxe-grid-batch-toolbar"
         >
           <Button v-if="canBatchDelete" danger @click="emit('batchDelete')">
             批量删除（{{ selectedRows.length }}）
@@ -241,46 +270,98 @@ defineExpose({ clearSelection, reload });
           <Plus class="size-4" />
           上传附件
         </Button>
-      </div>
-      <div
-        class="attachment-view-toggle"
-        :class="{ 'attachment-view-toggle--hidden': selectedRows.length > 0 }"
-      >
-        <Tooltip title="列表视图">
-          <button
-            class="attachment-view-toggle__btn"
-            :class="{ 'is-active': viewMode === 'list' }"
-            type="button"
-            @click="setViewMode('list')"
-          >
-            <IconifyIcon class="size-4" icon="lucide:list" />
-          </button>
-        </Tooltip>
-        <Tooltip title="流式视图">
-          <button
-            class="attachment-view-toggle__btn"
-            :class="{ 'is-active': viewMode === 'flow' }"
-            type="button"
-            @click="setViewMode('flow')"
-          >
-            <IconifyIcon class="size-4" icon="lucide:layout-grid" />
-          </button>
-        </Tooltip>
-      </div>
-    </div>
-
-    <MobileCrudList
-      v-if="!isFlowMode"
-      ref="mobileListRef"
-      v-model:selected-rows="selectedRows"
-      class="min-h-0 flex-1"
-      :config="mobileConfig"
-    />
+      </template>
+      <template #toolbar-tools>
+        <div
+          class="attachment-view-toggle ml-2"
+          :class="{ 'attachment-view-toggle--hidden': selectedRows.length > 0 }"
+        >
+          <Tooltip title="列表视图">
+            <button
+              class="attachment-view-toggle__btn"
+              :class="{ 'is-active': viewMode === 'list' }"
+              type="button"
+              @click="setViewMode('list')"
+            >
+              <IconifyIcon class="size-4" icon="lucide:list" />
+            </button>
+          </Tooltip>
+          <Tooltip title="流式视图">
+            <button
+              class="attachment-view-toggle__btn"
+              :class="{ 'is-active': viewMode === 'flow' }"
+              type="button"
+              @click="setViewMode('flow')"
+            >
+              <IconifyIcon class="size-4" icon="lucide:layout-grid" />
+            </button>
+          </Tooltip>
+        </div>
+      </template>
+    </MobileCrudList>
 
     <div
       v-else
       class="attachment-mobile-flow flex min-h-0 flex-1 flex-col overflow-hidden"
     >
+      <VxeToolbar
+        class="mobile-crud-list__toolbar mb-0 shrink-0"
+        :refresh="true"
+        :refresh-options="flowToolbarRefreshOptions"
+        size="small"
+        :zoom="true"
+      >
+        <template #buttons>
+          <div
+            v-if="selectedRows.length > 0"
+            class="attachment-toolbar-actions__panel vxe-grid-batch-toolbar"
+          >
+            <Button v-if="canBatchDelete" danger @click="emit('batchDelete')">
+              批量删除（{{ selectedRows.length }}）
+            </Button>
+            <Button class="ml-2" type="link" @click="clearSelection">
+              取消选择
+            </Button>
+          </div>
+          <Button
+            v-else-if="canUpload"
+            class="attachment-toolbar-actions__panel"
+            type="primary"
+            @click="emit('upload')"
+          >
+            <Plus class="size-4" />
+            上传附件
+          </Button>
+        </template>
+        <template #tools>
+          <div
+            class="attachment-view-toggle ml-2"
+            :class="{ 'attachment-view-toggle--hidden': selectedRows.length > 0 }"
+          >
+            <Tooltip title="列表视图">
+              <button
+                class="attachment-view-toggle__btn"
+                :class="{ 'is-active': viewMode === 'list' }"
+                type="button"
+                @click="setViewMode('list')"
+              >
+                <IconifyIcon class="size-4" icon="lucide:list" />
+              </button>
+            </Tooltip>
+            <Tooltip title="流式视图">
+              <button
+                class="attachment-view-toggle__btn"
+                :class="{ 'is-active': viewMode === 'flow' }"
+                type="button"
+                @click="setViewMode('flow')"
+              >
+                <IconifyIcon class="size-4" icon="lucide:layout-grid" />
+              </button>
+            </Tooltip>
+          </div>
+        </template>
+      </VxeToolbar>
+
       <div v-if="showFlowSearchBar" class="mobile-crud-list__search shrink-0 pb-3">
         <Space.Compact block class="mobile-crud-list__search-compact w-full">
           <Button
@@ -386,31 +467,14 @@ defineExpose({ clearSelection, reload });
   padding: 8px;
 }
 
-.attachment-mobile-toolbar {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  justify-content: space-between;
-  flex-shrink: 0;
-  min-height: 32px;
-}
-
-.attachment-mobile-toolbar .ant-btn {
+.attachment-mobile-body :deep(.mobile-crud-list__toolbar .ant-btn) {
   display: inline-flex;
   align-items: center;
   font-size: var(--vben-table-action-button-font-size, 13px) !important;
 }
 
-.attachment-toolbar-actions {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  min-width: 0;
-  overflow: hidden;
-}
-
 .attachment-toolbar-actions__panel {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   flex-wrap: nowrap;
 }

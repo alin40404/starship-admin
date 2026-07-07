@@ -135,6 +135,7 @@ export function useResponsiveCrud<T extends Record<string, any>>(
                 },
                 {
                   toolbar: () => slots['toolbar-actions']?.(),
+                  'toolbar-tools': () => slots['toolbar-tools']?.(),
                 },
               ),
             ],
