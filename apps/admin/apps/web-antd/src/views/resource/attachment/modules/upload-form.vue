@@ -96,7 +96,7 @@ defineExpose({ open });
           :multiple="true"
           :show-upload-list="true"
         >
-          <p class="text-muted-foreground py-4 text-sm">
+          <p class="text-muted-foreground px-4 py-4 text-sm">
             点击或拖拽文件到此区域上传，支持多文件；分类将由系统按文件格式自动识别
           </p>
         </Upload.Dragger>
@@ -112,7 +112,7 @@ defineExpose({ open });
           :multiple="true"
           :show-upload-list="true"
         >
-          <p class="text-muted-foreground py-4 text-sm">
+          <p class="text-muted-foreground px-4 py-4 text-sm">
             点击或拖拽文件到此区域上传，支持多文件；分类将由系统按文件格式自动识别
           </p>
         </Upload.Dragger>
