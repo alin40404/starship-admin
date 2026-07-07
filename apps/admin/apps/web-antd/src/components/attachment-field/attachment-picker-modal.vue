@@ -4,8 +4,9 @@ import type { AttachmentRow } from '#/api/system/attachment';
 
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 
-import { useVbenModal } from '@vben/common-ui';
+import { useVbenDrawer, useVbenModal } from '@vben/common-ui';
 import { IconifyIcon } from '@vben/icons';
+import { usePreferences } from '@vben/preferences';
 
 import { useDebounceFn, useElementSize } from '@vueuse/core';
 import { Button, Input, message, Tooltip } from 'ant-design-vue';
@@ -42,6 +43,8 @@ const emit = defineEmits<{
   'update:open': [open: boolean];
 }>();
 
+const { isMobile } = usePreferences();
+
 const fileNameQuery = ref('');
 const selectedRows = ref<AttachmentRow[]>([]);
 const flowRows = ref<AttachmentRow[]>([]);
@@ -67,6 +70,30 @@ const selectedFlowIds = computed({
 
 const isFlowMode = computed(() => viewMode.value === 'flow');
 const hasSelection = computed(() => selectedRows.value.length > 0);
+
+const contentWrapClass = computed(() =>
+  isMobile.value
+    ? 'attachment-picker-body attachment-picker-body--mobile bg-card flex min-h-0 flex-1 flex-col overflow-hidden p-2'
+    : 'attachment-picker-body bg-card flex h-[min(76vh,720px)] min-h-[460px] flex-col overflow-hidden p-3',
+);
+
+const layoutClass = computed(() => ({
+  'attachment-picker-layout--flow': isFlowMode.value,
+  'attachment-picker-layout--mobile': isMobile.value,
+}));
+
+type PopupApi = {
+  close: () => void;
+  open: () => void;
+};
+
+function getActivePopupApi(): PopupApi {
+  return (isMobile.value ? drawerApi : modalApi) as PopupApi;
+}
+
+function closePopup() {
+  getActivePopupApi().close();
+}
 
 async function syncFlowTeleportTarget() {
   await nextTick();
@@ -159,7 +186,24 @@ function syncGridColumns() {
   } as VxeTableGridOptions<AttachmentRow>);
 }
 
+async function isGridReady() {
+  return typeof gridApi.grid?.commitProxy === 'function';
+}
+
+async function waitForGridReady(maxAttempts = 20) {
+  for (let i = 0; i < maxAttempts; i++) {
+    if (await isGridReady()) {
+      return true;
+    }
+    await nextTick();
+  }
+  return false;
+}
+
 async function refreshGrid() {
+  if (!(await waitForGridReady())) {
+    return;
+  }
   await gridApi.query();
   await nextTick();
   restoreInitialSelection();
@@ -215,7 +259,7 @@ function confirmWithRows(rows: AttachmentRow[]) {
     return;
   }
   emit('confirm', props.multiple ? urls : [urls[0]!]);
-  modalApi.close();
+  closePopup();
 }
 
 function handleConfirm() {
@@ -295,10 +339,16 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
 });
 
 watch(
-  [gridWrapHeight, isFlowMode],
-  ([height, flow]) => {
+  [gridWrapHeight, isFlowMode, isMobile],
+  async ([height, flow]) => {
+    if (!(await isGridReady())) {
+      return;
+    }
     gridApi.setGridOptions({
-      height: flow ? 'auto' : Math.max(Math.floor(height), 240),
+      height:
+        flow && !isMobile.value
+          ? 'auto'
+          : Math.max(Math.floor(height), isMobile.value ? 200 : 240),
     });
   },
   { immediate: true },
@@ -310,18 +360,33 @@ watch(flowRows, () => {
   }
 });
 
+function handlePopupOpenChange(isOpen: boolean) {
+  emit('update:open', isOpen);
+  if (!isOpen) {
+    fileNameQuery.value = '';
+    clearSelection();
+    return;
+  }
+  syncGridColumns();
+}
+
+function handlePopupOpened() {
+  void refreshGrid();
+}
+
 const [Modal, modalApi] = useVbenModal({
+  destroyOnClose: true,
   fullscreenButton: false,
-  onOpenChange(isOpen: boolean) {
-    emit('update:open', isOpen);
-    if (!isOpen) {
-      fileNameQuery.value = '';
-      clearSelection();
-      return;
-    }
-    syncGridColumns();
-    void refreshGrid();
-  },
+  onOpenChange: handlePopupOpenChange,
+  onOpened: handlePopupOpened,
+});
+
+const [Drawer, drawerApi] = useVbenDrawer({
+  destroyOnClose: true,
+  onOpenChange: handlePopupOpenChange,
+  onOpened: handlePopupOpened,
+  showCancelButton: false,
+  showConfirmButton: false,
 });
 
 watch(
@@ -335,10 +400,11 @@ watch(
 watch(
   () => props.open,
   (isOpen) => {
+    const api = getActivePopupApi();
     if (isOpen) {
-      modalApi.open();
+      api.open();
     } else {
-      modalApi.close();
+      api.close();
     }
   },
 );
@@ -346,17 +412,16 @@ watch(
 
 <template>
   <Modal
+    v-if="!isMobile"
     class="w-[1180px] max-w-[96vw]"
     content-class="flex min-h-0 flex-1 flex-col overflow-hidden !p-0"
     title="选择附件"
   >
-    <div
-      class="bg-card flex h-[min(76vh,720px)] min-h-[460px] flex-col overflow-hidden p-3"
-    >
+    <div :class="contentWrapClass">
       <div
         ref="gridWrapRef"
         class="attachment-picker-layout min-h-0 flex-1"
-        :class="{ 'attachment-picker-layout--flow': isFlowMode }"
+        :class="layoutClass"
       >
         <div
           ref="layoutRef"
@@ -418,7 +483,7 @@ watch(
     </div>
 
     <template #footer>
-      <Button @click="modalApi.close()">取消</Button>
+      <Button @click="closePopup()">取消</Button>
       <Button
         type="primary"
         class="attachment-picker-confirm"
@@ -429,6 +494,90 @@ watch(
       </Button>
     </template>
   </Modal>
+
+  <Drawer
+    v-else
+    class="h-full max-h-[100dvh] w-full"
+    content-class="flex min-h-0 flex-1 flex-col overflow-hidden !p-0"
+    title="选择附件"
+  >
+    <div :class="contentWrapClass">
+      <div
+        ref="gridWrapRef"
+        class="attachment-picker-layout min-h-0 flex-1"
+        :class="layoutClass"
+      >
+        <div
+          ref="layoutRef"
+          class="attachment-picker-layout__inner h-full min-h-0"
+          :class="{ 'attachment-picker-layout__inner--flow': isFlowMode }"
+        >
+          <Grid>
+            <template #toolbar-actions>
+              <div class="attachment-picker-search">
+                <Input
+                  v-model:value="fileNameQuery"
+                  allow-clear
+                  class="attachment-picker-search__input"
+                  placeholder="搜索文件名"
+                />
+              </div>
+            </template>
+            <template #toolbar-tools>
+              <div class="attachment-view-toggle ml-2">
+                <Tooltip title="列表视图">
+                  <button
+                    class="attachment-view-toggle__btn"
+                    :class="{ 'is-active': viewMode === 'list' }"
+                    type="button"
+                    @click="setViewMode('list')"
+                  >
+                    <IconifyIcon class="size-4" icon="lucide:list" />
+                  </button>
+                </Tooltip>
+                <Tooltip title="流式视图">
+                  <button
+                    class="attachment-view-toggle__btn"
+                    :class="{ 'is-active': viewMode === 'flow' }"
+                    type="button"
+                    @click="setViewMode('flow')"
+                  >
+                    <IconifyIcon class="size-4" icon="lucide:layout-grid" />
+                  </button>
+                </Tooltip>
+              </div>
+            </template>
+          </Grid>
+
+          <Teleport
+            v-if="isFlowMode && flowTeleportTarget"
+            :to="flowTeleportTarget"
+          >
+            <AttachmentFlowView
+              v-model:selected-ids="selectedFlowIds"
+              class="attachment-flow-panel"
+              show-actions
+              :show-copy="false"
+              :rows="flowRows"
+              @open="onOpenAttachment"
+            />
+          </Teleport>
+        </div>
+      </div>
+    </div>
+
+    <template #footer>
+      <Button @click="closePopup()">取消</Button>
+      <Button
+        type="primary"
+        class="attachment-picker-confirm"
+        :class="{ 'is-inactive': !hasSelection }"
+        @click="handleConfirm"
+      >
+        确定
+      </Button>
+    </template>
+  </Drawer>
 </template>
 
 <style scoped>
@@ -547,5 +696,55 @@ watch(
 .attachment-view-toggle__btn.is-active {
   background: hsl(var(--primary) / 0.1);
   color: hsl(var(--primary));
+}
+
+.attachment-picker-body--mobile {
+  height: 100%;
+}
+
+.attachment-picker-layout--mobile.attachment-picker-layout--flow
+  .attachment-flow-panel {
+  padding: 0;
+}
+
+.attachment-picker-layout--mobile.attachment-picker-layout--flow
+  :deep(.attachment-flow-view) {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  overflow: auto;
+  border-radius: 0;
+}
+
+.attachment-picker-layout--mobile.attachment-picker-layout--flow
+  :deep(.attachment-flow-grid) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 8px;
+}
+
+.attachment-picker-layout--mobile.attachment-picker-layout--flow
+  :deep(.attachment-flow-item) {
+  aspect-ratio: 1;
+}
+
+.attachment-picker-layout--mobile:not(.attachment-picker-layout--flow)
+  :deep(.h-full.rounded-md.bg-card) {
+  flex: 1;
+  min-height: 0;
+}
+
+.attachment-picker-layout--mobile .attachment-picker-search {
+  flex: 1;
+  min-width: 0;
+}
+
+.attachment-picker-layout--mobile .attachment-picker-search__input {
+  width: 100%;
+  max-width: none;
+}
+
+.attachment-picker-layout--mobile :deep(.vxe-grid--pager-wrapper) {
+  flex-shrink: 0;
 }
 </style>
