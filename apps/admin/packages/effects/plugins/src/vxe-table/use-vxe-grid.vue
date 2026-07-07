@@ -238,6 +238,17 @@ const options = computed(() => {
       },
     );
   }
+  // 移动端收窄表格内虚拟滚动条（X/Y 轴）
+  if (isMobile.value) {
+    mergedOptions.scrollbarConfig = mergeWithArrayOverride(
+      {},
+      mergedOptions.scrollbarConfig,
+      {
+        width: 3,
+        height: 3,
+      },
+    );
+  }
   if (mergedOptions.formConfig) {
     mergedOptions.formConfig.enabled = false;
     if (tableData.value && tableData.value.length > 0) {
