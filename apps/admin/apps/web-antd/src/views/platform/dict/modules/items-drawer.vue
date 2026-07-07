@@ -136,9 +136,8 @@ const [Drawer, drawerApi] = useVbenDrawer({
   <Drawer
     :title="drawerTitle"
     class="max-w-[860px] w-[94vw]"
-    content-class="flex min-h-0 flex-1 flex-col overflow-hidden"
+    content-class="flex min-h-0 flex-1 flex-col overflow-hidden p-2"
   >
-    <DictItemForm ref="itemFormRef" @success="onRefresh" />
     <div ref="gridWrapRef" class="min-h-0 flex-1">
       <CrudView>
         <template #toolbar-actions>
@@ -154,4 +153,5 @@ const [Drawer, drawerApi] = useVbenDrawer({
       </CrudView>
     </div>
   </Drawer>
+  <DictItemForm ref="itemFormRef" @success="onRefresh" />
 </template>
