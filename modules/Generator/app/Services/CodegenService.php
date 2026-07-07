@@ -83,6 +83,9 @@ class CodegenService
         $viewData = $this->buildViewData($config);
         $files = $this->buildFiles($config, $viewData);
         $force = (bool) ($options['force'] ?? false);
+        $moduleDir = $this->modulePathResolver->resolveModuleDirectory($config->module_slug);
+
+        $this->fileWriter->assertAdminRouteLoaderRegistered($moduleDir.'/routes/admin.php');
 
         if ($dryRun) {
             return [
@@ -101,31 +104,11 @@ class CodegenService
             ];
         }
 
-        $writeResult = $this->fileWriter->writeMany($files, $force);
-
-        $routeFile = $this->modulePathResolver
-            ->resolveModuleDirectory($config->module_slug)
-            .'/routes/admin.php';
-        $routeSnippet = $this->renderer->render('backend/routes.snippet.stub', $viewData);
-
-        if ($force || ! is_file($routeFile) || ! str_contains((string) file_get_contents($routeFile), '@generator:'.$viewData['route_marker'].':start')) {
-            if (! $dryRun) {
-                $writeResult['written'][] = $this->fileWriter->appendRouteSnippet(
-                    $routeFile,
-                    $viewData['route_marker'],
-                    $routeSnippet,
-                    [
-                        'use '.$viewData['module_namespace'].'\\Http\\Controllers\\Admin\\'.$viewData['controller_class'].';',
-                        'use '.$viewData['module_namespace'].'\\Support\\'.$viewData['permissions_class'].';',
-                    ],
-                );
-            }
-        } else {
-            $writeResult['skipped'][] = [
-                'path' => $routeFile,
-                'reason' => 'route_exists',
-            ];
+        if (! $dryRun) {
+            $this->fileWriter->ensureAdminRouteLoader($moduleDir);
         }
+
+        $writeResult = $this->fileWriter->writeMany($files, $force);
 
         return array_merge($writeResult, [
             'config' => $config,
@@ -166,6 +149,7 @@ class CodegenService
             'permissions_class' => GeneratorNaming::permissionsClassName($config->class_name),
             'table_suffix' => $naming['table_suffix'],
             'route_marker' => $naming['table_suffix'],
+            'table_name' => $config->table_name,
             'business_name' => $config->business_name,
             'api_prefix' => $config->api_prefix,
             'permission_prefix' => $config->permission_prefix,
@@ -226,6 +210,12 @@ class CodegenService
                 'content' => $this->renderer->render('backend/permissions.stub', $viewData),
             ],
             [
+                'path' => $moduleDir.'/routes/admin-generator/'.$viewData['route_marker'].'.php',
+                'content' => $this->normalizeGeneratedRouteContent(
+                    $this->renderer->render('backend/routes.generated.stub', $viewData),
+                ),
+            ],
+            [
                 'path' => $frontendRoot.'/api/system/'.$viewData['entity_kebab'].'.ts',
                 'content' => $this->renderer->render('frontend/api.stub', $viewData),
             ],
@@ -248,6 +238,14 @@ class CodegenService
         ];
 
         return $files;
+    }
+
+    protected function normalizeGeneratedRouteContent(string $content): string
+    {
+        $content = str_replace("\r\n", "\n", $content);
+        $content = (string) preg_replace("/\n{3,}/", "\n\n", rtrim($content));
+
+        return $content."\n";
     }
 
     protected function buildFormRulesBody($formColumns): string

@@ -54,7 +54,7 @@ php artisan generator:crud sa_system_demo_article \
 - 落盘位置：用户可选模块（`--module`），模块必须已存在
 - 冲突策略：默认跳过已存在文件，`--force` 覆盖
 - 菜单注册：写入 DB `component` 字段，不改 `menu.ts`
-- 路由注册：追加 snippet 到目标模块 `routes/admin.php`（带 `@generator` 标记）
+- 路由注册：写入目标模块 `routes/admin-generator/{table_suffix}.php`，由 `routes/admin.php` 中的 loader 自动加载
 - 审计：写入 `sa_generator_records`，并触发 `generator.code.generated` 事件
 
 ## 生成产物
@@ -63,7 +63,16 @@ php artisan generator:crud sa_system_demo_article \
 - `app/Models/{Class}.php`
 - `app/Http/Controllers/Admin/{Class}Controller.php`
 - `app/Support/{Class}Permissions.php`
-- `routes/admin.php` 路由片段
+- `routes/admin-generator/{table_suffix}.php` 管理端独立路由文件
+- `routes/admin-generator/_loader.php` 管理端路由加载器（首次生成时自动创建）
+
+**前置条件（每个模块一次性配置）**
+
+在目标模块 `routes/admin.php` 的对应路由组内添加：
+
+```php
+require __DIR__.'/admin-generator/_loader.php';
+```
 
 **前端**
 - `api/system/{entity}.ts`

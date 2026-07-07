@@ -1,0 +1,33 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * 由 generator:crud 自动生成
+ * 数据表：{{ $table_name }}
+ * 请勿手工修改，重新执行 generator:crud 即可更新
+ */
+
+use Illuminate\Support\Facades\Route;
+use {{ $module_namespace }}\Http\Controllers\Admin\{{ $controller_class }};
+use {{ $module_namespace }}\Support\{{ $permissions_class }};
+
+Route::get('{{ $api_prefix }}', [{{ $controller_class }}::class, 'index'])
+    ->middleware('admin.permission:'.{{ $permissions_class }}::QUERY);
+Route::post('{{ $api_prefix }}', [{{ $controller_class }}::class, 'store'])
+    ->middleware('admin.permission:'.{{ $permissions_class }}::CREATE);
+
+@if($has_batch_delete)
+Route::post('{{ $api_prefix }}/batch-destroy', [{{ $controller_class }}::class, 'batchDestroy'])
+    ->middleware('admin.permission:'.{{ $permissions_class }}::BATCH_DELETE);
+@endif
+@if($has_batch_status)
+
+Route::put('{{ $api_prefix }}/batch-status', [{{ $controller_class }}::class, 'batchUpdateStatus'])
+    ->middleware('admin.permission:'.{{ $permissions_class }}::BATCH_STATUS);
+@endif
+
+Route::put('{{ $api_prefix }}/{id}', [{{ $controller_class }}::class, 'update'])
+    ->middleware('admin.permission:'.{{ $permissions_class }}::UPDATE);
+Route::delete('{{ $api_prefix }}/{id}', [{{ $controller_class }}::class, 'destroy'])
+    ->middleware('admin.permission:'.{{ $permissions_class }}::DELETE);
