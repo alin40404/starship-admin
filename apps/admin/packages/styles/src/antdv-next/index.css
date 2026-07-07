@@ -34,6 +34,11 @@
   }
 }
 
+/** 表单中 InputNumber 配合 w-full 时撑满控件区域（Ant Design 默认固定宽度） */
+.ant-input-number.w-full {
+  width: 100%;
+}
+
 .ant-message-notice-content,
 .ant-notification-notice {
   &:is(.dark *) {
