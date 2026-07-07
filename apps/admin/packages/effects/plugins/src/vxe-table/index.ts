@@ -3,6 +3,8 @@ export type { VxeTableGridColumns, VxeTableGridOptions } from './types';
 export * from './use-vxe-grid';
 
 export { default as VbenVxeGrid } from './use-vxe-grid.vue';
+
+export { VxeToolbar } from './toolbar-export';
 export type {
   VxeGridListeners,
   VxeGridProps,

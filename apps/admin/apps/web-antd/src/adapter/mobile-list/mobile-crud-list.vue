@@ -1,7 +1,7 @@
 <script lang="ts" setup generic="T extends Record<string, any>">
 import type { MobileCrudListConfig } from './types';
 
-import { computed, onMounted, reactive, watch } from 'vue';
+import { computed, onMounted, provide, reactive, ref, watch } from 'vue';
 
 import { EmptyIcon, IconifyIcon } from '@vben/icons';
 import { preferences } from '@vben/preferences';
@@ -9,6 +9,7 @@ import { $t } from '@vben/locales';
 import { get } from '@vben/utils';
 
 import { useVbenForm } from '#/adapter/form';
+import { VxeToolbar } from '@vben/plugins/vxe-table';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 
 import {
@@ -33,6 +34,11 @@ import './mobile-crud-list.css';
 
 const props = defineProps<{
   config: MobileCrudListConfig<T>;
+  toolbarConfig?: {
+    custom?: boolean;
+    refresh?: boolean;
+    zoom?: boolean;
+  };
 }>();
 
 const configRef = computed(() => props.config);
@@ -138,6 +144,25 @@ const searchPlaceholder = computed(
   () => props.config.search?.placeholder ?? $t('common.search'),
 );
 
+const toolbarRefreshOptions = {
+  queryMethod: () => loadData(),
+};
+
+const showToolbarRefresh = computed(
+  () => props.toolbarConfig?.refresh !== false,
+);
+const showToolbarZoom = computed(() => !!props.toolbarConfig?.zoom);
+const showToolbarCustom = computed(() => !!props.toolbarConfig?.custom);
+
+const isMaximized = ref(false);
+
+provide('$xeGrid', {
+  isMaximized: () => isMaximized.value,
+  triggerZoomEvent: () => {
+    isMaximized.value = !isMaximized.value;
+  },
+});
+
 const showSearchBar = computed(
   () =>
     selectionEnabled.value ||
@@ -217,10 +242,22 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="mobile-crud-list flex h-full min-h-0 flex-col">
-    <div v-if="$slots.toolbar" class="mobile-crud-list__toolbar mb-2 shrink-0">
-      <slot name="toolbar"></slot>
-    </div>
+  <div
+    class="mobile-crud-list flex h-full min-h-0 flex-col"
+    :class="{ 'mobile-crud-list--maximize': isMaximized }"
+  >
+    <VxeToolbar
+      class="mobile-crud-list__toolbar mb-0 shrink-0"
+      :custom="showToolbarCustom"
+      :refresh="showToolbarRefresh"
+      :refresh-options="toolbarRefreshOptions"
+      size="small"
+      :zoom="showToolbarZoom"
+    >
+      <template v-if="$slots.toolbar" #buttons>
+        <slot name="toolbar"></slot>
+      </template>
+    </VxeToolbar>
 
     <div v-if="showSearchBar" class="mobile-crud-list__search shrink-0 pb-3">
       <Space.Compact block class="mobile-crud-list__search-compact w-full">

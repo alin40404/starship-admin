@@ -8,6 +8,52 @@
   );
 }
 
+.mobile-crud-list--maximize {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  padding: 0.5rem;
+  background: hsl(var(--card));
+}
+
+.mobile-crud-list__toolbar.vxe-toolbar {
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+.mobile-crud-list__toolbar .vxe-buttons--wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+.mobile-crud-list__toolbar:has(.vxe-grid-batch-toolbar) .vxe-buttons--wrapper {
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.mobile-crud-list__toolbar:has(.vxe-grid-batch-toolbar) .vxe-buttons--wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.mobile-crud-list__toolbar:has(.vxe-grid-batch-toolbar) .vxe-button--item-wrapper {
+  display: inline-flex;
+  width: max-content;
+  max-width: none;
+}
+
+.mobile-crud-list__toolbar .vxe-tools--wrapper:empty {
+  display: none;
+}
+
+.mobile-crud-list__toolbar .vxe-tools--operate {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
 .mobile-crud-list__toolbar .ant-btn {
   display: inline-flex;
   align-items: center;
@@ -15,18 +61,12 @@
 }
 
 .mobile-crud-list__toolbar .vxe-grid-batch-toolbar {
-  display: flex;
+  display: inline-flex;
   flex-wrap: nowrap;
   gap: 0.5rem;
-  max-width: 100%;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-
-.mobile-crud-list__toolbar .vxe-grid-batch-toolbar::-webkit-scrollbar {
-  display: none;
+  width: max-content;
+  max-width: none;
+  overflow: visible;
 }
 
 .mobile-crud-list__toolbar .vxe-grid-batch-toolbar > * {

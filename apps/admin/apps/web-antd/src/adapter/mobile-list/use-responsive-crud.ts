@@ -60,6 +60,10 @@ export function useResponsiveCrud<T extends Record<string, any>>(
     };
   });
 
+  const mobileToolbarConfig = computed(
+    () => gridOptions.gridOptions?.toolbarConfig,
+  );
+
   function syncGridSelection() {
     if (isMobile.value) {
       return;
@@ -124,6 +128,7 @@ export function useResponsiveCrud<T extends Record<string, any>>(
                   ref: mobileListRef,
                   config: mobileConfig.value,
                   selectedRows: selectedRows.value,
+                  toolbarConfig: mobileToolbarConfig.value,
                   'onUpdate:selectedRows': (rows: T[]) => {
                     selectedRows.value = rows;
                   },
