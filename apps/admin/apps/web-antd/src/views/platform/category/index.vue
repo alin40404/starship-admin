@@ -427,7 +427,7 @@ const [Grid, gridApi] = useVbenVxeGrid<CategoryTreeNode>({
   flex-shrink: 0;
   scroll-snap-align: start;
   border: 1px solid hsl(var(--border));
-  border-radius: 9999px;
+  border-radius: var(--radius);
   background: transparent;
   padding: 6px 14px;
   font-size: 14px;
