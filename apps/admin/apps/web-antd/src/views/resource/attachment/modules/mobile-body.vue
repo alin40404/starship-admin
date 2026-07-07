@@ -248,7 +248,10 @@ defineExpose({ clearSelection, reload });
               上传附件
             </Button>
           </div>
-          <div class="attachment-view-toggle">
+          <div
+            class="attachment-view-toggle"
+            :class="{ 'attachment-view-toggle--hidden': selectedRows.length > 0 }"
+          >
             <Tooltip title="列表视图">
               <button
                 class="attachment-view-toggle__btn"
@@ -298,7 +301,10 @@ defineExpose({ clearSelection, reload });
             上传附件
           </Button>
         </div>
-        <div class="attachment-view-toggle">
+        <div
+          class="attachment-view-toggle"
+          :class="{ 'attachment-view-toggle--hidden': selectedRows.length > 0 }"
+        >
           <Tooltip title="列表视图">
             <button
               class="attachment-view-toggle__btn"
@@ -426,6 +432,8 @@ defineExpose({ clearSelection, reload });
   gap: 8px;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
+  min-height: 32px;
 }
 
 .attachment-toolbar-actions {
@@ -448,6 +456,11 @@ defineExpose({ clearSelection, reload });
   overflow: hidden;
   border: 1px solid hsl(var(--border));
   border-radius: 6px;
+}
+
+.attachment-view-toggle--hidden {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .attachment-view-toggle__btn {
