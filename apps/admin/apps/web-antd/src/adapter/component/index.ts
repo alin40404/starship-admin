@@ -66,7 +66,7 @@ import { IconifyIcon } from '@vben/icons';
 import { $t } from '@vben/locales';
 import { isEmpty } from '@vben/utils';
 
-import { message, Modal, notification } from 'ant-design-vue';
+import { message, Modal, notification, Drawer } from 'ant-design-vue';
 
 import type { AttachmentFieldProps } from '#/components/attachment-field';
 import { AttachmentField } from '#/components/attachment-field';
@@ -698,6 +698,7 @@ async function initComponentAdapter() {
     Checkbox,
     CheckboxGroup,
     DatePicker,
+    Drawer,
     // 自定义默认按钮
     DefaultButton: (props, { attrs, slots }) => {
       return h(Button, { ...props, attrs, type: 'default' }, slots);

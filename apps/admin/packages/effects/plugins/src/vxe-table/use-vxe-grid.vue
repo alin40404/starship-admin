@@ -19,6 +19,7 @@ import {
   nextTick,
   onMounted,
   onUnmounted,
+  ref,
   toRaw,
   useSlots,
   useTemplateRef,
@@ -37,6 +38,7 @@ import {
   mergeWithArrayOverride,
 } from '@vben/utils';
 
+import { globalShareState } from '@vben-core/shared/global-state';
 import { VbenHelpTooltip, VbenLoading } from '@vben-core/shadcn-ui';
 
 import { VxeButton } from 'vxe-pc-ui';
@@ -89,10 +91,27 @@ const resolvedShowSearchForm = computed(() => {
   return !isMobile.value;
 });
 
+/** 移动端搜索走底部弹窗，不在表格内联展开 */
+const showInlineSearchForm = computed(
+  () => !isMobile.value && resolvedShowSearchForm.value,
+);
+
+const searchDrawerOpen = ref(false);
+const components = globalShareState.getComponents();
+
+const isSearchDrawerOpen = computed(() => searchDrawerOpen.value);
+
+const isSearchPanelActive = computed(() => {
+  if (isMobile.value && formOptions.value) {
+    return isSearchDrawerOpen.value;
+  }
+  return resolvedShowSearchForm.value;
+});
+
 const isSeparator = computed(() => {
   if (
     !formOptions.value ||
-    resolvedShowSearchForm.value === false ||
+    showInlineSearchForm.value === false ||
     separator.value === false
   ) {
     return false;
@@ -140,6 +159,47 @@ const [Form, formApi] = useTableForm({
   wrapperClass: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4',
 });
 
+watch(
+  isMobile,
+  (mobile) => {
+    formApi.setState({
+      commonConfig: mobile
+        ? {
+            componentProps: { class: 'w-full' },
+            labelClass: 'justify-start',
+          }
+        : {
+            componentProps: { class: 'w-full' },
+          },
+      layout: mobile ? 'vertical' : 'horizontal',
+      showCollapseButton: !mobile,
+      showDefaultActions: !mobile,
+      wrapperClass: mobile
+        ? 'grid-cols-1'
+        : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4',
+    });
+  },
+  { immediate: true },
+);
+
+async function handleMobileSearchReset() {
+  await formApi.resetForm();
+  const formValues = await formApi.getValues();
+  formApi.setLatestSubmissionValues(formValues);
+  await props.api.reload(formValues);
+}
+
+async function handleMobileSearchSubmit() {
+  const { valid } = await formApi.validate();
+  if (!valid) {
+    return;
+  }
+  const formValues = await formApi.getValues();
+  formApi.setLatestSubmissionValues(toRaw(formValues));
+  searchDrawerOpen.value = false;
+  await props.api.reload(formValues);
+}
+
 const showTableTitle = computed(() => {
   return !!slots[TABLE_TITLE]?.() || tableTitle.value;
 });
@@ -159,8 +219,8 @@ const toolbarOptions = computed(() => {
     code: 'search',
     icon: 'vxe-icon-search',
     circle: true,
-    status: resolvedShowSearchForm.value ? 'primary' : undefined,
-    title: resolvedShowSearchForm.value
+    status: isSearchPanelActive.value ? 'primary' : undefined,
+    title: isSearchPanelActive.value
       ? $t('common.hideSearchPanel')
       : $t('common.showSearchPanel'),
   };
@@ -268,6 +328,10 @@ function onToolbarToolClick(event: VxeGridDefines.ToolbarToolClickEventParams) {
 }
 
 function onSearchBtnClick() {
+  if (isMobile.value && formOptions.value) {
+    searchDrawerOpen.value = !searchDrawerOpen.value;
+    return;
+  }
   props.api?.toggleSearchForm?.(!resolvedShowSearchForm.value);
 }
 
@@ -428,7 +492,7 @@ onUnmounted(() => {
           circle
           class="ml-2"
           v-if="gridOptions?.toolbarConfig?.search && !!formOptions"
-          :status="resolvedShowSearchForm ? 'primary' : undefined"
+          :status="isSearchPanelActive ? 'primary' : undefined"
           :title="$t('common.search')"
           @click="onSearchBtnClick"
         />
@@ -437,8 +501,8 @@ onUnmounted(() => {
       <!-- form表单 -->
       <template #form>
         <div
-          v-if="formOptions"
-          v-show="resolvedShowSearchForm"
+          v-if="formOptions && !isMobile"
+          v-show="showInlineSearchForm"
           :class="
             cn(
               'relative rounded-sm py-3',
@@ -501,5 +565,53 @@ onUnmounted(() => {
         </slot>
       </template>
     </VxeGrid>
+
+    <component
+      :is="components.Drawer"
+      v-if="isMobile && formOptions && components.Drawer"
+      v-model:open="searchDrawerOpen"
+      class="vxe-grid-search-drawer"
+      :height="480"
+      placement="bottom"
+      :title="$t('common.search')"
+    >
+      <Form>
+        <template
+          v-for="slotName in delegatedFormSlots"
+          :key="slotName"
+          #[slotName]="slotProps"
+        >
+          <slot :name="`${FORM_SLOT_PREFIX}${slotName}`" v-bind="slotProps"></slot>
+        </template>
+        <template #reset-before="slotProps">
+          <slot name="reset-before" v-bind="slotProps"></slot>
+        </template>
+        <template #submit-before="slotProps">
+          <slot name="submit-before" v-bind="slotProps"></slot>
+        </template>
+        <template #expand-before="slotProps">
+          <slot name="expand-before" v-bind="slotProps"></slot>
+        </template>
+        <template #expand-after="slotProps">
+          <slot name="expand-after" v-bind="slotProps"></slot>
+        </template>
+      </Form>
+      <template #footer>
+        <div class="vxe-grid-search-drawer__footer">
+          <component
+            :is="components.DefaultButton"
+            @click="handleMobileSearchReset"
+          >
+            {{ $t('common.reset') }}
+          </component>
+          <component
+            :is="components.PrimaryButton"
+            @click="handleMobileSearchSubmit"
+          >
+            {{ $t('common.search') }}
+          </component>
+        </div>
+      </template>
+    </component>
   </div>
 </template>
