@@ -5,7 +5,7 @@ import type { CategoryTreeNode, CategoryTypeOption } from '#/api/system/category
 import { computed, onMounted, ref } from 'vue';
 
 import { useAccess } from '@vben/access';
-import { Page, useVbenModal } from '@vben/common-ui';
+import { Page } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
 import { Button, message, Modal } from 'ant-design-vue';
@@ -24,6 +24,12 @@ import { CATEGORY_PERMISSIONS } from '#/constants/category-permissions';
 
 import { useColumns, useGridFormSchema } from './data';
 import CategoryForm from './modules/form.vue';
+
+type CategoryFormExpose = {
+  open: (
+    data?: CategoryTreeNode | { parent_id?: number; type?: string },
+  ) => void;
+};
 
 const ALL_TYPE_KEY = '__all__';
 
@@ -44,10 +50,7 @@ const typeTagOptions = computed(() =>
   })),
 );
 
-const [CategoryFormModal, categoryFormModalApi] = useVbenModal({
-  connectedComponent: CategoryForm,
-  destroyOnClose: true,
-});
+const categoryFormRef = ref<CategoryFormExpose>();
 
 function resolveTypeFilter() {
   if (activeType.value === ALL_TYPE_KEY) {
@@ -95,28 +98,24 @@ function onTypeChange(value: string) {
 }
 
 function onCreate() {
-  categoryFormModalApi
-    .setData({
-      parent_id: 0,
-      type:
-        activeType.value === ALL_TYPE_KEY
-          ? typeOptions.value[0]?.value
-          : activeType.value,
-    })
-    .open();
+  categoryFormRef.value?.open({
+    parent_id: 0,
+    type:
+      activeType.value === ALL_TYPE_KEY
+        ? typeOptions.value[0]?.value
+        : activeType.value,
+  });
 }
 
 function onAppend(row: CategoryTreeNode) {
-  categoryFormModalApi
-    .setData({
-      parent_id: row.id,
-      type: row.type,
-    })
-    .open();
+  categoryFormRef.value?.open({
+    parent_id: row.id,
+    type: row.type,
+  });
 }
 
 function onEdit(row: CategoryTreeNode) {
-  categoryFormModalApi.setData(row).open();
+  categoryFormRef.value?.open(row);
 }
 
 function onActionClick({ code, row }: OnActionClickParams<CategoryTreeNode>) {
@@ -308,7 +307,7 @@ const [Grid, gridApi] = useVbenVxeGrid<CategoryTreeNode>({
 
 <template>
   <Page auto-content-height>
-    <CategoryFormModal @success="onRefresh" />
+    <CategoryForm ref="categoryFormRef" @success="onRefresh" />
     <div
       class="bg-card flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-border md:min-h-[520px] md:flex-row"
     >
