@@ -35,6 +35,8 @@ export interface MobileListSwitchConfig<T> {
 
 export interface MobileListField<T> {
   label: string;
+  /** 与 PC 列 visible:false 对齐，默认不在卡片展示，但可在列设置中勾选 */
+  hiddenByDefault?: boolean;
   /** 字段渲染方式 */
   render?: 'image' | 'switch';
   show?: (row: T) => boolean;

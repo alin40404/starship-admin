@@ -157,7 +157,16 @@ const showToolbarCustom = computed(() => !!props.toolbarConfig?.custom);
 
 const isMaximized = ref(false);
 const customDrawerOpen = ref(false);
-const hiddenFieldLabels = ref(new Set<string>());
+
+function buildDefaultHiddenFieldLabels(fields: MobileListField<T>[]) {
+  return new Set(
+    fields.filter((field) => field.hiddenByDefault).map((field) => field.label),
+  );
+}
+
+const hiddenFieldLabels = ref(
+  buildDefaultHiddenFieldLabels(props.config.item.fields),
+);
 const toolbarRef = ref<{
   syncUpdate?: (params: { $table: Record<string, any> }) => void;
 }>();
@@ -208,8 +217,18 @@ function toggleFieldLabelVisible(label: string, visible: boolean) {
 }
 
 function resetCustomFields() {
-  hiddenFieldLabels.value = new Set();
+  hiddenFieldLabels.value = buildDefaultHiddenFieldLabels(
+    props.config.item.fields,
+  );
 }
+
+watch(
+  () => props.config.item.fields,
+  (fields) => {
+    hiddenFieldLabels.value = buildDefaultHiddenFieldLabels(fields);
+  },
+  { deep: true },
+);
 
 provide('$xeGrid', {
   isMaximized: () => isMaximized.value,

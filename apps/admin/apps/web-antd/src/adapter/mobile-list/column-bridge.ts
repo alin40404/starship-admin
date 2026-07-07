@@ -25,7 +25,7 @@ const VXE_STRING_FORMATTERS: Record<string, (value: unknown) => string> = {
 
 /** 扩展 vxe 列：移动端卡片语义（与 PC columns 同处维护） */
 export interface CrudColumnMobileMeta<T = Record<string, any>> {
-  /** 是否出现在卡片字段，默认随 PC visible；设为 true 可强制展示 PC 隐藏列 */
+  /** PC 列 visible:false 时仍纳入移动端列设置；设为 true 可强制默认展示 */
   card?: boolean;
   /** 移动端取值覆盖（优先于 formatter，用于 Switch 等交互列转文字） */
   format?: (row: T) => string;
@@ -48,15 +48,18 @@ function isOperationColumn(column: CrudGridColumn) {
   return column.cellRender?.name === 'CellOperation';
 }
 
-function isMobileCardFieldColumn<T>(column: CrudGridColumn<T>) {
+function isMobileListFieldColumn<T>(column: CrudGridColumn<T>) {
   if (!column.field || isCheckboxColumn(column) || isOperationColumn(column)) {
     return false;
   }
-  const mobile = column.mobile;
-  if (column.visible === false && mobile?.card !== true) {
+  return true;
+}
+
+function isHiddenByDefaultColumn<T>(column: CrudGridColumn<T>) {
+  if (column.mobile?.card === true) {
     return false;
   }
-  return true;
+  return column.visible === false;
 }
 
 function formatColumnCellValue<T>(column: CrudGridColumn<T>, row: T): string {
@@ -109,13 +112,14 @@ export function buildMobileFieldsFromColumns<T>(
   columns: CrudGridColumn<T>[],
 ): MobileListField<T>[] {
   return columns
-    .filter((column) => isMobileCardFieldColumn(column))
+    .filter((column) => isMobileListFieldColumn(column))
     .map((column) => {
       const isImage = column.cellRender?.name === 'CellImage';
       const isSwitch = column.cellRender?.name === 'CellSwitch';
 
       return {
         label: column.title ?? column.field ?? '',
+        hiddenByDefault: isHiddenByDefaultColumn(column),
         render: isImage ? ('image' as const) : isSwitch ? ('switch' as const) : undefined,
         show: column.mobile?.card === true && column.visible === false
           ? () => true
