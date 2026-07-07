@@ -495,7 +495,6 @@ class MenuSeeder extends Seeder
             [
                 ['name' => 'Codegen', 'title' => '代码生成', 'path' => '/dev/codegen', 'permission' => 'system.codegen', 'sort' => 601, 'icon' => 'ep:magic-stick'],
                 ['name' => 'ModuleMgmt', 'title' => '模块管理', 'path' => '/dev/modules', 'permission' => 'system.modules', 'sort' => 602, 'icon' => 'ep:grid'],
-                ['name' => 'ApiDocs', 'title' => '接口文档', 'path' => '/dev/api-docs', 'permission' => 'system.api_docs', 'sort' => 603, 'icon' => 'ep:link'],
             ] as $m
         ) {
             $devMenu = Menu::query()->create([
