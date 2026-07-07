@@ -1,7 +1,7 @@
 <script lang="ts" setup generic="T extends Record<string, any>">
 import type { MobileCrudListConfig } from './types';
 
-import { computed, onMounted, provide, reactive, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, provide, reactive, ref, watch } from 'vue';
 
 import { EmptyIcon, IconifyIcon } from '@vben/icons';
 import { preferences } from '@vben/preferences';
@@ -16,6 +16,7 @@ import {
   Avatar,
   Badge,
   Button,
+  Checkbox,
   Drawer,
   Empty,
   Input,
@@ -155,6 +156,60 @@ const showToolbarZoom = computed(() => !!props.toolbarConfig?.zoom);
 const showToolbarCustom = computed(() => !!props.toolbarConfig?.custom);
 
 const isMaximized = ref(false);
+const customDrawerOpen = ref(false);
+const hiddenFieldLabels = ref(new Set<string>());
+const toolbarRef = ref<{
+  syncUpdate?: (params: { $table: Record<string, any> }) => void;
+}>();
+
+const customToolTitle = '列设置';
+
+function bindToolbarCustom() {
+  if (!showToolbarCustom.value || !toolbarRef.value?.syncUpdate) {
+    return;
+  }
+  toolbarRef.value.syncUpdate({
+    $table: {
+      reactData: {
+        customStore: {
+          activeBtn: false,
+          activeWrapper: false,
+        },
+      },
+      getComputeMaps: () => ({
+        computeCustomOpts: { value: { trigger: '' } },
+      }),
+      triggerCustomEvent: () => {
+        customDrawerOpen.value = true;
+      },
+    },
+  });
+}
+
+function isFieldShown(field: MobileListField<T>, row: T) {
+  if (hiddenFieldLabels.value.has(field.label)) {
+    return false;
+  }
+  return field.show ? field.show(row) : true;
+}
+
+function isFieldLabelVisible(label: string) {
+  return !hiddenFieldLabels.value.has(label);
+}
+
+function toggleFieldLabelVisible(label: string, visible: boolean) {
+  const next = new Set(hiddenFieldLabels.value);
+  if (visible) {
+    next.delete(label);
+  } else {
+    next.add(label);
+  }
+  hiddenFieldLabels.value = next;
+}
+
+function resetCustomFields() {
+  hiddenFieldLabels.value = new Set();
+}
 
 provide('$xeGrid', {
   isMaximized: () => isMaximized.value,
@@ -215,6 +270,15 @@ async function handleFilterSearch() {
 }
 
 watch(
+  [showToolbarCustom, toolbarRef],
+  async () => {
+    await nextTick();
+    bindToolbarCustom();
+  },
+  { flush: 'post' },
+);
+
+watch(
   selectedRows,
   (rows) => {
     selectedRowsModel.value = rows;
@@ -247,6 +311,7 @@ onMounted(() => {
     :class="{ 'mobile-crud-list--maximize': isMaximized }"
   >
     <VxeToolbar
+      ref="toolbarRef"
       class="mobile-crud-list__toolbar mb-0 shrink-0"
       :custom="showToolbarCustom"
       :refresh="showToolbarRefresh"
@@ -345,14 +410,14 @@ onMounted(() => {
                 />
               </button>
               <div
-                v-if="config.item.fields.some((field) => (field.show ? field.show(row) : true))"
+                v-if="config.item.fields.some((field) => isFieldShown(field, row))"
                 class="mobile-crud-list__card-body"
               >
                 <template
                   v-for="(field, fieldIndex) in config.item.fields"
                   :key="`${field.label}-${fieldIndex}`"
                 >
-                  <template v-if="field.show ? field.show(row) : true">
+                  <template v-if="isFieldShown(field, row)">
                     <span class="mobile-crud-list__field-label">
                       {{ field.label }}
                     </span>
@@ -474,6 +539,39 @@ onMounted(() => {
           </Button>
           <Button type="primary" @click="handleFilterSearch">
             {{ $t('common.search') }}
+          </Button>
+        </div>
+      </template>
+    </Drawer>
+
+    <Drawer
+      v-if="showToolbarCustom"
+      v-model:open="customDrawerOpen"
+      class="mobile-crud-list__filter-drawer"
+      :height="480"
+      placement="bottom"
+      :title="customToolTitle"
+    >
+      <div class="mobile-crud-list__custom-fields">
+        <label
+          v-for="field in config.item.fields"
+          :key="field.label"
+          class="mobile-crud-list__custom-field-item"
+        >
+          <Checkbox
+            :checked="isFieldLabelVisible(field.label)"
+            @update:checked="toggleFieldLabelVisible(field.label, $event)"
+          />
+          <span>{{ field.label }}</span>
+        </label>
+      </div>
+      <template #footer>
+        <div class="mobile-crud-list__filter-footer">
+          <Button @click="resetCustomFields">
+            {{ $t('common.reset') }}
+          </Button>
+          <Button type="primary" @click="customDrawerOpen = false">
+            {{ $t('common.confirm') }}
           </Button>
         </div>
       </template>

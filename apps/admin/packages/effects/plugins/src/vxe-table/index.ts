@@ -4,7 +4,7 @@ export * from './use-vxe-grid';
 
 export { default as VbenVxeGrid } from './use-vxe-grid.vue';
 
-export { VxeToolbar } from './toolbar-export';
+export { VxeButton, VxeToolbar } from './init';
 export type {
   VxeGridListeners,
   VxeGridProps,

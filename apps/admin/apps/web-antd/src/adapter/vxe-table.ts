@@ -324,8 +324,6 @@ export const useVbenVxeGrid = <T extends Record<string, any>>(
   ...rest: Parameters<typeof useGrid<T, ComponentType, ComponentPropsMap>>
 ) => useGrid<T, ComponentType, ComponentPropsMap>(...rest);
 
-export { VxeToolbar } from '@vben/plugins/vxe-table';
-
 export type OnActionClickParams<T = Recordable<any>> = {
   code: string;
   row: T;

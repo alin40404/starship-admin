@@ -140,3 +140,5 @@ export function setupVbenVxeTable(setupOptions: SetupVxeTable) {
 
   configVxeTable(VxeUI);
 }
+
+export { VxeButton, VxeToolbar };
