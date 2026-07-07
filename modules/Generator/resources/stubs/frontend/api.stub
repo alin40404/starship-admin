@@ -1,0 +1,66 @@
+import type { LaravelPaginate } from './types';
+
+import { requestClient } from '#/api/request';
+
+export interface {{ $model_class }}Row {
+@foreach($list_columns as $column)
+  {{ $column->column_name }}: {{ $column->ts_type === 'number' ? 'number' : ($column->ts_type === 'Record<string, unknown>' ? 'Record<string, unknown>' : 'string') }};
+@endforeach
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface {{ $model_class }}PageQuery {
+  page: number;
+  per_page: number;
+@if($has_keyword_search)
+  keyword?: string;
+@endif
+@foreach($search_columns as $column)
+  {{ $column->column_name }}?: {{ $column->ts_type === 'number' ? 'number' : 'string' }};
+@endforeach
+  sort_field?: string;
+  sort_order?: 'asc' | 'desc';
+}
+
+export interface {{ $model_class }}SavePayload {
+@foreach($form_columns as $column)
+  {{ $column->column_name }}{{ str_contains(implode('|', $column->validation_rules ?? []), 'required') ? '' : '?' }}: {{ $column->ts_type === 'number' ? 'number' : 'string' }};
+@endforeach
+}
+
+export function fetch{{ $model_class }}Page(params: {{ $model_class }}PageQuery) {
+  return requestClient.get<LaravelPaginate<{{ $model_class }}Row>>('/system/{{ $api_prefix }}', {
+    params,
+  });
+}
+
+export function create{{ $model_class }}(data: {{ $model_class }}SavePayload) {
+  return requestClient.post<{{ $model_class }}Row>('/system/{{ $api_prefix }}', data);
+}
+
+export function update{{ $model_class }}(id: number, data: Partial<{{ $model_class }}SavePayload>) {
+  return requestClient.put<{{ $model_class }}Row>(`/system/{{ $api_prefix }}/${id}`, data);
+}
+
+export function delete{{ $model_class }}(id: number) {
+  return requestClient.delete(`/system/{{ $api_prefix }}/${id}`);
+}
+@if($has_batch_delete)
+
+export function batchDelete{{ $model_class }}s(ids: number[]) {
+  return requestClient.post<{ deleted: number }>(
+    '/system/{{ $api_prefix }}/batch-destroy',
+    { ids },
+  );
+}
+@endif
+@if($has_batch_status)
+
+export function batchUpdate{{ $model_class }}Status(ids: number[], status: 0 | 1) {
+  return requestClient.put<{ updated: number }>('/system/{{ $api_prefix }}/batch-status', {
+    ids,
+    status,
+  });
+}
+@endif

@@ -1,0 +1,163 @@
+<script lang="ts" setup>
+import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
+import type { {{ $model_class }}Row } from '#/api/system/{{ $entity_kebab }}';
+
+import { ref } from 'vue';
+
+import { useAccess } from '@vben/access';
+import { Page } from '@vben/common-ui';
+import { Plus } from '@vben/icons';
+
+import { Button, message, Modal } from 'ant-design-vue';
+
+import { useResponsiveCrud } from '#/adapter/mobile-list';
+import {
+@if($has_batch_delete)
+  {{ $batch_delete_fn_name }},
+@endif
+@if($has_batch_status)
+  batchUpdate{{ $model_class }}Status,
+@endif
+  delete{{ $model_class }},
+  fetch{{ $model_class }}Page,
+  update{{ $model_class }},
+} from '#/api/system/{{ $entity_kebab }}';
+import { {{ $permissions_export_name }} } from '#/constants/{{ $entity_kebab }}-permissions';
+
+import {
+  build{{ $model_class }}MobileCrudConfig,
+  useColumns,
+  useGridFormSchema,
+} from './data';
+import {{ $model_class }}Form from './modules/form.vue';
+
+const {{ $variable_name }}FormRef = ref<InstanceType<typeof {{ $model_class }}Form>>();
+
+const { hasAccessByCodes } = useAccess();
+
+const {{ $variable_name }}Access = {
+  can: (code: string) => hasAccessByCodes([code]),
+  canAny: (codes: string[]) => hasAccessByCodes(codes),
+};
+
+function onCreate() {
+  {{ $variable_name }}FormRef.value?.open({});
+}
+
+function onEdit(row: {{ $model_class }}Row) {
+  {{ $variable_name }}FormRef.value?.open(row);
+}
+
+function onActionClick({ code, row }: OnActionClickParams<{{ $model_class }}Row>) {
+  if (code === 'edit') {
+    onEdit(row);
+  } else if (code === 'delete') {
+    onDelete(row);
+  }
+}
+
+@if($has_status)
+async function on{{ $model_class }}StatusToggle(nextStatus: number, row: {{ $model_class }}Row) {
+  return new Promise<boolean>((resolve) => {
+    const label = nextStatus === 1 ? '启用' : '禁用';
+    Modal.confirm({
+      content: `确定切换状态为【${label}】吗？`,
+      okText: '确定',
+      cancelText: '取消',
+      title: '切换状态',
+      async onOk() {
+        try {
+          await update{{ $model_class }}(row.id, { status: nextStatus });
+          message.success('状态已更新');
+          resolve(true);
+        } catch {
+          resolve(false);
+        }
+      },
+      onCancel() {
+        resolve(false);
+      },
+    });
+  });
+}
+@else
+async function on{{ $model_class }}StatusToggle(_nextStatus: number, _row: {{ $model_class }}Row) {
+  return true;
+}
+@endif
+
+const columns = useColumns(onActionClick, on{{ $model_class }}StatusToggle, {{ $variable_name }}Access);
+
+const [CrudView, crudApi] = useResponsiveCrud<{{ $model_class }}Row>({
+  formOptions: {
+    commonConfig: { componentProps: { class: 'w-full' } },
+    schema: useGridFormSchema(),
+    submitOnChange: true,
+    submitButtonOptions: { content: '查询' },
+  },
+  gridOptions: {
+    checkboxConfig: { highlight: true },
+    columns: columns as VxeTableGridOptions<{{ $model_class }}Row>['columns'],
+    height: 'auto',
+    keepSource: true,
+    proxyConfig: {
+      ajax: {
+        query: async ({ page, sort }, formValues) => {
+          const order = sort?.order;
+          return await fetch{{ $model_class }}Page({
+            page: page.currentPage,
+            per_page: page.pageSize,
+@foreach($search_columns as $column)
+            {{ $column->column_name }}: formValues?.{{ $column->column_name }} || undefined,
+@endforeach
+            sort_field: sort?.field,
+            sort_order: order === 'desc' ? 'desc' : order === 'asc' ? 'asc' : undefined,
+          });
+        },
+      },
+    },
+    rowConfig: { keyField: 'id' },
+    toolbarConfig: { custom: true, refresh: true, zoom: true },
+  },
+  mobileConfig: build{{ $model_class }}MobileCrudConfig({
+    columns,
+    query: async (params) => fetch{{ $model_class }}Page(params),
+  }),
+});
+
+function onDelete(row: {{ $model_class }}Row) {
+  Modal.confirm({
+    content: '确定删除该记录吗？',
+    okText: '删除',
+    okType: 'danger',
+    title: '删除确认',
+    async onOk() {
+      await delete{{ $model_class }}(row.id);
+      message.success('已删除');
+      await crudApi.reload();
+    },
+  });
+}
+
+function onFormSuccess() {
+  crudApi.reload();
+}
+</script>
+
+<template>
+  <Page auto-content-height>
+    <CrudView>
+      <template #toolbar-actions>
+        <Button
+          v-if="{{ $variable_name }}Access.can({{ $permissions_export_name }}.CREATE)"
+          type="primary"
+          @click="onCreate"
+        >
+          <Plus class="size-4" />
+          新增{{ $business_name }}
+        </Button>
+      </template>
+    </CrudView>
+    <{{ $model_class }}Form ref="{{ $variable_name }}FormRef" @success="onFormSuccess" />
+  </Page>
+</template>

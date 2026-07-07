@@ -1,0 +1,51 @@
+<?php
+
+namespace Modules\Generator\App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Support\ApiResponse;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Modules\Generator\App\Models\GeneratorRecord;
+use Modules\Generator\App\Models\GeneratorTable;
+use Modules\Generator\App\Services\CodegenService;
+
+class CodegenController extends Controller
+{
+    public function preview(int $id, CodegenService $codegenService): JsonResponse
+    {
+        $config = GeneratorTable::query()->findOrFail($id);
+
+        return ApiResponse::success($codegenService->preview($config->table_name));
+    }
+
+    public function generate(int $id, Request $request, CodegenService $codegenService): JsonResponse
+    {
+        $config = GeneratorTable::query()->findOrFail($id);
+        $data = $request->validate([
+            'force' => ['sometimes', 'boolean'],
+            'sync_menu' => ['sometimes', 'boolean'],
+        ]);
+
+        $admin = $request->user();
+        $result = $codegenService->generate($config->table_name, [
+            'force' => (bool) ($data['force'] ?? false),
+            'sync_menu' => $data['sync_menu'] ?? true,
+            'source' => 'web',
+            'operator_id' => $admin?->id,
+            'operator_name' => $admin?->username ?? $admin?->name ?? 'web',
+        ]);
+
+        return ApiResponse::success($result, '生成完成');
+    }
+
+    public function records(): JsonResponse
+    {
+        $items = GeneratorRecord::query()
+            ->with('tableConfig:id,table_name,business_name')
+            ->latest('id')
+            ->paginate((int) request('per_page', 15));
+
+        return ApiResponse::success($items);
+    }
+}

@@ -1,0 +1,16 @@
+        Route::get('{{ $api_prefix }}', [{{ $controller_fqcn }}::class, 'index'])
+            ->middleware('admin.permission:{{ $permission_prefix }}.query');
+        Route::post('{{ $api_prefix }}', [{{ $controller_fqcn }}::class, 'store'])
+            ->middleware('admin.permission:{{ $permission_prefix }}.create');
+@if($has_batch_delete)
+        Route::post('{{ $api_prefix }}/batch-destroy', [{{ $controller_fqcn }}::class, 'batchDestroy'])
+            ->middleware('admin.permission:{{ $permission_prefix }}.batch_delete');
+@endif
+@if($has_batch_status)
+        Route::put('{{ $api_prefix }}/batch-status', [{{ $controller_fqcn }}::class, 'batchUpdateStatus'])
+            ->middleware('admin.permission:{{ $permission_prefix }}.batch_status');
+@endif
+        Route::put('{{ $api_prefix }}/{id}', [{{ $controller_fqcn }}::class, 'update'])
+            ->middleware('admin.permission:{{ $permission_prefix }}.update');
+        Route::delete('{{ $api_prefix }}/{id}', [{{ $controller_fqcn }}::class, 'destroy'])
+            ->middleware('admin.permission:{{ $permission_prefix }}.delete');

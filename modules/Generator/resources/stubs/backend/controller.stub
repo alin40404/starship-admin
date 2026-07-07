@@ -1,0 +1,117 @@
+<?php
+
+namespace {{ $module_namespace }}\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Support\ApiResponse;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use {{ $module_namespace }}\Models\{{ $model_class }};
+
+class {{ $controller_class }} extends Controller
+{
+    public function index(Request $request): JsonResponse
+    {
+        $query = {{ $model_class }}::query();
+@if($has_keyword_search)
+        if ($request->filled('keyword')) {
+            $keyword = (string) $request->get('keyword');
+            $query->where(function ($q) use ($keyword): void {
+@foreach($keyword_fields as $field)
+                $q->orWhere('{{ $field }}', 'like', '%'.$keyword.'%');
+@endforeach
+            });
+        }
+@endif
+{!! $search_filters_body !!}
+
+        $sortField = $request->get('sort_field');
+        $sortOrder = strtolower((string) $request->get('sort_order', 'asc')) === 'desc' ? 'desc' : 'asc';
+        $allowedSorts = [
+{!! $allowed_sorts_body !!}
+        ];
+
+        if (is_string($sortField) && isset($allowedSorts[$sortField])) {
+            $query->orderBy($allowedSorts[$sortField], $sortOrder)->orderBy('id');
+        } else {
+            $query->orderBy('id', 'desc');
+        }
+
+        return ApiResponse::success($query->paginate((int) $request->get('per_page', 15)));
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate($this->rules());
+
+        ${{ $variable_name }} = {{ $model_class }}::query()->create($data);
+
+        return ApiResponse::success(${{ $variable_name }}, '创建成功');
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        ${{ $variable_name }} = {{ $model_class }}::query()->findOrFail($id);
+        $data = $request->validate($this->rules(true));
+
+        ${{ $variable_name }}->update($data);
+
+        return ApiResponse::success(${{ $variable_name }}->fresh(), '更新成功');
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        {{ $model_class }}::query()->whereKey($id)->firstOrFail()->delete();
+
+        return ApiResponse::success(null, '已删除');
+    }
+@if($has_batch_delete)
+
+    public function batchDestroy(Request $request): JsonResponse
+    {
+        $ids = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+        ])['ids'];
+
+        $deleted = {{ $model_class }}::query()->whereIn('id', $ids)->delete();
+
+        return ApiResponse::success(['deleted' => $deleted], '已批量删除');
+    }
+@endif
+@if($has_batch_status)
+
+    public function batchUpdateStatus(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+            'status' => ['required', 'integer', 'in:0,1'],
+        ]);
+
+        $updated = {{ $model_class }}::query()
+            ->whereIn('id', $data['ids'])
+            ->update(['status' => $data['status']]);
+
+        return ApiResponse::success(['updated' => $updated], '已批量更新状态');
+    }
+@endif
+
+    /**
+     * @return array<string, array<int, string>>
+     */
+    protected function rules(bool $updating = false): array
+    {
+        $rules = [
+{!! $form_rules_body !!}
+        ];
+
+        if ($updating) {
+            foreach ($rules as $field => $fieldRules) {
+                array_unshift($rules[$field], 'sometimes');
+            }
+        }
+
+        return $rules;
+    }
+}

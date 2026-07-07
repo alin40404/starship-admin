@@ -1,0 +1,101 @@
+import type { VbenFormSchema } from '#/adapter/form';
+import type {
+  CrudGridColumn,
+  MobileCrudListConfig,
+} from '#/adapter/mobile-list';
+import { buildMobileCrudFromColumns } from '#/adapter/mobile-list';
+import type { OnActionClickFn } from '#/adapter/vxe-table';
+
+import type { {{ $model_class }}Row } from '#/api/system/{{ $entity_kebab }}';
+
+import { formatDateTime } from '@vben/utils';
+
+import { TABLE_CELL_EMPTY } from '#/constants/table';
+import { {{ $permissions_export_name }} } from '#/constants/{{ $entity_kebab }}-permissions';
+
+export type {{ $model_class }}AccessChecker = {
+  can: (code: string) => boolean;
+  canAny: (codes: string[]) => boolean;
+};
+
+export function useGridFormSchema(): VbenFormSchema[] {
+  return [
+{!! $grid_form_schema_body !!}
+  ];
+}
+
+export function build{{ $model_class }}MobileCrudConfig(params: {
+  columns: CrudGridColumn<{{ $model_class }}Row>[];
+  query: MobileCrudListConfig<{{ $model_class }}Row>['query'];
+}): MobileCrudListConfig<{{ $model_class }}Row> {
+  return buildMobileCrudFromColumns({
+    columns: params.columns,
+    defaultPageSize: 20,
+    query: params.query,
+    rowKey: 'id',
+    search: {
+      filterSchema: useGridFormSchema(),
+      keywordFields: [{{ $keyword_fields_ts }}],
+      placeholder: '搜索{{ $business_name }}',
+    },
+    selection: {
+      enabled: true,
+    },
+  });
+}
+
+export function useColumns(
+  onActionClick: OnActionClickFn<{{ $model_class }}Row>,
+  onStatusBeforeChange: (newVal: number, row: {{ $model_class }}Row) => Promise<boolean>,
+  access: {{ $model_class }}AccessChecker,
+): CrudGridColumn<{{ $model_class }}Row>[] {
+  const canUpdate = access.can({{ $permissions_export_name }}.UPDATE);
+
+  return [
+    { align: 'center', fixed: 'left', type: 'checkbox', width: 48 },
+{!! $list_columns_body !!}
+    {
+      align: 'center',
+      cellRender: {
+        attrs: {
+          nameField: '{{ $primary_label_field }}',
+          nameTitle: '{{ $business_name }}',
+          onClick: onActionClick,
+        },
+        name: 'CellOperation',
+        options: [
+          {
+            code: 'edit',
+            show: () => access.can({{ $permissions_export_name }}.UPDATE),
+            text: '编辑',
+            type: 'link',
+          },
+          {
+            code: 'delete',
+            danger: true,
+            show: () => access.can({{ $permissions_export_name }}.DELETE),
+            text: '删除',
+            type: 'link',
+          },
+        ],
+      },
+      fixed: 'right',
+      title: '操作',
+      width: 140,
+    },
+  ] as CrudGridColumn<{{ $model_class }}Row>[];
+}
+
+export function build{{ $model_class }}FormSchema(readonly = false): VbenFormSchema[] {
+  const disabled = readonly;
+  return [
+@foreach($form_columns as $column)
+    {
+      component: '{{ $column->form_component === 'Switch' ? 'RadioGroup' : $column->form_component }}',
+      componentProps: { class: 'w-full', disabled },
+      fieldName: '{{ $column->column_name }}',
+      label: '{{ $column->column_comment }}',
+    },
+@endforeach
+  ];
+}

@@ -1,0 +1,18 @@
+/**
+ * {{ $business_name }}按钮权限，与 {{ $module_namespace }}\Support\{{ $permissions_class }} 保持一致。
+ */
+export const {{ $permissions_export_name }} = {
+  CREATE: '{{ $permission_prefix }}.create',
+  DELETE: '{{ $permission_prefix }}.delete',
+  QUERY: '{{ $permission_prefix }}.query',
+  UPDATE: '{{ $permission_prefix }}.update',
+@if($has_batch_delete)
+  BATCH_DELETE: '{{ $permission_prefix }}.batch_delete',
+@endif
+@if($has_batch_status)
+  BATCH_STATUS: '{{ $permission_prefix }}.batch_status',
+@endif
+} as const;
+
+export type {{ $model_class }}PermissionCode =
+  (typeof {{ $permissions_export_name }})[keyof typeof {{ $permissions_export_name }}];

@@ -232,3 +232,23 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
             ->middleware('admin.permission:'.CategoryPermissions::DELETE);
     });
 });
+
+
+// @generator:demo_articles:start
+Route::get('demo_articles', [Modules\System\App\Http\Controllers\Admin\DemoArticleController::class, 'index'])
+            ->middleware('admin.permission:system.demo_articles.query');
+        Route::post('demo_articles', [Modules\System\App\Http\Controllers\Admin\DemoArticleController::class, 'store'])
+            ->middleware('admin.permission:system.demo_articles.create');
+
+        Route::post('demo_articles/batch-destroy', [Modules\System\App\Http\Controllers\Admin\DemoArticleController::class, 'batchDestroy'])
+            ->middleware('admin.permission:system.demo_articles.batch_delete');
+
+
+        Route::put('demo_articles/batch-status', [Modules\System\App\Http\Controllers\Admin\DemoArticleController::class, 'batchUpdateStatus'])
+            ->middleware('admin.permission:system.demo_articles.batch_status');
+
+        Route::put('demo_articles/{id}', [Modules\System\App\Http\Controllers\Admin\DemoArticleController::class, 'update'])
+            ->middleware('admin.permission:system.demo_articles.update');
+        Route::delete('demo_articles/{id}', [Modules\System\App\Http\Controllers\Admin\DemoArticleController::class, 'destroy'])
+            ->middleware('admin.permission:system.demo_articles.delete');
+// @generator:demo_articles:end

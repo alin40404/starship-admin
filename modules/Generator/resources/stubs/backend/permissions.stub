@@ -1,0 +1,42 @@
+<?php
+
+namespace {{ $module_namespace }}\Support;
+
+/**
+ * {{ $business_name }}（{{ $route_path }}）按钮权限。
+ */
+final class {{ $permissions_class }}
+{
+    public const QUERY = '{{ $permission_prefix }}.query';
+
+    public const CREATE = '{{ $permission_prefix }}.create';
+
+    public const UPDATE = '{{ $permission_prefix }}.update';
+
+    public const DELETE = '{{ $permission_prefix }}.delete';
+@if($has_batch_delete)
+    public const BATCH_DELETE = '{{ $permission_prefix }}.batch_delete';
+@endif
+@if($has_batch_status)
+    public const BATCH_STATUS = '{{ $permission_prefix }}.batch_status';
+@endif
+
+    /**
+     * @return list<array{name: string, title: string, permission: string, sort: int}>
+     */
+    public static function buttonDefinitions(): array
+    {
+        return [
+            ['name' => 'Query', 'title' => '查询', 'permission' => self::QUERY, 'sort' => 1],
+            ['name' => 'Create', 'title' => '新增{{ $business_name }}', 'permission' => self::CREATE, 'sort' => 2],
+            ['name' => 'Update', 'title' => '编辑', 'permission' => self::UPDATE, 'sort' => 3],
+            ['name' => 'Delete', 'title' => '删除', 'permission' => self::DELETE, 'sort' => 4],
+@if($has_batch_delete)
+            ['name' => 'BatchDelete', 'title' => '批量删除', 'permission' => self::BATCH_DELETE, 'sort' => 5],
+@endif
+@if($has_batch_status)
+            ['name' => 'BatchStatus', 'title' => '批量改状态', 'permission' => self::BATCH_STATUS, 'sort' => 6],
+@endif
+        ];
+    }
+}
