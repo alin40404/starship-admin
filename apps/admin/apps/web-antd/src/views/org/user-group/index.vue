@@ -2,8 +2,10 @@
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { UserGroupRow } from '#/api/system/user-group';
 
+import { ref } from 'vue';
+
 import { useAccess } from '@vben/access';
-import { Page, useVbenModal } from '@vben/common-ui';
+import { Page } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
 import { Button, message, Modal } from 'ant-design-vue';
@@ -23,23 +25,24 @@ import {
 } from './data';
 import UserGroupForm from './modules/form.vue';
 
+type UserGroupFormExpose = {
+  open: (data?: UserGroupRow | Record<string, never>) => void;
+};
+
+const userGroupFormRef = ref<UserGroupFormExpose>();
+
 const { hasAccessByCodes } = useAccess();
 
 const groupAccess = {
   can: (code: string) => hasAccessByCodes([code]),
 };
 
-const [UserGroupFormModal, groupFormModalApi] = useVbenModal({
-  connectedComponent: UserGroupForm,
-  destroyOnClose: true,
-});
-
 function onCreate() {
-  groupFormModalApi.setData({}).open();
+  userGroupFormRef.value?.open({});
 }
 
 function onEdit(row: UserGroupRow) {
-  groupFormModalApi.setData(row).open();
+  userGroupFormRef.value?.open(row);
 }
 
 function onActionClick({ code, row }: OnActionClickParams<UserGroupRow>) {
@@ -144,7 +147,7 @@ function onBatchDelete() {
 
 <template>
   <Page auto-content-height>
-    <UserGroupFormModal @success="onRefresh" />
+    <UserGroupForm ref="userGroupFormRef" @success="onRefresh" />
     <CrudView>
       <template #toolbar-actions>
         <div v-if="selectedRows.length > 0" class="vxe-grid-batch-toolbar">

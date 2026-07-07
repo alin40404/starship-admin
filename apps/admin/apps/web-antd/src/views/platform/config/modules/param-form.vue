@@ -202,7 +202,10 @@ const [Modal, modalApi] = useVbenModal({
 </script>
 
 <template>
-  <Modal :title="modalTitle" class="w-[560px] max-w-[92vw]">
+  <Modal
+    :title="modalTitle"
+    class="w-full max-w-full md:w-[560px] md:max-w-[560px]"
+  >
     <Form />
   </Modal>
 </template>

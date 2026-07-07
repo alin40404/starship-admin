@@ -3,7 +3,8 @@ import type { UserGroupRow, UserGroupSavePayload } from '#/api/system/user-group
 
 import { computed, ref } from 'vue';
 
-import { useVbenModal } from '@vben/common-ui';
+import { useVbenDrawer, useVbenModal } from '@vben/common-ui';
+import { usePreferences } from '@vben/preferences';
 
 import { message } from 'ant-design-vue';
 
@@ -19,6 +20,8 @@ import { buildUserGroupFormSchema } from '../data';
 
 const emits = defineEmits<{ success: [] }>();
 
+const { isMobile } = usePreferences();
+
 const editingId = ref<number | null>(null);
 
 const [Form, formApi] = useVbenForm({
@@ -32,79 +35,126 @@ const [Form, formApi] = useVbenForm({
   wrapperClass: 'grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1',
 });
 
-const modalTitle = computed(() =>
+const formTitle = computed(() =>
   editingId.value ? '编辑用户组' : '新增用户组',
 );
+
+type PopupApi = {
+  close: () => void;
+  getData: <T = Record<string, never>>() => T;
+  lock: () => void;
+  open: () => void;
+  setData: <T>(data: T) => void;
+  unlock: () => void;
+};
 
 function stripPayload(values: Record<string, unknown>): UserGroupSavePayload {
   const { admin_ids: _a, ...rest } = values;
   return rest as UserGroupSavePayload;
 }
 
+async function handleConfirm(popupApi: PopupApi) {
+  const { valid } = await formApi.validate();
+  if (!valid) return;
+
+  const raw = (await formApi.getValues()) as Record<string, unknown>;
+  const adminIds = ((raw.admin_ids as number[] | undefined) ?? []).map(Number);
+  const values = stripPayload(raw);
+
+  popupApi.lock();
+  try {
+    if (!editingId.value) {
+      const created = await createUserGroup(values);
+      await syncUserGroupAdmins(created.id, adminIds);
+      message.success('创建成功');
+    } else {
+      await updateUserGroup(editingId.value, values);
+      await syncUserGroupAdmins(editingId.value, adminIds);
+      message.success('已保存');
+    }
+    popupApi.close();
+    emits('success');
+  } finally {
+    popupApi.unlock();
+  }
+}
+
+async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
+  if (!isOpen) return;
+  formApi.resetForm();
+
+  const data = popupApi.getData<UserGroupRow | Record<string, never>>();
+  const id =
+    data && typeof (data as UserGroupRow).id === 'number'
+      ? (data as UserGroupRow).id
+      : null;
+  editingId.value = id;
+
+  if (id) {
+    const detail = await fetchUserGroup(id);
+    formApi.setValues({
+      admin_ids: detail.admin_ids ?? [],
+      code: detail.code,
+      name: detail.name,
+      remark: detail.remark ?? '',
+      sort: detail.sort ?? 0,
+      status: detail.status,
+    });
+  } else {
+    formApi.setValues({
+      admin_ids: [],
+      code: '',
+      name: '',
+      remark: '',
+      sort: 0,
+      status: 1,
+    });
+  }
+}
+
 const [Modal, modalApi] = useVbenModal({
+  destroyOnClose: true,
   fullscreenButton: false,
   async onConfirm() {
-    const { valid } = await formApi.validate();
-    if (!valid) return;
-
-    const raw = (await formApi.getValues()) as Record<string, unknown>;
-    const adminIds = ((raw.admin_ids as number[] | undefined) ?? []).map(Number);
-    const values = stripPayload(raw);
-
-    modalApi.lock();
-    try {
-      if (!editingId.value) {
-        const created = await createUserGroup(values);
-        await syncUserGroupAdmins(created.id, adminIds);
-        message.success('创建成功');
-      } else {
-        await updateUserGroup(editingId.value, values);
-        await syncUserGroupAdmins(editingId.value, adminIds);
-        message.success('已保存');
-      }
-      modalApi.close();
-      emits('success');
-    } finally {
-      modalApi.unlock();
-    }
+    await handleConfirm(modalApi as PopupApi);
   },
   async onOpenChange(isOpen: boolean) {
-    if (!isOpen) return;
-    formApi.resetForm();
-
-    const data = modalApi.getData<UserGroupRow | Record<string, never>>();
-    const id =
-      data && typeof (data as UserGroupRow).id === 'number'
-        ? (data as UserGroupRow).id
-        : null;
-    editingId.value = id;
-
-    if (id) {
-      const detail = await fetchUserGroup(id);
-      formApi.setValues({
-        admin_ids: detail.admin_ids ?? [],
-        code: detail.code,
-        name: detail.name,
-        remark: detail.remark ?? '',
-        sort: detail.sort ?? 0,
-        status: detail.status,
-      });
-    } else {
-      formApi.setValues({
-        admin_ids: [],
-        code: '',
-        name: '',
-        remark: '',
-        sort: 0,
-        status: 1,
-      });
-    }
+    await handleOpenChange(isOpen, modalApi as PopupApi);
   },
 });
+
+const [Drawer, drawerApi] = useVbenDrawer({
+  destroyOnClose: true,
+  async onConfirm() {
+    await handleConfirm(drawerApi as PopupApi);
+  },
+  async onOpenChange(isOpen: boolean) {
+    await handleOpenChange(isOpen, drawerApi as PopupApi);
+  },
+});
+
+function getActivePopupApi() {
+  return (isMobile.value ? drawerApi : modalApi) as PopupApi;
+}
+
+function open(data: UserGroupRow | Record<string, never> = {}) {
+  const api = getActivePopupApi();
+  api.setData(data);
+  api.open();
+}
+
+defineExpose({ open });
 </script>
 
 <template>
-  <Modal :title="modalTitle" class="w-[640px] max-w-[92vw]">
+  <Modal
+    v-if="!isMobile"
+    :title="formTitle"
+    class="w-full max-w-full md:w-[640px] md:max-w-[640px]"
+  >
     <Form />
   </Modal>
+  <Drawer v-else :title="formTitle" class="w-full">
+    <Form />
+  </Drawer>
 </template>
