@@ -5,7 +5,7 @@ import type { AttachmentRow } from '#/api/system/attachment';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
 import { useAccess } from '@vben/access';
-import { Page, useVbenModal } from '@vben/common-ui';
+import { Page } from '@vben/common-ui';
 import { IconifyIcon, Plus } from '@vben/icons';
 import { usePreferences } from '@vben/preferences';
 
@@ -24,6 +24,10 @@ import { buildCategoryTagOptions, useColumns, useGridFormSchema } from './data';
 import AttachmentFlowView from './modules/flow-view.vue';
 import AttachmentMobileBody from './modules/mobile-body.vue';
 import UploadForm from './modules/upload-form.vue';
+
+type UploadFormExpose = {
+  open: () => void;
+};
 
 const ALL_CATEGORY_KEY = '__all__';
 const ATTACHMENT_VIEW_MODE_KEY = 'attachment-view-mode';
@@ -90,10 +94,7 @@ watch(flowRows, () => {
   }
 });
 
-const [UploadFormModal, uploadFormModalApi] = useVbenModal({
-  connectedComponent: UploadForm,
-  destroyOnClose: true,
-});
+const uploadFormRef = ref<UploadFormExpose>();
 
 function resolveCategoryFilter() {
   if (activeCategory.value === ALL_CATEGORY_KEY) {
@@ -157,7 +158,7 @@ function onCategoryChange(value: string) {
 }
 
 function onUpload() {
-  uploadFormModalApi.open();
+  uploadFormRef.value?.open();
 }
 
 function onActionClick({ code, row }: OnActionClickParams<AttachmentRow>) {
@@ -286,7 +287,7 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
 
 <template>
   <Page auto-content-height>
-    <UploadFormModal @success="onRefresh" />
+    <UploadForm ref="uploadFormRef" @success="onRefresh" />
     <div
       class="bg-card flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-border md:min-h-[520px] md:flex-row"
     >

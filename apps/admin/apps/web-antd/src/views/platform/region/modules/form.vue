@@ -3,7 +3,8 @@ import type { AreaCascaderOption, AreaSavePayload, AreaTreeNode } from '#/api/sy
 
 import { computed, defineAsyncComponent, ref } from 'vue';
 
-import { useVbenModal } from '@vben/common-ui';
+import { useVbenDrawer, useVbenModal } from '@vben/common-ui';
+import { usePreferences } from '@vben/preferences';
 
 import { useDebounceFn } from '@vueuse/core';
 import { message } from 'ant-design-vue';
@@ -25,6 +26,8 @@ import {
 import { buildAreaFormSchema } from '../data';
 
 const emits = defineEmits<{ success: [] }>();
+
+const { isMobile } = usePreferences();
 
 const editingId = ref<number | null>(null);
 const cascaderOptions = ref<AreaCascaderOption[]>([]);
@@ -98,88 +101,130 @@ const syncPinyinPreview = useDebounceFn(async (shortname: string) => {
   formApi.setFieldValue('first', result.first ?? '');
 }, 300);
 
-const modalTitle = computed(() =>
+const formTitle = computed(() =>
   editingId.value ? '编辑区域' : '新增区域',
 );
 
+type PopupApi = {
+  close: () => void;
+  getData: <T = Record<string, never>>() => T;
+  lock: () => void;
+  open: () => void;
+  setData: <T>(data: T) => void;
+  unlock: () => void;
+};
+
+async function handleConfirm(popupApi: PopupApi) {
+  const { valid } = await formApi.validate();
+  if (!valid) return;
+
+  const values = (await formApi.getValues()) as AreaSavePayload;
+  if (!values.pid) values.pid = 0;
+
+  popupApi.lock();
+  try {
+    if (!editingId.value) {
+      await createArea(values);
+      message.success('创建成功');
+    } else {
+      await updateArea(editingId.value, values);
+      message.success('已保存');
+    }
+    popupApi.close();
+    emits('success');
+  } finally {
+    popupApi.unlock();
+  }
+}
+
+async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
+  if (!isOpen) return;
+  formApi.resetForm();
+  cascaderOptions.value = [];
+  cascaderPath.value = [];
+
+  const data = popupApi.getData<AreaTreeNode | { pid?: number }>();
+  const id =
+    data && typeof (data as AreaTreeNode).id === 'number'
+      ? (data as AreaTreeNode).id
+      : null;
+  editingId.value = id;
+
+  if (id) {
+    const detail = await fetchArea(id);
+    formApi.setValues({
+      code: detail.code ?? '',
+      first: detail.first ?? '',
+      lat: detail.lat ?? '',
+      level: detail.level ?? undefined,
+      lng: detail.lng ?? '',
+      mergename: detail.mergename ?? '',
+      name: detail.name,
+      pid: detail.pid ?? 0,
+      pinyin: detail.pinyin ?? '',
+      shortname: detail.shortname ?? '',
+      zip: detail.zip ?? '',
+    });
+    await initCascader(detail.pid ?? 0);
+  } else {
+    const pid = (data as { pid?: number })?.pid ?? 0;
+    formApi.setValues({
+      code: '',
+      first: '',
+      lat: '',
+      level: undefined,
+      lng: '',
+      mergename: '',
+      name: '',
+      pid,
+      pinyin: '',
+      shortname: '',
+      zip: '',
+    });
+    await initCascader(pid);
+  }
+}
+
 const [Modal, modalApi] = useVbenModal({
+  destroyOnClose: true,
   fullscreenButton: false,
   async onConfirm() {
-    const { valid } = await formApi.validate();
-    if (!valid) return;
-
-    const values = (await formApi.getValues()) as AreaSavePayload;
-    if (!values.pid) values.pid = 0;
-
-    modalApi.lock();
-    try {
-      if (!editingId.value) {
-        await createArea(values);
-        message.success('创建成功');
-      } else {
-        await updateArea(editingId.value, values);
-        message.success('已保存');
-      }
-      modalApi.close();
-      emits('success');
-    } finally {
-      modalApi.unlock();
-    }
+    await handleConfirm(modalApi as PopupApi);
   },
   async onOpenChange(isOpen: boolean) {
-    if (!isOpen) return;
-    formApi.resetForm();
-    cascaderOptions.value = [];
-    cascaderPath.value = [];
-
-    const data = modalApi.getData<
-      (AreaTreeNode & { pid?: number }) | Record<string, never>
-    >();
-    const id =
-      data && typeof (data as AreaTreeNode).id === 'number'
-        ? (data as AreaTreeNode).id
-        : null;
-    editingId.value = id;
-
-    if (id) {
-      const detail = await fetchArea(id);
-      formApi.setValues({
-        code: detail.code ?? '',
-        first: detail.first ?? '',
-        lat: detail.lat ?? '',
-        level: detail.level ?? undefined,
-        lng: detail.lng ?? '',
-        mergename: detail.mergename ?? '',
-        name: detail.name,
-        pid: detail.pid ?? 0,
-        pinyin: detail.pinyin ?? '',
-        shortname: detail.shortname ?? '',
-        zip: detail.zip ?? '',
-      });
-      await initCascader(detail.pid ?? 0);
-    } else {
-      const pid = (data as { pid?: number })?.pid ?? 0;
-      formApi.setValues({
-        code: '',
-        first: '',
-        lat: '',
-        level: undefined,
-        lng: '',
-        mergename: '',
-        name: '',
-        pid,
-        pinyin: '',
-        shortname: '',
-        zip: '',
-      });
-      await initCascader(pid);
-    }
+    await handleOpenChange(isOpen, modalApi as PopupApi);
   },
 });
+
+const [Drawer, drawerApi] = useVbenDrawer({
+  destroyOnClose: true,
+  async onConfirm() {
+    await handleConfirm(drawerApi as PopupApi);
+  },
+  async onOpenChange(isOpen: boolean) {
+    await handleOpenChange(isOpen, drawerApi as PopupApi);
+  },
+});
+
+function getActivePopupApi() {
+  return (isMobile.value ? drawerApi : modalApi) as PopupApi;
+}
+
+function open(data: AreaTreeNode | { pid?: number } = {}) {
+  const api = getActivePopupApi();
+  api.setData(data);
+  api.open();
+}
+
+defineExpose({ open });
 </script>
 
 <template>
-  <Modal :title="modalTitle" class="w-[720px] max-w-[92vw]">
+  <Modal
+    v-if="!isMobile"
+    :title="formTitle"
+    class="w-full max-w-full md:w-[720px] md:max-w-[720px]"
+  >
     <Form class="area-region-form">
       <template #pid>
         <div class="area-parent-cascader-field w-full min-w-0">
@@ -204,6 +249,31 @@ const [Modal, modalApi] = useVbenModal({
       </template>
     </Form>
   </Modal>
+  <Drawer v-else :title="formTitle" class="w-full">
+    <Form class="area-region-form">
+      <template #pid>
+        <div class="area-parent-cascader-field w-full min-w-0">
+          <Cascader
+            v-if="cascaderReady"
+            v-model:value="cascaderPath"
+            allow-clear
+            change-on-select
+            class="area-parent-cascader w-full"
+            :load-data="loadCascaderData"
+            :options="cascaderOptions"
+            placeholder="请选择上级区域（留空为顶级）"
+            popup-class-name="area-parent-cascader-popup"
+            style="width: 100%"
+            @change="onCascaderChange"
+          />
+          <div
+            v-else
+            class="border-input bg-background h-8 w-full animate-pulse rounded-md border"
+          />
+        </div>
+      </template>
+    </Form>
+  </Drawer>
 </template>
 
 <style scoped>

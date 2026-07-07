@@ -5,7 +5,7 @@ import type { AreaTreeNode, AreaTreeQuery } from '#/api/system/region';
 import { ref } from 'vue';
 
 import { useAccess } from '@vben/access';
-import { Page, useVbenModal } from '@vben/common-ui';
+import { Page } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
 import { Button, message, Modal } from 'ant-design-vue';
@@ -22,6 +22,10 @@ import { REGION_PERMISSIONS } from '#/constants/region-permissions';
 import { useAreaColumns, useAreaGridFormSchema } from './data';
 import AreaForm from './modules/form.vue';
 
+type AreaFormExpose = {
+  open: (data?: AreaTreeNode | { pid?: number }) => void;
+};
+
 const { hasAccessByCodes } = useAccess();
 
 const areaAccess = {
@@ -30,11 +34,7 @@ const areaAccess = {
 
 const isSearchMode = ref(false);
 const selectedRows = ref<AreaTreeNode[]>([]);
-
-const [AreaFormModal, areaFormModalApi] = useVbenModal({
-  connectedComponent: AreaForm,
-  destroyOnClose: true,
-});
+const areaFormRef = ref<AreaFormExpose>();
 
 function syncSelection() {
   const records = gridApi?.grid?.getCheckboxRecords?.() ?? [];
@@ -77,15 +77,15 @@ async function loadAreaChildren({ row }: { row: AreaTreeNode }) {
 }
 
 function onCreate() {
-  areaFormModalApi.setData({}).open();
+  areaFormRef.value?.open({});
 }
 
 function onAppend(row: AreaTreeNode) {
-  areaFormModalApi.setData({ pid: row.id }).open();
+  areaFormRef.value?.open({ pid: row.id });
 }
 
 function onEdit(row: AreaTreeNode) {
-  areaFormModalApi.setData(row).open();
+  areaFormRef.value?.open(row);
 }
 
 function onRefresh() {
@@ -193,7 +193,7 @@ const [Grid, gridApi] = useVbenVxeGrid<AreaTreeNode>({
 
 <template>
   <Page auto-content-height>
-    <AreaFormModal @success="onRefresh" />
+    <AreaForm ref="areaFormRef" @success="onRefresh" />
     <Grid>
       <template #toolbar-actions>
         <div v-if="selectedRows.length > 0" class="vxe-grid-batch-toolbar">

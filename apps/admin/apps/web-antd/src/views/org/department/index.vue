@@ -5,7 +5,7 @@ import type { DepartmentTreeNode } from '#/api/system/department';
 import { ref } from 'vue';
 
 import { useAccess } from '@vben/access';
-import { Page, useVbenModal } from '@vben/common-ui';
+import { Page } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
 import { Button, message, Modal } from 'ant-design-vue';
@@ -24,17 +24,17 @@ import { DEPARTMENT_PERMISSIONS } from '#/constants/department-permissions';
 import { useColumns } from './data';
 import DepartmentForm from './modules/form.vue';
 
+type DepartmentFormExpose = {
+  open: (data?: DepartmentTreeNode | { parent_id?: number }) => void;
+};
+
 const { hasAccessByCodes } = useAccess();
 
 const deptAccess = {
   can: (code: string) => hasAccessByCodes([code]),
 };
 
-const [DepartmentFormModal, deptFormModalApi] = useVbenModal({
-  connectedComponent: DepartmentForm,
-  destroyOnClose: true,
-});
-
+const deptFormRef = ref<DepartmentFormExpose>();
 const selectedRows = ref<DepartmentTreeNode[]>([]);
 
 function syncSelection() {
@@ -48,15 +48,15 @@ function clearSelection() {
 }
 
 function onCreate() {
-  deptFormModalApi.setData({}).open();
+  deptFormRef.value?.open({});
 }
 
 function onAppend(row: DepartmentTreeNode) {
-  deptFormModalApi.setData({ parent_id: row.id }).open();
+  deptFormRef.value?.open({ parent_id: row.id });
 }
 
 function onEdit(row: DepartmentTreeNode) {
-  deptFormModalApi.setData(row).open();
+  deptFormRef.value?.open(row);
 }
 
 function onRefresh() {
@@ -224,7 +224,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
 
 <template>
   <Page auto-content-height>
-    <DepartmentFormModal @success="onRefresh" />
+    <DepartmentForm ref="deptFormRef" @success="onRefresh" />
     <Grid>
       <template #toolbar-actions>
         <div v-if="selectedRows.length > 0" class="vxe-grid-batch-toolbar">
