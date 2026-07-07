@@ -326,9 +326,10 @@ defineExpose({ clearSelection, reload });
         </Space.Compact>
       </div>
 
-      <div class="attachment-mobile-flow__content min-h-0 flex-1 overflow-y-auto">
-        <Spin :spinning="loading">
+      <div class="mobile-crud-list__body overflow-y-auto">
+        <Spin :spinning="loading" wrapper-class-name="mobile-crud-list__spin">
           <AttachmentFlowView
+            v-if="flowList.length > 0 || !loading"
             v-model:selected-ids="selectedFlowIds"
             class="attachment-flow-panel"
             :can-delete="canDelete"
@@ -337,10 +338,15 @@ defineExpose({ clearSelection, reload });
             @delete="emit('delete', $event)"
             @open="emit('open', $event)"
           />
+          <div
+            v-else
+            class="mobile-crud-list__loading-placeholder"
+            aria-hidden="true"
+          />
         </Spin>
       </div>
 
-      <div v-if="total > 0" class="mobile-crud-list__pager shrink-0">
+      <div class="mobile-crud-list__pager shrink-0">
         <span class="mobile-crud-list__pager-total">共 {{ total }} 条</span>
         <Pagination
           :current="currentPage"
@@ -450,7 +456,7 @@ defineExpose({ clearSelection, reload });
   padding: 0;
 }
 
-.attachment-mobile-flow__content :deep(.attachment-flow-view) {
+.mobile-crud-list__body :deep(.attachment-flow-view) {
   height: auto;
   min-height: 240px;
   overflow: visible;

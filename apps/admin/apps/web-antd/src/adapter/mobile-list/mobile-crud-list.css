@@ -42,6 +42,28 @@
   border-bottom: 1px solid hsl(var(--border));
 }
 
+.mobile-crud-list__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.mobile-crud-list__spin.ant-spin-nested-loading {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.mobile-crud-list__spin > .ant-spin-container {
+  min-height: 100%;
+}
+
+.mobile-crud-list__loading-placeholder {
+  min-height: 16rem;
+  height: 100%;
+}
+
 .mobile-crud-list__search-compact {
   width: 100%;
 }

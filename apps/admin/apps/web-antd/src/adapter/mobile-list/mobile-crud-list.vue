@@ -261,8 +261,8 @@ onMounted(() => {
       </Space.Compact>
     </div>
 
-    <div class="min-h-0 flex-1 overflow-y-auto">
-      <Spin :spinning="loading">
+    <div class="mobile-crud-list__body min-h-0 flex-1 overflow-y-auto">
+      <Spin :spinning="loading" wrapper-class-name="mobile-crud-list__spin">
         <div v-if="list.length > 0" class="mobile-crud-list__cards">
           <div
             v-for="row in list"
@@ -390,10 +390,15 @@ onMounted(() => {
             {{ $t('common.noData') }}
           </template>
         </Empty>
+        <div
+          v-else
+          class="mobile-crud-list__loading-placeholder"
+          aria-hidden="true"
+        />
       </Spin>
     </div>
 
-    <div v-if="total > 0" class="mobile-crud-list__pager">
+    <div class="mobile-crud-list__pager shrink-0">
       <span class="mobile-crud-list__pager-total">共 {{ total }} 条</span>
       <Pagination
         :current="currentPage"
