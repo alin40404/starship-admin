@@ -9,6 +9,7 @@ import type {
 import { computed, nextTick, reactive, ref, watch } from 'vue';
 
 import { useVbenDrawer } from '@vben/common-ui';
+import { usePreferences } from '@vben/preferences';
 
 import { message } from 'ant-design-vue';
 
@@ -33,6 +34,8 @@ const ZERO_OTHER_SETTINGS: MenuOtherSettingsPayload = {
 };
 
 const emits = defineEmits<{ success: [] }>();
+
+const { isMobile } = usePreferences();
 
 const editingId = ref<number | null>(null);
 
@@ -103,6 +106,23 @@ const [Form, formApi] = useVbenForm(
     showDefaultActions: false,
     wrapperClass: 'grid-cols-2 gap-x-4',
   }) as any,
+);
+
+watch(
+  isMobile,
+  (mobile) => {
+    formApi.setState({
+      commonConfig: {
+        colon: !mobile,
+        componentProps: { class: 'w-full' },
+        formItemClass: mobile ? 'col-span-full' : 'col-span-2 md:col-span-1',
+        labelClass: mobile ? 'justify-start' : undefined,
+      },
+      layout: mobile ? 'vertical' : 'horizontal',
+      wrapperClass: mobile ? 'grid-cols-1' : 'grid-cols-2 gap-x-4',
+    });
+  },
+  { immediate: true },
 );
 
 watch(
