@@ -1,5 +1,11 @@
+/**
+ * 模块管理权限，与 modules/System/app/Support/ModulePermissions.php 保持一致。
+ */
 export const MODULE_PERMISSIONS = {
+  /** 菜单页访问（与菜单 permission 一致） */
   MANAGE: 'system.modules',
+  QUERY: 'system.modules.query',
+  UPDATE: 'system.modules.update',
 } as const;
 
 export type ModulePermissionCode =

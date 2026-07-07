@@ -23,6 +23,7 @@ use Modules\System\App\Support\ConfigPermissions;
 use Modules\System\App\Support\DepartmentPermissions;
 use Modules\System\App\Support\DictPermissions;
 use Modules\System\App\Support\MenuPermissions;
+use Modules\System\App\Support\ModulePermissions;
 use Modules\System\App\Support\PostPermissions;
 use Modules\System\App\Support\RolePermissions;
 use Modules\System\App\Support\UserGroupPermissions;
@@ -238,10 +239,10 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
     Route::middleware('auth:sanctum')->prefix('dev')->group(function () {
         // 模块管理（/dev/modules）— 扫描 modules/*/module.json
         Route::get('modules', [DevModuleController::class, 'index'])
-            ->middleware('admin.permission:system.modules');
+            ->middleware('admin.permission:'.ModulePermissions::QUERY);
         Route::get('modules/{name}', [DevModuleController::class, 'show'])
-            ->middleware('admin.permission:system.modules');
+            ->middleware('admin.permission:'.ModulePermissions::QUERY);
         Route::put('modules/{name}/status', [DevModuleController::class, 'updateStatus'])
-            ->middleware('admin.permission:system.modules');
+            ->middleware('admin.permission:'.ModulePermissions::UPDATE);
     });
 });

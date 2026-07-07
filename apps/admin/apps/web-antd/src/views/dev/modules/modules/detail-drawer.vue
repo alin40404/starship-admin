@@ -7,6 +7,13 @@ import { Descriptions, Drawer, message, Switch } from 'ant-design-vue';
 
 import { fetchDevModule, updateDevModuleStatus } from '#/api/dev-module';
 
+const props = withDefaults(
+  defineProps<{
+    canUpdate?: boolean;
+  }>(),
+  { canUpdate: false },
+);
+
 const open = ref(false);
 const loading = ref(false);
 const submitting = ref(false);
@@ -19,7 +26,7 @@ const manifestText = computed(() =>
 );
 
 const canToggle = computed(
-  () => detail.value?.name.toLowerCase() !== 'system',
+  () => props.canUpdate && detail.value?.name.toLowerCase() !== 'system',
 );
 
 async function show(row: DevModuleRow) {

@@ -12,6 +12,7 @@ use Modules\System\App\Support\ConfigPermissions;
 use Modules\System\App\Support\DepartmentPermissions;
 use Modules\System\App\Support\DictPermissions;
 use Modules\System\App\Support\MenuPermissions;
+use Modules\System\App\Support\ModulePermissions;
 use Modules\System\App\Support\PostPermissions;
 use Modules\System\App\Support\RolePermissions;
 use Modules\System\App\Support\UserGroupPermissions;
@@ -513,6 +514,24 @@ class MenuSeeder extends Seeder
 
             if ($m['path'] === '/dev/codegen') {
                 foreach (GeneratorPermissions::buttonDefinitions() as $btn) {
+                    Menu::query()->create([
+                        'parent_id' => $devMenu->id,
+                        'type' => 3,
+                        'name' => $btn['name'],
+                        'title' => $btn['title'],
+                        'path' => null,
+                        'component' => null,
+                        'permission' => $btn['permission'],
+                        'icon' => null,
+                        'sort' => $btn['sort'],
+                        'other_settings' => $this->menuOther(0),
+                        'status' => 1,
+                    ]);
+                }
+            }
+
+            if ($m['path'] === '/dev/modules') {
+                foreach (ModulePermissions::buttonDefinitions() as $btn) {
                     Menu::query()->create([
                         'parent_id' => $devMenu->id,
                         'type' => 3,

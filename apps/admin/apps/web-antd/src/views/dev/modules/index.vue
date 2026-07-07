@@ -4,17 +4,26 @@ import type { DevModuleRow } from '#/api/dev-module';
 
 import { ref } from 'vue';
 
+import { useAccess } from '@vben/access';
 import { Page } from '@vben/common-ui';
 
 import { Alert } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchDevModules } from '#/api/dev-module';
+import { MODULE_PERMISSIONS } from '#/constants/module-permissions';
 
 import { useColumns } from './data';
 import DetailDrawer from './modules/detail-drawer.vue';
 
 const detailDrawerRef = ref<InstanceType<typeof DetailDrawer>>();
+
+const { hasAccessByCodes } = useAccess();
+
+const moduleAccess = {
+  can: (code: string) =>
+    hasAccessByCodes([MODULE_PERMISSIONS.MANAGE, code]),
+};
 
 function onActionClick({ code, row }: OnActionClickParams<DevModuleRow>) {
   if (code === 'detail') {
@@ -22,7 +31,7 @@ function onActionClick({ code, row }: OnActionClickParams<DevModuleRow>) {
   }
 }
 
-const columns = useColumns(onActionClick);
+const columns = useColumns(onActionClick, moduleAccess);
 
 const [Grid, gridApi] = useVbenVxeGrid<DevModuleRow>({
   gridOptions: {
@@ -49,7 +58,7 @@ const [Grid, gridApi] = useVbenVxeGrid<DevModuleRow>({
       type="info"
     />
 
-    <DetailDrawer ref="detailDrawerRef" @success="gridApi.reload()" />
+    <DetailDrawer ref="detailDrawerRef" :can-update="moduleAccess.can(MODULE_PERMISSIONS.UPDATE)" @success="gridApi.reload()" />
 
     <Grid />
   </Page>

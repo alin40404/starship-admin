@@ -3,7 +3,7 @@ import type { OnActionClickFn } from '#/adapter/vxe-table';
 import type { DevModuleRow } from '#/api/dev-module';
 
 import { TABLE_CELL_EMPTY } from '#/constants/table';
-import { MODULE_STATUS_TAG_OPTIONS } from '#/constants/module-permissions';
+import { MODULE_PERMISSIONS, MODULE_STATUS_TAG_OPTIONS } from '#/constants/module-permissions';
 
 export type ModuleAccessChecker = {
   can: (code: string) => boolean;
@@ -11,6 +11,7 @@ export type ModuleAccessChecker = {
 
 export function useColumns(
   onActionClick: OnActionClickFn<DevModuleRow>,
+  access: ModuleAccessChecker,
 ) {
   return [
     {
@@ -73,6 +74,7 @@ export function useColumns(
         options: [
           {
             code: 'detail',
+            show: () => access.can(MODULE_PERMISSIONS.QUERY),
             text: '详情',
             type: 'link',
           },
