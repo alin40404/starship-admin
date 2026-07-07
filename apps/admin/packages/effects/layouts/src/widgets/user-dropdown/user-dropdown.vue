@@ -26,7 +26,7 @@ import {
   VbenIcon,
 } from '@vben-core/shadcn-ui';
 
-import { useMagicKeys, whenever } from '@vueuse/core';
+import { useActiveElement, useMagicKeys, whenever } from '@vueuse/core';
 
 import { LockScreenModal } from '../lock-screen';
 
@@ -151,25 +151,44 @@ function handleSubmitLogout() {
   logoutModalApi.close();
 }
 
+const activeElement = useActiveElement();
+const notUsingInput = computed(() => {
+  const el = activeElement.value;
+  if (!el) {
+    return true;
+  }
+  const tag = el.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+    return false;
+  }
+  return !el.isContentEditable;
+});
+
 if (enableShortcutKey.value) {
   const keys = useMagicKeys();
   const logoutKey = keys['Alt+KeyQ'];
   const lockKey = keys['Alt+KeyL'];
 
   if (logoutKey) {
-    whenever(logoutKey, () => {
-      if (enableLogoutShortcutKey.value) {
-        handleLogout();
-      }
-    });
+    whenever(
+      computed(() => Boolean(logoutKey.value) && notUsingInput.value),
+      () => {
+        if (enableLogoutShortcutKey.value) {
+          handleLogout();
+        }
+      },
+    );
   }
 
   if (lockKey) {
-    whenever(lockKey, () => {
-      if (enableLockScreenShortcutKey.value) {
-        handleOpenLock();
-      }
-    });
+    whenever(
+      computed(() => Boolean(lockKey.value) && notUsingInput.value),
+      () => {
+        if (enableLockScreenShortcutKey.value) {
+          handleOpenLock();
+        }
+      },
+    );
   }
 }
 </script>

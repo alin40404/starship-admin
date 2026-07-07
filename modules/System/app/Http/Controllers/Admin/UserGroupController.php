@@ -16,6 +16,13 @@ class UserGroupController extends Controller
     {
         $query = UserGroup::query()->withCount('admins');
 
+        if ($request->filled('keyword')) {
+            $keyword = (string) $request->get('keyword');
+            $query->where(function ($q) use ($keyword): void {
+                $q->where('name', 'like', '%'.$keyword.'%')
+                    ->orWhere('code', 'like', '%'.$keyword.'%');
+            });
+        }
         if ($request->filled('name')) {
             $query->where('name', 'like', '%'.$request->get('name').'%');
         }

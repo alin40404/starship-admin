@@ -40,6 +40,7 @@ export interface AdminSavePayload {
 export interface AdminPageQuery {
   page: number;
   per_page: number;
+  keyword?: string;
   username?: string;
   name?: string;
   email?: string;

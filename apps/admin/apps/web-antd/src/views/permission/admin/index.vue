@@ -154,11 +154,12 @@ const [CrudView, crudApi] = useResponsiveCrud<AdminRow>({
         sort_order: sortOrder,
         dept_id: filters?.dept_id,
         email: filters?.email || undefined,
+        keyword: keyword || undefined,
         mobile: filters?.mobile || undefined,
-        name: keyword || filters?.name || undefined,
+        name: filters?.name || undefined,
         updated_end: filters?.updated_end || undefined,
         updated_start: filters?.updated_start || undefined,
-        username: keyword || filters?.username || undefined,
+        username: filters?.username || undefined,
       });
       return {
         data: result.data,

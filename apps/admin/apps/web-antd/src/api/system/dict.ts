@@ -29,6 +29,7 @@ export interface DictItemRow {
 export interface DictTypePageQuery {
   page: number;
   per_page: number;
+  keyword?: string;
   name?: string;
   code?: string;
   status?: number;

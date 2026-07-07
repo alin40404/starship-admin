@@ -21,6 +21,7 @@ export interface UserGroupDetail extends UserGroupRow {
 export interface UserGroupPageQuery {
   page: number;
   per_page: number;
+  keyword?: string;
   name?: string;
   code?: string;
   status?: number;

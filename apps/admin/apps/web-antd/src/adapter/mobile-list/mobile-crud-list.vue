@@ -154,10 +154,21 @@ const [FilterForm, filterFormApi] = useVbenForm(
       labelClass: 'justify-start',
     },
     fieldMappingTime: props.config.search?.fieldMappingTime,
+    handleSubmit: async () => {
+      const { valid } = await filterFormApi.validate();
+      if (!valid) {
+        return;
+      }
+      const values = await filterFormApi.getValues();
+      handleFilterSubmit(values ?? {});
+    },
     layout: 'vertical',
     schema: computed(() => props.config.search?.filterSchema ?? []),
     showCollapseButton: false,
     showDefaultActions: false,
+    submitOnChange: computed(
+      () => props.config.search?.submitOnChange ?? false,
+    ),
     wrapperClass: 'grid-cols-1',
   }),
 );

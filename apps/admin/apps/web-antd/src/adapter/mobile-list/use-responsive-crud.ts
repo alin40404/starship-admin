@@ -6,7 +6,7 @@ import type { ExtendedVxeGridApi } from '#/adapter/vxe-table';
 
 import type { MobileCrudListConfig } from './types';
 
-import { defineComponent, h, ref, watch } from 'vue';
+import { defineComponent, computed, h, ref, watch } from 'vue';
 
 import { usePreferences } from '@vben/preferences';
 
@@ -42,6 +42,23 @@ export function useResponsiveCrud<T extends Record<string, any>>(
   );
 
   const { mobile, gridEvents, ...gridOptions } = options;
+
+  const mobileConfig = computed(() => {
+    const formOptions = gridOptions.formOptions;
+    if (!mobile.search || !formOptions) {
+      return mobile;
+    }
+    return {
+      ...mobile,
+      search: {
+        ...mobile.search,
+        fieldMappingTime:
+          mobile.search.fieldMappingTime ?? formOptions.fieldMappingTime,
+        submitOnChange:
+          mobile.search.submitOnChange ?? formOptions.submitOnChange ?? false,
+      },
+    };
+  });
 
   function syncGridSelection() {
     if (isMobile.value) {
@@ -105,7 +122,7 @@ export function useResponsiveCrud<T extends Record<string, any>>(
                 {
                   ...attrs,
                   ref: mobileListRef,
-                  config: mobile,
+                  config: mobileConfig.value,
                   selectedRows: selectedRows.value,
                   'onUpdate:selectedRows': (rows: T[]) => {
                     selectedRows.value = rows;

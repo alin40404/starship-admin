@@ -16,6 +16,7 @@ export interface PostRow {
 export interface PostPageQuery {
   page: number;
   per_page: number;
+  keyword?: string;
   name?: string;
   code?: string;
   status?: number;

@@ -66,7 +66,8 @@ const mobileConfig = computed(() => {
       const result = await fetchAttachmentPage({
         page,
         per_page: pageSize,
-        file_name: keyword || filters?.file_name || undefined,
+        keyword: keyword || undefined,
+        file_name: filters?.file_name || undefined,
         file_ext: filters?.file_ext || undefined,
         storage: filters?.storage || undefined,
         category: props.resolveCategoryFilter(),

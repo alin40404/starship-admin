@@ -21,6 +21,7 @@ export interface RoleDetail extends RoleRow {
 export interface RolePageQuery {
   page: number;
   per_page: number;
+  keyword?: string;
   name?: string;
   code?: string;
   status?: number;

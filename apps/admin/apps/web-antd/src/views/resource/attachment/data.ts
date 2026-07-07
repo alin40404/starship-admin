@@ -308,6 +308,7 @@ export function buildAttachmentMobileCrudConfig(params: {
       filterSchema: useGridFormSchema(),
       keywordFields: ['file_name'],
       placeholder: '搜索文件名',
+      submitOnChange: true,
     },
     selection: {
       enabled: true,

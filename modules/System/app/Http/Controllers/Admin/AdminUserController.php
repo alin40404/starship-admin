@@ -27,6 +27,14 @@ class AdminUserController extends Controller
             app(DataScopeService::class)->applyAdminScope($query, $admin);
         }
 
+        if ($request->filled('keyword')) {
+            $keyword = (string) $request->get('keyword');
+            $query->where(function ($q) use ($keyword): void {
+                $q->where('username', 'like', '%'.$keyword.'%')
+                    ->orWhere('real_name', 'like', '%'.$keyword.'%')
+                    ->orWhere('nickname', 'like', '%'.$keyword.'%');
+            });
+        }
         if ($request->filled('username')) {
             $query->where('username', 'like', '%'.$request->get('username').'%');
         }

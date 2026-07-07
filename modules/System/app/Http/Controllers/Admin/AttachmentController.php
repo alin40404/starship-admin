@@ -48,6 +48,9 @@ class AttachmentController extends Controller
     {
         $query = Attachment::query()->with('admin:id,username,nickname');
 
+        if ($request->filled('keyword')) {
+            $query->where('file_name', 'like', '%'.$request->get('keyword').'%');
+        }
         if ($request->filled('file_name')) {
             $query->where('file_name', 'like', '%'.$request->get('file_name').'%');
         }

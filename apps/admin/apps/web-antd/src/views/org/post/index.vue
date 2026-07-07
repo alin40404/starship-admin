@@ -123,8 +123,9 @@ const [CrudView, crudApi] = useResponsiveCrud<PostRow>({
         per_page: pageSize,
         sort_field: sortField,
         sort_order: sortOrder,
-        code: keyword || filters?.code || undefined,
-        name: keyword || filters?.name || undefined,
+        keyword: keyword || undefined,
+        code: filters?.code || undefined,
+        name: filters?.name || undefined,
         status:
           filters?.status === undefined || filters?.status === null
             ? undefined

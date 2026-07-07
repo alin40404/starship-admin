@@ -35,6 +35,7 @@ export interface AttachmentRow {
 export interface AttachmentPageQuery {
   page: number;
   per_page: number;
+  keyword?: string;
   file_name?: string;
   file_ext?: string;
   mime_type?: string;

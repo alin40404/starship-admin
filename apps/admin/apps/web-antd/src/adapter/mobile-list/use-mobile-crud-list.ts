@@ -9,6 +9,8 @@ import { computed, ref, toValue, watch } from 'vue';
 
 import { isFunction } from '@vben/utils';
 
+import { useDebounceFn } from '@vueuse/core';
+
 function resolveRowKey<T extends Record<string, any>>(
   row: T,
   rowKey: MobileCrudListConfig<T>['rowKey'],
@@ -179,10 +181,25 @@ export function useMobileCrudList<T extends Record<string, any>>(
     ).length;
   });
 
+  const debouncedKeywordSearch = useDebounceFn(() => {
+    handleKeywordSearch();
+  }, 300);
+
   watch(
     () => keyword.value,
     (value, oldValue) => {
-      if (value === '' && oldValue !== '' && searchUsesKeyword(configRef.value)) {
+      if (!searchUsesKeyword(configRef.value)) {
+        return;
+      }
+      if (configRef.value.search?.submitOnChange) {
+        if (value === '' && oldValue !== '') {
+          handleKeywordSearch();
+          return;
+        }
+        debouncedKeywordSearch();
+        return;
+      }
+      if (value === '' && oldValue !== '') {
         handleKeywordSearch();
       }
     },
