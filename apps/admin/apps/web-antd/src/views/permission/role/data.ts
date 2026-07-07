@@ -1,8 +1,10 @@
 import type { VbenFormSchema } from '#/adapter/form';
 import type {
-  OnActionClickFn,
-  VxeTableGridColumns,
-} from '#/adapter/vxe-table';
+  CrudGridColumn,
+  MobileCrudListConfig,
+} from '#/adapter/mobile-list';
+import { buildMobileCrudFromColumns } from '#/adapter/mobile-list';
+import type { OnActionClickFn } from '#/adapter/vxe-table';
 
 import type { RoleRow } from '#/api/system/role';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
@@ -108,11 +110,32 @@ export type RoleAccessChecker = {
   canAny: (codes: string[]) => boolean;
 };
 
+export function buildRoleMobileCrudConfig(params: {
+  columns: CrudGridColumn<RoleRow>[];
+  query: MobileCrudListConfig<RoleRow>['query'];
+}): MobileCrudListConfig<RoleRow> {
+  return buildMobileCrudFromColumns({
+    columns: params.columns,
+    defaultPageSize: 20,
+    query: params.query,
+    rowKey: 'id',
+    search: {
+      filterSchema: useGridFormSchema(),
+      keywordFields: ['name', 'code'],
+      placeholder: '搜索名称/编码',
+    },
+    selection: {
+      checkable: (row) => row.code !== 'super_admin',
+      enabled: true,
+    },
+  });
+}
+
 export function useColumns(
   onActionClick: OnActionClickFn<RoleRow>,
   onStatusBeforeChange: (newVal: number, row: RoleRow) => Promise<boolean>,
   access: RoleAccessChecker,
-): VxeTableGridColumns {
+): CrudGridColumn<RoleRow>[] {
   const canStatus = access.can(ROLE_PERMISSIONS.STATUS);
 
   return [
@@ -207,7 +230,7 @@ export function useColumns(
       title: '操作',
       width: 180,
     },
-  ];
+  ] as CrudGridColumn<RoleRow>[];
 }
 
 export function buildRoleFormSchema(params: {

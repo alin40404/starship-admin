@@ -29,6 +29,10 @@ function isCheckboxColumn(column: CrudGridColumn) {
   return column.type === 'checkbox';
 }
 
+function columnsHasCheckbox<T>(columns: CrudGridColumn<T>[]) {
+  return columns.some((column) => isCheckboxColumn(column));
+}
+
 function isOperationColumn(column: CrudGridColumn) {
   return column.cellRender?.name === 'CellOperation';
 }
@@ -211,6 +215,11 @@ export function buildMobileCrudFromColumns<T extends Record<string, any>>(
     query,
     rowKey,
     search,
-    selection,
+    selection:
+      selection !== undefined
+        ? selection
+        : columnsHasCheckbox(columns)
+          ? { enabled: true }
+          : undefined,
   };
 }

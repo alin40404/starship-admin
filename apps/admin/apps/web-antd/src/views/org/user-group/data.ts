@@ -1,8 +1,10 @@
 import type { VbenFormSchema } from '#/adapter/form';
 import type {
-  OnActionClickFn,
-  VxeTableGridColumns,
-} from '#/adapter/vxe-table';
+  CrudGridColumn,
+  MobileCrudListConfig,
+} from '#/adapter/mobile-list';
+import { buildMobileCrudFromColumns } from '#/adapter/mobile-list';
+import type { OnActionClickFn } from '#/adapter/vxe-table';
 
 import type { UserGroupRow } from '#/api/system/user-group';
 import { fetchAdminPage } from '#/api/system/admin';
@@ -44,10 +46,30 @@ export function useGridFormSchema(): VbenFormSchema[] {
   ];
 }
 
+export function buildUserGroupMobileCrudConfig(params: {
+  columns: CrudGridColumn<UserGroupRow>[];
+  query: MobileCrudListConfig<UserGroupRow>['query'];
+}): MobileCrudListConfig<UserGroupRow> {
+  return buildMobileCrudFromColumns({
+    columns: params.columns,
+    defaultPageSize: 20,
+    query: params.query,
+    rowKey: 'id',
+    search: {
+      filterSchema: useGridFormSchema(),
+      keywordFields: ['name', 'code'],
+      placeholder: '搜索名称/编码',
+    },
+    selection: {
+      enabled: true,
+    },
+  });
+}
+
 export function useColumns(
   onActionClick: OnActionClickFn<UserGroupRow>,
   access: UserGroupAccessChecker,
-): VxeTableGridColumns<UserGroupRow> {
+): CrudGridColumn<UserGroupRow>[] {
   return [
     {
       align: 'center',
@@ -113,7 +135,7 @@ export function useColumns(
       title: '操作',
       width: 140,
     },
-  ];
+  ] as CrudGridColumn<UserGroupRow>[];
 }
 
 async function loadAdminOptions() {

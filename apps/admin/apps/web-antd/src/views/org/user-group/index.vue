@@ -2,15 +2,13 @@
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { UserGroupRow } from '#/api/system/user-group';
 
-import { ref } from 'vue';
-
 import { useAccess } from '@vben/access';
 import { Page, useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
 import { Button, message, Modal } from 'ant-design-vue';
 
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { useResponsiveCrud } from '#/adapter/mobile-list';
 import {
   batchDeleteUserGroups,
   deleteUserGroup,
@@ -18,7 +16,11 @@ import {
 } from '#/api/system/user-group';
 import { USER_GROUP_PERMISSIONS } from '#/constants/user-group-permissions';
 
-import { useColumns, useGridFormSchema } from './data';
+import {
+  buildUserGroupMobileCrudConfig,
+  useColumns,
+  useGridFormSchema,
+} from './data';
 import UserGroupForm from './modules/form.vue';
 
 const { hasAccessByCodes } = useAccess();
@@ -32,18 +34,6 @@ const [UserGroupFormModal, groupFormModalApi] = useVbenModal({
   destroyOnClose: true,
 });
 
-const selectedRows = ref<UserGroupRow[]>([]);
-
-function syncSelection() {
-  const records = gridApi?.grid?.getCheckboxRecords?.() ?? [];
-  selectedRows.value = records as UserGroupRow[];
-}
-
-function clearSelection() {
-  gridApi?.grid?.clearCheckboxRow?.();
-  selectedRows.value = [];
-}
-
 function onCreate() {
   groupFormModalApi.setData({}).open();
 }
@@ -52,53 +42,23 @@ function onEdit(row: UserGroupRow) {
   groupFormModalApi.setData(row).open();
 }
 
-function onRefresh() {
-  gridApi.query();
-}
-
 function onActionClick({ code, row }: OnActionClickParams<UserGroupRow>) {
   if (code === 'edit') onEdit(row);
   else if (code === 'delete') onDelete(row);
 }
 
-async function onDelete(row: UserGroupRow) {
-  await deleteUserGroup(row.id);
-  message.success('已删除');
-  clearSelection();
-  gridApi.query();
-}
+const columns = useColumns(onActionClick, groupAccess);
 
-function onBatchDelete() {
-  const ids = selectedRows.value.map((row) => row.id);
-  if (ids.length === 0) return;
-  Modal.confirm({
-    content: `确定删除选中的 ${ids.length} 个用户组吗？`,
-    okText: '删除',
-    okType: 'danger',
-    title: '批量删除',
-    async onOk() {
-      await batchDeleteUserGroups(ids);
-      message.success('已批量删除');
-      clearSelection();
-      onRefresh();
-    },
-  });
-}
-
-const [Grid, gridApi] = useVbenVxeGrid<UserGroupRow>({
+const [CrudView, crudApi] = useResponsiveCrud<UserGroupRow>({
   formOptions: {
     commonConfig: { componentProps: { class: 'w-full' } },
     schema: useGridFormSchema(),
     submitOnChange: true,
     submitButtonOptions: { content: '查询' },
   },
-  gridEvents: {
-    checkboxAll: syncSelection,
-    checkboxChange: syncSelection,
-  },
   gridOptions: {
     checkboxConfig: { highlight: true },
-    columns: useColumns(onActionClick, groupAccess),
+    columns: columns as VxeTableGridOptions<UserGroupRow>['columns'],
     height: 'auto',
     keepSource: true,
     proxyConfig: {
@@ -126,13 +86,65 @@ const [Grid, gridApi] = useVbenVxeGrid<UserGroupRow>({
     sortConfig: { remote: true },
     toolbarConfig: { custom: true, refresh: true, search: true, zoom: true },
   } as VxeTableGridOptions<UserGroupRow>,
+  mobile: buildUserGroupMobileCrudConfig({
+    columns,
+    query: async ({ filters, keyword, page, pageSize, sortField, sortOrder }) => {
+      const result = await fetchUserGroupPage({
+        page,
+        per_page: pageSize,
+        sort_field: sortField,
+        sort_order: sortOrder,
+        code: keyword || filters?.code || undefined,
+        name: keyword || filters?.name || undefined,
+        status:
+          filters?.status === undefined || filters?.status === null
+            ? undefined
+            : filters.status,
+      });
+      return {
+        data: result.data,
+        total: result.total,
+      };
+    },
+  }),
 });
+
+const { clearSelection, reload, selectedRows } = crudApi;
+
+function onRefresh() {
+  reload();
+}
+
+async function onDelete(row: UserGroupRow) {
+  await deleteUserGroup(row.id);
+  message.success('已删除');
+  clearSelection();
+  onRefresh();
+}
+
+function onBatchDelete() {
+  const ids = selectedRows.value.map((row) => row.id);
+  if (ids.length === 0) return;
+  Modal.confirm({
+    content: `确定删除选中的 ${ids.length} 个用户组吗？`,
+    okText: '删除',
+    okType: 'danger',
+    cancelText: '取消',
+    title: '批量删除',
+    async onOk() {
+      await batchDeleteUserGroups(ids);
+      message.success('已批量删除');
+      clearSelection();
+      onRefresh();
+    },
+  });
+}
 </script>
 
 <template>
   <Page auto-content-height>
     <UserGroupFormModal @success="onRefresh" />
-    <Grid>
+    <CrudView>
       <template #toolbar-actions>
         <div v-if="selectedRows.length > 0" class="vxe-grid-batch-toolbar">
           <Button
@@ -155,6 +167,6 @@ const [Grid, gridApi] = useVbenVxeGrid<UserGroupRow>({
           新增用户组
         </Button>
       </template>
-    </Grid>
+    </CrudView>
   </Page>
 </template>

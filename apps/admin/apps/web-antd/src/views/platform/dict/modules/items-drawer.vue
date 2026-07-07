@@ -1,30 +1,22 @@
 <script lang="ts" setup>
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
-import type {
-  DictItemRow,
-  DictItemSavePayload,
-  DictTypeRow,
-} from '#/api/system/dict';
+import type { DictItemRow, DictTypeRow } from '#/api/system/dict';
 
 import { computed, ref, useTemplateRef, watch } from 'vue';
 
 import { useAccess } from '@vben/access';
-import { useVbenDrawer, useVbenModal } from '@vben/common-ui';
+import { useVbenDrawer } from '@vben/common-ui';
+import { Plus } from '@vben/icons';
 
 import { useElementSize } from '@vueuse/core';
 import { Button, message } from 'ant-design-vue';
 
-import { useVbenForm } from '#/adapter/form';
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import {
-  createDictItem,
-  deleteDictItem,
-  fetchDictItemPage,
-  updateDictItem,
-} from '#/api/system/dict';
+import { useResponsiveCrud } from '#/adapter/mobile-list';
+import { deleteDictItem, fetchDictItemPage } from '#/api/system/dict';
 import { DICT_PERMISSIONS } from '#/constants/dict-permissions';
 
-import { buildDictItemFormSchema, useDictItemColumns } from '../data';
+import { buildDictItemMobileCrudConfig, useDictItemColumns } from '../data';
+import DictItemForm from './item-form.vue';
 
 const emits = defineEmits<{ success: [] }>();
 
@@ -34,7 +26,7 @@ const dictAccess = {
 };
 
 const activeType = ref<DictTypeRow | null>(null);
-const editingItemId = ref<number | null>(null);
+const itemFormRef = ref<InstanceType<typeof DictItemForm>>();
 const gridWrapRef = useTemplateRef<HTMLElement>('gridWrapRef');
 const { height: gridWrapHeight } = useElementSize(gridWrapRef);
 
@@ -43,32 +35,19 @@ const drawerTitle = computed(() => {
   return name ? `字典项：${name}` : '字典项';
 });
 
-const itemModalTitle = computed(() =>
-  editingItemId.value ? '编辑字典项' : '新增字典项',
-);
-
-const [ItemForm, itemFormApi] = useVbenForm({
-  commonConfig: {
-    componentProps: { class: 'w-full' },
-    labelClass: 'justify-start',
-  },
-  layout: 'vertical',
-  schema: buildDictItemFormSchema(),
-  showDefaultActions: false,
-  wrapperClass: 'grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1',
-});
-
 function onRefresh() {
-  gridApi.query();
+  reload();
   emits('success');
 }
 
 function onCreateItem() {
-  itemModalApi.setData({}).open();
+  if (!activeType.value) return;
+  itemFormRef.value?.open(activeType.value);
 }
 
 function onEditItem(row: DictItemRow) {
-  itemModalApi.setData(row).open();
+  if (!activeType.value) return;
+  itemFormRef.value?.open(activeType.value, row);
 }
 
 async function onDeleteItem(row: DictItemRow) {
@@ -82,78 +61,13 @@ function onItemActionClick({ code, row }: OnActionClickParams<DictItemRow>) {
   else if (code === 'delete') onDeleteItem(row);
 }
 
-const [ItemModal, itemModalApi] = useVbenModal({
-  animationType: 'scale',
-  confirmText: '保存',
-  fullscreenButton: false,
-  async onConfirm() {
-    if (!activeType.value) return;
-    const { valid } = await itemFormApi.validate();
-    if (!valid) return;
+const columns = useDictItemColumns(onItemActionClick, dictAccess);
 
-    const values = (await itemFormApi.getValues()) as Omit<
-      DictItemSavePayload,
-      'dict_type_id'
-    >;
-    const payload: DictItemSavePayload = {
-      ...values,
-      dict_type_id: activeType.value.id,
-    };
-
-    itemModalApi.lock();
-    try {
-      if (!editingItemId.value) {
-        await createDictItem(payload);
-        message.success('创建成功');
-      } else {
-        await updateDictItem(editingItemId.value, payload);
-        message.success('已保存');
-      }
-      itemModalApi.close();
-      onRefresh();
-    } finally {
-      itemModalApi.unlock();
-    }
-  },
-  onOpenChange(isOpen: boolean) {
-    if (!isOpen) {
-      editingItemId.value = null;
-      return;
-    }
-    itemFormApi.resetForm();
-    const data = itemModalApi.getData<DictItemRow | Record<string, never>>();
-    const id =
-      data && typeof (data as DictItemRow).id === 'number'
-        ? (data as DictItemRow).id
-        : null;
-    editingItemId.value = id;
-
-    if (id) {
-      const row = data as DictItemRow;
-      itemFormApi.setValues({
-        label: row.label,
-        remark: row.remark ?? '',
-        sort: row.sort ?? 0,
-        status: row.status,
-        value: row.value,
-      });
-    } else {
-      itemFormApi.setValues({
-        label: '',
-        remark: '',
-        sort: 0,
-        status: 1,
-        value: '',
-      });
-    }
-  },
-});
-
-const [Grid, gridApi] = useVbenVxeGrid<DictItemRow>({
-  class: 'h-full min-h-0',
-  gridClass: 'p-0',
+const [CrudView, crudApi] = useResponsiveCrud<DictItemRow>({
   gridOptions: {
-    columns: useDictItemColumns(onItemActionClick, dictAccess),
+    class: 'h-full min-h-0',
+    columns: columns as VxeTableGridOptions<DictItemRow>['columns'],
+    gridClass: 'p-0',
     height: 360,
     proxyConfig: {
       ajax: {
@@ -172,12 +86,31 @@ const [Grid, gridApi] = useVbenVxeGrid<DictItemRow>({
     rowConfig: { keyField: 'id' },
     toolbarConfig: { refresh: true },
   } as VxeTableGridOptions<DictItemRow>,
+  mobile: buildDictItemMobileCrudConfig({
+    columns,
+    query: async ({ page, pageSize }) => {
+      if (!activeType.value) {
+        return { data: [], total: 0 };
+      }
+      const result = await fetchDictItemPage({
+        dict_type_id: activeType.value.id,
+        page,
+        per_page: pageSize,
+      });
+      return {
+        data: result.data,
+        total: result.total,
+      };
+    },
+  }),
 });
+
+const { reload } = crudApi;
 
 watch(
   gridWrapHeight,
   (height) => {
-    gridApi.setGridOptions({
+    crudApi.gridApi.setGridOptions({
       height: Math.max(Math.floor(height), 200),
     });
   },
@@ -193,9 +126,8 @@ const [Drawer, drawerApi] = useVbenDrawer({
       activeType.value = null;
       return;
     }
-    const data = drawerApi.getData<DictTypeRow>();
-    activeType.value = data;
-    gridApi.query();
+    activeType.value = drawerApi.getData<DictTypeRow>();
+    reload();
   },
 });
 </script>
@@ -206,21 +138,20 @@ const [Drawer, drawerApi] = useVbenDrawer({
     class="max-w-[860px] w-[94vw]"
     content-class="flex min-h-0 flex-1 flex-col overflow-hidden"
   >
-    <div class="mb-3 flex justify-end">
-      <Button
-        v-if="dictAccess.can(DICT_PERMISSIONS.CREATE)"
-        type="primary"
-        @click="onCreateItem"
-      >
-        新增字典项
-      </Button>
-    </div>
+    <DictItemForm ref="itemFormRef" @success="onRefresh" />
     <div ref="gridWrapRef" class="min-h-0 flex-1">
-      <Grid />
+      <CrudView>
+        <template #toolbar-actions>
+          <Button
+            v-if="dictAccess.can(DICT_PERMISSIONS.CREATE)"
+            type="primary"
+            @click="onCreateItem"
+          >
+            <Plus class="size-4" />
+            新增字典项
+          </Button>
+        </template>
+      </CrudView>
     </div>
   </Drawer>
-
-  <ItemModal :title="itemModalTitle" class="w-[520px] max-w-[calc(100vw-32px)]">
-    <ItemForm />
-  </ItemModal>
 </template>

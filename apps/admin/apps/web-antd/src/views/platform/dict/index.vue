@@ -2,19 +2,27 @@
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { DictTypeRow } from '#/api/system/dict';
 
+import { ref } from 'vue';
+
 import { useAccess } from '@vben/access';
-import { Page, useVbenDrawer, useVbenModal } from '@vben/common-ui';
+import { Page, useVbenDrawer } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
 import { Button, message, Modal } from 'ant-design-vue';
 
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { useResponsiveCrud } from '#/adapter/mobile-list';
 import { deleteDictType, fetchDictTypePage } from '#/api/system/dict';
 import { DICT_PERMISSIONS } from '#/constants/dict-permissions';
 
-import { useDictTypeColumns, useDictTypeGridFormSchema } from './data';
+import {
+  buildDictTypeMobileCrudConfig,
+  useDictTypeColumns,
+  useDictTypeGridFormSchema,
+} from './data';
 import DictItemsDrawer from './modules/items-drawer.vue';
 import DictTypeForm from './modules/type-form.vue';
+
+const typeFormRef = ref<InstanceType<typeof DictTypeForm>>();
 
 const { hasAccessByCodes } = useAccess();
 
@@ -22,30 +30,21 @@ const dictAccess = {
   can: (code: string) => hasAccessByCodes([code]),
 };
 
-const [DictTypeFormModal, typeFormModalApi] = useVbenModal({
-  connectedComponent: DictTypeForm,
-  destroyOnClose: true,
-});
-
 const [DictItemsPanel, itemsDrawerApi] = useVbenDrawer({
   connectedComponent: DictItemsDrawer,
   destroyOnClose: true,
 });
 
 function onCreate() {
-  typeFormModalApi.setData({}).open();
+  typeFormRef.value?.open({});
 }
 
 function onEdit(row: DictTypeRow) {
-  typeFormModalApi.setData(row).open();
+  typeFormRef.value?.open(row);
 }
 
 function onManageItems(row: DictTypeRow) {
   itemsDrawerApi.setData(row).open();
-}
-
-function onRefresh() {
-  gridApi.query();
 }
 
 function onActionClick({ code, row }: OnActionClickParams<DictTypeRow>) {
@@ -69,7 +68,9 @@ async function onDelete(row: DictTypeRow) {
   });
 }
 
-const [Grid, gridApi] = useVbenVxeGrid<DictTypeRow>({
+const columns = useDictTypeColumns(onActionClick, dictAccess);
+
+const [CrudView, crudApi] = useResponsiveCrud<DictTypeRow>({
   formOptions: {
     commonConfig: { componentProps: { class: 'w-full' } },
     schema: useDictTypeGridFormSchema(),
@@ -77,7 +78,7 @@ const [Grid, gridApi] = useVbenVxeGrid<DictTypeRow>({
     submitButtonOptions: { content: '查询' },
   },
   gridOptions: {
-    columns: useDictTypeColumns(onActionClick, dictAccess),
+    columns: columns as VxeTableGridOptions<DictTypeRow>['columns'],
     height: 'auto',
     proxyConfig: {
       ajax: {
@@ -104,20 +105,51 @@ const [Grid, gridApi] = useVbenVxeGrid<DictTypeRow>({
     sortConfig: { remote: true },
     toolbarConfig: { custom: true, refresh: true, search: true, zoom: true },
   } as VxeTableGridOptions<DictTypeRow>,
+  mobile: buildDictTypeMobileCrudConfig({
+    columns,
+    query: async ({ filters, keyword, page, pageSize, sortField, sortOrder }) => {
+      const result = await fetchDictTypePage({
+        page,
+        per_page: pageSize,
+        sort_field: sortField,
+        sort_order: sortOrder,
+        code: keyword || filters?.code || undefined,
+        name: keyword || filters?.name || undefined,
+        status:
+          filters?.status === undefined || filters?.status === null
+            ? undefined
+            : filters.status,
+      });
+      return {
+        data: result.data,
+        total: result.total,
+      };
+    },
+  }),
 });
+
+const { reload } = crudApi;
+
+function onRefresh() {
+  reload();
+}
 </script>
 
 <template>
   <Page auto-content-height>
-    <DictTypeFormModal @success="onRefresh" />
+    <DictTypeForm ref="typeFormRef" @success="onRefresh" />
     <DictItemsPanel @success="onRefresh" />
-    <Grid>
+    <CrudView>
       <template #toolbar-actions>
-        <Button v-if="dictAccess.can(DICT_PERMISSIONS.CREATE)" type="primary" @click="onCreate">
+        <Button
+          v-if="dictAccess.can(DICT_PERMISSIONS.CREATE)"
+          type="primary"
+          @click="onCreate"
+        >
           <Plus class="size-4" />
           新增字典
         </Button>
       </template>
-    </Grid>
+    </CrudView>
   </Page>
 </template>

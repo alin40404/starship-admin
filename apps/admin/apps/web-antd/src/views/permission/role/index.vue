@@ -2,15 +2,13 @@
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { RoleRow } from '#/api/system/role';
 
-import { ref } from 'vue';
-
 import { useAccess } from '@vben/access';
 import { Page, useVbenDrawer } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
 import { Button, message, Modal } from 'ant-design-vue';
 
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { useResponsiveCrud } from '#/adapter/mobile-list';
 import {
   batchDeleteRoles,
   batchUpdateRoleStatus,
@@ -20,7 +18,11 @@ import {
 } from '#/api/system/role';
 import { ROLE_PERMISSIONS } from '#/constants/role-permissions';
 
-import { useColumns, useGridFormSchema } from './data';
+import {
+  buildRoleMobileCrudConfig,
+  useColumns,
+  useGridFormSchema,
+} from './data';
 import RoleForm from './modules/form.vue';
 
 const { hasAccessByCodes } = useAccess();
@@ -35,18 +37,6 @@ const [RoleFormDrawer, roleFormDrawerApi] = useVbenDrawer({
   destroyOnClose: true,
 });
 
-const selectedRows = ref<RoleRow[]>([]);
-
-function syncSelection() {
-  const records = gridApi?.grid?.getCheckboxRecords?.() ?? [];
-  selectedRows.value = records as RoleRow[];
-}
-
-function clearSelection() {
-  gridApi?.grid?.clearCheckboxRow?.();
-  selectedRows.value = [];
-}
-
 function onCreate() {
   roleFormDrawerApi.setData({}).open();
 }
@@ -58,10 +48,6 @@ function onEdit(row: RoleRow) {
 /** 超级管理员：只读查看（与 web-ele 一致） */
 function onView(row: RoleRow) {
   roleFormDrawerApi.setData({ ...row, _mode: 'view' as const }).open();
-}
-
-function onRefresh() {
-  gridApi.query();
 }
 
 function onActionClick({ code, row }: OnActionClickParams<RoleRow>) {
@@ -101,11 +87,97 @@ async function onRoleStatusToggle(nextStatus: number, row: RoleRow) {
   });
 }
 
+const columns = useColumns(onActionClick, onRoleStatusToggle, roleAccess);
+
+const [CrudView, crudApi] = useResponsiveCrud<RoleRow>({
+  formOptions: {
+    commonConfig: {
+      componentProps: {
+        class: 'w-full',
+      },
+    },
+    schema: useGridFormSchema(),
+    submitOnChange: true,
+    submitButtonOptions: {
+      content: '查询',
+    },
+  },
+  gridOptions: {
+    checkboxConfig: {
+      checkMethod: ({ row }) => (row as RoleRow).code !== 'super_admin',
+      highlight: true,
+    },
+    columns: columns as VxeTableGridOptions<RoleRow>['columns'],
+    height: 'auto',
+    keepSource: true,
+    proxyConfig: {
+      ajax: {
+        query: async ({ page, sort }, formValues) => {
+          const order = sort?.order;
+          return await fetchRolePage({
+            page: page.currentPage,
+            per_page: page.pageSize,
+            code: formValues?.code || undefined,
+            name: formValues?.name || undefined,
+            sort_field: sort?.field,
+            sort_order:
+              order === 'asc' || order === 'desc' ? order : undefined,
+            status:
+              formValues?.status === undefined || formValues?.status === null
+                ? undefined
+                : formValues.status,
+          });
+        },
+      },
+      sort: true,
+    },
+    rowConfig: {
+      keyField: 'id',
+    },
+    sortConfig: {
+      remote: true,
+    },
+    toolbarConfig: {
+      custom: true,
+      refresh: true,
+      search: true,
+      zoom: true,
+    },
+  } as VxeTableGridOptions<RoleRow>,
+  mobile: buildRoleMobileCrudConfig({
+    columns,
+    query: async ({ filters, keyword, page, pageSize, sortField, sortOrder }) => {
+      const result = await fetchRolePage({
+        page,
+        per_page: pageSize,
+        sort_field: sortField,
+        sort_order: sortOrder,
+        code: keyword || filters?.code || undefined,
+        name: keyword || filters?.name || undefined,
+        status:
+          filters?.status === undefined || filters?.status === null
+            ? undefined
+            : filters.status,
+      });
+      return {
+        data: result.data,
+        total: result.total,
+      };
+    },
+  }),
+});
+
+const { clearSelection, reload, selectedRows } = crudApi;
+
+function onRefresh() {
+  reload();
+}
+
 async function onDelete(row: RoleRow) {
   await deleteRole(row.id);
   message.success('已删除');
   clearSelection();
-  gridApi.query();
+  onRefresh();
 }
 
 function onBatchDelete() {
@@ -147,73 +219,12 @@ function onBatchUpdateStatus(status: 0 | 1) {
     },
   });
 }
-
-const [Grid, gridApi] = useVbenVxeGrid<RoleRow>({
-  formOptions: {
-    commonConfig: {
-      componentProps: {
-        class: 'w-full',
-      },
-    },
-    schema: useGridFormSchema(),
-    submitOnChange: true,
-    submitButtonOptions: {
-      content: '查询',
-    },
-  },
-  gridEvents: {
-    checkboxAll: syncSelection,
-    checkboxChange: syncSelection,
-  },
-  gridOptions: {
-    checkboxConfig: {
-      checkMethod: ({ row }) => (row as RoleRow).code !== 'super_admin',
-      highlight: true,
-    },
-    columns: useColumns(onActionClick, onRoleStatusToggle, roleAccess),
-    height: 'auto',
-    keepSource: true,
-    proxyConfig: {
-      ajax: {
-        query: async ({ page, sort }, formValues) => {
-          const order = sort?.order;
-          return await fetchRolePage({
-            page: page.currentPage,
-            per_page: page.pageSize,
-            code: formValues?.code || undefined,
-            name: formValues?.name || undefined,
-            sort_field: sort?.field,
-            sort_order:
-              order === 'asc' || order === 'desc' ? order : undefined,
-            status:
-              formValues?.status === undefined || formValues?.status === null
-                ? undefined
-                : formValues.status,
-          });
-        },
-      },
-      sort: true,
-    },
-    rowConfig: {
-      keyField: 'id',
-    },
-    sortConfig: {
-      remote: true,
-    },
-    toolbarConfig: {
-      custom: true,
-      refresh: true,
-      search: true,
-      zoom: true,
-    },
-  } as VxeTableGridOptions<RoleRow>,
-});
 </script>
 
 <template>
   <Page auto-content-height>
     <RoleFormDrawer class="max-w-[720px] w-[92vw]" @success="onRefresh" />
-    <Grid>
+    <CrudView>
       <template #toolbar-actions>
         <div v-if="selectedRows.length > 0" class="vxe-grid-batch-toolbar">
           <Button
@@ -250,31 +261,35 @@ const [Grid, gridApi] = useVbenVxeGrid<RoleRow>({
           新增角色
         </Button>
       </template>
-    </Grid>
+    </CrudView>
   </Page>
 </template>
 
 <style lang="scss">
 /** 批量启用 / 批量禁用（工具栏） */
-.vxe-grid .role-batch-btn-enable.ant-btn {
+.vxe-grid .role-batch-btn-enable.ant-btn,
+.mobile-crud-list .role-batch-btn-enable.ant-btn {
   color: #fff;
   background-color: #52c41a;
   border-color: #52c41a;
 }
 
-.vxe-grid .role-batch-btn-enable.ant-btn:not(:disabled):hover {
+.vxe-grid .role-batch-btn-enable.ant-btn:not(:disabled):hover,
+.mobile-crud-list .role-batch-btn-enable.ant-btn:not(:disabled):hover {
   color: #fff;
   background-color: #73d13d;
   border-color: #73d13d;
 }
 
-.vxe-grid .role-batch-btn-disable.ant-btn {
+.vxe-grid .role-batch-btn-disable.ant-btn,
+.mobile-crud-list .role-batch-btn-disable.ant-btn {
   color: #fff;
   background-color: #fa8c16;
   border-color: #fa8c16;
 }
 
-.vxe-grid .role-batch-btn-disable.ant-btn:not(:disabled):hover {
+.vxe-grid .role-batch-btn-disable.ant-btn:not(:disabled):hover,
+.mobile-crud-list .role-batch-btn-disable.ant-btn:not(:disabled):hover {
   color: #fff;
   background-color: #ffa940;
   border-color: #ffa940;

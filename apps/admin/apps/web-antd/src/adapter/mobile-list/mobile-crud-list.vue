@@ -67,7 +67,7 @@ const {
 } = useMobileCrudList(configRef);
 
 const selectionEnabled = computed(
-  () => props.config.selection?.enabled !== false,
+  () => props.config.selection?.enabled === true,
 );
 
 const cardOperations = computed(() => props.config.operations ?? []);
