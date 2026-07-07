@@ -18,6 +18,13 @@ class Module
         return $this->attributes['title'] ?? $this->name();
     }
 
+    public function version(): ?string
+    {
+        $version = $this->attributes['version'] ?? null;
+
+        return is_string($version) && $version !== '' ? $version : null;
+    }
+
     public function enabled(): bool
     {
         return (bool) ($this->attributes['enabled'] ?? false);

@@ -1,0 +1,56 @@
+<script lang="ts" setup>
+import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
+import type { DevModuleRow } from '#/api/dev-module';
+
+import { ref } from 'vue';
+
+import { Page } from '@vben/common-ui';
+
+import { Alert } from 'ant-design-vue';
+
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { fetchDevModules } from '#/api/dev-module';
+
+import { useColumns } from './data';
+import DetailDrawer from './modules/detail-drawer.vue';
+
+const detailDrawerRef = ref<InstanceType<typeof DetailDrawer>>();
+
+function onActionClick({ code, row }: OnActionClickParams<DevModuleRow>) {
+  if (code === 'detail') {
+    detailDrawerRef.value?.open(row);
+  }
+}
+
+const columns = useColumns(onActionClick);
+
+const [Grid, gridApi] = useVbenVxeGrid<DevModuleRow>({
+  gridOptions: {
+    columns: columns as VxeTableGridOptions<DevModuleRow>['columns'],
+    height: 'auto',
+    pagerConfig: { enabled: false },
+    proxyConfig: {
+      ajax: {
+        query: async () => await fetchDevModules(),
+      },
+    },
+    rowConfig: { keyField: 'name' },
+    toolbarConfig: { custom: true, refresh: true, zoom: true },
+  } as VxeTableGridOptions<DevModuleRow>,
+});
+</script>
+
+<template>
+  <Page auto-content-height>
+    <Alert
+      class="mb-4"
+      message="扫描 modules/ 目录下的 module.json，展示 Starship 底座模块。启用/禁用会写入配置文件，需重启后端服务后生效。"
+      show-icon
+      type="info"
+    />
+
+    <DetailDrawer ref="detailDrawerRef" @success="gridApi.reload()" />
+
+    <Grid />
+  </Page>
+</template>

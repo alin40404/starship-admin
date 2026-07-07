@@ -8,6 +8,7 @@ use Modules\System\App\Http\Controllers\Admin\AttachmentController;
 use Modules\System\App\Http\Controllers\Admin\AuthController;
 use Modules\System\App\Http\Controllers\Admin\ConfigController;
 use Modules\System\App\Http\Controllers\Admin\DepartmentController;
+use Modules\System\App\Http\Controllers\Admin\DevModuleController;
 use Modules\System\App\Http\Controllers\Admin\DictItemController;
 use Modules\System\App\Http\Controllers\Admin\DictTypeController;
 use Modules\System\App\Http\Controllers\Admin\MenuController;
@@ -232,5 +233,15 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
             ->middleware('admin.permission:'.CategoryPermissions::DELETE);
 
         require __DIR__.'/admin-generator/_loader.php';
+    });
+
+    Route::middleware('auth:sanctum')->prefix('dev')->group(function () {
+        // 模块管理（/dev/modules）— 扫描 modules/*/module.json
+        Route::get('modules', [DevModuleController::class, 'index'])
+            ->middleware('admin.permission:system.modules');
+        Route::get('modules/{name}', [DevModuleController::class, 'show'])
+            ->middleware('admin.permission:system.modules');
+        Route::put('modules/{name}/status', [DevModuleController::class, 'updateStatus'])
+            ->middleware('admin.permission:system.modules');
     });
 });
