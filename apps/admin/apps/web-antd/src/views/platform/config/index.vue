@@ -137,7 +137,7 @@ const currentSection = computed(
           <Button
             v-if="showSettingsSave"
             :loading="settingsSaving"
-            class="w-full shrink-0 sm:w-auto"
+            class="config-save-btn w-full shrink-0 sm:w-auto"
             type="primary"
             @click="onSettingsSave"
           >
@@ -182,7 +182,7 @@ const currentSection = computed(
   flex-shrink: 0;
   scroll-snap-align: start;
   border: 1px solid hsl(var(--border));
-  border-radius: 9999px;
+  border-radius: var(--radius);
   background: transparent;
   padding: 6px 14px;
   text-align: center;
@@ -218,6 +218,12 @@ const currentSection = computed(
 
 .config-section-item.is-active .config-section-item__label {
   color: hsl(var(--primary));
+}
+
+@media (max-width: 767px) {
+  .config-save-btn.ant-btn {
+    justify-content: center;
+  }
 }
 
 @media (min-width: 768px) {

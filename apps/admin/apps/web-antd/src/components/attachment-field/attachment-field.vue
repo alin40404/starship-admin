@@ -267,7 +267,7 @@ function onPreviewVisibleChange(visible: boolean) {
 
     <input
       ref="fileInputRef"
-      class="hidden"
+      class="attachment-field__file-input"
       type="file"
       :accept="resolveUploadAccept(accept)"
       :disabled="disabled"
@@ -302,6 +302,10 @@ function onPreviewVisibleChange(visible: boolean) {
 </template>
 
 <style scoped>
+.attachment-field__file-input {
+  display: none !important;
+}
+
 .attachment-field__compact :deep(.ant-input) {
   border-start-start-radius: var(--radius);
   border-end-start-radius: var(--radius);

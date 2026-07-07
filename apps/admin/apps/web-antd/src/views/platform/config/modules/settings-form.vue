@@ -15,8 +15,14 @@ import {
 } from 'ant-design-vue';
 
 import { batchUpsertConfigs, fetchConfigs } from '#/api/system/config';
+import { AttachmentField } from '#/components/attachment-field';
 
-import { CONFIG_SELECT_OPTIONS, isStorageFieldVisible, STORAGE_DRIVER_KEY } from '../data';
+import {
+  CONFIG_SELECT_OPTIONS,
+  isAttachmentImageField,
+  isStorageFieldVisible,
+  STORAGE_DRIVER_KEY,
+} from '../data';
 
 const props = defineProps<{
   canManage: boolean;
@@ -161,6 +167,15 @@ defineExpose({
                   (val) => (draftValues[row.key] = String(val ?? ''))
                 "
               />
+              <AttachmentField
+                v-else-if="isAttachmentImageField(row.key)"
+                accept="image"
+                :disabled="!props.canManage"
+                :multiple="false"
+                placeholder="请选择或上传 Logo"
+                :value="draftValues[row.key]"
+                @update:value="(val) => (draftValues[row.key] = String(val ?? ''))"
+              />
               <Input.TextArea
                 v-else-if="row.type === 'text' || row.type === 'json'"
                 :disabled="!props.canManage"
@@ -195,6 +210,11 @@ defineExpose({
 
 .config-settings-form :deep(.config-field-control),
 .config-settings-form :deep(.config-field-control.ant-input-textarea) {
+  width: 100%;
+  max-width: 28rem;
+}
+
+.config-settings-form :deep(.attachment-field) {
   width: 100%;
   max-width: 28rem;
 }

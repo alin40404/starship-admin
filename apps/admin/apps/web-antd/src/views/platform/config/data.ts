@@ -69,6 +69,13 @@ export function isStorageFieldVisible(key: string, driver: string): boolean {
   return true;
 }
 
+/** 使用附件图片上传组件的配置项 key */
+export const CONFIG_ATTACHMENT_IMAGE_KEYS = ['site.logo'] as const;
+
+export function isAttachmentImageField(key: string): boolean {
+  return (CONFIG_ATTACHMENT_IMAGE_KEYS as readonly string[]).includes(key);
+}
+
 /** 下拉类配置项选项（mail_type / mail_verify_type） */
 export const CONFIG_SELECT_OPTIONS: Record<
   string,
