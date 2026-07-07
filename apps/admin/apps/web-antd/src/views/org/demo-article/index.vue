@@ -80,10 +80,6 @@ async function onDemoArticleStatusToggle(nextStatus: number, row: DemoArticleRow
     });
   });
 }
-@else
-async function onDemoArticleStatusToggle(_nextStatus: number, _row: DemoArticleRow) {
-  return true;
-}
 
 
 const columns = useColumns(onActionClick, onDemoArticleStatusToggle, demoArticleAccess);
@@ -107,11 +103,8 @@ const [CrudView, crudApi] = useResponsiveCrud<DemoArticleRow>({
           return await fetchDemoArticlePage({
             page: page.currentPage,
             per_page: page.pageSize,
-
             title: formValues?.title || undefined,
-
             status: formValues?.status || undefined,
-
             sort_field: sort?.field,
             sort_order: order === 'desc' ? 'desc' : order === 'asc' ? 'asc' : undefined,
           });
@@ -121,7 +114,7 @@ const [CrudView, crudApi] = useResponsiveCrud<DemoArticleRow>({
     rowConfig: { keyField: 'id' },
     toolbarConfig: { custom: true, refresh: true, zoom: true },
   },
-  mobileConfig: buildDemoArticleMobileCrudConfig({
+  mobile: buildDemoArticleMobileCrudConfig({
     columns,
     query: async (params) => fetchDemoArticlePage(params),
   }),

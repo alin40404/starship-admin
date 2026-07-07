@@ -45,7 +45,7 @@ export function useResponsiveCrud<T extends Record<string, any>>(
 
   const mobileConfig = computed(() => {
     const formOptions = gridOptions.formOptions;
-    if (!mobile.search || !formOptions) {
+    if (!mobile?.search || !formOptions) {
       return mobile;
     }
     return {

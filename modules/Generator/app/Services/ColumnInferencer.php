@@ -2,6 +2,8 @@
 
 namespace Modules\Generator\App\Services;
 
+use Modules\Generator\App\Support\ColumnLabelFormatter;
+
 class ColumnInferencer
 {
     /** @var list<string> */
@@ -60,7 +62,7 @@ class ColumnInferencer
         return [
             'column_name' => $name,
             'column_type' => $column['type'],
-            'column_comment' => $column['comment'] ?: $name,
+            'column_comment' => ColumnLabelFormatter::fromComment($column['comment'], $name),
             'ts_type' => $this->inferTsType($type, $isStatus),
             'is_pk' => $isPk,
             'is_list' => ! $isPk && ! in_array($name, ['created_at', 'updated_at', 'deleted_at', 'created_by', 'updated_by'], true),

@@ -28,9 +28,9 @@ export function useGridFormSchema(): VbenFormSchema[] {
     },
     {
       component: 'Select',
-      componentProps: { class: 'w-full', placeholder: '状态:1启用,0禁用' },
+      componentProps: { class: 'w-full', placeholder: '状态' },
       fieldName: 'status',
-      label: '状态:1启用,0禁用',
+      label: '状态',
     },
   ];
 }
@@ -91,7 +91,7 @@ export function useColumns(
     {
       field: 'status',
       sortable: true,
-      title: '状态:1启用,0禁用',
+      title: '状态',
       width: 100,
       cellRender: {
         attrs: {
@@ -154,48 +154,57 @@ export function useColumns(
 export function buildDemoArticleFormSchema(readonly = false): VbenFormSchema[] {
   const disabled = readonly;
   return [
-
     {
-      component: '{{ $column->form_component === 'Switch' ? 'RadioGroup' : $column->form_component }}',
+      component: 'Input',
       componentProps: { class: 'w-full', disabled },
       fieldName: 'title',
       label: '标题',
+      rules: readonly ? undefined : 'required',
     },
-
     {
-      component: '{{ $column->form_component === 'Switch' ? 'RadioGroup' : $column->form_component }}',
+      component: 'Input',
       componentProps: { class: 'w-full', disabled },
       fieldName: 'author',
       label: '作者',
     },
-
     {
-      component: '{{ $column->form_component === 'Switch' ? 'RadioGroup' : $column->form_component }}',
-      componentProps: { class: 'w-full', disabled },
+      component: 'Textarea',
+      componentProps: { class: 'w-full', disabled, rows: 2 },
+      formItemClass: 'col-span-full w-full items-start',
       fieldName: 'content',
       label: '内容',
     },
-
     {
-      component: '{{ $column->form_component === 'Switch' ? 'RadioGroup' : $column->form_component }}',
-      componentProps: { class: 'w-full', disabled },
+      component: 'RadioGroup',
+      componentProps: {
+        buttonStyle: 'solid',
+        class: 'w-full',
+        disabled,
+        optionType: 'button',
+        options: [
+          { label: '启用', value: 1 },
+          { label: '禁用', value: 0 },
+        ],
+      },
+      defaultValue: 1,
       fieldName: 'status',
-      label: '状态:1启用,0禁用',
+      label: '状态',
+      rules: readonly ? undefined : 'required',
     },
-
     {
-      component: '{{ $column->form_component === 'Switch' ? 'RadioGroup' : $column->form_component }}',
-      componentProps: { class: 'w-full', disabled },
+      component: 'InputNumber',
+      componentProps: { class: 'w-full', disabled, min: 0 },
+      defaultValue: 0,
       fieldName: 'sort',
       label: '排序',
+      rules: readonly ? undefined : 'required',
     },
-
     {
-      component: '{{ $column->form_component === 'Switch' ? 'RadioGroup' : $column->form_component }}',
-      componentProps: { class: 'w-full', disabled },
+      component: 'Textarea',
+      componentProps: { class: 'w-full', disabled, rows: 2 },
+      formItemClass: 'col-span-full w-full items-start',
       fieldName: 'remark',
       label: '备注',
     },
-
   ];
 }

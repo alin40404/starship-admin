@@ -107,9 +107,7 @@ const [CrudView, crudApi] = useResponsiveCrud<{{ $model_class }}Row>({
           return await fetch{{ $model_class }}Page({
             page: page.currentPage,
             per_page: page.pageSize,
-@foreach($search_columns as $column)
-            {{ $column->column_name }}: formValues?.{{ $column->column_name }} || undefined,
-@endforeach
+{!! $index_query_fields_body !!}
             sort_field: sort?.field,
             sort_order: order === 'desc' ? 'desc' : order === 'asc' ? 'asc' : undefined,
           });
@@ -119,7 +117,7 @@ const [CrudView, crudApi] = useResponsiveCrud<{{ $model_class }}Row>({
     rowConfig: { keyField: 'id' },
     toolbarConfig: { custom: true, refresh: true, zoom: true },
   },
-  mobileConfig: build{{ $model_class }}MobileCrudConfig({
+  mobile: build{{ $model_class }}MobileCrudConfig({
     columns,
     query: async (params) => fetch{{ $model_class }}Page(params),
   }),

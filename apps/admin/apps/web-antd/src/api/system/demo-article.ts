@@ -3,19 +3,12 @@ import type { LaravelPaginate } from './types';
 import { requestClient } from '#/api/request';
 
 export interface DemoArticleRow {
-
-  title: {{ $column->ts_type === 'number' ? 'number' : ($column->ts_type === 'Record<string, unknown>' ? 'Record<string, unknown>' : 'string') }};
-
-  author: {{ $column->ts_type === 'number' ? 'number' : ($column->ts_type === 'Record<string, unknown>' ? 'Record<string, unknown>' : 'string') }};
-
-  content: {{ $column->ts_type === 'number' ? 'number' : ($column->ts_type === 'Record<string, unknown>' ? 'Record<string, unknown>' : 'string') }};
-
-  status: {{ $column->ts_type === 'number' ? 'number' : ($column->ts_type === 'Record<string, unknown>' ? 'Record<string, unknown>' : 'string') }};
-
-  sort: {{ $column->ts_type === 'number' ? 'number' : ($column->ts_type === 'Record<string, unknown>' ? 'Record<string, unknown>' : 'string') }};
-
-  remark: {{ $column->ts_type === 'number' ? 'number' : ($column->ts_type === 'Record<string, unknown>' ? 'Record<string, unknown>' : 'string') }};
-
+  title: string;
+  author: string;
+  content: string;
+  status: number;
+  sort: number;
+  remark: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -26,29 +19,19 @@ export interface DemoArticlePageQuery {
 
   keyword?: string;
 
-
-  title?: {{ $column->ts_type === 'number' ? 'number' : 'string' }};
-
-  status?: {{ $column->ts_type === 'number' ? 'number' : 'string' }};
-
+  title?: string;
+  status?: number;
   sort_field?: string;
   sort_order?: 'asc' | 'desc';
 }
 
 export interface DemoArticleSavePayload {
-
-  title{{ str_contains(implode('|', $column->validation_rules ?? []), 'required') ? '' : '?' }}: {{ $column->ts_type === 'number' ? 'number' : 'string' }};
-
-  author{{ str_contains(implode('|', $column->validation_rules ?? []), 'required') ? '' : '?' }}: {{ $column->ts_type === 'number' ? 'number' : 'string' }};
-
-  content{{ str_contains(implode('|', $column->validation_rules ?? []), 'required') ? '' : '?' }}: {{ $column->ts_type === 'number' ? 'number' : 'string' }};
-
-  status{{ str_contains(implode('|', $column->validation_rules ?? []), 'required') ? '' : '?' }}: {{ $column->ts_type === 'number' ? 'number' : 'string' }};
-
-  sort{{ str_contains(implode('|', $column->validation_rules ?? []), 'required') ? '' : '?' }}: {{ $column->ts_type === 'number' ? 'number' : 'string' }};
-
-  remark{{ str_contains(implode('|', $column->validation_rules ?? []), 'required') ? '' : '?' }}: {{ $column->ts_type === 'number' ? 'number' : 'string' }};
-
+  title: string;
+  author?: string;
+  content?: string;
+  status: number;
+  sort: number;
+  remark?: string;
 }
 
 export function fetchDemoArticlePage(params: DemoArticlePageQuery) {

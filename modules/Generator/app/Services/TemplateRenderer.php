@@ -30,7 +30,7 @@ class TemplateRenderer
         $content = $this->processIf($content, $data);
         $content = $this->replaceExpressions($content, $data);
 
-        return trim($content).PHP_EOL;
+        return rtrim($content).PHP_EOL;
     }
 
     /**
@@ -42,8 +42,15 @@ class TemplateRenderer
             '/@if\(\$(\w+)\)(.*?)@endif/s',
             static function (array $matches) use ($data): string {
                 $key = $matches[1];
+                $body = $matches[2];
 
-                return ! empty($data[$key]) ? $matches[2] : '';
+                if (str_contains($body, '@else')) {
+                    [$ifPart, $elsePart] = explode('@else', $body, 2);
+
+                    return ! empty($data[$key]) ? $ifPart : $elsePart;
+                }
+
+                return ! empty($data[$key]) ? $body : '';
             },
             $content,
         );

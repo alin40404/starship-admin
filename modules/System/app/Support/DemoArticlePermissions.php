@@ -3,7 +3,7 @@
 namespace Modules\System\App\Support;
 
 /**
- * 演示文章（/org/demo_articles）按钮权限。
+ * 演示文章（/org/demo-articles）按钮权限。
  */
 final class DemoArticlePermissions
 {

@@ -32,7 +32,7 @@ class TableConfigService
         $businessName = (string) ($options['business'] ?? $this->schemaReader->tableComment($tableName) ?? $naming['class_name']);
         $routeGroup = (string) ($options['route_group'] ?? $naming['route_group']);
         $apiPrefix = (string) ($options['api_prefix'] ?? $naming['api_prefix']);
-        $routePath = (string) ($options['route_path'] ?? '/'.$routeGroup.'/'.$apiPrefix);
+        $routePath = (string) ($options['route_path'] ?? $naming['route_path']);
         $permissionPrefix = (string) ($options['permission_prefix'] ?? $naming['permission_prefix']);
         $className = (string) ($options['class'] ?? $naming['class_name']);
 

@@ -89,13 +89,6 @@ export function useColumns(
 export function build{{ $model_class }}FormSchema(readonly = false): VbenFormSchema[] {
   const disabled = readonly;
   return [
-@foreach($form_columns as $column)
-    {
-      component: '{{ $column->form_component === 'Switch' ? 'RadioGroup' : $column->form_component }}',
-      componentProps: { class: 'w-full', disabled },
-      fieldName: '{{ $column->column_name }}',
-      label: '{{ $column->column_comment }}',
-    },
-@endforeach
+{!! $form_schema_body !!}
   ];
 }

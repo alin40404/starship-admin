@@ -41,11 +41,11 @@ final class GeneratorNaming
         $entitySnake = implode('_', $entityParts);
         $className = Str::studly($entitySnake);
         $entityKebab = str_replace('_', '-', $entitySnake);
-        $apiPrefix = Str::plural($entityKebab);
         $permissionEntity = Str::plural($entitySnake);
+        $apiPrefix = $permissionEntity;
         $permissionPrefix = Str::lower($modulePart).'.'.$permissionEntity;
         $routeGroup = self::defaultRouteGroup($resolvedModule);
-        $routePath = '/'.$routeGroup.'/'.$apiPrefix;
+        $routePath = '/'.$routeGroup.'/'.str_replace('_', '-', $apiPrefix);
         $componentPath = '/'.$routeGroup.'/'.$entityKebab.'/index';
 
         return [

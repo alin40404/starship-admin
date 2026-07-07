@@ -3,9 +3,7 @@ import type { LaravelPaginate } from './types';
 import { requestClient } from '#/api/request';
 
 export interface {{ $model_class }}Row {
-@foreach($list_columns as $column)
-  {{ $column->column_name }}: {{ $column->ts_type === 'number' ? 'number' : ($column->ts_type === 'Record<string, unknown>' ? 'Record<string, unknown>' : 'string') }};
-@endforeach
+{!! $api_row_fields_body !!}
   created_at?: string;
   updated_at?: string;
 }
@@ -16,17 +14,13 @@ export interface {{ $model_class }}PageQuery {
 @if($has_keyword_search)
   keyword?: string;
 @endif
-@foreach($search_columns as $column)
-  {{ $column->column_name }}?: {{ $column->ts_type === 'number' ? 'number' : 'string' }};
-@endforeach
+{!! $api_page_query_fields_body !!}
   sort_field?: string;
   sort_order?: 'asc' | 'desc';
 }
 
 export interface {{ $model_class }}SavePayload {
-@foreach($form_columns as $column)
-  {{ $column->column_name }}{{ str_contains(implode('|', $column->validation_rules ?? []), 'required') ? '' : '?' }}: {{ $column->ts_type === 'number' ? 'number' : 'string' }};
-@endforeach
+{!! $api_save_payload_fields_body !!}
 }
 
 export function fetch{{ $model_class }}Page(params: {{ $model_class }}PageQuery) {

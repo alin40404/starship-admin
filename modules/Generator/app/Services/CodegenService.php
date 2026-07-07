@@ -4,6 +4,7 @@ namespace Modules\Generator\App\Services;
 
 use Illuminate\Support\Str;
 use Modules\Generator\App\Models\GeneratorTable;
+use Modules\Generator\App\Support\ColumnLabelFormatter;
 use Modules\Generator\App\Support\GeneratorNaming;
 use Modules\Generator\App\Support\ModulePathResolver;
 
@@ -107,12 +108,16 @@ class CodegenService
             .'/routes/admin.php';
         $routeSnippet = $this->renderer->render('backend/routes.snippet.stub', $viewData);
 
-        if ($force || ! is_file($routeFile) || ! str_contains((string) file_get_contents($routeFile), '@generator:'.$viewData['api_prefix'].':start')) {
+        if ($force || ! is_file($routeFile) || ! str_contains((string) file_get_contents($routeFile), '@generator:'.$viewData['route_marker'].':start')) {
             if (! $dryRun) {
                 $writeResult['written'][] = $this->fileWriter->appendRouteSnippet(
                     $routeFile,
-                    $viewData['api_prefix'],
+                    $viewData['route_marker'],
                     $routeSnippet,
+                    [
+                        'use '.$viewData['module_namespace'].'\\Http\\Controllers\\Admin\\'.$viewData['controller_class'].';',
+                        'use '.$viewData['module_namespace'].'\\Support\\'.$viewData['permissions_class'].';',
+                    ],
                 );
             }
         } else {
@@ -160,6 +165,7 @@ class CodegenService
             'controller_class' => GeneratorNaming::controllerClassName($config->class_name),
             'permissions_class' => GeneratorNaming::permissionsClassName($config->class_name),
             'table_suffix' => $naming['table_suffix'],
+            'route_marker' => $naming['table_suffix'],
             'business_name' => $config->business_name,
             'api_prefix' => $config->api_prefix,
             'permission_prefix' => $config->permission_prefix,
@@ -182,6 +188,11 @@ class CodegenService
             'allowed_sorts_body' => $this->buildAllowedSortsBody($listColumns),
             'search_filters_body' => $this->buildSearchFiltersBody($filteredSearchColumns),
             'grid_form_schema_body' => $this->buildGridFormSchemaBody($searchColumns),
+            'form_schema_body' => $this->buildFormSchemaBody($formColumns),
+            'api_row_fields_body' => $this->buildApiRowFieldsBody($listColumns),
+            'api_page_query_fields_body' => $this->buildApiPageQueryFieldsBody($searchColumns),
+            'api_save_payload_fields_body' => $this->buildApiSavePayloadFieldsBody($formColumns),
+            'index_query_fields_body' => $this->buildIndexQueryFieldsBody($searchColumns),
             'list_columns_body' => $this->buildListColumnsBody($listColumns, $config->class_name, strtoupper(str_replace(['.', '-'], '_', $config->permission_prefix)).'_PERMISSIONS'),
             'primary_label_field' => $listColumns->first()?->column_name ?? 'id',
             'has_status' => $hasStatus,
@@ -285,11 +296,12 @@ class CodegenService
         $lines = [];
         foreach ($searchColumns as $column) {
             $component = $column->form_component === 'Switch' ? 'Select' : $column->form_component;
+            $label = $this->columnLabel($column);
             $lines[] = '    {';
             $lines[] = "      component: '{$component}',";
-            $lines[] = "      componentProps: { class: 'w-full', placeholder: '{$column->column_comment}' },";
+            $lines[] = "      componentProps: { class: 'w-full', placeholder: '{$label}' },";
             $lines[] = "      fieldName: '{$column->column_name}',";
-            $lines[] = "      label: '{$column->column_comment}',";
+            $lines[] = "      label: '{$label}',";
             $lines[] = '    },';
         }
 
@@ -300,11 +312,12 @@ class CodegenService
     {
         $lines = [];
         foreach ($listColumns as $column) {
+            $label = $this->columnLabel($column);
             if ($column->column_name === 'status') {
                 $lines[] = "    {";
                 $lines[] = "      field: 'status',";
                 $lines[] = "      sortable: true,";
-                $lines[] = "      title: '{$column->column_comment}',";
+                $lines[] = "      title: '{$label}',";
                 $lines[] = '      width: 100,';
                 $lines[] = '      cellRender: {';
                 $lines[] = '        attrs: {';
@@ -327,7 +340,7 @@ class CodegenService
                 $lines[] = "        row.{$column->column_name} ? formatDateTime(row.{$column->column_name}) : TABLE_CELL_EMPTY,";
                 $lines[] = '      minWidth: 170,';
                 $lines[] = '      sortable: true,';
-                $lines[] = "      title: '{$column->column_comment}',";
+                $lines[] = "      title: '{$label}',";
                 $lines[] = '    },';
 
                 continue;
@@ -339,10 +352,112 @@ class CodegenService
             $lines[] = '      formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,';
             $lines[] = '      minWidth: 120,';
             $lines[] = '      sortable: true,';
-            $lines[] = "      title: '{$column->column_comment}',";
+            $lines[] = "      title: '{$label}',";
             $lines[] = '    },';
         }
 
         return implode(PHP_EOL, $lines);
+    }
+
+    protected function buildFormSchemaBody($formColumns): string
+    {
+        $lines = [];
+        foreach ($formColumns as $column) {
+            $component = $column->form_component === 'Switch' ? 'RadioGroup' : $column->form_component;
+            $label = $this->columnLabel($column);
+            $lines[] = '    {';
+            $lines[] = "      component: '{$component}',";
+            if ($component === 'RadioGroup') {
+                $lines[] = '      componentProps: {';
+                $lines[] = "        buttonStyle: 'solid',";
+                $lines[] = "        class: 'w-full',";
+                $lines[] = '        disabled,';
+                $lines[] = "        optionType: 'button',";
+                $lines[] = '        options: [';
+                $lines[] = "          { label: '启用', value: 1 },";
+                $lines[] = "          { label: '禁用', value: 0 },";
+                $lines[] = '        ],';
+                $lines[] = '      },';
+                $lines[] = '      defaultValue: 1,';
+            } elseif ($component === 'InputNumber') {
+                $lines[] = "      componentProps: { class: 'w-full', disabled, min: 0 },";
+                $lines[] = '      defaultValue: 0,';
+            } elseif ($component === 'Textarea') {
+                $lines[] = "      componentProps: { class: 'w-full', disabled, rows: 2 },";
+                $lines[] = "      formItemClass: 'col-span-full w-full items-start',";
+            } else {
+                $lines[] = "      componentProps: { class: 'w-full', disabled },";
+            }
+            $lines[] = "      fieldName: '{$column->column_name}',";
+            $lines[] = "      label: '{$label}',";
+            $required = in_array('required', $column->validation_rules ?? [], true);
+            if ($required) {
+                $lines[] = "      rules: readonly ? undefined : 'required',";
+            }
+            $lines[] = '    },';
+        }
+
+        return implode(PHP_EOL, $lines);
+    }
+
+    protected function buildApiRowFieldsBody($listColumns): string
+    {
+        $lines = [];
+        foreach ($listColumns as $column) {
+            $type = $this->mapTsType($column->ts_type);
+            $lines[] = "  {$column->column_name}: {$type};";
+        }
+
+        return implode(PHP_EOL, $lines);
+    }
+
+    protected function buildApiPageQueryFieldsBody($searchColumns): string
+    {
+        $lines = [];
+        foreach ($searchColumns as $column) {
+            $type = $column->ts_type === 'number' ? 'number' : 'string';
+            $lines[] = "  {$column->column_name}?: {$type};";
+        }
+
+        return implode(PHP_EOL, $lines);
+    }
+
+    protected function buildApiSavePayloadFieldsBody($formColumns): string
+    {
+        $lines = [];
+        foreach ($formColumns as $column) {
+            $optional = in_array('required', $column->validation_rules ?? [], true) ? '' : '?';
+            $type = $column->ts_type === 'number' ? 'number' : 'string';
+            $lines[] = "  {$column->column_name}{$optional}: {$type};";
+        }
+
+        return implode(PHP_EOL, $lines);
+    }
+
+    protected function buildIndexQueryFieldsBody($searchColumns): string
+    {
+        $lines = [];
+        foreach ($searchColumns as $column) {
+            $lines[] = "            {$column->column_name}: formValues?.{$column->column_name} || undefined,";
+        }
+
+        return implode(PHP_EOL, $lines);
+    }
+
+    protected function mapTsType(string $tsType): string
+    {
+        return match ($tsType) {
+            'number' => 'number',
+            'Record<string, unknown>' => 'Record<string, unknown>',
+            default => 'string',
+        };
+    }
+
+    protected function columnLabel(object $column): string
+    {
+        return ColumnLabelFormatter::fromComment(
+            $column->column_comment ?? null,
+            $column->column_name ?? null,
+        );
     }
 }
