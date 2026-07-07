@@ -152,20 +152,11 @@ async function onCategoryStatusToggle(
   });
 }
 
-function onDelete(row: CategoryTreeNode) {
-  Modal.confirm({
-    content: `确定删除「${row.name}」吗？存在下级分类时将无法删除。`,
-    okText: '删除',
-    okType: 'danger',
-    cancelText: '取消',
-    title: '删除分类',
-    async onOk() {
-      await deleteCategory(row.id);
-      message.success('已删除');
-      clearSelection();
-      onRefresh();
-    },
-  });
+async function onDelete(row: CategoryTreeNode) {
+  await deleteCategory(row.id);
+  message.success('已删除');
+  clearSelection();
+  onRefresh();
 }
 
 function onBatchDelete() {

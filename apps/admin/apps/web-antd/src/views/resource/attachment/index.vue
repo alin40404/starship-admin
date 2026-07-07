@@ -182,17 +182,8 @@ async function onCopyLink(row: AttachmentRow) {
   }
 }
 
-function onDelete(row: AttachmentRow) {
-  Modal.confirm({
-    content: `确定删除「${row.file_name}」吗？将同时删除存储中的物理文件。`,
-    okText: '删除',
-    okType: 'danger',
-    cancelText: '取消',
-    title: '删除附件',
-    async onOk() {
-      await performDelete(row);
-    },
-  });
+async function onDelete(row: AttachmentRow) {
+  await performDelete(row);
 }
 
 async function performDelete(row: AttachmentRow) {

@@ -100,20 +100,11 @@ function onActionClick({ code, row }: OnActionClickParams<AreaTreeNode>) {
   else if (code === 'delete') onDelete(row);
 }
 
-function onDelete(row: AreaTreeNode) {
-  Modal.confirm({
-    content: `确定删除「${row.name}」吗？存在下级区域时将无法删除。`,
-    okText: '删除',
-    okType: 'danger',
-    cancelText: '取消',
-    title: '删除区域',
-    async onOk() {
-      await deleteArea(row.id);
-      message.success('已删除');
-      clearSelection();
-      onRefresh();
-    },
-  });
+async function onDelete(row: AreaTreeNode) {
+  await deleteArea(row.id);
+  message.success('已删除');
+  clearSelection();
+  onRefresh();
 }
 
 function onBatchDelete() {

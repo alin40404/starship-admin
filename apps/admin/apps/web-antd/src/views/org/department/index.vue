@@ -94,19 +94,11 @@ async function onDeptStatusToggle(nextStatus: number, row: DepartmentTreeNode) {
   });
 }
 
-function onDelete(row: DepartmentTreeNode) {
-  Modal.confirm({
-    content: `确定删除「${row.name}」吗？存在下级部门或管理员时将无法删除。`,
-    okText: '删除',
-    okType: 'danger',
-    title: '删除部门',
-    async onOk() {
-      await deleteDepartment(row.id);
-      message.success('已删除');
-      clearSelection();
-      onRefresh();
-    },
-  });
+async function onDelete(row: DepartmentTreeNode) {
+  await deleteDepartment(row.id);
+  message.success('已删除');
+  clearSelection();
+  onRefresh();
 }
 
 function onBatchDelete() {

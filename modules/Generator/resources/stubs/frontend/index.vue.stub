@@ -123,18 +123,10 @@ const [CrudView, crudApi] = useResponsiveCrud<{{ $model_class }}Row>({
   }),
 });
 
-function onDelete(row: {{ $model_class }}Row) {
-  Modal.confirm({
-    content: '确定删除该记录吗？',
-    okText: '删除',
-    okType: 'danger',
-    title: '删除确认',
-    async onOk() {
-      await delete{{ $model_class }}(row.id);
-      message.success('已删除');
-      await crudApi.reload();
-    },
-  });
+async function onDelete(row: {{ $model_class }}Row) {
+  await delete{{ $model_class }}(row.id);
+  message.success('已删除');
+  await crudApi.reload();
 }
 
 function onFormSuccess() {

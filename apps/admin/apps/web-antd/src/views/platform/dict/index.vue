@@ -8,7 +8,7 @@ import { useAccess } from '@vben/access';
 import { Page, useVbenDrawer } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
-import { Button, message, Modal } from 'ant-design-vue';
+import { Button, message } from 'ant-design-vue';
 
 import { useResponsiveCrud } from '#/adapter/mobile-list';
 import { deleteDictType, fetchDictTypePage } from '#/api/system/dict';
@@ -54,18 +54,9 @@ function onActionClick({ code, row }: OnActionClickParams<DictTypeRow>) {
 }
 
 async function onDelete(row: DictTypeRow) {
-  Modal.confirm({
-    content: `确定删除字典「${row.name}」吗？其下字典项将保留但无法再按此类型筛选。`,
-    okText: '删除',
-    okType: 'danger',
-    cancelText: '取消',
-    title: '删除字典',
-    async onOk() {
-      await deleteDictType(row.id);
-      message.success('已删除');
-      onRefresh();
-    },
-  });
+  await deleteDictType(row.id);
+  message.success('已删除');
+  onRefresh();
 }
 
 const columns = useDictTypeColumns(onActionClick, dictAccess);

@@ -69,20 +69,11 @@ function onActionClick({ code, row }: OnActionClickParams<ConfigRow>) {
   else if (code === 'delete') onDelete(row);
 }
 
-function onDelete(row: ConfigRow) {
-  Modal.confirm({
-    content: `确定删除「${row.name}」吗？`,
-    okText: '删除',
-    okType: 'danger',
-    cancelText: '取消',
-    title: '删除参数',
-    async onOk() {
-      await deleteConfig(row.id);
-      message.success('已删除');
-      clearSelection();
-      onRefresh();
-    },
-  });
+async function onDelete(row: ConfigRow) {
+  await deleteConfig(row.id);
+  message.success('已删除');
+  clearSelection();
+  onRefresh();
 }
 
 function onBatchDelete() {

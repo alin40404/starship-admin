@@ -198,18 +198,11 @@ function onAppend(row: MenuTreeNode) {
   menuFormDrawerApi.setData({ parent_id: row.id }).open();
 }
 
-function onDelete(row: MenuTreeNode) {
-  Modal.confirm({
-    content: `确定删除「${menuDisplayLabel(row)}」吗？若存在子菜单可能删除失败。`,
-    okText: '删除',
-    okType: 'danger',
-    title: '删除菜单',
-    async onOk() {
-      await deleteMenu(row.id);
-      message.success('已删除');
-      onRefresh();
-    },
-  });
+async function onDelete(row: MenuTreeNode) {
+  await deleteMenu(row.id);
+  message.success('已删除');
+  clearSelection();
+  onRefresh();
 }
 
 function onBatchDelete() {
