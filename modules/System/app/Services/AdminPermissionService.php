@@ -9,42 +9,48 @@ use Modules\System\App\Models\Menu;
 
 class AdminPermissionService
 {
+    public function __construct(
+        protected ModuleMenuFilter $moduleMenuFilter,
+    ) {}
+
     /**
      * 当前管理员可访问的菜单行（含因子节点而补全的父级），status=1。
      */
     public function accessibleMenus(Admin $admin): Collection
     {
         if ((int) $admin->is_super === 1) {
-            return Menu::query()
+            $menus = Menu::query()
+                ->where('status', 1)
+                ->orderBy('sort')
+                ->orderBy('id')
+                ->get();
+        } else {
+            $roleIds = $admin->roles()->pluck('id');
+            if ($roleIds->isEmpty()) {
+                return collect();
+            }
+
+            $menuIds = collect(
+                DB::table('role_menu')
+                    ->whereIn('role_id', $roleIds)
+                    ->pluck('menu_id')
+            )->unique()->values();
+
+            if ($menuIds->isEmpty()) {
+                return collect();
+            }
+
+            $expanded = $this->expandMenuIdsWithAncestors($menuIds);
+
+            $menus = Menu::query()
+                ->whereIn('id', $expanded)
                 ->where('status', 1)
                 ->orderBy('sort')
                 ->orderBy('id')
                 ->get();
         }
 
-        $roleIds = $admin->roles()->pluck('id');
-        if ($roleIds->isEmpty()) {
-            return collect();
-        }
-
-        $menuIds = collect(
-            DB::table('role_menu')
-                ->whereIn('role_id', $roleIds)
-                ->pluck('menu_id')
-        )->unique()->values();
-
-        if ($menuIds->isEmpty()) {
-            return collect();
-        }
-
-        $expanded = $this->expandMenuIdsWithAncestors($menuIds);
-
-        return Menu::query()
-            ->whereIn('id', $expanded)
-            ->where('status', 1)
-            ->orderBy('sort')
-            ->orderBy('id')
-            ->get();
+        return $this->excludeDisabledModuleMenus($menus);
     }
 
     /**
@@ -148,6 +154,23 @@ class AdminPermissionService
         }
 
         return $branch;
+    }
+
+    /**
+     * @param  Collection<int, Menu>  $menus
+     */
+    private function excludeDisabledModuleMenus(Collection $menus): Collection
+    {
+        $excluded = $this->moduleMenuFilter->excludedMenuIds($menus);
+        if ($excluded === []) {
+            return $menus;
+        }
+
+        $excludedSet = array_fill_keys($excluded, true);
+
+        return $menus
+            ->filter(static fn (Menu $menu) => ! isset($excludedSet[(int) $menu->id]))
+            ->values();
     }
 
     /**

@@ -7,6 +7,9 @@ namespace Modules\Generator\App\Support;
  */
 final class GeneratorPermissions
 {
+    /** 菜单页访问（/dev/codegen，与菜单 permission 一致） */
+    public const MANAGE = 'generator.codegen';
+
     public const QUERY = 'generator.tables.query';
 
     public const IMPORT = 'generator.tables.import';

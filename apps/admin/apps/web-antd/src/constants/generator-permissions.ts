@@ -3,7 +3,7 @@
  */
 export const GENERATOR_PERMISSIONS = {
   /** 菜单页访问（与菜单 permission 一致） */
-  MANAGE: 'system.codegen',
+  MANAGE: 'generator.codegen',
   QUERY: 'generator.tables.query',
   IMPORT: 'generator.tables.import',
   UPDATE: 'generator.tables.update',
