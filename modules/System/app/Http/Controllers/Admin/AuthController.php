@@ -24,6 +24,14 @@ class AuthController extends Controller
         $admin = Admin::query()->where('username', $validated['username'])->first();
 
         if (! $admin || (int) $admin->status !== 1 || ! Hash::check($validated['password'], $admin->password)) {
+            $this->writeLoginLog(
+                username: $validated['username'],
+                success: false,
+                adminId: $admin?->id,
+                message: '用户名或密码错误',
+                request: $request,
+            );
+
             return ApiResponse::error('用户名或密码错误', 401);
         }
 
@@ -33,6 +41,14 @@ class AuthController extends Controller
         ])->save();
 
         $token = $admin->createToken('admin')->plainTextToken;
+
+        $this->writeLoginLog(
+            username: $admin->username,
+            success: true,
+            adminId: $admin->id,
+            message: '登录成功',
+            request: $request,
+        );
 
         $permission = app(AdminPermissionService::class);
 
@@ -47,7 +63,19 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        $request->user()?->currentAccessToken()?->delete();
+        $admin = $request->user();
+        if ($admin instanceof Admin) {
+            $this->writeLoginLog(
+                username: $admin->username,
+                success: true,
+                adminId: $admin->id,
+                message: '退出登录',
+                request: $request,
+                action: 'logout',
+            );
+        }
+
+        $admin?->currentAccessToken()?->delete();
 
         return ApiResponse::success(null, '已退出');
     }
@@ -159,5 +187,39 @@ class AuthController extends Controller
             'roles' => $admin->relationLoaded('roles') ? $admin->roles->map->only(['id', 'name', 'code']) : [],
             'posts' => $admin->relationLoaded('posts') ? $admin->posts->map->only(['id', 'name', 'code']) : [],
         ];
+    }
+
+    private function writeLoginLog(
+        string $username,
+        bool $success,
+        ?int $adminId,
+        ?string $message,
+        Request $request,
+        string $action = 'login',
+    ): void {
+        if (! class_exists(\Modules\Monitor\App\Services\LoginLogWriter::class)) {
+            return;
+        }
+
+        $writer = app(\Modules\Monitor\App\Services\LoginLogWriter::class);
+        if ($action === 'logout' && $adminId !== null) {
+            $writer->recordLogout(
+                username: $username,
+                adminId: $adminId,
+                ip: $request->ip(),
+                userAgent: $request->userAgent(),
+            );
+
+            return;
+        }
+
+        $writer->recordLogin(
+            username: $username,
+            success: $success,
+            adminId: $adminId,
+            message: $message,
+            ip: $request->ip(),
+            userAgent: $request->userAgent(),
+        );
     }
 }

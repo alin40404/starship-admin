@@ -46,6 +46,9 @@ trait SeedsMenus
             '/resource/attachments' => '/resource/attachment/index',
             '/dev/codegen' => '/dev/codegen/index',
             '/dev/modules' => '/dev/modules/index',
+            '/monitor/operation-logs' => '/monitor/operation-log/index',
+            '/monitor/login-logs' => '/monitor/login-log/index',
+            '/monitor/exception-logs' => '/monitor/exception-log/index',
         ];
         if (isset($permission[$path])) {
             return $permission[$path];

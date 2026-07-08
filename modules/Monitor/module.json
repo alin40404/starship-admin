@@ -1,0 +1,23 @@
+{
+  "name": "monitor",
+  "title": "监控中心",
+  "version": "0.1.0",
+  "enabled": true,
+  "providers": [
+    "Modules\\Monitor\\App\\Providers\\MonitorServiceProvider"
+  ],
+  "seeders": [],
+  "menus": {
+    "paths": [
+      "/monitor/operation-logs",
+      "/monitor/login-logs",
+      "/monitor/exception-logs"
+    ]
+  },
+  "permissions": {
+    "prefixes": [
+      "monitor."
+    ],
+    "exact": []
+  }
+}

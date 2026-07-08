@@ -18,6 +18,9 @@ use Modules\System\App\Support\RolePermissions;
 use Modules\System\App\Support\UserGroupPermissions;
 use Modules\System\Database\Seeders\Concerns\SeedsMenus;
 use Modules\Generator\App\Support\GeneratorPermissions;
+use Modules\Monitor\App\Support\ExceptionLogPermissions;
+use Modules\Monitor\App\Support\LoginLogPermissions;
+use Modules\Monitor\App\Support\OperationLogPermissions;
 
 class MenuSeeder extends Seeder
 {
@@ -456,14 +459,12 @@ class MenuSeeder extends Seeder
 
         foreach (
             [
-                ['name' => 'OpLog', 'title' => '操作日志', 'path' => '/monitor/operation-logs', 'permission' => 'system.operation_logs', 'sort' => 501, 'icon' => 'ep:document'],
-                ['name' => 'LoginLog', 'title' => '登录日志', 'path' => '/monitor/login-logs', 'permission' => 'system.login_logs', 'sort' => 502, 'icon' => 'ep:notebook'],
-                ['name' => 'ExceptionLog', 'title' => '异常日志', 'path' => '/monitor/exception-logs', 'permission' => 'system.exception_logs', 'sort' => 503, 'icon' => 'ep:warning-filled'],
-                ['name' => 'OnlineUsers', 'title' => '在线用户', 'path' => '/monitor/online-users', 'permission' => 'system.online_users', 'sort' => 504, 'icon' => 'ep:view'],
-                ['name' => 'ScheduledTasks', 'title' => '定时任务', 'path' => '/monitor/scheduled-tasks', 'permission' => 'system.scheduled_tasks', 'sort' => 505, 'icon' => 'ep:timer'],
+                ['name' => 'OpLog', 'title' => '操作日志', 'path' => '/monitor/operation-logs', 'permission' => OperationLogPermissions::MANAGE, 'sort' => 501, 'icon' => 'ep:document', 'buttons' => OperationLogPermissions::buttonDefinitions()],
+                ['name' => 'LoginLog', 'title' => '登录日志', 'path' => '/monitor/login-logs', 'permission' => LoginLogPermissions::MANAGE, 'sort' => 502, 'icon' => 'ep:notebook', 'buttons' => LoginLogPermissions::buttonDefinitions()],
+                ['name' => 'ExceptionLog', 'title' => '异常日志', 'path' => '/monitor/exception-logs', 'permission' => ExceptionLogPermissions::MANAGE, 'sort' => 503, 'icon' => 'ep:warning-filled', 'buttons' => ExceptionLogPermissions::buttonDefinitions()],
             ] as $m
         ) {
-            Menu::query()->create([
+            $monitorMenu = Menu::query()->create([
                 'parent_id' => $monitor->id,
                 'type' => 2,
                 'name' => $m['name'],
@@ -476,6 +477,22 @@ class MenuSeeder extends Seeder
                 'other_settings' => $this->menuOther(1, 1),
                 'status' => 1,
             ]);
+
+            foreach ($m['buttons'] as $btn) {
+                Menu::query()->create([
+                    'parent_id' => $monitorMenu->id,
+                    'type' => 3,
+                    'name' => $btn['name'],
+                    'title' => $btn['title'],
+                    'path' => null,
+                    'component' => null,
+                    'permission' => $btn['permission'],
+                    'icon' => null,
+                    'sort' => $btn['sort'],
+                    'other_settings' => $this->menuOther(0),
+                    'status' => 1,
+                ]);
+            }
         }
 
         $dev = Menu::query()->create([
