@@ -25,6 +25,7 @@ export function useAntdDesignTokens() {
     colorSuccess: '',
     colorTextBase: '',
     colorWarning: '',
+    fontSize: 14,
     zIndexPopupBase: 2000, // 调整基础弹层层级，避免下拉等组件被弹窗或者最大化状态下的表格遮挡
   });
 
@@ -65,6 +66,8 @@ export function useAntdDesignTokens() {
 
       tokens.colorBgLayout = getCssVariableValue('--background-deep');
       tokens.colorBgMask = getCssVariableValue('--overlay');
+
+      tokens.fontSize = preferences.theme?.fontSize ?? 16;
     },
     { immediate: true },
   );
