@@ -13,6 +13,8 @@ class PluginLoader
 
     public function register(Plugin $plugin): void
     {
+        (new PluginAutoloader)->register($plugin);
+
         foreach ($plugin->providers() as $provider) {
             if (class_exists($provider)) {
                 $this->app->register($provider);

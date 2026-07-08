@@ -14,7 +14,6 @@
         "overtrue/pinyin": "5.0",
         "starship/generator": "@dev",
         "starship/monitor": "@dev",
-        "starship/plugin-sms-aliyun": "@dev",
         "starship/system": "@dev"
     },
     "require-dev": {
@@ -47,10 +46,6 @@
         {
             "type": "path",
             "url": "../modules/Generator"
-        },
-        {
-            "type": "path",
-            "url": "../plugins/SmsAliyun"
         }
     ],
     "autoload-dev": {
