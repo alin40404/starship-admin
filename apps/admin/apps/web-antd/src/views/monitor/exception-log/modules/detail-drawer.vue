@@ -12,6 +12,11 @@ const descriptionsLabelStyle = {
   minWidth: '148px',
   width: '148px',
   whiteSpace: 'nowrap' as const,
+  fontSize: 'var(--text-sm, 0.875rem)',
+};
+
+const descriptionsContentStyle = {
+  fontSize: 'var(--text-sm, 0.875rem)',
 };
 
 const open = ref(false);
@@ -50,6 +55,7 @@ defineExpose({ open: show });
       v-if="detail"
       :column="1"
       bordered
+      :content-style="descriptionsContentStyle"
       :label-style="descriptionsLabelStyle"
       size="small"
     >

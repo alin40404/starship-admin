@@ -7,6 +7,17 @@ import { Descriptions, Drawer, message, Switch } from 'ant-design-vue';
 
 import { fetchDevModule, updateDevModuleStatus } from '#/api/dev-module';
 
+const descriptionsLabelStyle = {
+  minWidth: '148px',
+  width: '148px',
+  whiteSpace: 'nowrap' as const,
+  fontSize: 'var(--text-sm, 0.875rem)',
+};
+
+const descriptionsContentStyle = {
+  fontSize: 'var(--text-sm, 0.875rem)',
+};
+
 const props = withDefaults(
   defineProps<{
     canUpdate?: boolean;
@@ -77,7 +88,14 @@ defineExpose({ open: show });
     :title="detail ? `模块详情 · ${detail.title}` : '模块详情'"
     width="min(90vw, 720px)"
   >
-    <Descriptions v-if="detail" :column="1" bordered size="small">
+    <Descriptions
+      v-if="detail"
+      :column="1"
+      bordered
+      :content-style="descriptionsContentStyle"
+      :label-style="descriptionsLabelStyle"
+      size="small"
+    >
       <Descriptions.Item label="模块标识">{{ detail.name }}</Descriptions.Item>
       <Descriptions.Item label="模块名称">{{ detail.title }}</Descriptions.Item>
       <Descriptions.Item label="版本">{{ detail.version || '--' }}</Descriptions.Item>
@@ -110,8 +128,10 @@ defineExpose({ open: show });
 
     <div v-if="detail" class="mt-4">
       <p class="mb-2 text-sm font-medium">module.json</p>
-      <pre class="overflow-auto rounded border bg-muted/30 p-3 text-xs leading-5">{{ manifestText }}</pre>
-      <p class="text-muted-foreground mt-2 text-xs">
+      <pre
+        class="overflow-auto rounded border bg-muted/30 p-3 text-sm leading-6"
+      >{{ manifestText }}</pre>
+      <p class="text-muted-foreground mt-2 text-sm">
         修改启用状态会写入 module.json，需重启 PHP 服务后生效。
       </p>
     </div>
