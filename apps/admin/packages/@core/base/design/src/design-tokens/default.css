@@ -94,6 +94,8 @@
   /* 基本文字大小 */
   --font-size-base: 16px;
   --menu-font-size: calc(var(--font-size-base) * 0.875);
+  /* 按钮字号：与表单控件、菜单一致，随系统字体配置缩放 */
+  --vben-button-font-size: calc(var(--font-size-base) * 0.875);
 
   /* =============component & UI============= */
 

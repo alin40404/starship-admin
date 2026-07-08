@@ -470,7 +470,7 @@ defineExpose({ clearSelection, reload });
 .attachment-mobile-body :deep(.mobile-crud-list__toolbar .ant-btn) {
   display: inline-flex;
   align-items: center;
-  font-size: var(--vben-table-action-button-font-size, 13px) !important;
+  font-size: var(--vben-button-font-size, var(--text-sm, 0.875rem)) !important;
 }
 
 .attachment-toolbar-actions__panel {

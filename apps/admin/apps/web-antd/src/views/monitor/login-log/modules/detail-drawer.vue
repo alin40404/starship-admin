@@ -1,16 +1,44 @@
 <script lang="ts" setup>
 import type { LoginLogRow } from '#/api/monitor';
 
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
-import { Descriptions, Drawer } from 'ant-design-vue';
+import { Descriptions, Drawer, Tag } from 'ant-design-vue';
 
 import { fetchLoginLog } from '#/api/monitor';
+import {
+  MONITOR_LOGIN_ACTION_TAG_OPTIONS,
+  MONITOR_LOGIN_STATUS_TAG_OPTIONS,
+} from '#/constants/monitor-permissions';
 import { formatDateTime } from '@vben/utils';
 
+const descriptionsLabelStyle = {
+  minWidth: '148px',
+  width: '148px',
+  whiteSpace: 'nowrap' as const,
+};
+
+function resolveTagOption<T extends { color: string; label: string; value: unknown }>(
+  options: readonly T[],
+  value: unknown,
+) {
+  return options.find((item) => item.value === value);
+}
 const open = ref(false);
 const loading = ref(false);
 const detail = ref<LoginLogRow | null>(null);
+
+const actionTag = computed(() =>
+  detail.value
+    ? resolveTagOption(MONITOR_LOGIN_ACTION_TAG_OPTIONS, detail.value.action)
+    : undefined,
+);
+
+const statusTag = computed(() =>
+  detail.value
+    ? resolveTagOption(MONITOR_LOGIN_STATUS_TAG_OPTIONS, detail.value.status)
+    : undefined,
+);
 
 async function show(id: number) {
   open.value = true;
@@ -31,12 +59,24 @@ defineExpose({ open: show });
     v-model:open="open"
     :loading="loading"
     title="登录日志详情"
-    width="min(90vw, 640px)"
+    width="min(92vw, 880px)"
   >
-    <Descriptions v-if="detail" :column="1" bordered size="small">
+    <Descriptions
+      v-if="detail"
+      :column="1"
+      bordered
+      :label-style="descriptionsLabelStyle"
+      size="small"
+    >
       <Descriptions.Item label="账号">{{ detail.username }}</Descriptions.Item>
-      <Descriptions.Item label="动作">{{ detail.action === 'logout' ? '退出' : '登录' }}</Descriptions.Item>
-      <Descriptions.Item label="结果">{{ detail.status === 1 ? '成功' : '失败' }}</Descriptions.Item>
+      <Descriptions.Item label="动作">
+        <Tag v-if="actionTag" :color="actionTag.color">{{ actionTag.label }}</Tag>
+        <span v-else>—</span>
+      </Descriptions.Item>
+      <Descriptions.Item label="结果">
+        <Tag v-if="statusTag" :color="statusTag.color">{{ statusTag.label }}</Tag>
+        <span v-else>—</span>
+      </Descriptions.Item>
       <Descriptions.Item label="说明">{{ detail.message || '—' }}</Descriptions.Item>
       <Descriptions.Item label="IP">{{ detail.ip || '—' }}</Descriptions.Item>
       <Descriptions.Item label="User-Agent">{{ detail.user_agent || '—' }}</Descriptions.Item>

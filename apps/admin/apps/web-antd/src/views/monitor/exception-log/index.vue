@@ -133,8 +133,8 @@ function onBatchDelete() {
         <CrudView class="h-full">
           <template #toolbar-actions>
             <div
-              v-if="selectedRows.length > 0"
-              class="vxe-grid-batch-toolbar"
+              v-show="selectedRows.length > 0"
+              :class="{ 'vxe-grid-batch-toolbar': selectedRows.length > 0 }"
             >
               <Button
                 v-if="access.can(MONITOR_EXCEPTION_LOG_PERMISSIONS.BATCH_DELETE)"

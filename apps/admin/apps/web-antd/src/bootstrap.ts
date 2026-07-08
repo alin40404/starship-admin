@@ -10,7 +10,6 @@ import '@vben/styles/antd';
 import { useTitle } from '@vueuse/core';
 
 import { $t, setupI18n } from '#/locales';
-import { applyTableActionButtonFontSize } from '#/constants/table-action';
 
 import { initComponentAdapter } from './adapter/component';
 import { initSetupVbenForm } from './adapter/form';
@@ -20,7 +19,6 @@ import { router } from './router';
 import '#/styles/table-action.css';
 
 async function bootstrap(namespace: string) {
-  applyTableActionButtonFontSize();
   // 初始化组件适配器
   await initComponentAdapter();
 

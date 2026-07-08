@@ -1,10 +1,8 @@
 /**
- * 表格操作区按钮字号（工具栏 + 操作列）。
- * 数值由 constants/table-action.ts 在 bootstrap 时注入 CSS 变量。
+ * 表格操作区按钮对齐（字号由 packages/styles/src/antd 全局 .ant-btn 统一）。
  */
 .vxe-grid .vxe-buttons--wrapper .ant-btn,
 .vxe-grid .table-operations .ant-btn {
   display: inline-flex;
   align-items: center;
-  font-size: var(--vben-table-action-button-font-size) !important;
 }

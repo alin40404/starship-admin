@@ -8,6 +8,12 @@ import { Descriptions, Drawer } from 'ant-design-vue';
 import { fetchOperationLog } from '#/api/monitor';
 import { formatDateTime } from '@vben/utils';
 
+const descriptionsLabelStyle = {
+  minWidth: '148px',
+  width: '148px',
+  whiteSpace: 'nowrap' as const,
+};
+
 const open = ref(false);
 const loading = ref(false);
 const detail = ref<OperationLogRow | null>(null);
@@ -41,9 +47,15 @@ defineExpose({ open: show });
     v-model:open="open"
     :loading="loading"
     title="操作日志详情"
-    width="min(90vw, 760px)"
+    width="min(92vw, 880px)"
   >
-    <Descriptions v-if="detail" :column="1" bordered size="small">
+    <Descriptions
+      v-if="detail"
+      :column="1"
+      bordered
+      :label-style="descriptionsLabelStyle"
+      size="small"
+    >
       <Descriptions.Item label="操作标题">{{ detail.title }}</Descriptions.Item>
       <Descriptions.Item label="操作人">{{ detail.admin_name || '—' }}</Descriptions.Item>
       <Descriptions.Item label="模块">{{ detail.module || '—' }}</Descriptions.Item>

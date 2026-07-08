@@ -8,6 +8,12 @@ import { Alert, Descriptions, Drawer } from 'ant-design-vue';
 import { fetchExceptionLog } from '#/api/monitor';
 import { formatDateTime } from '@vben/utils';
 
+const descriptionsLabelStyle = {
+  minWidth: '148px',
+  width: '148px',
+  whiteSpace: 'nowrap' as const,
+};
+
 const open = ref(false);
 const loading = ref(false);
 const detail = ref<ExceptionLogRow | null>(null);
@@ -31,7 +37,7 @@ defineExpose({ open: show });
     v-model:open="open"
     :loading="loading"
     title="异常日志详情"
-    width="min(90vw, 760px)"
+    width="min(92vw, 880px)"
   >
     <Alert
       v-if="detail?.log_hint"
@@ -40,7 +46,13 @@ defineExpose({ open: show });
       show-icon
       type="info"
     />
-    <Descriptions v-if="detail" :column="1" bordered size="small">
+    <Descriptions
+      v-if="detail"
+      :column="1"
+      bordered
+      :label-style="descriptionsLabelStyle"
+      size="small"
+    >
       <Descriptions.Item label="Trace ID">{{ detail.trace_id }}</Descriptions.Item>
       <Descriptions.Item label="异常类">{{ detail.exception_class }}</Descriptions.Item>
       <Descriptions.Item label="消息">{{ detail.message }}</Descriptions.Item>

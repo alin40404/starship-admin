@@ -114,16 +114,24 @@
   overflow: visible;
 }
 
+.vxe-grid--toolbar-wrapper {
+  flex-shrink: 0;
+  /* 固定高度，避免批量选择与取消时工具栏高度变化导致表格区域跳动 */
+  height: calc(34px + 1.2em);
+  overflow: hidden;
+}
+
 .vxe-grid--layout-body-content-wrapper {
   overflow: hidden;
 }
 
 .vxe-grid-batch-toolbar {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 8px;
   max-width: 100%;
+  height: 34px;
 }
 
 .vxe-toolbar:has(.vxe-grid-batch-toolbar) .vxe-tools--operate,
@@ -132,13 +140,26 @@
 }
 
 .vxe-toolbar:has(.vxe-grid-batch-toolbar) {
+  flex-wrap: nowrap;
+  align-items: center;
   max-width: 100%;
+  height: 100%;
 }
 
 .vxe-toolbar:has(.vxe-grid-batch-toolbar) .vxe-buttons--wrapper {
   flex: 1 1 0%;
   min-width: 0;
   max-width: 100%;
+}
+
+/* 桌面端：工具区占位隐藏，避免 display:none 后工具栏变矮 */
+@media (min-width: 768px) {
+  .vxe-toolbar:has(.vxe-grid-batch-toolbar) .vxe-tools--operate,
+  .vxe-toolbar:has(.vxe-grid-batch-toolbar) .vxe-tools--wrapper {
+    display: flex !important;
+    visibility: hidden;
+    pointer-events: none;
+  }
 }
 
 @media (max-width: 767px) {
