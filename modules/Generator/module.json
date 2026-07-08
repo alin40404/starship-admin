@@ -1,18 +1,19 @@
 {
-    "name": "generator",
-    "title": "代码生成",
-    "version": "0.1.0",
-    "enabled": true,
-    "providers": [
-        "Modules\\Generator\\App\\Providers\\GeneratorServiceProvider"
+  "name": "generator",
+  "title": "代码生成",
+  "version": "0.1.0",
+  "enabled": true,
+  "providers": [
+    "Modules\\Generator\\App\\Providers\\GeneratorServiceProvider"
+  ],
+  "seeders": [],
+  "menus": {
+    "paths": []
+  },
+  "permissions": {
+    "prefixes": [
+      "generator."
     ],
-    "seeders": [],
-    "menus": {
-        "paths": [
-            "/dev/codegen"
-        ],
-        "permission_prefixes": [
-            "generator."
-        ]
-    }
+    "exact": []
+  }
 }

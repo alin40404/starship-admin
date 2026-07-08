@@ -44,9 +44,9 @@ class Module
     }
 
     /**
-     * 模块关联菜单（禁用时由 System 侧过滤）。
+     * 模块关联菜单路由（禁用时由 System 侧过滤）。
      *
-     * @return array{paths: list<string>, permission_prefixes: list<string>}
+     * @return array{paths: list<string>}
      */
     public function menus(): array
     {
@@ -56,16 +56,46 @@ class Module
         }
 
         $paths = $menus['paths'] ?? [];
-        $prefixes = $menus['permission_prefixes'] ?? [];
 
         return [
             'paths' => array_values(array_filter(
                 is_array($paths) ? $paths : [],
                 static fn ($path) => is_string($path) && $path !== '',
             )),
-            'permission_prefixes' => array_values(array_filter(
+        ];
+    }
+
+    /**
+     * 模块权限绑定（禁用时由 System 侧过滤菜单/权限码）。
+     *
+     * @return array{prefixes: list<string>, exact: list<string>}
+     */
+    public function permissions(): array
+    {
+        return $this->parsePermissionBindings($this->attributes['permissions'] ?? []);
+    }
+
+    /**
+     * @param  mixed  $permissions
+     * @return array{prefixes: list<string>, exact: list<string>}
+     */
+    private function parsePermissionBindings(mixed $permissions): array
+    {
+        if (! is_array($permissions)) {
+            $permissions = [];
+        }
+
+        $prefixes = $permissions['prefixes'] ?? [];
+        $exact = $permissions['exact'] ?? [];
+
+        return [
+            'prefixes' => array_values(array_filter(
                 is_array($prefixes) ? $prefixes : [],
                 static fn ($prefix) => is_string($prefix) && $prefix !== '',
+            )),
+            'exact' => array_values(array_filter(
+                is_array($exact) ? $exact : [],
+                static fn ($permission) => is_string($permission) && $permission !== '',
             )),
         ];
     }

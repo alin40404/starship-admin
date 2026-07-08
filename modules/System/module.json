@@ -8,5 +8,15 @@
   ],
   "seeders": [
     "Modules\\System\\Database\\Seeders\\StarshipFoundationSeeder"
-  ]
+  ],
+  "menus": {
+    "paths": []
+  },
+  "permissions": {
+    "prefixes": [
+      "system.",
+      "dashboard."
+    ],
+    "exact": []
+  }
 }

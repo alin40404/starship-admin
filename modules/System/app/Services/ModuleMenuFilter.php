@@ -21,7 +21,7 @@ class ModuleMenuFilter
     public function excludedMenuIds(Collection $menus): array
     {
         $bindings = $this->disabledModuleMenuBindings();
-        if ($bindings['paths'] === [] && $bindings['permission_prefixes'] === []) {
+        if ($this->bindingsAreEmpty($bindings)) {
             return [];
         }
 
@@ -36,12 +36,16 @@ class ModuleMenuFilter
     }
 
     /**
-     * @return array{paths: list<string>, permission_prefixes: list<string>}
+     * @return array{
+     *   paths: list<string>,
+     *   permissions: array{prefixes: list<string>, exact: list<string>}
+     * }
      */
     private function disabledModuleMenuBindings(): array
     {
         $paths = [];
         $prefixes = [];
+        $exact = [];
 
         foreach ((new ModuleManager($this->modulesPath()))->all() as $module) {
             if ($module->enabled()) {
@@ -49,18 +53,26 @@ class ModuleMenuFilter
             }
 
             $menus = $module->menus();
+            $permissions = $module->permissions();
             $paths = array_merge($paths, $menus['paths']);
-            $prefixes = array_merge($prefixes, $menus['permission_prefixes']);
+            $prefixes = array_merge($prefixes, $permissions['prefixes']);
+            $exact = array_merge($exact, $permissions['exact']);
         }
 
         return [
             'paths' => array_values(array_unique($paths)),
-            'permission_prefixes' => array_values(array_unique($prefixes)),
+            'permissions' => [
+                'prefixes' => array_values(array_unique($prefixes)),
+                'exact' => array_values(array_unique($exact)),
+            ],
         ];
     }
 
     /**
-     * @param  array{paths: list<string>, permission_prefixes: list<string>}  $bindings
+     * @param  array{
+     *   paths: list<string>,
+     *   permissions: array{prefixes: list<string>, exact: list<string>}
+     * }  $bindings
      */
     private function menuMatchesDisabledModule(Menu $menu, array $bindings): bool
     {
@@ -74,13 +86,30 @@ class ModuleMenuFilter
             return false;
         }
 
-        foreach ($bindings['permission_prefixes'] as $prefix) {
+        if (in_array($permission, $bindings['permissions']['exact'], true)) {
+            return true;
+        }
+
+        foreach ($bindings['permissions']['prefixes'] as $prefix) {
             if (str_starts_with($permission, $prefix)) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * @param  array{
+     *   paths: list<string>,
+     *   permissions: array{prefixes: list<string>, exact: list<string>}
+     * }  $bindings
+     */
+    private function bindingsAreEmpty(array $bindings): bool
+    {
+        return $bindings['paths'] === []
+            && $bindings['permissions']['prefixes'] === []
+            && $bindings['permissions']['exact'] === [];
     }
 
     /**
