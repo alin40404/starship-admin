@@ -1,4 +1,9 @@
 import type { VbenFormSchema } from '#/adapter/form';
+import type {
+  CrudGridColumn,
+  MobileCrudListConfig,
+} from '#/adapter/mobile-list';
+import { buildMobileCrudFromColumns } from '#/adapter/mobile-list';
 import type { OnActionClickFn } from '#/adapter/vxe-table';
 
 import type { OperationLogRow } from '#/api/monitor';
@@ -35,10 +40,30 @@ export function useGridFormSchema(): VbenFormSchema[] {
   ];
 }
 
+export function buildOperationLogMobileCrudConfig(params: {
+  columns: CrudGridColumn<OperationLogRow>[];
+  query: MobileCrudListConfig<OperationLogRow>['query'];
+}): MobileCrudListConfig<OperationLogRow> {
+  return buildMobileCrudFromColumns({
+    columns: params.columns,
+    defaultPageSize: 20,
+    query: params.query,
+    rowKey: 'id',
+    search: {
+      filterSchema: useGridFormSchema(),
+      keywordFields: ['title', 'admin_name', 'url', 'action'],
+      placeholder: '搜索标题/操作人/URL',
+    },
+    selection: {
+      enabled: true,
+    },
+  });
+}
+
 export function useColumns(
   onActionClick: OnActionClickFn<OperationLogRow>,
   access: MonitorAccessChecker,
-) {
+): CrudGridColumn<OperationLogRow>[] {
   return [
     {
       align: 'center',

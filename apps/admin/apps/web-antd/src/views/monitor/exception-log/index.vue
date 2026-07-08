@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import type { ExceptionLogRow } from '#/api/monitor';
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
+import type { ExceptionLogRow } from '#/api/monitor';
 
 import { ref } from 'vue';
 
@@ -9,7 +9,7 @@ import { Page } from '@vben/common-ui';
 
 import { Alert, Button, message, Modal } from 'ant-design-vue';
 
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { useResponsiveCrud } from '#/adapter/mobile-list';
 import {
   batchDeleteExceptionLogs,
   deleteExceptionLog,
@@ -17,11 +17,14 @@ import {
 } from '#/api/monitor';
 import { MONITOR_EXCEPTION_LOG_PERMISSIONS } from '#/constants/monitor-permissions';
 
-import { useColumns, useGridFormSchema } from './data';
+import {
+  buildExceptionLogMobileCrudConfig,
+  useColumns,
+  useGridFormSchema,
+} from './data';
 import DetailDrawer from './modules/detail-drawer.vue';
 
 const detailDrawerRef = ref<InstanceType<typeof DetailDrawer>>();
-const selectedRows = ref<ExceptionLogRow[]>([]);
 
 const { hasAccessByCodes } = useAccess();
 
@@ -30,26 +33,62 @@ const access = {
     hasAccessByCodes([MONITOR_EXCEPTION_LOG_PERMISSIONS.MANAGE, code]),
 };
 
-function syncSelection() {
-  const records = gridApi?.grid?.getCheckboxRecords?.() ?? [];
-  selectedRows.value = records as ExceptionLogRow[];
-}
-
-function clearSelection() {
-  gridApi?.grid?.clearCheckboxRow?.();
-  selectedRows.value = [];
-}
-
-function onRefresh() {
-  gridApi.query();
-}
-
 function onActionClick({ code, row }: OnActionClickParams<ExceptionLogRow>) {
   if (code === 'detail') {
     detailDrawerRef.value?.open(row.id);
   } else if (code === 'delete') {
     onDelete(row);
   }
+}
+
+const columns = useColumns(onActionClick, access);
+
+const [CrudView, crudApi] = useResponsiveCrud<ExceptionLogRow>({
+  formOptions: {
+    commonConfig: { componentProps: { class: 'w-full' } },
+    schema: useGridFormSchema(),
+    submitOnChange: true,
+    submitButtonOptions: { content: '查询' },
+  },
+  gridOptions: {
+    checkboxConfig: { highlight: true },
+    columns: columns as VxeTableGridOptions<ExceptionLogRow>['columns'],
+    height: 'auto',
+    proxyConfig: {
+      ajax: {
+        query: async ({ page }, formValues) =>
+          await fetchExceptionLogPage({
+            page: page.currentPage,
+            per_page: page.pageSize,
+            keyword: formValues?.keyword || undefined,
+            exception_class: formValues?.exception_class || undefined,
+          }),
+      },
+    },
+    rowConfig: { keyField: 'id' },
+    toolbarConfig: { custom: true, refresh: true, search: true, zoom: true },
+  } as VxeTableGridOptions<ExceptionLogRow>,
+  mobile: buildExceptionLogMobileCrudConfig({
+    columns,
+    query: async ({ filters, keyword, page, pageSize }) => {
+      const result = await fetchExceptionLogPage({
+        page,
+        per_page: pageSize,
+        keyword: keyword || undefined,
+        exception_class: filters?.exception_class || undefined,
+      });
+      return {
+        data: result.data,
+        total: result.total,
+      };
+    },
+  }),
+});
+
+const { clearSelection, reload, selectedRows } = crudApi;
+
+function onRefresh() {
+  reload();
 }
 
 async function onDelete(row: ExceptionLogRow) {
@@ -78,37 +117,6 @@ function onBatchDelete() {
     },
   });
 }
-
-const [Grid, gridApi] = useVbenVxeGrid<ExceptionLogRow>({
-  formOptions: {
-    commonConfig: { componentProps: { class: 'w-full' } },
-    schema: useGridFormSchema(),
-    submitOnChange: true,
-    submitButtonOptions: { content: '查询' },
-  },
-  gridEvents: {
-    checkboxAll: syncSelection,
-    checkboxChange: syncSelection,
-  },
-  gridOptions: {
-    checkboxConfig: { highlight: true },
-    columns: useColumns(onActionClick, access) as VxeTableGridOptions<ExceptionLogRow>['columns'],
-    height: 'auto',
-    proxyConfig: {
-      ajax: {
-        query: async ({ page }, formValues) =>
-          await fetchExceptionLogPage({
-            page: page.currentPage,
-            per_page: page.pageSize,
-            keyword: formValues?.keyword || undefined,
-            exception_class: formValues?.exception_class || undefined,
-          }),
-      },
-    },
-    rowConfig: { keyField: 'id' },
-    toolbarConfig: { custom: true, refresh: true, search: true, zoom: true },
-  } as VxeTableGridOptions<ExceptionLogRow>,
-});
 </script>
 
 <template>
@@ -122,7 +130,7 @@ const [Grid, gridApi] = useVbenVxeGrid<ExceptionLogRow>({
       />
       <DetailDrawer ref="detailDrawerRef" />
       <div class="min-h-0 flex-1">
-        <Grid class="h-full">
+        <CrudView class="h-full">
           <template #toolbar-actions>
             <div
               v-if="selectedRows.length > 0"
@@ -140,7 +148,7 @@ const [Grid, gridApi] = useVbenVxeGrid<ExceptionLogRow>({
               </Button>
             </div>
           </template>
-        </Grid>
+        </CrudView>
       </div>
     </div>
   </Page>

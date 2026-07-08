@@ -1,4 +1,9 @@
 import type { VbenFormSchema } from '#/adapter/form';
+import type {
+  CrudGridColumn,
+  MobileCrudListConfig,
+} from '#/adapter/mobile-list';
+import { buildMobileCrudFromColumns } from '#/adapter/mobile-list';
 import type { OnActionClickFn } from '#/adapter/vxe-table';
 
 import type { LoginLogRow } from '#/api/monitor';
@@ -49,10 +54,30 @@ export function useGridFormSchema(): VbenFormSchema[] {
   ];
 }
 
+export function buildLoginLogMobileCrudConfig(params: {
+  columns: CrudGridColumn<LoginLogRow>[];
+  query: MobileCrudListConfig<LoginLogRow>['query'];
+}): MobileCrudListConfig<LoginLogRow> {
+  return buildMobileCrudFromColumns({
+    columns: params.columns,
+    defaultPageSize: 20,
+    query: params.query,
+    rowKey: 'id',
+    search: {
+      filterSchema: useGridFormSchema(),
+      keywordFields: ['username', 'message', 'ip'],
+      placeholder: '搜索账号/IP',
+    },
+    selection: {
+      enabled: true,
+    },
+  });
+}
+
 export function useColumns(
   onActionClick: OnActionClickFn<LoginLogRow>,
   access: MonitorAccessChecker,
-) {
+): CrudGridColumn<LoginLogRow>[] {
   return [
     {
       align: 'center',
@@ -73,6 +98,9 @@ export function useColumns(
         options: [...MONITOR_LOGIN_ACTION_TAG_OPTIONS],
       },
       field: 'action',
+      mobile: {
+        format: (row) => (row.action === 'logout' ? '退出' : '登录'),
+      },
       title: '动作',
       width: 90,
     },
@@ -83,6 +111,9 @@ export function useColumns(
         options: [...MONITOR_LOGIN_STATUS_TAG_OPTIONS],
       },
       field: 'status',
+      mobile: {
+        format: (row) => (row.status === 1 ? '成功' : '失败'),
+      },
       title: '结果',
       width: 90,
     },

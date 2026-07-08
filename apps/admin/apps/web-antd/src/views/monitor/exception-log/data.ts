@@ -1,4 +1,9 @@
 import type { VbenFormSchema } from '#/adapter/form';
+import type {
+  CrudGridColumn,
+  MobileCrudListConfig,
+} from '#/adapter/mobile-list';
+import { buildMobileCrudFromColumns } from '#/adapter/mobile-list';
 import type { OnActionClickFn } from '#/adapter/vxe-table';
 
 import type { ExceptionLogRow } from '#/api/monitor';
@@ -29,10 +34,30 @@ export function useGridFormSchema(): VbenFormSchema[] {
   ];
 }
 
+export function buildExceptionLogMobileCrudConfig(params: {
+  columns: CrudGridColumn<ExceptionLogRow>[];
+  query: MobileCrudListConfig<ExceptionLogRow>['query'];
+}): MobileCrudListConfig<ExceptionLogRow> {
+  return buildMobileCrudFromColumns({
+    columns: params.columns,
+    defaultPageSize: 20,
+    query: params.query,
+    rowKey: 'id',
+    search: {
+      filterSchema: useGridFormSchema(),
+      keywordFields: ['message', 'exception_class', 'trace_id', 'request_url'],
+      placeholder: '搜索消息/异常类/trace_id',
+    },
+    selection: {
+      enabled: true,
+    },
+  });
+}
+
 export function useColumns(
   onActionClick: OnActionClickFn<ExceptionLogRow>,
   access: MonitorAccessChecker,
-) {
+): CrudGridColumn<ExceptionLogRow>[] {
   return [
     {
       align: 'center',

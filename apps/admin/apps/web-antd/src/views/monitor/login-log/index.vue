@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import type { LoginLogRow } from '#/api/monitor';
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
+import type { LoginLogRow } from '#/api/monitor';
 
 import { ref } from 'vue';
 
@@ -9,7 +9,7 @@ import { Page } from '@vben/common-ui';
 
 import { Button, message, Modal } from 'ant-design-vue';
 
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { useResponsiveCrud } from '#/adapter/mobile-list';
 import {
   batchDeleteLoginLogs,
   deleteLoginLog,
@@ -17,11 +17,14 @@ import {
 } from '#/api/monitor';
 import { MONITOR_LOGIN_LOG_PERMISSIONS } from '#/constants/monitor-permissions';
 
-import { useColumns, useGridFormSchema } from './data';
+import {
+  buildLoginLogMobileCrudConfig,
+  useColumns,
+  useGridFormSchema,
+} from './data';
 import DetailDrawer from './modules/detail-drawer.vue';
 
 const detailDrawerRef = ref<InstanceType<typeof DetailDrawer>>();
-const selectedRows = ref<LoginLogRow[]>([]);
 
 const { hasAccessByCodes } = useAccess();
 
@@ -30,26 +33,70 @@ const access = {
     hasAccessByCodes([MONITOR_LOGIN_LOG_PERMISSIONS.MANAGE, code]),
 };
 
-function syncSelection() {
-  const records = gridApi?.grid?.getCheckboxRecords?.() ?? [];
-  selectedRows.value = records as LoginLogRow[];
-}
-
-function clearSelection() {
-  gridApi?.grid?.clearCheckboxRow?.();
-  selectedRows.value = [];
-}
-
-function onRefresh() {
-  gridApi.query();
-}
-
 function onActionClick({ code, row }: OnActionClickParams<LoginLogRow>) {
   if (code === 'detail') {
     detailDrawerRef.value?.open(row.id);
   } else if (code === 'delete') {
     onDelete(row);
   }
+}
+
+const columns = useColumns(onActionClick, access);
+
+const [CrudView, crudApi] = useResponsiveCrud<LoginLogRow>({
+  formOptions: {
+    commonConfig: { componentProps: { class: 'w-full' } },
+    schema: useGridFormSchema(),
+    submitOnChange: true,
+    submitButtonOptions: { content: '查询' },
+  },
+  gridOptions: {
+    checkboxConfig: { highlight: true },
+    columns: columns as VxeTableGridOptions<LoginLogRow>['columns'],
+    height: 'auto',
+    proxyConfig: {
+      ajax: {
+        query: async ({ page }, formValues) =>
+          await fetchLoginLogPage({
+            page: page.currentPage,
+            per_page: page.pageSize,
+            keyword: formValues?.keyword || undefined,
+            action: formValues?.action || undefined,
+            status:
+              formValues?.status === 0 || formValues?.status === 1
+                ? formValues.status
+                : undefined,
+          }),
+      },
+    },
+    rowConfig: { keyField: 'id' },
+    toolbarConfig: { custom: true, refresh: true, search: true, zoom: true },
+  } as VxeTableGridOptions<LoginLogRow>,
+  mobile: buildLoginLogMobileCrudConfig({
+    columns,
+    query: async ({ filters, keyword, page, pageSize }) => {
+      const result = await fetchLoginLogPage({
+        page,
+        per_page: pageSize,
+        keyword: keyword || undefined,
+        action: filters?.action || undefined,
+        status:
+          filters?.status === 0 || filters?.status === 1
+            ? filters.status
+            : undefined,
+      });
+      return {
+        data: result.data,
+        total: result.total,
+      };
+    },
+  }),
+});
+
+const { clearSelection, reload, selectedRows } = crudApi;
+
+function onRefresh() {
+  reload();
 }
 
 async function onDelete(row: LoginLogRow) {
@@ -78,47 +125,12 @@ function onBatchDelete() {
     },
   });
 }
-
-const [Grid, gridApi] = useVbenVxeGrid<LoginLogRow>({
-  formOptions: {
-    commonConfig: { componentProps: { class: 'w-full' } },
-    schema: useGridFormSchema(),
-    submitOnChange: true,
-    submitButtonOptions: { content: '查询' },
-  },
-  gridEvents: {
-    checkboxAll: syncSelection,
-    checkboxChange: syncSelection,
-  },
-  gridOptions: {
-    checkboxConfig: { highlight: true },
-    columns: useColumns(onActionClick, access) as VxeTableGridOptions<LoginLogRow>['columns'],
-    height: 'auto',
-    proxyConfig: {
-      ajax: {
-        query: async ({ page }, formValues) =>
-          await fetchLoginLogPage({
-            page: page.currentPage,
-            per_page: page.pageSize,
-            keyword: formValues?.keyword || undefined,
-            action: formValues?.action || undefined,
-            status:
-              formValues?.status === 0 || formValues?.status === 1
-                ? formValues.status
-                : undefined,
-          }),
-      },
-    },
-    rowConfig: { keyField: 'id' },
-    toolbarConfig: { custom: true, refresh: true, search: true, zoom: true },
-  } as VxeTableGridOptions<LoginLogRow>,
-});
 </script>
 
 <template>
   <Page auto-content-height>
     <DetailDrawer ref="detailDrawerRef" />
-    <Grid>
+    <CrudView>
       <template #toolbar-actions>
         <div v-if="selectedRows.length > 0" class="vxe-grid-batch-toolbar">
           <Button
@@ -133,6 +145,6 @@ const [Grid, gridApi] = useVbenVxeGrid<LoginLogRow>({
           </Button>
         </div>
       </template>
-    </Grid>
+    </CrudView>
   </Page>
 </template>
