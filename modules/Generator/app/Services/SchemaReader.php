@@ -84,6 +84,26 @@ class SchemaReader
         return DB::getSchemaBuilder()->hasTable($tableName);
     }
 
+    /**
+     * 解析物理表名：支持省略 DB 前缀（article → sa_article）。
+     */
+    public function resolveTableName(string $tableName): string
+    {
+        if ($this->tableExists($tableName)) {
+            return $tableName;
+        }
+
+        $prefix = (string) DB::connection()->getTablePrefix();
+        if ($prefix !== '' && ! str_starts_with($tableName, $prefix)) {
+            $prefixed = $prefix.$tableName;
+            if ($this->tableExists($prefixed)) {
+                return $prefixed;
+            }
+        }
+
+        return $tableName;
+    }
+
     public function tableComment(string $tableName): ?string
     {
         foreach ($this->listTables() as $table) {

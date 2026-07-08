@@ -20,6 +20,8 @@ class TableConfigService
      */
     public function import(string $tableName, array $options = []): GeneratorTable
     {
+        $tableName = $this->schemaReader->resolveTableName($tableName);
+
         if (! $this->schemaReader->tableExists($tableName)) {
             throw new InvalidArgumentException("数据表不存在：{$tableName}");
         }

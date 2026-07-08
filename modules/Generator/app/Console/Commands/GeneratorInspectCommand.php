@@ -8,7 +8,7 @@ use Modules\Generator\App\Services\SchemaReader;
 
 class GeneratorInspectCommand extends Command
 {
-    protected $signature = 'generator:inspect {table : 物理表名，如 sa_system_demo_article}';
+    protected $signature = 'generator:inspect {table : 物理表名，如 sa_article}';
 
     protected $description = '查看表字段及智能推断的生成配置';
 

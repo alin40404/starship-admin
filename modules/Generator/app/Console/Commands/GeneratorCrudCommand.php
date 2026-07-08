@@ -10,7 +10,7 @@ use Modules\Generator\App\Support\ModulePathResolver;
 class GeneratorCrudCommand extends Command
 {
     protected $signature = 'generator:crud
-                            {table : 物理表名，如 sa_system_demo_article}
+                            {table : 物理表名，如 sa_article 或 article}
                             {--module= : 目标模块，如 System}
                             {--class= : 类名覆盖}
                             {--business= : 业务中文名}
@@ -20,10 +20,12 @@ class GeneratorCrudCommand extends Command
                             {--permission-prefix= : 权限前缀}
                             {--menu-parent= : 菜单父级路由}
                             {--preview : 仅预览，不写入文件}
-                            {--force : 覆盖已存在文件}
-                            {--skip-menu : 跳过菜单/权限同步}';
+                            {--force : 覆盖已存在文件 / 删除时跳过生成标记校验}
+                            {--skip-menu : 跳过菜单/权限同步}
+                            {--delete : 删除模式，移除 generator:crud 生成的代码}
+                            {--drop-table : 删除模式下同时 drop 物理表}';
 
-    protected $description = '根据数据表生成 CRUD 代码（参考 fastadmin/buildadmin 命令行模式）';
+    protected $description = '根据数据表生成或删除 CRUD 代码（参考 fastadmin/buildadmin 命令行模式）';
 
     public function handle(CodegenService $codegenService, ModulePathResolver $modulePathResolver): int
     {
@@ -50,9 +52,14 @@ class GeneratorCrudCommand extends Command
             'menu_parent_path' => $this->option('menu-parent'),
             'force' => (bool) $this->option('force'),
             'sync_menu' => ! $this->option('skip-menu'),
+            'drop_table' => (bool) $this->option('drop-table'),
             'source' => 'cli',
             'operator_name' => 'cli',
         ];
+
+        if ($this->option('delete')) {
+            return $this->handleDelete($codegenService, $table, $options);
+        }
 
         if ($this->option('preview')) {
             $result = $codegenService->preview($table, $options);
@@ -73,7 +80,13 @@ class GeneratorCrudCommand extends Command
             return self::SUCCESS;
         }
 
-        $result = $codegenService->generate($table, $options);
+        try {
+            $result = $codegenService->generate($table, $options);
+        } catch (\InvalidArgumentException $exception) {
+            $this->error($exception->getMessage());
+
+            return self::FAILURE;
+        }
 
         if (($result['conflicts'] ?? []) !== [] && ! $options['force']) {
             $this->warn('部分文件已存在，已跳过。使用 --force 可覆盖：');
@@ -94,6 +107,89 @@ class GeneratorCrudCommand extends Command
 
         $this->newLine();
         $this->info('生成完成：'.$table);
+
+        return self::SUCCESS;
+    }
+
+    /**
+     * @param  array<string, mixed>  $options
+     */
+    protected function handleDelete(CodegenService $codegenService, string $table, array $options): int
+    {
+        if ($this->option('preview')) {
+            $result = $codegenService->previewDelete($table, $options);
+            $this->info('删除预览：以下路径将被处理');
+            foreach ($result['paths'] as $path) {
+                $exists = is_file($path) ? ' [存在]' : ' [不存在]';
+                $this->line('- '.$path.$exists);
+            }
+
+            if ($result['sync_menu']) {
+                $this->line('- 菜单/权限：'.$result['config']->route_path.' / '.$result['config']->permission_prefix);
+            }
+
+            if ($result['drop_table']) {
+                $this->line('- 物理表：'.$result['config']->table_name);
+            }
+
+            if (! $result['persisted']) {
+                $this->warn('未找到 generator_tables 配置，将按当前参数推断路径（不会删除生成器 DB 配置）');
+            }
+
+            return self::SUCCESS;
+        }
+
+        $preview = $codegenService->previewDelete($table, $options);
+
+        if ($preview['existing'] === [] && ! $preview['drop_table']) {
+            $this->warn('没有找到可删除的生成文件。');
+
+            return self::SUCCESS;
+        }
+
+        $this->warn('删除模式：以下文件将被删除');
+        foreach ($preview['existing'] as $path) {
+            $this->line('- '.$path);
+        }
+
+        if ($options['sync_menu']) {
+            $this->line('- 菜单/权限：'.$preview['config']->route_path);
+        }
+
+        if ($options['drop_table']) {
+            $this->line('- 物理表：'.$preview['config']->table_name);
+        }
+
+        if (! $options['force'] && ! $this->confirm('确认删除？', false)) {
+            $this->info('已取消');
+
+            return self::SUCCESS;
+        }
+
+        $result = $codegenService->delete($table, $options);
+
+        foreach ($result['deleted'] ?? [] as $path) {
+            $this->info("[deleted] {$path}");
+        }
+
+        foreach ($result['skipped'] ?? [] as $item) {
+            $this->warn("[skipped:{$item['reason']}] {$item['path']}");
+        }
+
+        foreach ($result['menu'] ?? [] as $item) {
+            $this->line("[menu:{$item['action']}] {$item['path']}");
+        }
+
+        if ($result['table_dropped'] ?? false) {
+            $this->info('[table] 已删除物理表');
+        }
+
+        if ($result['config_deleted'] ?? false) {
+            $this->info('[config] 已删除 generator_tables 配置');
+        }
+
+        $this->newLine();
+        $this->info('删除完成：'.$table);
 
         return self::SUCCESS;
     }

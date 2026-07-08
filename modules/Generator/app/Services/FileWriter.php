@@ -46,6 +46,55 @@ class FileWriter
         return compact('written', 'skipped', 'conflicts');
     }
 
+    /**
+     * @param  list<string>  $paths
+     * @return array{
+     *   deleted: list<string>,
+     *   missing: list<string>,
+     *   skipped: list<array{path: string, reason: string}>
+     * }
+     */
+    public function deleteMany(array $paths, bool $force = false): array
+    {
+        unset($force);
+
+        $deleted = [];
+        $missing = [];
+
+        foreach ($paths as $path) {
+            if (! File::exists($path)) {
+                $missing[] = $path;
+
+                continue;
+            }
+
+            File::delete($path);
+            $deleted[] = $path;
+            $this->removeEmptyDirectories(dirname($path));
+        }
+
+        return [
+            'deleted' => $deleted,
+            'missing' => $missing,
+            'skipped' => [],
+        ];
+    }
+
+    protected function removeEmptyDirectories(string $directory): void
+    {
+        while ($directory !== '' && is_dir($directory)) {
+            if (count(scandir($directory) ?: []) > 2) {
+                break;
+            }
+
+            if (! @rmdir($directory)) {
+                break;
+            }
+
+            $directory = dirname($directory);
+        }
+    }
+
     public function ensureAdminRouteLoader(string $moduleDir): void
     {
         $adminRoutesDir = $moduleDir.'/routes/admin-generator';

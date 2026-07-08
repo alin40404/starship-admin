@@ -15,9 +15,9 @@ return new class extends Migration
             $table->string('module_slug', 50)->comment('目标模块，如 System');
             $table->string('business_name', 100)->comment('业务中文名');
             $table->string('route_group', 50)->default('org')->comment('前端 views 分组');
-            $table->string('route_path', 150)->comment('前端路由，如 /org/demo-articles');
-            $table->string('api_prefix', 100)->comment('API 路径段，如 demo-articles');
-            $table->string('permission_prefix', 150)->comment('权限前缀，如 system.demo_articles');
+            $table->string('route_path', 150)->comment('前端路由，如 /org/articles');
+            $table->string('api_prefix', 100)->comment('API 路径段，如 articles');
+            $table->string('permission_prefix', 150)->comment('权限前缀，如 system.articles');
             $table->string('menu_parent_path', 150)->nullable()->comment('菜单父级路由');
             $table->string('template_type', 30)->default('crud')->comment('模板类型');
             $table->json('options')->nullable()->comment('生成选项');

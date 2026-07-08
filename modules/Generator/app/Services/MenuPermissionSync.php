@@ -86,6 +86,32 @@ class MenuPermissionSync
         return $actions;
     }
 
+    /**
+     * @return list<array{path: string, action: string}>
+     */
+    public function remove(GeneratorTable $config): array
+    {
+        $actions = [];
+
+        $pageMenu = Menu::query()->where('path', $config->route_path)->first();
+        if ($pageMenu) {
+            Menu::query()->where('parent_id', $pageMenu->id)->delete();
+            $pageMenu->delete();
+            $actions[] = ['path' => 'menu:'.$pageMenu->id, 'action' => 'deleted'];
+        }
+
+        $orphanButtons = Menu::query()
+            ->where('permission', 'like', $config->permission_prefix.'.%')
+            ->get();
+
+        foreach ($orphanButtons as $button) {
+            $button->delete();
+            $actions[] = ['path' => 'menu:'.$button->id, 'action' => 'deleted'];
+        }
+
+        return $actions;
+    }
+
     protected function resolveParentMenu(GeneratorTable $config): ?Menu
     {
         if ($config->menu_parent_path) {

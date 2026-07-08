@@ -2,7 +2,9 @@
 
 namespace Modules\Generator\App\Services;
 
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Modules\Generator\App\Models\GeneratorRecord;
 use Modules\Generator\App\Models\GeneratorTable;
 use Modules\Generator\App\Support\ColumnLabelFormatter;
 use Modules\Generator\App\Support\GeneratorNaming;
@@ -17,6 +19,7 @@ class CodegenService
         protected GeneratorAuditLogger $auditLogger,
         protected ModulePathResolver $modulePathResolver,
         protected TableConfigService $tableConfigService,
+        protected SchemaReader $schemaReader,
     ) {}
 
     /**
@@ -62,15 +65,157 @@ class CodegenService
 
     /**
      * @param  array<string, mixed>  $options
+     * @return array<string, mixed>
+     */
+    public function previewDelete(string $tableName, array $options = []): array
+    {
+        return $this->buildDeleteResult($tableName, $options, dryRun: true);
+    }
+
+    /**
+     * @param  array<string, mixed>  $options
+     * @return array<string, mixed>
+     */
+    public function delete(string $tableName, array $options = []): array
+    {
+        return $this->buildDeleteResult($tableName, $options, dryRun: false);
+    }
+
+    /**
+     * @param  array<string, mixed>  $options
      */
     protected function resolveConfig(string $tableName, array $options): GeneratorTable
     {
+        $tableName = $this->schemaReader->resolveTableName($tableName);
         $existing = GeneratorTable::query()->with('columns')->where('table_name', $tableName)->first();
         if ($existing) {
             return $existing;
         }
 
         return $this->tableConfigService->import($tableName, $options);
+    }
+
+    /**
+     * @param  array<string, mixed>  $options
+     * @return array<string, mixed>
+     */
+    protected function buildDeleteResult(string $tableName, array $options, bool $dryRun): array
+    {
+        $tableName = $this->schemaReader->resolveTableName($tableName);
+        [$config, $persisted] = $this->resolveDeleteConfig($tableName, $options);
+        $files = $this->buildFiles($config, $this->buildViewData($config));
+        $paths = array_values(array_unique(array_map(
+            static fn (array $file): string => $file['path'],
+            $files,
+        )));
+
+        $existingPaths = array_values(array_filter($paths, static fn (string $path): bool => is_file($path)));
+        $force = (bool) ($options['force'] ?? false);
+        $syncMenu = (bool) ($options['sync_menu'] ?? true);
+        $dropTable = (bool) ($options['drop_table'] ?? false);
+
+        if ($dryRun) {
+            return [
+                'config' => $config,
+                'paths' => $paths,
+                'existing' => $existingPaths,
+                'missing' => array_values(array_diff($paths, $existingPaths)),
+                'persisted' => $persisted,
+                'sync_menu' => $syncMenu,
+                'drop_table' => $dropTable,
+            ];
+        }
+
+        $fileResult = $this->fileWriter->deleteMany($paths, $force);
+        $menu = $syncMenu ? $this->menuPermissionSync->remove($config) : [];
+
+        if ($dropTable) {
+            $this->dropPhysicalTable($config);
+        }
+
+        if ($persisted) {
+            $this->deleteGeneratorConfig($config);
+        }
+
+        return array_merge($fileResult, [
+            'config' => $config,
+            'menu' => $menu,
+            'table_dropped' => $dropTable,
+            'config_deleted' => $persisted,
+        ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $options
+     * @return array{0: GeneratorTable, 1: bool}
+     */
+    protected function resolveDeleteConfig(string $tableName, array $options): array
+    {
+        $config = $this->findGeneratorConfig($tableName);
+        if ($config) {
+            $config->loadMissing('columns');
+
+            return [$config, true];
+        }
+
+        return [$this->buildEphemeralConfig($tableName, $options), false];
+    }
+
+    protected function findGeneratorConfig(string $tableName): ?GeneratorTable
+    {
+        $resolved = $this->schemaReader->resolveTableName($tableName);
+        $candidates = array_values(array_unique([$tableName, $resolved]));
+
+        return GeneratorTable::query()
+            ->with('columns')
+            ->whereIn('table_name', $candidates)
+            ->first();
+    }
+
+    /**
+     * @param  array<string, mixed>  $options
+     */
+    protected function buildEphemeralConfig(string $tableName, array $options): GeneratorTable
+    {
+        $naming = GeneratorNaming::fromTableName(
+            $tableName,
+            isset($options['module']) ? (string) $options['module'] : null,
+        );
+
+        $moduleSlug = (string) ($options['module'] ?? $naming['module_slug']);
+        $routeGroup = (string) ($options['route_group'] ?? GeneratorNaming::defaultRouteGroup($moduleSlug));
+        $apiPrefix = (string) ($options['api_prefix'] ?? $naming['api_prefix']);
+        $routePath = (string) ($options['route_path'] ?? '/'.$routeGroup.'/'.str_replace('_', '-', $apiPrefix));
+        $permissionPrefix = (string) ($options['permission_prefix'] ?? strtolower($moduleSlug).'.'.$apiPrefix);
+
+        $config = new GeneratorTable([
+            'table_name' => $tableName,
+            'class_name' => (string) ($options['class'] ?? $naming['class_name']),
+            'module_slug' => $moduleSlug,
+            'business_name' => (string) ($options['business'] ?? $naming['class_name']),
+            'route_group' => $routeGroup,
+            'route_path' => $routePath,
+            'api_prefix' => $apiPrefix,
+            'permission_prefix' => $permissionPrefix,
+            'menu_parent_path' => $options['menu_parent_path'] ?? null,
+            'options' => ['sync_menu' => $options['sync_menu'] ?? true],
+        ]);
+        $config->setRelation('columns', collect());
+
+        return $config;
+    }
+
+    protected function deleteGeneratorConfig(GeneratorTable $config): void
+    {
+        GeneratorRecord::query()->where('generator_table_id', $config->id)->delete();
+        $config->columns()->delete();
+        $config->delete();
+    }
+
+    protected function dropPhysicalTable(GeneratorTable $config): void
+    {
+        $naming = GeneratorNaming::fromTableName($config->table_name, $config->module_slug);
+        Schema::dropIfExists($naming['table_suffix']);
     }
 
     /**
