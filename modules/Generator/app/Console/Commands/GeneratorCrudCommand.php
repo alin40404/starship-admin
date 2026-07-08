@@ -141,19 +141,27 @@ class GeneratorCrudCommand extends Command
 
         $preview = $codegenService->previewDelete($table, $options);
 
-        if ($preview['existing'] === [] && ! $preview['drop_table']) {
-            $this->warn('没有找到可删除的生成文件。');
+        $canDeleteMenu = (bool) ($options['sync_menu'] ?? true);
+        $hasFileWork = $preview['existing'] !== [];
+        $hasOtherWork = $preview['drop_table'] || $preview['persisted'] || $canDeleteMenu;
+
+        if (! $hasFileWork && ! $hasOtherWork) {
+            $this->warn('没有找到可删除的内容。');
 
             return self::SUCCESS;
         }
 
-        $this->warn('删除模式：以下文件将被删除');
-        foreach ($preview['existing'] as $path) {
-            $this->line('- '.$path);
+        if ($hasFileWork) {
+            $this->warn('删除模式：以下文件将被删除');
+            foreach ($preview['existing'] as $path) {
+                $this->line('- '.$path);
+            }
+        } else {
+            $this->warn('删除模式：未找到生成文件，将继续清理菜单/配置');
         }
 
         if ($options['sync_menu']) {
-            $this->line('- 菜单/权限：'.$preview['config']->route_path);
+            $this->line('- 菜单/权限：'.$preview['config']->route_path.' / '.$preview['config']->permission_prefix);
         }
 
         if ($options['drop_table']) {
