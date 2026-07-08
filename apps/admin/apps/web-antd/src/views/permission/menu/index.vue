@@ -12,7 +12,7 @@ import { Page, useVbenDrawer } from '@vben/common-ui';
 import { IconifyIcon, Plus } from '@vben/icons';
 import { MenuBadge } from '@vben-core/menu-ui';
 
-import { Button, message, Modal } from 'ant-design-vue';
+import { Button, message, Modal, Tag, Tooltip } from 'ant-design-vue';
 
 import {
   batchDeleteMenus,
@@ -34,6 +34,15 @@ const menuAccess = {
   can: (code: string) => hasAccessByCodes([code]),
   canAny: (codes: string[]) => hasAccessByCodes(codes),
 };
+
+function moduleTooltip(
+  module: NonNullable<MenuTreeNode['module']>,
+): string {
+  if (module.enabled) {
+    return `归属模块：${module.title}（${module.name}）`;
+  }
+  return `模块「${module.title}」已禁用，侧栏与权限不会生效`;
+}
 
 const [MenuFormDrawer, menuFormDrawerApi] = useVbenDrawer({
   connectedComponent: MenuForm,
@@ -311,6 +320,15 @@ function onBatchUpdateStatus(status: 0 | 1) {
             :badge-variants="row.badge_variants ?? undefined"
           />
         </div>
+      </template>
+      <template #module="{ row }">
+        <Tooltip v-if="row.module" :title="moduleTooltip(row.module)">
+          <Tag :color="row.module.enabled ? 'processing' : 'warning'">
+            {{ row.module.title }}
+            <template v-if="!row.module.enabled"> · 已禁用</template>
+          </Tag>
+        </Tooltip>
+        <span v-else class="text-muted-foreground">—</span>
       </template>
     </Grid>
   </Page>

@@ -196,6 +196,13 @@ export function useColumns(
       title: '权限标识',
     },
     {
+      align: 'center',
+      field: 'module',
+      slots: { default: 'module' },
+      title: '模块',
+      width: 140,
+    },
+    {
       align: 'left',
       field: 'path',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,

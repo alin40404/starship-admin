@@ -30,6 +30,12 @@ export interface MenuTreeNode {
   hide_submenu: number;
   hide_in_breadcrumb: number;
   hide_in_tab: number;
+  /** 菜单归属模块（由 module.json 规则解析） */
+  module: {
+    name: string;
+    title: string;
+    enabled: boolean;
+  } | null;
   children: MenuTreeNode[];
 }
 

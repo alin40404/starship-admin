@@ -8,9 +8,14 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Modules\System\App\Models\Menu;
+use Modules\System\App\Services\ModuleMenuFilter;
 
 class MenuController extends Controller
 {
+    public function __construct(
+        protected ModuleMenuFilter $moduleMenuFilter,
+    ) {}
+
     public function tree(): JsonResponse
     {
         $rows = Menu::query()
@@ -18,7 +23,9 @@ class MenuController extends Controller
             ->orderBy('id')
             ->get();
 
-        return ApiResponse::success($this->buildTree($rows));
+        $moduleMap = $this->moduleMenuFilter->menuModuleMap($rows);
+
+        return ApiResponse::success($this->buildTree($rows, 0, $moduleMap));
     }
 
     public function index(Request $request): JsonResponse
@@ -205,9 +212,10 @@ class MenuController extends Controller
 
     /**
      * @param  \Illuminate\Support\Collection<int, Menu>  $rows
+     * @param  array<int, array{name: string, title: string, enabled: bool}>  $moduleMap
      * @return array<int, mixed>
      */
-    private function buildTree($rows, int $parentId = 0): array
+    private function buildTree($rows, int $parentId = 0, array $moduleMap = []): array
     {
         $branch = [];
 
@@ -239,7 +247,8 @@ class MenuController extends Controller
                 'hide_submenu' => $os['hide_submenu'],
                 'hide_in_breadcrumb' => $os['hide_in_breadcrumb'],
                 'hide_in_tab' => $os['hide_in_tab'],
-                'children' => $this->buildTree($rows, (int) $item->id),
+                'module' => $moduleMap[(int) $item->id] ?? null,
+                'children' => $this->buildTree($rows, (int) $item->id, $moduleMap),
             ];
         }
 

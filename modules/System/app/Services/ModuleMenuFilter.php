@@ -2,6 +2,7 @@
 
 namespace Modules\System\App\Services;
 
+use App\Support\Module\Module;
 use App\Support\Module\ModuleManager;
 use Illuminate\Support\Collection;
 use Modules\System\App\Models\Menu;
@@ -36,6 +37,62 @@ class ModuleMenuFilter
     }
 
     /**
+     * 菜单管理页：解析菜单归属模块（按 module.json 的 menus / permissions 规则）。
+     *
+     * @return array<int, array{name: string, title: string, enabled: bool}>
+     */
+    public function menuModuleMap(Collection $menus): array
+    {
+        $map = [];
+        $modules = (new ModuleManager($this->modulesPath()))->all();
+
+        foreach ($menus as $menu) {
+            $best = null;
+            $bestScore = 0;
+
+            foreach ($modules as $module) {
+                $score = $this->moduleMatchScore($menu, $this->bindingsForModule($module));
+                if ($score > $bestScore) {
+                    $bestScore = $score;
+                    $best = $module;
+                }
+            }
+
+            if ($best === null) {
+                continue;
+            }
+
+            $map[(int) $menu->id] = [
+                'name' => $best->name(),
+                'title' => $best->title(),
+                'enabled' => $best->enabled(),
+            ];
+        }
+
+        return $map;
+    }
+
+    /**
+     * @return array{
+     *   paths: list<string>,
+     *   permissions: array{prefixes: list<string>, exact: list<string>}
+     * }
+     */
+    private function bindingsForModule(Module $module): array
+    {
+        $menus = $module->menus();
+        $permissions = $module->permissions();
+
+        return [
+            'paths' => $menus['paths'],
+            'permissions' => [
+                'prefixes' => $permissions['prefixes'],
+                'exact' => $permissions['exact'],
+            ],
+        ];
+    }
+
+    /**
      * @return array{
      *   paths: list<string>,
      *   permissions: array{prefixes: list<string>, exact: list<string>}
@@ -52,11 +109,10 @@ class ModuleMenuFilter
                 continue;
             }
 
-            $menus = $module->menus();
-            $permissions = $module->permissions();
-            $paths = array_merge($paths, $menus['paths']);
-            $prefixes = array_merge($prefixes, $permissions['prefixes']);
-            $exact = array_merge($exact, $permissions['exact']);
+            $bindings = $this->bindingsForModule($module);
+            $paths = array_merge($paths, $bindings['paths']);
+            $prefixes = array_merge($prefixes, $bindings['permissions']['prefixes']);
+            $exact = array_merge($exact, $bindings['permissions']['exact']);
         }
 
         return [
@@ -76,27 +132,45 @@ class ModuleMenuFilter
      */
     private function menuMatchesDisabledModule(Menu $menu, array $bindings): bool
     {
+        return $this->moduleMatchScore($menu, $bindings) > 0;
+    }
+
+    /**
+     * 匹配强度：path 精确 > permission 精确 > 最长 permission 前缀。
+     *
+     * @param  array{
+     *   paths: list<string>,
+     *   permissions: array{prefixes: list<string>, exact: list<string>}
+     * }  $bindings
+     */
+    private function moduleMatchScore(Menu $menu, array $bindings): int
+    {
+        if ($this->bindingsAreEmpty($bindings)) {
+            return 0;
+        }
+
         $path = (string) ($menu->path ?? '');
         if ($path !== '' && in_array($path, $bindings['paths'], true)) {
-            return true;
+            return 1_000_000 + strlen($path);
         }
 
         $permission = (string) ($menu->permission ?? '');
         if ($permission === '') {
-            return false;
+            return 0;
         }
 
         if (in_array($permission, $bindings['permissions']['exact'], true)) {
-            return true;
+            return 900_000 + strlen($permission);
         }
 
+        $bestPrefixLength = 0;
         foreach ($bindings['permissions']['prefixes'] as $prefix) {
             if (str_starts_with($permission, $prefix)) {
-                return true;
+                $bestPrefixLength = max($bestPrefixLength, strlen($prefix));
             }
         }
 
-        return false;
+        return $bestPrefixLength;
     }
 
     /**
