@@ -24,8 +24,16 @@ textarea.ant-input,
 /* Select 下拉菜单（Portal 渲染在 body） */
 .ant-select-dropdown .ant-select-item,
 .ant-select-dropdown .ant-select-item-option-content,
+/* TreeSelect 下拉树节点（Portal 渲染在 body） */
+.ant-select-tree .ant-select-tree-node-content-wrapper,
+.ant-select-tree .ant-select-tree-title,
+.ant-tree .ant-tree-node-content-wrapper,
+.ant-tree .ant-tree-title,
 /* TreeSelect */
 .ant-tree-select .ant-select-selector,
+.ant-tree-select .ant-select-selection-item,
+.ant-tree-select .ant-select-selection-placeholder,
+.ant-tree-select .ant-select-selection-search-input,
 /* Radio */
 .ant-radio-wrapper,
 .ant-radio-button-wrapper,
