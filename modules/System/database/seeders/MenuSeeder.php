@@ -13,6 +13,7 @@ use Modules\System\App\Support\DepartmentPermissions;
 use Modules\System\App\Support\DictPermissions;
 use Modules\System\App\Support\MenuPermissions;
 use Modules\System\App\Support\ModulePermissions;
+use Modules\System\App\Support\PluginPermissions;
 use Modules\System\App\Support\PostPermissions;
 use Modules\System\App\Support\RolePermissions;
 use Modules\System\App\Support\UserGroupPermissions;
@@ -513,6 +514,7 @@ class MenuSeeder extends Seeder
             [
                 ['name' => 'Codegen', 'title' => '代码生成', 'path' => '/dev/codegen', 'permission' => GeneratorPermissions::MANAGE, 'sort' => 601, 'icon' => 'ep:magic-stick'],
                 ['name' => 'ModuleMgmt', 'title' => '模块管理', 'path' => '/dev/modules', 'permission' => 'system.modules', 'sort' => 602, 'icon' => 'ep:grid'],
+                ['name' => 'PluginMgmt', 'title' => '插件管理', 'path' => '/dev/plugins', 'permission' => 'system.plugins', 'sort' => 603, 'icon' => 'ep:connection'],
             ] as $m
         ) {
             $devMenu = Menu::query()->create([
@@ -549,6 +551,24 @@ class MenuSeeder extends Seeder
 
             if ($m['path'] === '/dev/modules') {
                 foreach (ModulePermissions::buttonDefinitions() as $btn) {
+                    Menu::query()->create([
+                        'parent_id' => $devMenu->id,
+                        'type' => 3,
+                        'name' => $btn['name'],
+                        'title' => $btn['title'],
+                        'path' => null,
+                        'component' => null,
+                        'permission' => $btn['permission'],
+                        'icon' => null,
+                        'sort' => $btn['sort'],
+                        'other_settings' => $this->menuOther(0),
+                        'status' => 1,
+                    ]);
+                }
+            }
+
+            if ($m['path'] === '/dev/plugins') {
+                foreach (PluginPermissions::buttonDefinitions() as $btn) {
                     Menu::query()->create([
                         'parent_id' => $devMenu->id,
                         'type' => 3,

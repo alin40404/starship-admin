@@ -12,6 +12,7 @@ use Modules\System\App\Http\Controllers\Admin\DevModuleController;
 use Modules\System\App\Http\Controllers\Admin\DictItemController;
 use Modules\System\App\Http\Controllers\Admin\DictTypeController;
 use Modules\System\App\Http\Controllers\Admin\MenuController;
+use Modules\System\App\Http\Controllers\Admin\PluginController;
 use Modules\System\App\Http\Controllers\Admin\PostController;
 use Modules\System\App\Http\Controllers\Admin\RoleController;
 use Modules\System\App\Http\Controllers\Admin\UserGroupController;
@@ -24,6 +25,7 @@ use Modules\System\App\Support\DepartmentPermissions;
 use Modules\System\App\Support\DictPermissions;
 use Modules\System\App\Support\MenuPermissions;
 use Modules\System\App\Support\ModulePermissions;
+use Modules\System\App\Support\PluginPermissions;
 use Modules\System\App\Support\PostPermissions;
 use Modules\System\App\Support\RolePermissions;
 use Modules\System\App\Support\UserGroupPermissions;
@@ -244,5 +246,22 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
             ->middleware('admin.permission:'.ModulePermissions::QUERY);
         Route::put('modules/{name}/status', [DevModuleController::class, 'updateStatus'])
             ->middleware('admin.permission:'.ModulePermissions::UPDATE);
+
+        Route::get('plugins', [PluginController::class, 'index'])
+            ->middleware('admin.permission:'.PluginPermissions::QUERY);
+        Route::post('plugins/discover', [PluginController::class, 'discover'])
+            ->middleware('admin.permission:'.PluginPermissions::DISCOVER);
+        Route::get('plugins/{slug}', [PluginController::class, 'show'])
+            ->middleware('admin.permission:'.PluginPermissions::QUERY);
+        Route::post('plugins/{slug}/install', [PluginController::class, 'install'])
+            ->middleware('admin.permission:'.PluginPermissions::INSTALL);
+        Route::post('plugins/{slug}/enable', [PluginController::class, 'enable'])
+            ->middleware('admin.permission:'.PluginPermissions::ENABLE);
+        Route::post('plugins/{slug}/disable', [PluginController::class, 'disable'])
+            ->middleware('admin.permission:'.PluginPermissions::DISABLE);
+        Route::get('plugins/{slug}/config', [PluginController::class, 'config'])
+            ->middleware('admin.permission:'.PluginPermissions::CONFIG);
+        Route::put('plugins/{slug}/config', [PluginController::class, 'updateConfig'])
+            ->middleware('admin.permission:'.PluginPermissions::CONFIG);
     });
 });

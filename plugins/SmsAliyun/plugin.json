@@ -1,0 +1,29 @@
+{
+  "name": "SmsAliyun",
+  "slug": "sms-aliyun",
+  "type": "adapter",
+  "namespace": "Plugins\\SmsAliyun",
+  "version": "1.0.0",
+  "description": "阿里云短信服务适配插件",
+  "author": "Starship Admin",
+  "require": {
+    "starship": ">=1.0.0",
+    "php": ">=8.3",
+    "modules": ["System"],
+    "plugins": []
+  },
+  "providers": [
+    "Plugins\\SmsAliyun\\Providers\\SmsAliyunServiceProvider"
+  ],
+  "routes": [
+    "routes/admin-api.php"
+  ],
+  "migrations": false,
+  "config": "config/sms-aliyun.php",
+  "pages": [
+    { "key": "config", "title": "配置", "permission": "system.plugins.config" },
+    { "key": "test", "title": "测试", "permission": "system.plugins.config" }
+  ],
+  "enabled": false,
+  "order": 500
+}
