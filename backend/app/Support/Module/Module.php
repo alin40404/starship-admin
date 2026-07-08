@@ -44,7 +44,7 @@ class Module
     }
 
     /**
-     * 模块关联菜单路由（禁用时由 System 侧过滤）。
+     * 模块关联菜单路由（禁用时由 System 侧按 paths 精确匹配过滤，含目录父级 path）。
      *
      * @return array{paths: list<string>}
      */

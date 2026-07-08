@@ -9,6 +9,7 @@
   "seeders": [],
   "menus": {
     "paths": [
+      "/monitor",
       "/monitor/operation-logs",
       "/monitor/login-logs",
       "/monitor/exception-logs"
