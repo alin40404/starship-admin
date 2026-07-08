@@ -8,6 +8,7 @@ export const PLUGIN_PERMISSIONS = {
   INSTALL: 'system.plugins.install',
   ENABLE: 'system.plugins.enable',
   DISABLE: 'system.plugins.disable',
+  UNINSTALL: 'system.plugins.uninstall',
   CONFIG: 'system.plugins.config',
 } as const;
 

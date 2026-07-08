@@ -259,6 +259,8 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
             ->middleware('admin.permission:'.PluginPermissions::ENABLE);
         Route::post('plugins/{slug}/disable', [PluginController::class, 'disable'])
             ->middleware('admin.permission:'.PluginPermissions::DISABLE);
+        Route::post('plugins/{slug}/uninstall', [PluginController::class, 'uninstall'])
+            ->middleware('admin.permission:'.PluginPermissions::UNINSTALL);
         Route::get('plugins/{slug}/config', [PluginController::class, 'config'])
             ->middleware('admin.permission:'.PluginPermissions::CONFIG);
         Route::put('plugins/{slug}/config', [PluginController::class, 'updateConfig'])

@@ -83,6 +83,16 @@ class PluginService
     /**
      * @return array<string, mixed>
      */
+    public function uninstall(string $slug): array
+    {
+        $plugin = $this->pluginLifecycle->uninstall($slug);
+
+        return $this->formatPlugin($plugin);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
     public function getConfig(string $slug): array
     {
         $this->requirePlugin($slug);
@@ -130,6 +140,7 @@ class PluginService
             'status_label' => $plugin->statusLabel(),
             'enabled' => $plugin->isEnabled(),
             'installed' => $plugin->isInstalled(),
+            'has_config' => $plugin->configPath() !== null,
             'providers' => $plugin->providers(),
             'providers_count' => count($plugin->providers()),
             'pages' => $plugin->pages(),

@@ -125,6 +125,27 @@ class PluginLifecycle
         return $this->refreshPlugin($slug);
     }
 
+    public function uninstall(string $slug): Plugin
+    {
+        $record = $this->requireRecord($slug);
+
+        if ($record->status === Plugin::STATUS_DISCOVERED) {
+            throw new InvalidArgumentException("插件 {$slug} 尚未安装");
+        }
+
+        if ($record->status === Plugin::STATUS_ENABLED) {
+            throw new InvalidArgumentException("请先禁用插件后再卸载：{$slug}");
+        }
+
+        $record->update([
+            'status' => Plugin::STATUS_DISCOVERED,
+            'installed_at' => null,
+            'enabled_at' => null,
+        ]);
+
+        return $this->refreshPlugin($slug);
+    }
+
     protected function requirePlugin(string $slug): Plugin
     {
         $plugin = $this->pluginManager->findBySlug($slug);

@@ -59,6 +59,15 @@ class PluginController extends Controller
         }
     }
 
+    public function uninstall(string $slug, PluginService $pluginService): JsonResponse
+    {
+        try {
+            return ApiResponse::success($pluginService->uninstall($slug), '卸载成功');
+        } catch (InvalidArgumentException $exception) {
+            return ApiResponse::error($exception->getMessage(), 422);
+        }
+    }
+
     public function config(string $slug, PluginService $pluginService): JsonResponse
     {
         try {

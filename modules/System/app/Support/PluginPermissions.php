@@ -17,6 +17,8 @@ final class PluginPermissions
 
     public const DISABLE = 'system.plugins.disable';
 
+    public const UNINSTALL = 'system.plugins.uninstall';
+
     public const CONFIG = 'system.plugins.config';
 
     /**
@@ -30,7 +32,8 @@ final class PluginPermissions
             ['name' => 'Install', 'title' => '安装', 'permission' => self::INSTALL, 'sort' => 3],
             ['name' => 'Enable', 'title' => '启用', 'permission' => self::ENABLE, 'sort' => 4],
             ['name' => 'Disable', 'title' => '禁用', 'permission' => self::DISABLE, 'sort' => 5],
-            ['name' => 'Config', 'title' => '配置', 'permission' => self::CONFIG, 'sort' => 6],
+            ['name' => 'Uninstall', 'title' => '卸载', 'permission' => self::UNINSTALL, 'sort' => 6],
+            ['name' => 'Config', 'title' => '配置', 'permission' => self::CONFIG, 'sort' => 7],
         ];
     }
 }

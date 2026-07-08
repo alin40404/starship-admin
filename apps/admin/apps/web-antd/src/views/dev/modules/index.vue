@@ -51,15 +51,23 @@ const [Grid, gridApi] = useVbenVxeGrid<DevModuleRow>({
 
 <template>
   <Page auto-content-height>
-    <Alert
-      class="mb-4"
-      message="扫描 modules/ 目录下的 module.json，展示 Starship 底座模块。启用/禁用会写入配置文件，需重启后端服务后生效。"
-      show-icon
-      type="info"
-    />
+    <div class="flex h-full min-h-0 flex-col">
+      <Alert
+        class="mb-4 shrink-0"
+        message="扫描 modules/ 目录下的 module.json，展示 Starship 底座模块。启用/禁用会写入配置文件，需重启后端服务后生效。"
+        show-icon
+        type="info"
+      />
 
-    <DetailDrawer ref="detailDrawerRef" :can-update="moduleAccess.can(MODULE_PERMISSIONS.UPDATE)" @success="gridApi.reload()" />
+      <DetailDrawer
+        ref="detailDrawerRef"
+        :can-update="moduleAccess.can(MODULE_PERMISSIONS.UPDATE)"
+        @success="gridApi.reload()"
+      />
 
-    <Grid />
+      <div class="min-h-0 flex-1">
+        <Grid class="h-full" />
+      </div>
+    </div>
   </Page>
 </template>

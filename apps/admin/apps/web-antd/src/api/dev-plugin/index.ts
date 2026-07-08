@@ -20,6 +20,7 @@ export interface PluginRow {
   status_label: string;
   enabled: boolean;
   installed: boolean;
+  has_config: boolean;
   providers: string[];
   providers_count: number;
   pages: PluginPageMeta[];
@@ -62,6 +63,10 @@ export function enablePlugin(slug: string) {
 
 export function disablePlugin(slug: string) {
   return requestClient.post<PluginRow>(`/dev/plugins/${slug}/disable`);
+}
+
+export function uninstallPlugin(slug: string) {
+  return requestClient.post<PluginRow>(`/dev/plugins/${slug}/uninstall`);
 }
 
 export function updatePluginConfig(slug: string, payload: Record<string, unknown>) {
