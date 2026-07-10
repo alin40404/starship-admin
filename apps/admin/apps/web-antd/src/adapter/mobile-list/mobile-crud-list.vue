@@ -67,6 +67,7 @@ const {
   loading,
   pageSize,
   reload,
+  selectAllButtonLabel,
   selectedRows,
   toggleRowSelection,
   toggleSelectAll,
@@ -359,7 +360,7 @@ onMounted(() => {
           size="small"
           @click="toggleSelectAll"
         >
-          全选
+          {{ selectAllButtonLabel }}
         </Button>
         <Input
           v-if="config.search?.keywordFields?.length"

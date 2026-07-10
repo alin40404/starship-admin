@@ -205,6 +205,10 @@ export function useMobileCrudList<T extends Record<string, any>>(
     },
   );
 
+  const selectAllButtonLabel = computed(() =>
+    formatMobileSelectAllLabel(selectedRows.value.length),
+  );
+
   return {
     activeFilterCount,
     clearSelection,
@@ -225,11 +229,16 @@ export function useMobileCrudList<T extends Record<string, any>>(
     loading,
     pageSize,
     reload,
+    selectAllButtonLabel,
     selectedRows,
     toggleRowSelection,
     toggleSelectAll,
     total,
   };
+}
+
+export function formatMobileSelectAllLabel(selectedCount: number) {
+  return selectedCount > 0 ? `已选 ${selectedCount}` : '全选';
 }
 
 function searchUsesKeyword<T extends Record<string, any>>(

@@ -126,6 +126,7 @@ const {
   loading,
   pageSize,
   reload: reloadFlow,
+  selectAllButtonLabel,
   selectedRows: flowSelectedRows,
   toggleRowSelection,
   toggleSelectAll,
@@ -386,7 +387,7 @@ defineExpose({ clearSelection, reload });
             size="small"
             @click="toggleSelectAll"
           >
-            全选
+            {{ selectAllButtonLabel }}
           </Button>
           <Input
             v-if="mobileConfig.search?.keywordFields?.length"
@@ -562,7 +563,6 @@ defineExpose({ clearSelection, reload });
 }
 
 .mobile-crud-list__body :deep(.attachment-flow-grid) {
-  padding-left: 0;
-  padding-right: 0;
+  padding: 0;
 }
 </style>
