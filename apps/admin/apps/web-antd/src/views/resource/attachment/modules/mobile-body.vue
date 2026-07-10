@@ -127,16 +127,22 @@ const {
   pageSize,
   reload: reloadFlow,
   selectedRows: flowSelectedRows,
+  toggleRowSelection,
   toggleSelectAll,
   total,
+  isRowSelected,
 } = useMobileCrudList(mobileConfig);
 
 const selectedFlowIds = computed({
-  get: () => selectedRows.value.map((row: AttachmentRow) => row.id),
+  get: () => flowSelectedRows.value.map((row: AttachmentRow) => row.id),
   set: (ids: number[]) => {
-    selectedRows.value = flowList.value.filter((row: AttachmentRow) =>
-      ids.includes(row.id),
-    );
+    const idSet = new Set(ids);
+    for (const row of flowList.value) {
+      const shouldSelect = idSet.has(row.id);
+      if (isRowSelected(row) !== shouldSelect) {
+        toggleRowSelection(row, shouldSelect);
+      }
+    }
   },
 });
 
@@ -146,9 +152,12 @@ const searchPlaceholder = computed(
 
 const showFlowSearchBar = computed(
   () =>
+    mobileConfig.value.selection?.enabled === true ||
     !!mobileConfig.value.search?.keywordFields?.length ||
     !!mobileConfig.value.search?.filterSchema?.length,
 );
+
+const hasSelection = computed(() => selectedRows.value.length > 0);
 
 const [FilterForm, filterFormApi] = useVbenForm(
   reactive({
@@ -238,21 +247,24 @@ defineExpose({ clearSelection, reload });
 
 <template>
   <div
-    class="attachment-mobile-body flex min-h-0 flex-1 flex-col overflow-hidden"
-    :class="{ 'mobile-crud-list--maximize': isMaximized }"
+    class="attachment-mobile-body flex h-full min-h-0 flex-1 flex-col overflow-hidden px-2 pb-2 pt-0"
+    :class="{
+      'mobile-crud-list--maximize': isMaximized,
+      'attachment-mobile-body--batch': hasSelection,
+    }"
   >
     <MobileCrudList
       v-if="!isFlowMode"
       ref="mobileListRef"
       v-model:selected-rows="selectedRows"
-      class="min-h-0 flex-1"
+      class="h-full min-h-0 flex-1"
       :config="mobileConfig"
       :toolbar-config="listToolbarConfig"
     >
       <template #toolbar>
         <div
-          v-if="selectedRows.length > 0"
-          class="attachment-toolbar-actions__panel vxe-grid-batch-toolbar"
+          v-if="hasSelection"
+          class="vxe-grid-batch-toolbar"
         >
           <Button v-if="canBatchDelete" danger @click="emit('batchDelete')">
             批量删除（{{ selectedRows.length }}）
@@ -273,8 +285,8 @@ defineExpose({ clearSelection, reload });
       </template>
       <template #toolbar-tools>
         <div
+          v-if="!hasSelection"
           class="attachment-view-toggle ml-2"
-          :class="{ 'attachment-view-toggle--hidden': selectedRows.length > 0 }"
         >
           <Tooltip title="列表视图">
             <button
@@ -302,7 +314,7 @@ defineExpose({ clearSelection, reload });
 
     <div
       v-else
-      class="attachment-mobile-flow flex min-h-0 flex-1 flex-col overflow-hidden"
+      class="attachment-mobile-flow mobile-crud-list flex h-full min-h-0 flex-1 flex-col overflow-hidden"
     >
       <VxeToolbar
         class="mobile-crud-list__toolbar mb-0 shrink-0"
@@ -313,8 +325,8 @@ defineExpose({ clearSelection, reload });
       >
         <template #buttons>
           <div
-            v-if="selectedRows.length > 0"
-            class="attachment-toolbar-actions__panel vxe-grid-batch-toolbar"
+            v-if="hasSelection"
+            class="vxe-grid-batch-toolbar"
           >
             <Button v-if="canBatchDelete" danger @click="emit('batchDelete')">
               批量删除（{{ selectedRows.length }}）
@@ -335,8 +347,8 @@ defineExpose({ clearSelection, reload });
         </template>
         <template #tools>
           <div
+            v-if="!hasSelection"
             class="attachment-view-toggle ml-2"
-            :class="{ 'attachment-view-toggle--hidden': selectedRows.length > 0 }"
           >
             <Tooltip title="列表视图">
               <button
@@ -408,7 +420,7 @@ defineExpose({ clearSelection, reload });
         </Space.Compact>
       </div>
 
-      <div class="mobile-crud-list__body overflow-y-auto">
+      <div class="mobile-crud-list__body min-h-0 flex-1 overflow-y-auto">
         <Spin :spinning="loading" wrapper-class-name="mobile-crud-list__spin">
           <AttachmentFlowView
             v-if="flowList.length > 0 || !loading"
@@ -463,8 +475,26 @@ defineExpose({ clearSelection, reload });
 <style scoped>
 @import '#/adapter/mobile-list/mobile-crud-list.css';
 
-.attachment-mobile-body {
-  padding: 8px;
+.attachment-mobile-body :deep(.mobile-crud-list__toolbar.vxe-toolbar) {
+  flex: 0 0 auto;
+  height: calc(34px + 1.2em);
+  min-height: calc(34px + 1.2em);
+  overflow: hidden;
+}
+
+.attachment-mobile-body :deep(.mobile-crud-list__toolbar .vxe-toolbar) {
+  flex-wrap: nowrap;
+  align-items: center;
+  height: 100%;
+}
+
+.attachment-mobile-body--batch
+  :deep(.mobile-crud-list__toolbar:has(.vxe-grid-batch-toolbar) .vxe-tools--operate),
+.attachment-mobile-body--batch
+  :deep(.mobile-crud-list__toolbar:has(.vxe-grid-batch-toolbar) .vxe-tools--wrapper) {
+  display: flex !important;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .attachment-mobile-body :deep(.mobile-crud-list__toolbar .ant-btn) {
@@ -485,11 +515,6 @@ defineExpose({ clearSelection, reload });
   overflow: hidden;
   border: 1px solid hsl(var(--border));
   border-radius: 6px;
-}
-
-.attachment-view-toggle--hidden {
-  visibility: hidden;
-  pointer-events: none;
 }
 
 .attachment-view-toggle__btn {
@@ -517,13 +542,27 @@ defineExpose({ clearSelection, reload });
 }
 
 .attachment-flow-panel {
-  min-height: 240px;
+  min-height: 0;
   padding: 0;
+}
+
+.attachment-mobile-flow .mobile-crud-list__spin.ant-spin-nested-loading,
+.attachment-mobile-flow .mobile-crud-list__spin > .ant-spin-container {
+  min-height: 0;
+  height: auto;
 }
 
 .mobile-crud-list__body :deep(.attachment-flow-view) {
   height: auto;
-  min-height: 240px;
+  min-height: 0;
   overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.mobile-crud-list__body :deep(.attachment-flow-grid) {
+  padding-left: 0;
+  padding-right: 0;
 }
 </style>

@@ -572,6 +572,16 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
   scrollbar-width: thin;
 }
 
+@media (max-width: 767px) {
+  .attachment-category-panel {
+    flex: 0 0 auto;
+  }
+
+  .attachment-category-tabs {
+    flex: 0 0 auto;
+  }
+}
+
 .attachment-category-tabs::-webkit-scrollbar {
   height: 4px;
 }
