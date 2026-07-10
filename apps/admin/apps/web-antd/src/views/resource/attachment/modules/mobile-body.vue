@@ -166,10 +166,21 @@ const [FilterForm, filterFormApi] = useVbenForm(
       componentProps: { class: 'w-full' },
       labelClass: 'justify-start',
     },
+    handleSubmit: async () => {
+      const { valid } = await filterFormApi.validate();
+      if (!valid) {
+        return;
+      }
+      const values = await filterFormApi.getValues();
+      handleFilterSubmit(values ?? {});
+    },
     layout: 'vertical',
     schema: computed(() => mobileConfig.value.search?.filterSchema ?? []),
     showCollapseButton: false,
     showDefaultActions: false,
+    submitOnChange: computed(
+      () => mobileConfig.value.search?.submitOnChange ?? false,
+    ),
     wrapperClass: 'grid-cols-1',
   }),
 );
