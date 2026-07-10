@@ -45,6 +45,9 @@ const activeCategory = ref(ALL_CATEGORY_KEY);
 const categoryOptions = ref<{ label: string; value: string }[]>([]);
 const selectedRows = ref<AttachmentRow[]>([]);
 const flowRows = ref<AttachmentRow[]>([]);
+const flowTotal = ref(0);
+const flowPage = ref(1);
+const flowLoadingMore = ref(false);
 const viewMode = ref<AttachmentViewMode>(
   (localStorage.getItem(ATTACHMENT_VIEW_MODE_KEY) as AttachmentViewMode) ||
     'list',
@@ -58,6 +61,7 @@ const selectedFlowIds = computed({
 });
 
 const isFlowMode = computed(() => viewMode.value === 'flow');
+const flowHasMore = computed(() => flowRows.value.length < flowTotal.value);
 const layoutRef = ref<HTMLElement>();
 const flowTeleportTarget = ref<HTMLElement | null>(null);
 const mobileBodyRef = ref<InstanceType<typeof AttachmentMobileBody> | null>(null);
@@ -101,6 +105,54 @@ function resolveCategoryFilter() {
     return undefined;
   }
   return activeCategory.value;
+}
+
+function buildAttachmentQueryParams(
+  pageNum: number,
+  pageSize: number,
+  sort: { field?: string; order?: null | string } | undefined,
+  formValues?: Record<string, any>,
+) {
+  const order = sort?.order;
+  return {
+    page: pageNum,
+    per_page: pageSize,
+    file_name: formValues?.file_name || undefined,
+    file_ext: formValues?.file_ext || undefined,
+    category: resolveCategoryFilter(),
+    storage: formValues?.storage || undefined,
+    sort_field: sort?.field,
+    sort_order: order === 'asc' || order === 'desc' ? order : undefined,
+  };
+}
+
+function getGridPageSize() {
+  const pager = gridApi?.grid?.getProxyInfo?.()?.pager;
+  return pager?.pageSize ?? 20;
+}
+
+async function loadMoreFlow() {
+  if (!isFlowMode.value || flowLoadingMore.value || !flowHasMore.value) {
+    return;
+  }
+  flowLoadingMore.value = true;
+  try {
+    const proxyInfo = gridApi?.grid?.getProxyInfo?.();
+    const formValues = (await gridApi.formApi?.getValues?.()) ?? {};
+    const result = await fetchAttachmentPage(
+      buildAttachmentQueryParams(
+        flowPage.value + 1,
+        getGridPageSize(),
+        proxyInfo?.sort,
+        formValues,
+      ),
+    );
+    flowRows.value = [...flowRows.value, ...(result.data ?? [])];
+    flowPage.value += 1;
+    flowTotal.value = result.total;
+  } finally {
+    flowLoadingMore.value = false;
+  }
 }
 
 function syncGridColumns() {
@@ -260,19 +312,16 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
     proxyConfig: {
       ajax: {
         query: async ({ page, sort }, formValues) => {
-          const order = sort?.order;
-          const result = await fetchAttachmentPage({
-            page: page.currentPage,
-            per_page: page.pageSize,
-            file_name: formValues?.file_name || undefined,
-            file_ext: formValues?.file_ext || undefined,
-            category: resolveCategoryFilter(),
-            storage: formValues?.storage || undefined,
-            sort_field: sort?.field,
-            sort_order:
-              order === 'asc' || order === 'desc' ? order : undefined,
-          });
-          flowRows.value = result.data ?? [];
+          const pageSize = page.pageSize;
+          const pageNum = isFlowMode.value ? 1 : page.currentPage;
+          const result = await fetchAttachmentPage(
+            buildAttachmentQueryParams(pageNum, pageSize, sort, formValues),
+          );
+          if (isFlowMode.value) {
+            flowRows.value = result.data ?? [];
+            flowPage.value = 1;
+            flowTotal.value = result.total;
+          }
           return result;
         },
       },
@@ -411,9 +460,13 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
               v-model:selected-ids="selectedFlowIds"
               class="attachment-flow-panel"
               :can-delete="attachmentAccess.can(ATTACHMENT_PERMISSIONS.DELETE)"
+              :has-more="flowHasMore"
+              :loading-more="flowLoadingMore"
               :rows="flowRows"
+              :total="flowTotal"
               @copy="onCopyLink"
               @delete="onDelete"
+              @load-more="loadMoreFlow"
               @open="onOpen"
             />
           </Teleport>
@@ -508,8 +561,7 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
 }
 
 .attachment-layout--flow :deep(.vxe-grid--pager-wrapper) {
-  flex-shrink: 0;
-  order: 3;
+  display: none !important;
 }
 
 .attachment-flow-panel {

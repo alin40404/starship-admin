@@ -19,7 +19,6 @@ import {
   Button,
   Drawer,
   Input,
-  Pagination,
   Space,
   Spin,
   Tooltip,
@@ -63,6 +62,7 @@ const mobileListRef = ref<{
   reload: () => Promise<void>;
 } | null>(null);
 const filterDrawerOpen = ref(false);
+const flowScrollBodyRef = ref<HTMLElement | null>(null);
 const isFlowMode = computed(() => props.viewMode === 'flow');
 const isMaximized = ref(false);
 
@@ -137,27 +137,32 @@ const mobileConfig = computed(() => {
   };
 });
 
+const flowListConfig = computed(() => ({
+  ...mobileConfig.value,
+  paginationMode: 'loadMore' as const,
+}));
+
 const {
   activeFilterCount,
   clearSelection: clearFlowSelection,
-  currentPage,
   filterValues,
   handleFilterSubmit,
   handleKeywordSearch,
-  handlePageChange,
+  hasMore: flowHasMore,
   keyword,
   list: flowList,
   loadData,
+  loadMore: loadMoreFlow,
   loading,
-  pageSize,
+  loadingMore: flowLoadingMore,
   reload: reloadFlow,
   selectAllButtonLabel,
   selectedRows: flowSelectedRows,
   toggleRowSelection,
   toggleSelectAll,
-  total,
+  total: flowTotal,
   isRowSelected,
-} = useMobileCrudList(mobileConfig);
+} = useMobileCrudList(flowListConfig);
 
 const selectedFlowIds = computed({
   get: () => flowSelectedRows.value.map((row: AttachmentRow) => row.id),
@@ -456,16 +461,24 @@ defineExpose({ clearSelection, reload });
         </Space.Compact>
       </div>
 
-      <div class="mobile-crud-list__body min-h-0 flex-1 overflow-y-auto">
+      <div
+        ref="flowScrollBodyRef"
+        class="mobile-crud-list__body min-h-0 flex-1 overflow-y-auto"
+      >
         <Spin :spinning="loading" wrapper-class-name="mobile-crud-list__spin">
           <AttachmentFlowView
             v-if="flowList.length > 0 || !loading"
             v-model:selected-ids="selectedFlowIds"
             class="attachment-flow-panel"
             :can-delete="canDelete"
+            :has-more="flowHasMore"
+            :loading-more="flowLoadingMore"
             :rows="flowList"
+            :scroll-root="flowScrollBodyRef"
+            :total="flowTotal"
             @copy="emit('copy', $event)"
             @delete="emit('delete', $event)"
+            @load-more="loadMoreFlow"
             @open="emit('open', $event)"
           />
           <div
@@ -474,18 +487,6 @@ defineExpose({ clearSelection, reload });
             aria-hidden="true"
           />
         </Spin>
-      </div>
-
-      <div class="mobile-crud-list__pager shrink-0">
-        <span class="mobile-crud-list__pager-total">共 {{ total }} 条</span>
-        <Pagination
-          :current="currentPage"
-          :page-size="pageSize"
-          :show-size-changer="false"
-          :total="total"
-          size="small"
-          @change="handlePageChange"
-        />
       </div>
 
       <Drawer

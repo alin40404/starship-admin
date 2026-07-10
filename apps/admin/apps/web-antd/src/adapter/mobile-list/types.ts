@@ -77,6 +77,8 @@ export interface MobileCrudListSelectionConfig<T> {
 }
 
 export interface MobileCrudListConfig<T extends Record<string, any>> {
+  /** 流式列表：加载更多累积；默认页码分页 */
+  paginationMode?: 'loadMore' | 'page';
   defaultPageSize?: number;
   defaultSort?: { field: string; order: 'asc' | 'desc' };
   item: MobileCrudListItemConfig<T>;

@@ -34,10 +34,15 @@ export function useMobileCrudList<T extends Record<string, any>>(
   const configRef = computed(() => toValue(config));
 
   const loading = ref(false);
+  const loadingMore = ref(false);
   const list = ref<T[]>([]) as Ref<T[]>;
   const total = ref(0);
   const currentPage = ref(1);
   const pageSize = ref(configRef.value.defaultPageSize ?? 20);
+  const isLoadMoreMode = computed(
+    () => configRef.value.paginationMode === 'loadMore',
+  );
+  const hasMore = computed(() => list.value.length < total.value);
   const keyword = ref('');
   const filterValues = ref<Record<string, any>>({});
   const selectedKeySet = ref(new Set<number | string>());
@@ -154,6 +159,36 @@ export function useMobileCrudList<T extends Record<string, any>>(
     await loadData();
   }
 
+  async function loadMore() {
+    if (
+      !isLoadMoreMode.value ||
+      loadingMore.value ||
+      loading.value ||
+      !hasMore.value
+    ) {
+      return;
+    }
+    loadingMore.value = true;
+    try {
+      const { defaultSort, search } = configRef.value;
+      const nextPage = currentPage.value + 1;
+      const result = await configRef.value.query({
+        filters: filterValues.value,
+        keyword: keyword.value || undefined,
+        page: nextPage,
+        pageSize: pageSize.value,
+        sortField: defaultSort?.field,
+        sortOrder: defaultSort?.order,
+      });
+      list.value = [...list.value, ...result.data];
+      total.value = result.total;
+      currentPage.value = nextPage;
+      syncSelectedRows();
+    } finally {
+      loadingMore.value = false;
+    }
+  }
+
   function handleKeywordSearch() {
     currentPage.value = 1;
     loadData();
@@ -239,14 +274,18 @@ export function useMobileCrudList<T extends Record<string, any>>(
     handleKeywordSearch,
     handleOperationClick,
     handlePageChange,
+    hasMore,
     isAllCheckableSelected,
+    isLoadMoreMode,
     isOperationEnabled,
     isRowCheckable,
     isRowSelected,
     keyword,
     list,
     loadData,
+    loadMore,
     loading,
+    loadingMore,
     pageSize,
     reload,
     setFilterValues,

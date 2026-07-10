@@ -1,11 +1,11 @@
 <script lang="ts" setup>
 import type { AttachmentRow } from '#/api/system/attachment';
 
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 import { IconifyIcon } from '@vben/icons';
 
-import { Image, Tooltip } from 'ant-design-vue';
+import { Button, Image, Tooltip } from 'ant-design-vue';
 
 import {
   formatFileSize,
@@ -17,23 +17,31 @@ import {
 const props = withDefaults(
   defineProps<{
     canDelete?: boolean;
+    hasMore?: boolean;
+    loadingMore?: boolean;
     rows: AttachmentRow[];
+    scrollRoot?: HTMLElement | null;
     selectedIds: number[];
     showActions?: boolean;
     showCopy?: boolean;
     singlePick?: boolean;
+    total?: number;
   }>(),
   {
     canDelete: false,
+    hasMore: false,
+    loadingMore: false,
     showActions: true,
     showCopy: true,
     singlePick: false,
+    total: 0,
   },
 );
 
 const emit = defineEmits<{
   copy: [row: AttachmentRow];
   delete: [row: AttachmentRow];
+  'load-more': [];
   open: [row: AttachmentRow];
   pick: [row: AttachmentRow];
   'update:selectedIds': [ids: number[]];
@@ -42,6 +50,60 @@ const emit = defineEmits<{
 const selectedIdSet = computed(() => new Set(props.selectedIds));
 const previewUrl = ref('');
 const previewVisible = ref(false);
+const rootRef = ref<HTMLElement>();
+const sentinelRef = ref<HTMLElement>();
+const showLoadFooter = computed(
+  () => props.rows.length > 0 && props.total > 0,
+);
+
+let intersectionObserver: IntersectionObserver | null = null;
+
+function setupAutoLoadObserver() {
+  intersectionObserver?.disconnect();
+  intersectionObserver = null;
+
+  const root = props.scrollRoot ?? rootRef.value;
+  const sentinel = sentinelRef.value;
+  if (!root || !sentinel) {
+    return;
+  }
+
+  intersectionObserver = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0];
+      if (
+        entry?.isIntersecting &&
+        props.hasMore &&
+        !props.loadingMore &&
+        props.rows.length > 0
+      ) {
+        emit('load-more');
+      }
+    },
+    {
+      root,
+      rootMargin: '80px 0px',
+      threshold: 0,
+    },
+  );
+  intersectionObserver.observe(sentinel);
+}
+
+watch(
+  () => [props.scrollRoot, props.hasMore, props.loadingMore, props.rows.length],
+  () => {
+    setupAutoLoadObserver();
+  },
+  { flush: 'post' },
+);
+
+onMounted(() => {
+  setupAutoLoadObserver();
+});
+
+onBeforeUnmount(() => {
+  intersectionObserver?.disconnect();
+});
 
 function toggleSelect(id: number, checked?: boolean) {
   const next = new Set(props.selectedIds);
@@ -87,7 +149,7 @@ function onPreviewVisibleChange(visible: boolean) {
 </script>
 
 <template>
-  <div class="attachment-flow-view h-full min-h-0">
+  <div ref="rootRef" class="attachment-flow-view h-full min-h-0">
     <div v-if="rows.length > 0" class="attachment-flow-grid">
     <article
       v-for="row in rows"
@@ -181,7 +243,34 @@ function onPreviewVisibleChange(visible: boolean) {
       </div>
     </article>
     </div>
-    <div v-else class="attachment-flow-empty">
+
+    <div
+      v-if="showLoadFooter"
+      class="attachment-flow-loadmore"
+    >
+      <span class="attachment-flow-loadmore__meta">
+        已加载 {{ rows.length }} / 共 {{ total }} 条
+      </span>
+      <Button
+        v-if="hasMore"
+        :loading="loadingMore"
+        size="small"
+        type="default"
+        @click="emit('load-more')"
+      >
+        加载更多
+      </Button>
+      <span v-else class="attachment-flow-loadmore__done">已加载全部</span>
+    </div>
+
+    <div
+      v-if="showLoadFooter && hasMore"
+      ref="sentinelRef"
+      class="attachment-flow-loadmore__sentinel"
+      aria-hidden="true"
+    />
+
+    <div v-else-if="rows.length === 0" class="attachment-flow-empty">
       <IconifyIcon class="mx-auto size-16 text-muted-foreground/40" icon="lucide:inbox" />
       <div class="mt-2 text-sm text-muted-foreground">暂无附件</div>
     </div>
@@ -400,5 +489,31 @@ function onPreviewVisibleChange(visible: boolean) {
   justify-content: center;
   min-height: 240px;
   padding: 24px 8px;
+}
+
+.attachment-flow-loadmore {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 12px;
+  padding: 12px 12px 4px;
+}
+
+.attachment-flow-loadmore__meta {
+  font-size: 12px;
+  color: hsl(var(--muted-foreground));
+}
+
+.attachment-flow-loadmore__done {
+  font-size: 12px;
+  color: hsl(var(--muted-foreground));
+}
+
+.attachment-flow-loadmore__sentinel {
+  width: 100%;
+  height: 1px;
+  flex-shrink: 0;
 }
 </style>
