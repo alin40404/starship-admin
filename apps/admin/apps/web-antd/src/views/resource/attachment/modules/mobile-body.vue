@@ -251,7 +251,6 @@ defineExpose({ clearSelection, reload });
     class="attachment-mobile-body flex h-full min-h-0 flex-1 flex-col overflow-hidden px-2 pb-2 pt-0"
     :class="{
       'mobile-crud-list--maximize': isMaximized,
-      'attachment-mobile-body--batch': hasSelection,
     }"
   >
     <MobileCrudList
@@ -476,34 +475,6 @@ defineExpose({ clearSelection, reload });
 <style scoped>
 @import '#/adapter/mobile-list/mobile-crud-list.css';
 
-.attachment-mobile-body :deep(.mobile-crud-list__toolbar.vxe-toolbar) {
-  flex: 0 0 auto;
-  height: calc(34px + 1.2em);
-  min-height: calc(34px + 1.2em);
-  overflow: hidden;
-}
-
-.attachment-mobile-body :deep(.mobile-crud-list__toolbar .vxe-toolbar) {
-  flex-wrap: nowrap;
-  align-items: center;
-  height: 100%;
-}
-
-.attachment-mobile-body--batch
-  :deep(.mobile-crud-list__toolbar:has(.vxe-grid-batch-toolbar) .vxe-tools--operate),
-.attachment-mobile-body--batch
-  :deep(.mobile-crud-list__toolbar:has(.vxe-grid-batch-toolbar) .vxe-tools--wrapper) {
-  display: flex !important;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.attachment-mobile-body :deep(.mobile-crud-list__toolbar .ant-btn) {
-  display: inline-flex;
-  align-items: center;
-  font-size: var(--vben-button-font-size, var(--text-sm, 0.875rem)) !important;
-}
-
 .attachment-toolbar-actions__panel {
   display: inline-flex;
   align-items: center;
@@ -545,12 +516,6 @@ defineExpose({ clearSelection, reload });
 .attachment-flow-panel {
   min-height: 0;
   padding: 0;
-}
-
-.attachment-mobile-flow .mobile-crud-list__spin.ant-spin-nested-loading,
-.attachment-mobile-flow .mobile-crud-list__spin > .ant-spin-container {
-  min-height: 0;
-  height: auto;
 }
 
 .mobile-crud-list__body :deep(.attachment-flow-view) {

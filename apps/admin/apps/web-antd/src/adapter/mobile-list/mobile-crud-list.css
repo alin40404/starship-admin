@@ -19,9 +19,26 @@
 .mobile-crud-list__toolbar.vxe-toolbar {
   display: flex;
   align-items: center;
+  flex: 0 0 auto;
   flex-shrink: 0;
+  height: calc(34px + 1.2em);
+  max-height: calc(34px + 1.2em);
   min-height: calc(34px + 1.2em);
   padding: 0;
+  overflow: hidden;
+}
+
+/* 覆盖 vxe-table/style.css 中 batch 态 height:100%，避免工具栏撑满整屏 */
+.mobile-crud-list__toolbar.vxe-toolbar:has(.vxe-grid-batch-toolbar) {
+  height: calc(34px + 1.2em) !important;
+  max-height: calc(34px + 1.2em);
+  flex-wrap: nowrap;
+}
+
+/* 工具栏高度已固定，批量态直接隐藏右侧工具区，避免 visibility 占位挤掉按钮 */
+.mobile-crud-list__toolbar:has(.vxe-grid-batch-toolbar) .vxe-tools--operate,
+.mobile-crud-list__toolbar:has(.vxe-grid-batch-toolbar) .vxe-tools--wrapper {
+  display: none !important;
 }
 
 .mobile-crud-list__toolbar .vxe-buttons--wrapper {
@@ -30,6 +47,8 @@
 }
 
 .mobile-crud-list__toolbar:has(.vxe-grid-batch-toolbar) .vxe-buttons--wrapper {
+  flex: 1 1 100%;
+  max-width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
   overscroll-behavior-x: contain;
@@ -76,7 +95,8 @@
   flex-wrap: nowrap;
   gap: 0.5rem;
   width: max-content;
-  max-width: none;
+  max-width: none !important;
+  height: 34px;
   overflow: visible;
 }
 
@@ -107,12 +127,13 @@
 }
 
 .mobile-crud-list__spin > .ant-spin-container {
-  min-height: 100%;
+  min-height: 0;
+  height: auto;
 }
 
 .mobile-crud-list__loading-placeholder {
   min-height: 16rem;
-  height: 100%;
+  height: auto;
 }
 
 .mobile-crud-list__search-compact {

@@ -327,7 +327,7 @@ onMounted(() => {
 
 <template>
   <div
-    class="mobile-crud-list flex h-full min-h-0 flex-col"
+    class="mobile-crud-list flex h-full min-h-0 flex-col overflow-hidden"
     :class="{ 'mobile-crud-list--maximize': isMaximized }"
   >
     <VxeToolbar

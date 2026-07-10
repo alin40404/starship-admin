@@ -118,7 +118,8 @@ export function useResponsiveCrud<T extends Record<string, any>>(
           return h(
             'div',
             {
-              class: 'flex h-full min-h-0 flex-col rounded-md bg-card p-2',
+              class:
+                'flex h-full min-h-0 flex-col overflow-hidden rounded-md bg-card px-2 pb-2 pt-0',
             },
             [
               h(
