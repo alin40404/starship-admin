@@ -312,10 +312,10 @@ defineExpose({ open });
     background-color 0.2s ease;
 }
 
-/* 拖入有效区域：对齐 Element Plus el-upload-dragger.is-dragover */
+/* 拖入有效区域：加粗蓝色虚线边框 + 浅蓝背景 */
 .attachment-upload-dragger
   :deep(.ant-upload-drag.ant-upload-drag-hover:not(.ant-upload-disabled)) {
-  border: 1px dashed hsl(var(--primary)) !important;
+  border: 2px dashed hsl(var(--primary)) !important;
   background-color: color-mix(in oklch, hsl(var(--primary)) 10%, hsl(var(--card))) !important;
 }
 
