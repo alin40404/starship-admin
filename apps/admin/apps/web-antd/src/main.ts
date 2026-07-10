@@ -1,4 +1,3 @@
-import { initOfflineIcons } from '@vben/icons';
 import { VBEN_LOGO_URL } from '@vben/constants';
 import { initPreferences, updatePreferences } from '@vben/preferences';
 import { unmountGlobalLoading } from '@vben/utils';
@@ -14,9 +13,6 @@ async function initApplication() {
   const env = import.meta.env.PROD ? 'prod' : 'dev';
   const appVersion = import.meta.env.VITE_APP_VERSION;
   const namespace = `${import.meta.env.VITE_APP_NAMESPACE}-${appVersion}-${env}`;
-
-  // 预加载本地 Iconify 图标集，避免运行时请求 api.iconify.design
-  await initOfflineIcons();
 
   // app偏好设置初始化
   await initPreferences({
