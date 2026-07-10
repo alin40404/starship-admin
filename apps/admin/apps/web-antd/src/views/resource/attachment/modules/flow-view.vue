@@ -106,7 +106,7 @@ function onPreviewVisibleChange(visible: boolean) {
         />
         <div v-else class="attachment-flow-item__file">
           <IconifyIcon
-            class="size-12"
+            class="size-14"
             :class="getAttachmentFileIconClass(row)"
             :icon="getAttachmentFileIcon(row)"
           />
@@ -218,9 +218,9 @@ function onPreviewVisibleChange(visible: boolean) {
 
 .attachment-flow-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
-  gap: 10px;
-  padding: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(152px, 1fr));
+  gap: 12px;
+  padding: 12px;
 }
 
 .attachment-flow-item {
@@ -385,7 +385,7 @@ function onPreviewVisibleChange(visible: boolean) {
 
 .attachment-flow-item__name {
   overflow: hidden;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.35;
   color: #fff;
   text-overflow: ellipsis;
