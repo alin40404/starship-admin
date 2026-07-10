@@ -62,9 +62,11 @@ export interface MobileCrudListItemConfig<T> {
 }
 
 export interface MobileCrudListSearchConfig {
+  defaultFilters?: Record<string, any>;
   fieldMappingTime?: VbenFormProps['fieldMappingTime'];
   filterSchema?: VbenFormSchema[];
   keywordFields?: string[];
+  onFilterSubmit?: (values: Record<string, any>) => void;
   placeholder?: string;
   submitOnChange?: boolean;
 }

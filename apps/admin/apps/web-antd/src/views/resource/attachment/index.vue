@@ -20,7 +20,7 @@ import {
 } from '#/api/system/attachment';
 import { ATTACHMENT_PERMISSIONS } from '#/constants/attachment-permissions';
 
-import { buildCategoryTagOptions, useColumns, useGridFormSchema } from './data';
+import { buildCategoryTagOptions, useColumns, useGridFormSchema, ALL_ATTACHMENT_CATEGORY_KEY } from './data';
 import AttachmentFlowView from './modules/flow-view.vue';
 import AttachmentMobileBody from './modules/mobile-body.vue';
 import UploadForm from './modules/upload-form.vue';
@@ -29,7 +29,7 @@ type UploadFormExpose = {
   open: () => void;
 };
 
-const ALL_CATEGORY_KEY = '__all__';
+const ALL_CATEGORY_KEY = ALL_ATTACHMENT_CATEGORY_KEY;
 const ATTACHMENT_VIEW_MODE_KEY = 'attachment-view-mode';
 
 type AttachmentViewMode = 'flow' | 'list';
@@ -155,6 +155,15 @@ function onCategoryChange(value: string) {
   clearSelection();
   syncGridColumns();
   onRefresh();
+}
+
+function onMobileCategoryChange(value: string) {
+  if (activeCategory.value === value) {
+    return;
+  }
+  activeCategory.value = value;
+  clearSelection();
+  syncGridColumns();
 }
 
 function onUpload() {
@@ -283,7 +292,7 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
       class="bg-card flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-border md:min-h-[520px] md:flex-row"
     >
       <aside
-        class="attachment-category-panel flex shrink-0 flex-col overflow-hidden border-b border-border md:w-[168px] md:border-b-0 md:border-r"
+        class="attachment-category-panel hidden shrink-0 flex-col overflow-hidden border-b border-border md:flex md:w-[168px] md:border-b-0 md:border-r"
       >
         <div class="attachment-category-header">附件分类</div>
         <div class="attachment-category-tabs">
@@ -320,9 +329,10 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
           "
           :can-delete="attachmentAccess.can(ATTACHMENT_PERMISSIONS.DELETE)"
           :can-upload="attachmentAccess.can(ATTACHMENT_PERMISSIONS.UPLOAD)"
+          :category-options="categoryOptions"
           :columns="columns"
-          :resolve-category-filter="resolveCategoryFilter"
           @batch-delete="onBatchDelete"
+          @category-change="onMobileCategoryChange"
           @copy="onCopyLink"
           @delete="performDelete"
           @open="onOpen"

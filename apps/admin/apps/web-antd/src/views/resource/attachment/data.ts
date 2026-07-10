@@ -267,6 +267,15 @@ export function formatCategoryLabel(row: AttachmentRow) {
   return row.category_label ?? row.category ?? TABLE_CELL_EMPTY;
 }
 
+export const ALL_ATTACHMENT_CATEGORY_KEY = '__all__';
+
+export function resolveAttachmentCategoryFilter(category?: string | null) {
+  if (!category || category === ALL_ATTACHMENT_CATEGORY_KEY) {
+    return undefined;
+  }
+  return category;
+}
+
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
@@ -295,7 +304,27 @@ export function useGridFormSchema(): VbenFormSchema[] {
   ];
 }
 
+export function useMobileAttachmentFilterSchema(
+  categoryOptions: { label: string; value: string }[] = [],
+): VbenFormSchema[] {
+  return [
+    {
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        class: 'w-full',
+        options: categoryOptions,
+        placeholder: '全部',
+      },
+      fieldName: 'category',
+      label: '附件分类',
+    },
+    ...useGridFormSchema(),
+  ];
+}
+
 export function buildAttachmentMobileCrudConfig(params: {
+  categoryOptions?: { label: string; value: string }[];
   columns: CrudGridColumn<AttachmentRow>[];
   query: MobileCrudListConfig<AttachmentRow>['query'];
 }): MobileCrudListConfig<AttachmentRow> {
@@ -305,7 +334,7 @@ export function buildAttachmentMobileCrudConfig(params: {
     query: params.query,
     rowKey: 'id',
     search: {
-      filterSchema: useGridFormSchema(),
+      filterSchema: useMobileAttachmentFilterSchema(params.categoryOptions ?? []),
       keywordFields: ['file_name'],
       placeholder: '搜索文件名',
       submitOnChange: true,

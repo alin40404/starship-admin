@@ -2,7 +2,7 @@
 import type { CrudGridColumn } from '#/adapter/mobile-list';
 import type { AttachmentRow } from '#/api/system/attachment';
 
-import { computed, onMounted, provide, reactive, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, provide, reactive, ref, watch } from 'vue';
 
 import { IconifyIcon, Plus } from '@vben/icons';
 import { $t } from '@vben/locales';
@@ -25,7 +25,11 @@ import {
   Tooltip,
 } from 'ant-design-vue';
 
-import { buildAttachmentMobileCrudConfig } from '../data';
+import {
+  ALL_ATTACHMENT_CATEGORY_KEY,
+  buildAttachmentMobileCrudConfig,
+  resolveAttachmentCategoryFilter,
+} from '../data';
 import AttachmentFlowView from './flow-view.vue';
 
 type AttachmentViewMode = 'flow' | 'list';
@@ -35,13 +39,14 @@ const props = defineProps<{
   canBatchDelete: boolean;
   canDelete: boolean;
   canUpload: boolean;
+  categoryOptions: { label: string; value: string }[];
   columns: CrudGridColumn<AttachmentRow>[];
-  resolveCategoryFilter: () => string | undefined;
   viewMode: AttachmentViewMode;
 }>();
 
 const emit = defineEmits<{
   batchDelete: [];
+  categoryChange: [value: string];
   copy: [AttachmentRow];
   delete: [AttachmentRow];
   open: [AttachmentRow];
@@ -79,7 +84,13 @@ provide('$xeGrid', {
 });
 
 const mobileConfig = computed(() => {
+  const categoryFilter =
+    props.activeCategory === ALL_ATTACHMENT_CATEGORY_KEY
+      ? undefined
+      : props.activeCategory;
+
   const base = buildAttachmentMobileCrudConfig({
+    categoryOptions: props.categoryOptions,
     columns: props.columns,
     query: async ({ filters, keyword, page, pageSize, sortField, sortOrder }) => {
       const result = await fetchAttachmentPage({
@@ -89,7 +100,7 @@ const mobileConfig = computed(() => {
         file_name: filters?.file_name || undefined,
         file_ext: filters?.file_ext || undefined,
         storage: filters?.storage || undefined,
-        category: props.resolveCategoryFilter(),
+        category: resolveAttachmentCategoryFilter(filters?.category),
         sort_field: sortField,
         sort_order: sortOrder,
       });
@@ -110,6 +121,19 @@ const mobileConfig = computed(() => {
       }
       baseOperationClick?.({ code, row });
     },
+    search: {
+      ...base.search,
+      defaultFilters: {
+        category: categoryFilter,
+      },
+      onFilterSubmit: (values: Record<string, any>) => {
+        const nextCategory =
+          values.category ?? ALL_ATTACHMENT_CATEGORY_KEY;
+        if (nextCategory !== props.activeCategory) {
+          emit('categoryChange', nextCategory);
+        }
+      },
+    },
   };
 });
 
@@ -117,6 +141,7 @@ const {
   activeFilterCount,
   clearSelection: clearFlowSelection,
   currentPage,
+  filterValues,
   handleFilterSubmit,
   handleKeywordSearch,
   handlePageChange,
@@ -222,13 +247,13 @@ async function handleFlowFilterSearch() {
   filterDrawerOpen.value = false;
 }
 
-watch(
-  () => props.activeCategory,
-  () => {
-    clearSelection();
-    reload();
-  },
-);
+watch(filterDrawerOpen, async (open) => {
+  if (!open) {
+    return;
+  }
+  await nextTick();
+  await filterFormApi.setValues(filterValues.value);
+});
 
 watch(
   () => props.viewMode,

@@ -54,6 +54,7 @@ const {
   activeFilterCount,
   clearSelection,
   currentPage,
+  filterValues,
   handleFilterSubmit,
   handleKeywordSearch,
   handleOperationClick,
@@ -67,6 +68,7 @@ const {
   loading,
   pageSize,
   reload,
+  setFilterValues,
   selectAllButtonLabel,
   selectedRows,
   toggleRowSelection,
@@ -318,6 +320,15 @@ watch(selectedRowsModel, (rows) => {
 defineExpose({
   clearSelection,
   reload,
+  setFilterValues,
+});
+
+watch(filterDrawerOpen, async (open) => {
+  if (!open) {
+    return;
+  }
+  await nextTick();
+  await filterFormApi.setValues(filterValues.value);
 });
 
 onMounted(() => {

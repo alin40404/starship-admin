@@ -161,8 +161,13 @@ export function useMobileCrudList<T extends Record<string, any>>(
 
   function handleFilterSubmit(values: Record<string, any>) {
     filterValues.value = values;
+    configRef.value.search?.onFilterSubmit?.(values);
     currentPage.value = 1;
     loadData();
+  }
+
+  function setFilterValues(values: Record<string, any>) {
+    filterValues.value = { ...values };
   }
 
   function handlePageChange(page: number, size: number) {
@@ -184,6 +189,21 @@ export function useMobileCrudList<T extends Record<string, any>>(
   const debouncedKeywordSearch = useDebounceFn(() => {
     handleKeywordSearch();
   }, 300);
+
+  watch(
+    () => configRef.value.search?.defaultFilters,
+    (defaults, prev) => {
+      if (!defaults) {
+        return;
+      }
+      filterValues.value = { ...filterValues.value, ...defaults };
+      if (prev !== undefined) {
+        currentPage.value = 1;
+        loadData();
+      }
+    },
+    { deep: true, immediate: true },
+  );
 
   watch(
     () => keyword.value,
@@ -229,6 +249,7 @@ export function useMobileCrudList<T extends Record<string, any>>(
     loading,
     pageSize,
     reload,
+    setFilterValues,
     selectAllButtonLabel,
     selectedRows,
     toggleRowSelection,
