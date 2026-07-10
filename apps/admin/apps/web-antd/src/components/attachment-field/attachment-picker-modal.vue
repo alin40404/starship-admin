@@ -48,6 +48,9 @@ const { isMobile } = usePreferences();
 const fileNameQuery = ref('');
 const selectedRows = ref<AttachmentRow[]>([]);
 const flowRows = ref<AttachmentRow[]>([]);
+const flowTotal = ref(0);
+const flowPage = ref(1);
+const flowLoadingMore = ref(false);
 const layoutRef = ref<HTMLElement>();
 const flowTeleportTarget = ref<HTMLElement | null>(null);
 const gridWrapRef = useTemplateRef<HTMLElement>('gridWrapRef');
@@ -69,6 +72,7 @@ const selectedFlowIds = computed({
 });
 
 const isFlowMode = computed(() => viewMode.value === 'flow');
+const flowHasMore = computed(() => flowRows.value.length < flowTotal.value);
 const hasSelection = computed(() => selectedRows.value.length > 0);
 
 const contentWrapClass = computed(() =>
@@ -296,6 +300,57 @@ function onActionClick({ code, row }: OnActionClickParams<AttachmentRow>) {
   }
 }
 
+function filterPickerRows(rows: AttachmentRow[]) {
+  if (props.accept !== 'image') {
+    return rows;
+  }
+  return rows.filter((row) => isAttachmentAcceptable(row, props.accept));
+}
+
+function buildPickerQueryParams(
+  pageNum: number,
+  pageSize: number,
+  sort?: { field?: string; order?: null | string },
+) {
+  const order = sort?.order;
+  return {
+    page: pageNum,
+    per_page: pageSize,
+    file_name: fileNameQuery.value.trim() || undefined,
+    mime_type: resolveMimeFilter(props.accept),
+    sort_field: sort?.field,
+    sort_order: order === 'asc' || order === 'desc' ? order : undefined,
+  };
+}
+
+function getGridPageSize() {
+  const pager = gridApi?.grid?.getProxyInfo?.()?.pager;
+  return pager?.pageSize ?? 20;
+}
+
+async function loadMoreFlow() {
+  if (!isFlowMode.value || flowLoadingMore.value || !flowHasMore.value) {
+    return;
+  }
+  flowLoadingMore.value = true;
+  try {
+    const proxyInfo = gridApi?.grid?.getProxyInfo?.();
+    const result = await fetchAttachmentPickerPage(
+      buildPickerQueryParams(
+        flowPage.value + 1,
+        getGridPageSize(),
+        proxyInfo?.sort,
+      ),
+    );
+    const data = filterPickerRows(result.data ?? []);
+    flowRows.value = [...flowRows.value, ...data];
+    flowPage.value += 1;
+    flowTotal.value = result.total;
+  } finally {
+    flowLoadingMore.value = false;
+  }
+}
+
 const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
   class: 'h-full min-h-0',
   gridClass: 'p-0',
@@ -310,23 +365,17 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
     proxyConfig: {
       ajax: {
         query: async ({ page, sort }) => {
-          const order = sort?.order;
-          const result = await fetchAttachmentPickerPage({
-            page: page.currentPage,
-            per_page: page.pageSize,
-            file_name: fileNameQuery.value.trim() || undefined,
-            mime_type: resolveMimeFilter(props.accept),
-            sort_field: sort?.field,
-            sort_order:
-              order === 'asc' || order === 'desc' ? order : undefined,
-          });
-          const data =
-            props.accept === 'image'
-              ? result.data.filter((row) =>
-                  isAttachmentAcceptable(row, props.accept),
-                )
-              : result.data;
-          flowRows.value = data;
+          const pageSize = page.pageSize;
+          const pageNum = isFlowMode.value ? 1 : page.currentPage;
+          const result = await fetchAttachmentPickerPage(
+            buildPickerQueryParams(pageNum, pageSize, sort),
+          );
+          const data = filterPickerRows(result.data ?? []);
+          if (isFlowMode.value) {
+            flowRows.value = data;
+            flowPage.value = 1;
+            flowTotal.value = result.total;
+          }
           return props.accept === 'image' ? { ...result, data } : result;
         },
       },
@@ -365,6 +414,9 @@ function handlePopupOpenChange(isOpen: boolean) {
   if (!isOpen) {
     fileNameQuery.value = '';
     clearSelection();
+    flowRows.value = [];
+    flowTotal.value = 0;
+    flowPage.value = 1;
     return;
   }
   syncGridColumns();
@@ -472,9 +524,13 @@ watch(
             <AttachmentFlowView
               v-model:selected-ids="selectedFlowIds"
               class="attachment-flow-panel"
+              :has-more="flowHasMore"
+              :loading-more="flowLoadingMore"
               show-actions
               :show-copy="false"
               :rows="flowRows"
+              :total="flowTotal"
+              @load-more="loadMoreFlow"
               @open="onOpenAttachment"
             />
           </Teleport>
@@ -556,9 +612,13 @@ watch(
             <AttachmentFlowView
               v-model:selected-ids="selectedFlowIds"
               class="attachment-flow-panel"
+              :has-more="flowHasMore"
+              :loading-more="flowLoadingMore"
               show-actions
               :show-copy="false"
               :rows="flowRows"
+              :total="flowTotal"
+              @load-more="loadMoreFlow"
               @open="onOpenAttachment"
             />
           </Teleport>
@@ -641,15 +701,14 @@ watch(
 }
 
 .attachment-picker-layout--flow :deep(.vxe-grid--pager-wrapper) {
-  flex-shrink: 0;
-  order: 3;
+  display: none !important;
 }
 
 .attachment-flow-panel {
   flex: 1 1 0;
   min-height: 0;
   order: 2;
-  padding: 0 2px 8px;
+  padding: 8px 2px 8px;
 }
 
 .attachment-picker-search {
@@ -708,19 +767,16 @@ watch(
 }
 
 .attachment-picker-layout--mobile.attachment-picker-layout--flow
-  :deep(.attachment-flow-view) {
+  :deep(.attachment-flow-view__main) {
   flex: 1;
   min-height: 0;
-  height: 100%;
-  overflow: auto;
-  border-radius: 0;
 }
 
 .attachment-picker-layout--mobile.attachment-picker-layout--flow
   :deep(.attachment-flow-grid) {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
-  padding: 8px;
+  padding: 0;
 }
 
 .attachment-picker-layout--mobile.attachment-picker-layout--flow

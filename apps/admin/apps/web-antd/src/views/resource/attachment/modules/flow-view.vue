@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { AttachmentRow } from '#/api/system/attachment';
 
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 import { IconifyIcon } from '@vben/icons';
 
@@ -50,19 +50,78 @@ const emit = defineEmits<{
 const selectedIdSet = computed(() => new Set(props.selectedIds));
 const previewUrl = ref('');
 const previewVisible = ref(false);
-const rootRef = ref<HTMLElement>();
+const bodyRef = ref<HTMLElement>();
+const handleRef = ref<HTMLElement>();
+const handleSpaceRef = ref<HTMLElement>();
 const sentinelRef = ref<HTMLElement>();
+const showScrollHandle = ref(false);
+const isExternalScroll = computed(() => !!props.scrollRoot);
 const showLoadFooter = computed(
   () => props.rows.length > 0 && props.total > 0,
 );
 
 let intersectionObserver: IntersectionObserver | null = null;
+let resizeObserver: ResizeObserver | null = null;
+let syncingScroll = false;
+
+function getObserverRoot() {
+  return props.scrollRoot ?? bodyRef.value ?? null;
+}
+
+function syncHandleMetrics() {
+  if (isExternalScroll.value) {
+    showScrollHandle.value = false;
+    return;
+  }
+  const body = bodyRef.value;
+  const space = handleSpaceRef.value;
+  if (!body || !space) {
+    return;
+  }
+  space.style.height = `${body.scrollHeight}px`;
+  showScrollHandle.value = body.scrollHeight > body.clientHeight + 1;
+}
+
+function onBodyScroll() {
+  if (
+    isExternalScroll.value ||
+    syncingScroll ||
+    !handleRef.value ||
+    !bodyRef.value
+  ) {
+    return;
+  }
+  syncingScroll = true;
+  handleRef.value.scrollTop = bodyRef.value.scrollTop;
+  syncingScroll = false;
+}
+
+function onHandleScroll() {
+  if (syncingScroll || !handleRef.value || !bodyRef.value) {
+    return;
+  }
+  syncingScroll = true;
+  bodyRef.value.scrollTop = handleRef.value.scrollTop;
+  syncingScroll = false;
+}
+
+function setupResizeObserver() {
+  resizeObserver?.disconnect();
+  resizeObserver = null;
+  if (isExternalScroll.value || !bodyRef.value) {
+    return;
+  }
+  resizeObserver = new ResizeObserver(() => {
+    syncHandleMetrics();
+  });
+  resizeObserver.observe(bodyRef.value);
+}
 
 function setupAutoLoadObserver() {
   intersectionObserver?.disconnect();
   intersectionObserver = null;
 
-  const root = props.scrollRoot ?? rootRef.value;
+  const root = getObserverRoot();
   const sentinel = sentinelRef.value;
   if (!root || !sentinel) {
     return;
@@ -90,19 +149,31 @@ function setupAutoLoadObserver() {
 }
 
 watch(
-  () => [props.scrollRoot, props.hasMore, props.loadingMore, props.rows.length],
-  () => {
+  () => [
+    props.scrollRoot,
+    props.hasMore,
+    props.loadingMore,
+    props.rows.length,
+    props.total,
+  ],
+  async () => {
+    await nextTick();
+    syncHandleMetrics();
     setupAutoLoadObserver();
   },
   { flush: 'post' },
 );
 
-onMounted(() => {
+onMounted(async () => {
+  await nextTick();
+  syncHandleMetrics();
+  setupResizeObserver();
   setupAutoLoadObserver();
 });
 
 onBeforeUnmount(() => {
   intersectionObserver?.disconnect();
+  resizeObserver?.disconnect();
 });
 
 function toggleSelect(id: number, checked?: boolean) {
@@ -149,7 +220,14 @@ function onPreviewVisibleChange(visible: boolean) {
 </script>
 
 <template>
-  <div ref="rootRef" class="attachment-flow-view h-full min-h-0">
+  <div class="attachment-flow-view h-full min-h-0">
+    <div class="attachment-flow-view__main">
+      <div
+        ref="bodyRef"
+        class="attachment-flow-view__body"
+        :class="{ 'attachment-flow-view__body--external': isExternalScroll }"
+        @scroll="onBodyScroll"
+      >
     <div v-if="rows.length > 0" class="attachment-flow-grid">
     <article
       v-for="row in rows"
@@ -290,6 +368,18 @@ function onPreviewVisibleChange(visible: boolean) {
         pointerEvents: 'none',
       }"
     />
+      </div>
+
+      <div
+        v-if="!isExternalScroll"
+        v-show="showScrollHandle"
+        ref="handleRef"
+        class="attachment-flow-view__scroll-y-handle"
+        @scroll="onHandleScroll"
+      >
+        <div ref="handleSpaceRef" class="attachment-flow-view__scroll-y-space" />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -299,17 +389,53 @@ function onPreviewVisibleChange(visible: boolean) {
   flex-direction: column;
   height: 100%;
   min-height: 0;
-  overflow: auto;
-  border: 1px solid hsl(var(--border));
-  border-radius: 6px;
+  overflow: hidden;
+  border-top: 1px solid hsl(var(--border));
+  border-radius: 0;
   background-color: hsl(var(--card));
+}
+
+.attachment-flow-view__main {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* 对齐 vxe-table：内容区隐藏原生滚动条 */
+.attachment-flow-view__body {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: scroll;
+  scrollbar-width: none;
+}
+
+.attachment-flow-view__body::-webkit-scrollbar {
+  display: none;
+}
+
+.attachment-flow-view__body--external {
+  overflow: visible;
+}
+
+/* 对齐 vxe-table scroll-y-handle：右侧独立滚动槽 */
+.attachment-flow-view__scroll-y-handle {
+  flex-shrink: 0;
+  align-self: stretch;
+  overflow: hidden scroll;
+}
+
+.attachment-flow-view__scroll-y-space {
+  width: 1px;
 }
 
 .attachment-flow-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(152px, 1fr));
   gap: 12px;
-  padding: 12px;
+  min-width: 0;
+  padding: 0;
 }
 
 .attachment-flow-item {

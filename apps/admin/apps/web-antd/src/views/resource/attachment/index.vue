@@ -568,7 +568,7 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
   flex: 1 1 0;
   min-height: 0;
   order: 2;
-  padding: 0 2px 8px;
+  padding: 8px 2px 8px;
 }
 
 .attachment-view-toggle {

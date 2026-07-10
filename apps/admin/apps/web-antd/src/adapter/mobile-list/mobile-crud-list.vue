@@ -408,7 +408,7 @@ onMounted(() => {
       </Space.Compact>
     </div>
 
-    <div class="mobile-crud-list__body min-h-0 flex-1 overflow-y-auto">
+    <div class="mobile-crud-list__body vxe-table-like-scrollbar min-h-0 flex-1 overflow-y-auto">
       <Spin :spinning="loading" wrapper-class-name="mobile-crud-list__spin">
         <div v-if="list.length > 0" class="mobile-crud-list__cards">
           <div
