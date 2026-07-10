@@ -442,7 +442,7 @@ defineExpose({ clearSelection, reload });
           <Badge
             v-if="mobileConfig.search?.filterSchema?.length"
             :count="activeFilterCount"
-            :offset="[-4, 2]"
+            :offset="[-19, 2]"
           >
             <Button
               class="mobile-crud-list__search-btn mobile-crud-list__search-btn--filter mobile-crud-list__search-btn--last"
