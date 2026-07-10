@@ -1,5 +1,10 @@
 import type { Recordable } from '@vben/types';
 
+import {
+  buildIconifyCollectionUrl,
+  getIconifyApiEndpoints,
+} from '@vben/icons';
+
 /**
  * 一个缓存对象，在不刷新页面时，无需重复请求远程接口
  */
@@ -15,6 +20,35 @@ interface IconifyResponse {
 }
 
 const PENDING_REQUESTS: Recordable<Promise<string[]>> = {};
+
+async function fetchIconifyCollection(
+  prefix: string,
+): Promise<IconifyResponse> {
+  const endpoints = getIconifyApiEndpoints();
+  let lastError: unknown;
+
+  for (const endpoint of endpoints) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 1000 * 10);
+      const response = await fetch(
+        buildIconifyCollectionUrl(endpoint.base, prefix),
+        { signal: controller.signal },
+      );
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      return (await response.json()) as IconifyResponse;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError ?? new Error(`Failed to fetch icons for prefix ${prefix}`);
+}
 
 /**
  * 通过Iconify接口获取图标集数据。
@@ -32,13 +66,7 @@ export async function fetchIconsData(prefix: string): Promise<string[]> {
   }
   PENDING_REQUESTS[prefix] = (async () => {
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 1000 * 10);
-      const response: IconifyResponse = await fetch(
-        `https://api.iconify.design/collection?prefix=${prefix}`,
-        { signal: controller.signal },
-      ).then((res) => res.json());
-      clearTimeout(timeoutId);
+      const response = await fetchIconifyCollection(prefix);
       const list = response.uncategorized || [];
       if (response.categories) {
         for (const category in response.categories) {

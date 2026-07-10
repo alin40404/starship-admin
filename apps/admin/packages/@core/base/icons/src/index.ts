@@ -1,4 +1,8 @@
+import './setup-api.js';
+
 export * from './create-icon';
+
+export * from './setup-api';
 
 export * from './lucide';
 
