@@ -45,7 +45,7 @@
   },
   "exceptionLog": {
     "entity": "Exception Log",
-    "hint": "The list shows summaries only. Search storage/logs/laravel.log on the server by trace_id for full stack traces.",
+    "hint": "The list shows summaries only. Search server log files by trace_id for full stack traces.",
     "searchPlaceholder": "Search message/class/trace_id",
     "keywordPlaceholder": "Message / class / trace_id",
     "exceptionClassPlaceholder": "Exception class name",

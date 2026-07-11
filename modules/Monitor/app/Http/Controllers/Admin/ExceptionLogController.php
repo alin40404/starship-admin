@@ -7,6 +7,7 @@ use Starship\Core\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Monitor\App\Models\ExceptionLog;
+use Modules\Monitor\App\Support\ApplicationLogPath;
 use Modules\System\App\Support\AdminRuntimeConfig;
 
 class ExceptionLogController extends Controller
@@ -47,13 +48,27 @@ class ExceptionLogController extends Controller
         return ApiResponse::success($query->paginate(AdminRuntimeConfig::perPage($request->get('per_page'))));
     }
 
+    public function hint(): JsonResponse
+    {
+        $logPath = ApplicationLogPath::displayHint();
+
+        return ApiResponse::success([
+            'log_path' => $logPath,
+            'list_hint' => __('monitor::messages.list_log_hint', ['log_path' => $logPath]),
+        ]);
+    }
+
     public function show(int $id): JsonResponse
     {
         $log = ExceptionLog::query()->findOrFail($id);
+        $logPath = ApplicationLogPath::displayHint();
 
         return ApiResponse::success([
             ...$log->toArray(),
-            'log_hint' => __('monitor::messages.log_hint', ['trace_id' => $log->trace_id]),
+            'log_hint' => __('monitor::messages.log_hint', [
+                'log_path' => $logPath,
+                'trace_id' => $log->trace_id,
+            ]),
         ]);
     }
 

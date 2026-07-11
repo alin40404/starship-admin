@@ -117,6 +117,12 @@ export function fetchExceptionLogPage(
   );
 }
 
+export function fetchExceptionLogHint() {
+  return requestClient.get<{ list_hint: string; log_path: string }>(
+    '/monitor/exception-logs/hint',
+  );
+}
+
 export function fetchExceptionLog(id: number) {
   return requestClient.get<ExceptionLogRow>(`/monitor/exception-logs/${id}`);
 }

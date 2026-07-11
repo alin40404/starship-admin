@@ -2,7 +2,7 @@
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { ExceptionLogRow } from '#/api/monitor';
 
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { Page } from '@vben/common-ui';
@@ -13,6 +13,7 @@ import { useResponsiveCrud } from '#/adapter/mobile-list';
 import {
   batchDeleteExceptionLogs,
   deleteExceptionLog,
+  fetchExceptionLogHint,
   fetchExceptionLogPage,
 } from '#/api/monitor';
 import { MONITOR_EXCEPTION_LOG_PERMISSIONS } from '#/constants/monitor-permissions';
@@ -26,6 +27,18 @@ import {
 import DetailDrawer from './modules/detail-drawer.vue';
 
 const detailDrawerRef = ref<InstanceType<typeof DetailDrawer>>();
+const listHint = ref($t('monitor.exceptionLog.hint'));
+
+onMounted(async () => {
+  try {
+    const hint = await fetchExceptionLogHint();
+    if (hint.list_hint) {
+      listHint.value = hint.list_hint;
+    }
+  } catch {
+    // 保留 locale 兜底文案
+  }
+});
 
 const { hasAccessByCodes } = useAccess();
 
@@ -125,7 +138,7 @@ function onBatchDelete() {
     <div class="flex h-full min-h-0 flex-col">
       <Alert
         class="mb-4 shrink-0"
-        :message="$t('monitor.exceptionLog.hint')"
+        :message="listHint"
         show-icon
         type="warning"
       />
