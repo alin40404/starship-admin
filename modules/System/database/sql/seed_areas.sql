@@ -1,6 +1,7 @@
--- 中国省市区完整数据（适配 Starship sa_areas）
--- 表前缀默认 sa_；执行前请先运行 migration 创建 sa_areas 表
--- 可重复执行：会先清空 sa_areas 再全量导入
+-- 中国省市区完整数据（3748 条）
+-- 由 AreaSeeder 自动执行；也可手动导入本文件
+-- 表名占位 sa_areas 会在 Seeder 中替换为实际前缀表名（如 sa_areas）
+-- 可重复执行：会先 TRUNCATE 再全量导入
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
