@@ -29,6 +29,9 @@ import {
   buildAttachmentMobileCrudConfig,
   resolveAttachmentCategoryFilter,
 } from '../data';
+import {
+  getAdminAttachmentFlowPageSizeSync,
+} from '#/utils/admin-runtime-config';
 import AttachmentFlowView from './flow-view.vue';
 
 type AttachmentViewMode = 'flow' | 'list';
@@ -63,6 +66,7 @@ const mobileListRef = ref<{
 } | null>(null);
 const filterDrawerOpen = ref(false);
 const flowScrollBodyRef = ref<HTMLElement | null>(null);
+const attachmentFlowPageSize = ref(getAdminAttachmentFlowPageSizeSync());
 const isFlowMode = computed(() => props.viewMode === 'flow');
 const isMaximized = ref(false);
 
@@ -139,6 +143,7 @@ const mobileConfig = computed(() => {
 
 const flowListConfig = computed(() => ({
   ...mobileConfig.value,
+  defaultPageSize: attachmentFlowPageSize.value,
   paginationMode: 'loadMore' as const,
 }));
 
@@ -155,6 +160,7 @@ const {
   loadMore: loadMoreFlow,
   loading,
   loadingMore: flowLoadingMore,
+  pageSize: flowPageSize,
   reload: reloadFlow,
   selectAllButtonLabel,
   selectedRows: flowSelectedRows,
@@ -279,6 +285,7 @@ watch(
 );
 
 onMounted(() => {
+  flowPageSize.value = attachmentFlowPageSize.value;
   if (isFlowMode.value) {
     loadData();
   }

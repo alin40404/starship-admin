@@ -14,6 +14,7 @@ use Modules\System\App\Models\Department;
 use Modules\System\App\Models\Post;
 use Modules\System\App\Models\Role;
 use Modules\System\App\Services\DataScopeService;
+use Modules\System\App\Support\AdminRuntimeConfig;
 
 class AdminUserController extends Controller
 {
@@ -94,7 +95,7 @@ class AdminUserController extends Controller
             $query->orderByDesc('id');
         }
 
-        return ApiResponse::success($query->paginate((int) $request->get('per_page', 15)));
+        return ApiResponse::success($query->paginate(AdminRuntimeConfig::perPage($request->get('per_page'))));
     }
 
     public function store(Request $request): JsonResponse

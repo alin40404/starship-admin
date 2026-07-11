@@ -10,6 +10,7 @@ use Illuminate\Validation\Rule;
 use Modules\System\App\Models\Department;
 use Modules\System\App\Models\Menu;
 use Modules\System\App\Models\Role;
+use Modules\System\App\Support\AdminRuntimeConfig;
 use Modules\System\App\Support\DataScope;
 
 class RoleController extends Controller
@@ -52,7 +53,7 @@ class RoleController extends Controller
             $query->orderBy('id');
         }
 
-        return ApiResponse::success($query->paginate((int) $request->get('per_page', 15)));
+        return ApiResponse::success($query->paginate(AdminRuntimeConfig::perPage($request->get('per_page'))));
     }
 
     public function show(int $id): JsonResponse

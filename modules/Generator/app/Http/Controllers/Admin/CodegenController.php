@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Modules\Generator\App\Models\GeneratorRecord;
 use Modules\Generator\App\Models\GeneratorTable;
 use Modules\Generator\App\Services\CodegenService;
+use Modules\System\App\Support\AdminRuntimeConfig;
 
 class CodegenController extends Controller
 {
@@ -44,7 +45,7 @@ class CodegenController extends Controller
         $items = GeneratorRecord::query()
             ->with('tableConfig:id,table_name,business_name')
             ->latest('id')
-            ->paginate((int) request('per_page', 15));
+            ->paginate(AdminRuntimeConfig::perPage(request('per_page')));
 
         return ApiResponse::success($items);
     }

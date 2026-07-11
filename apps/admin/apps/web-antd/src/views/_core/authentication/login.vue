@@ -7,13 +7,14 @@ import { AuthenticationLogin, SliderCaptcha, z } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
 import { useAuthStore } from '#/store';
+import { isAdminLoginCaptchaEnabled } from '#/utils/admin-runtime-config';
 
 defineOptions({ name: 'Login' });
 
 const authStore = useAuthStore();
 
 const formSchema = computed((): VbenFormSchema[] => {
-  return [
+  const fields: VbenFormSchema[] = [
     {
       component: 'VbenInput',
       componentProps: {
@@ -32,14 +33,19 @@ const formSchema = computed((): VbenFormSchema[] => {
       label: $t('authentication.password'),
       rules: z.string().min(1, { message: $t('authentication.passwordTip') }),
     },
-    {
+  ];
+
+  if (isAdminLoginCaptchaEnabled()) {
+    fields.push({
       component: markRaw(SliderCaptcha),
       fieldName: 'captcha',
       rules: z.boolean().refine((value) => value, {
         message: $t('authentication.verifyRequiredTip'),
       }),
-    },
-  ];
+    });
+  }
+
+  return fields;
 });
 </script>
 

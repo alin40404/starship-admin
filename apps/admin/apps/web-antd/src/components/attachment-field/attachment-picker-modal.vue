@@ -16,6 +16,9 @@ import { Button, Input, message, Tooltip } from 'ant-design-vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchAttachmentPickerPage, uploadAttachment } from '#/api/system/attachment';
 import { ATTACHMENT_PERMISSIONS } from '#/constants/attachment-permissions';
+import {
+  getAdminAttachmentFlowPageSizeSync,
+} from '#/utils/admin-runtime-config';
 import AttachmentFlowView from '#/views/resource/attachment/modules/flow-view.vue';
 
 import { usePickerColumns } from './picker-data';
@@ -61,6 +64,7 @@ const flowRows = ref<AttachmentRow[]>([]);
 const flowTotal = ref(0);
 const flowPage = ref(1);
 const flowLoadingMore = ref(false);
+const attachmentFlowPageSize = ref(getAdminAttachmentFlowPageSizeSync());
 const layoutRef = ref<HTMLElement>();
 const flowTeleportTarget = ref<HTMLElement | null>(null);
 const gridWrapRef = useTemplateRef<HTMLElement>('gridWrapRef');
@@ -430,6 +434,9 @@ function buildPickerQueryParams(
 }
 
 function getGridPageSize() {
+  if (isFlowMode.value) {
+    return attachmentFlowPageSize.value;
+  }
   const pager = gridApi?.grid?.getProxyInfo?.()?.pager;
   return pager?.pageSize ?? 20;
 }
@@ -471,7 +478,9 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
     proxyConfig: {
       ajax: {
         query: async ({ page, sort }) => {
-          const pageSize = page.pageSize;
+          const pageSize = isFlowMode.value
+            ? attachmentFlowPageSize.value
+            : page.pageSize;
           const pageNum = isFlowMode.value ? 1 : page.currentPage;
           const result = await fetchAttachmentPickerPage(
             buildPickerQueryParams(pageNum, pageSize, sort),

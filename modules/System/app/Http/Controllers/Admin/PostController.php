@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Modules\System\App\Models\Post;
+use Modules\System\App\Support\AdminRuntimeConfig;
 use Modules\System\App\Support\PostPermissions;
 
 class PostController extends Controller
@@ -50,7 +51,7 @@ class PostController extends Controller
             $query->orderBy('sort')->orderBy('id');
         }
 
-        return ApiResponse::success($query->paginate((int) $request->get('per_page', 15)));
+        return ApiResponse::success($query->paginate(AdminRuntimeConfig::perPage($request->get('per_page'))));
     }
 
     public function store(Request $request): JsonResponse

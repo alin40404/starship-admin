@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Modules\System\App\Models\Admin;
 use Modules\System\App\Models\UserGroup;
+use Modules\System\App\Support\AdminRuntimeConfig;
 
 class UserGroupController extends Controller
 {
@@ -49,7 +50,7 @@ class UserGroupController extends Controller
             $query->orderBy('sort')->orderBy('id');
         }
 
-        return ApiResponse::success($query->paginate((int) $request->get('per_page', 15)));
+        return ApiResponse::success($query->paginate(AdminRuntimeConfig::perPage($request->get('per_page'))));
     }
 
     public function show(int $id): JsonResponse

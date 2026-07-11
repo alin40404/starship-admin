@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Modules\System\App\Models\DictType;
+use Modules\System\App\Support\AdminRuntimeConfig;
 
 class DictTypeController extends Controller
 {
@@ -48,7 +49,7 @@ class DictTypeController extends Controller
             $query->orderByDesc('id');
         }
 
-        return ApiResponse::success($query->paginate((int) $request->get('per_page', 15)));
+        return ApiResponse::success($query->paginate(AdminRuntimeConfig::perPage($request->get('per_page'))));
     }
 
     public function store(Request $request): JsonResponse

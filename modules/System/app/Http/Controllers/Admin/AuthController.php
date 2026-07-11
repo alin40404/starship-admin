@@ -11,6 +11,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Modules\System\App\Models\Admin;
 use Modules\System\App\Services\AdminPermissionService;
+use Modules\System\App\Support\AdminRuntimeConfig;
 
 class AuthController extends Controller
 {
@@ -35,12 +36,32 @@ class AuthController extends Controller
             return ApiResponse::error(__('system::messages.invalid_credentials'), 401);
         }
 
+        if (AdminRuntimeConfig::maintenanceEnabled() && (int) $admin->is_super !== 1) {
+            $this->writeLoginLog(
+                username: $admin->username,
+                success: false,
+                adminId: $admin->id,
+                message: '系统维护中',
+                request: $request,
+            );
+
+            return ApiResponse::error(__('system::messages.maintenance_mode'), 503);
+        }
+
+        if (AdminRuntimeConfig::loginCaptchaEnabled() && ! $request->boolean('captcha')) {
+            return ApiResponse::error(__('system::messages.captcha_required'), 422);
+        }
+
         $admin->forceFill([
             'last_login_at' => now(),
             'last_login_ip' => $request->ip(),
         ])->save();
 
-        $token = $admin->createToken('admin')->plainTextToken;
+        $token = $admin->createToken(
+            'admin',
+            ['*'],
+            now()->addMinutes(AdminRuntimeConfig::jwtTtlMinutes()),
+        )->plainTextToken;
 
         $this->writeLoginLog(
             username: $admin->username,

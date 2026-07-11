@@ -20,6 +20,9 @@ import {
   fetchAttachmentPage,
 } from '#/api/system/attachment';
 import { ATTACHMENT_PERMISSIONS } from '#/constants/attachment-permissions';
+import {
+  getAdminAttachmentFlowPageSizeSync,
+} from '#/utils/admin-runtime-config';
 
 import {
   DICT_TYPE_CODE,
@@ -60,6 +63,7 @@ const flowRows = ref<AttachmentRow[]>([]);
 const flowTotal = ref(0);
 const flowPage = ref(1);
 const flowLoadingMore = ref(false);
+const attachmentFlowPageSize = ref(getAdminAttachmentFlowPageSizeSync());
 const viewMode = ref<AttachmentViewMode>(
   (localStorage.getItem(ATTACHMENT_VIEW_MODE_KEY) as AttachmentViewMode) ||
     'list',
@@ -139,6 +143,9 @@ function buildAttachmentQueryParams(
 }
 
 function getGridPageSize() {
+  if (isFlowMode.value) {
+    return attachmentFlowPageSize.value;
+  }
   const pager = gridApi?.grid?.getProxyInfo?.()?.pager;
   return pager?.pageSize ?? 20;
 }
@@ -289,8 +296,8 @@ async function loadCategoryOptions() {
   syncGridColumns();
 }
 
-onMounted(() => {
-  loadCategoryOptions();
+onMounted(async () => {
+  await loadCategoryOptions();
   syncFlowTeleportTarget();
 });
 
@@ -320,7 +327,9 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
     proxyConfig: {
       ajax: {
         query: async ({ page, sort }, formValues) => {
-          const pageSize = page.pageSize;
+          const pageSize = isFlowMode.value
+            ? attachmentFlowPageSize.value
+            : page.pageSize;
           const pageNum = isFlowMode.value ? 1 : page.currentPage;
           const result = await fetchAttachmentPage(
             buildAttachmentQueryParams(pageNum, pageSize, sort, formValues),

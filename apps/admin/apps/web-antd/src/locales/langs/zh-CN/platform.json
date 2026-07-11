@@ -148,14 +148,17 @@
       "valueType": "值类型",
       "sort": "排序",
       "remark": "备注",
-      "jsonPlaceholder": "请输入 JSON，如 {\"key\": \"value\"}",
+      "jsonPlaceholder": "请输入合法 JSON 格式内容",
       "boolPlaceholder": "请输入 true 或 false",
+      "boolTrue": "是（true）",
+      "boolFalse": "否（false）",
       "numberPlaceholder": "请输入数字",
       "stringPlaceholder": "请输入参数值",
       "createParam": "新增参数",
       "editParam": "编辑参数",
       "batchDeleteConfirm": "确定删除选中的 {0} 个运行参数吗？",
-      "batchDeleted": "已删除 {0} 个参数"
+      "batchDeleted": "已删除 {0} 个参数",
+      "valueInvalid": "参数值格式不正确"
     },
     "fields": {
       "site": {
@@ -282,6 +285,40 @@
           "remark": "系统邮件的发件地址"
         }
       },
+      "admin": {
+        "page_size": {
+          "label": "默认分页大小",
+          "remark": "管理端列表默认每页条数"
+        },
+        "attachment": {
+          "flow_page_size": {
+            "label": "流式视图分页大小",
+            "remark": "附件流式视图每页默认加载条数"
+          }
+        },
+        "api": {
+          "timeout": {
+            "label": "接口超时时间",
+            "remark": "管理端 HTTP 请求超时时间（秒）"
+          }
+        },
+        "jwt": {
+          "ttl": {
+            "label": "登录有效期",
+            "remark": "管理员 Token 有效时长（分钟）"
+          }
+        },
+        "login": {
+          "captcha": {
+            "label": "登录验证码",
+            "remark": "管理端登录页是否启用图形验证码"
+          }
+        },
+        "maintenance": {
+          "label": "维护模式",
+          "remark": "开启后普通管理员无法访问管理端"
+        }
+      },
       "app": {
         "storage": {
           "driver": {
@@ -298,32 +335,6 @@
             "label": "允许上传扩展名",
             "remark": "JSON 数组，列出允许上传的文件扩展名"
           }
-        },
-        "page_size": {
-          "label": "默认分页大小",
-          "remark": "后台列表默认每页条数"
-        },
-        "api": {
-          "timeout": {
-            "label": "接口超时时间",
-            "remark": "HTTP 接口请求超时时间（秒）"
-          }
-        },
-        "jwt": {
-          "ttl": {
-            "label": "登录有效期",
-            "remark": "管理员 Token 有效时长（分钟）"
-          }
-        },
-        "login": {
-          "captcha": {
-            "label": "登录验证码",
-            "remark": "是否在登录页启用图形验证码"
-          }
-        },
-        "maintenance": {
-          "label": "维护模式",
-          "remark": "开启后普通管理员无法访问系统"
         }
       },
       "storage": {

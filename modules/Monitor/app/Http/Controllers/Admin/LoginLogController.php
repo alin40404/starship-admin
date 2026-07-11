@@ -7,6 +7,7 @@ use Starship\Core\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Monitor\App\Models\LoginLog;
+use Modules\System\App\Support\AdminRuntimeConfig;
 
 class LoginLogController extends Controller
 {
@@ -48,7 +49,7 @@ class LoginLogController extends Controller
             $query->orderByDesc('id');
         }
 
-        return ApiResponse::success($query->paginate((int) $request->get('per_page', 15)));
+        return ApiResponse::success($query->paginate(AdminRuntimeConfig::perPage($request->get('per_page'))));
     }
 
     public function show(int $id): JsonResponse

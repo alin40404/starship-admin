@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Modules\Generator\App\Models\GeneratorTable;
 use Modules\Generator\App\Services\TableConfigService;
 use Modules\Generator\App\Support\ModulePathResolver;
+use Modules\System\App\Support\AdminRuntimeConfig;
 
 class TableConfigController extends Controller
 {
@@ -22,7 +23,7 @@ class TableConfigController extends Controller
         $items = GeneratorTable::query()
             ->withCount('columns')
             ->latest('id')
-            ->paginate((int) request('per_page', 15));
+            ->paginate(AdminRuntimeConfig::perPage(request('per_page')));
 
         return ApiResponse::success($items);
     }

@@ -9,7 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Modules\System\App\Models\Attachment;
-use Modules\System\App\Support\AttachmentCategory;
+use Modules\System\App\Support\AdminRuntimeConfig;
 use Modules\System\App\Support\StorageConfigRegistrar;
 
 class AttachmentController extends Controller
@@ -96,7 +96,7 @@ class AttachmentController extends Controller
 
     private function paginateAttachments(Builder $query, Request $request): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        $paginator = $query->paginate((int) $request->get('per_page', 15));
+        $paginator = $query->paginate(AdminRuntimeConfig::perPage($request->get('per_page')));
         $labels = AttachmentCategory::labelMap();
 
         $paginator->getCollection()->transform(function (Attachment $row) use ($labels) {

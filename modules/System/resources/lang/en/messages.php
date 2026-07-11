@@ -21,6 +21,8 @@ return [
     'login_success' => 'Login successful',
     'logout_success' => 'Logged out',
     'invalid_credentials' => 'Invalid username or password',
+    'captcha_required' => 'Please complete the captcha verification',
+    'maintenance_mode' => 'System is under maintenance. Please try again later.',
     'old_password_invalid' => 'Incorrect old password',
     'new_password_same' => 'New password must differ from the old password',
     'role_builtin_readonly' => 'Built-in roles cannot be modified',

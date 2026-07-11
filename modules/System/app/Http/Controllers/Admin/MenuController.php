@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Modules\System\App\Models\Menu;
 use Modules\System\App\Services\ModuleMenuFilter;
+use Modules\System\App\Support\AdminRuntimeConfig;
 
 class MenuController extends Controller
 {
@@ -36,7 +37,7 @@ class MenuController extends Controller
             $query->where('type', (int) $request->get('type'));
         }
 
-        return ApiResponse::success($query->paginate((int) $request->get('per_page', 15)));
+        return ApiResponse::success($query->paginate(AdminRuntimeConfig::perPage($request->get('per_page'))));
     }
 
     public function store(Request $request): JsonResponse

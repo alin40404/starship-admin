@@ -5,6 +5,7 @@ import type { MenuTreeNode } from '#/api/system/menu';
 import { $te } from '@vben/locales';
 
 import { $t } from '#/locales';
+import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { menuDisplayLabel } from '#/views/permission/menu/data';
 
 export function getConfigGroupLabels(): Record<string, string> {
@@ -374,4 +375,138 @@ export function getParamTypeTagOptions() {
       value: 'json',
     },
   ] as const;
+}
+
+export function validateParamValue(
+  type: string,
+  value: ConfigRow['value'],
+): boolean {
+  const trimmed = String(value ?? '').trim();
+
+  if (type === 'number') {
+    return trimmed !== '' && Number.isFinite(Number(trimmed));
+  }
+
+  if (type === 'bool') {
+    return ['true', 'false', '1', '0', 'yes', 'no', 'on', 'off'].includes(
+      trimmed.toLowerCase(),
+    );
+  }
+
+  if (type === 'json' && trimmed !== '') {
+    try {
+      JSON.parse(trimmed);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+export function validateParamSort(sort: unknown): boolean {
+  const value = Number(sort);
+
+  return Number.isFinite(value) && value >= 0 && Number.isInteger(value);
+}
+
+export const PARAM_VALUE_EDIT_SLOT = 'param_value_edit';
+
+export const PARAM_VALUE_DEFAULT_SLOT = 'param_value_default';
+
+export function isParamBoolTrue(value: ConfigRow['value']): boolean {
+  return ['true', '1', 'yes', 'on'].includes(String(value ?? '').toLowerCase());
+}
+
+export function normalizeParamValueForSave(
+  type: string,
+  value: unknown,
+): string {
+  if (type === 'number') {
+    return value === null || value === undefined || value === ''
+      ? ''
+      : String(value);
+  }
+
+  if (type === 'bool') {
+    return String(value ?? 'false');
+  }
+
+  return String(value ?? '').trim();
+}
+
+export function normalizeParamValueForEdit(
+  type: string,
+  value: ConfigRow['value'],
+): ConfigRow['value'] {
+  const raw = String(value ?? '');
+
+  if (type === 'number') {
+    const parsed = Number(raw);
+
+    return Number.isFinite(parsed) ? String(parsed) : '';
+  }
+
+  if (type === 'bool') {
+    return ['true', '1', 'yes', 'on'].includes(raw.toLowerCase())
+      ? 'true'
+      : 'false';
+  }
+
+  return raw;
+}
+
+export function buildParamSortColumn(canManage: boolean) {
+  return {
+    align: 'center' as const,
+    className: canManage ? 'param-sort-editable-col' : undefined,
+    editRender: canManage
+      ? {
+          name: 'VxeNumberInput',
+          props: {
+            min: 0,
+            type: 'integer',
+          },
+          events: {
+            keydown(
+              params: { $table: { clearEdit: () => void } },
+              event: KeyboardEvent,
+            ) {
+              if (event.key !== 'Enter') {
+                return;
+              }
+              event.preventDefault();
+              (event.target as HTMLElement | null)?.blur?.();
+              void params.$table.clearEdit();
+            },
+          },
+        }
+      : undefined,
+    field: 'sort',
+    title: $t('platform.config.param.sort'),
+    width: 110,
+  };
+}
+
+export function buildParamValueColumn(canManage: boolean) {
+  return {
+    align: 'left' as const,
+    className: canManage ? 'param-value-editable-col' : undefined,
+    editRender: canManage ? {} : undefined,
+    field: 'value',
+    formatter: ({ cellValue, row }: { cellValue: ConfigRow['value']; row: ConfigRow }) => {
+      if (row.type === 'bool') {
+        return '';
+      }
+
+      return cellValue ?? TABLE_CELL_EMPTY;
+    },
+    minWidth: 180,
+    slots: {
+      ...(canManage ? { edit: PARAM_VALUE_EDIT_SLOT } : {}),
+      default: PARAM_VALUE_DEFAULT_SLOT,
+    },
+    title: $t('platform.config.param.value'),
+  };
 }

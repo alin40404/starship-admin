@@ -455,25 +455,34 @@ class ConfigSeeder extends Seeder
 
         $runtimeParams = [
             [
-                'key' => 'app.page_size',
+                'key' => 'admin.page_size',
                 'name' => '默认分页大小',
-                'value' => '15',
+                'value' => '20',
                 'group_name' => 'param',
                 'type' => 'number',
                 'sort' => 10,
-                'remark' => '后台列表默认每页条数',
+                'remark' => '管理端列表默认每页条数',
             ],
             [
-                'key' => 'app.api.timeout',
+                'key' => 'admin.attachment.flow_page_size',
+                'name' => '流式视图分页大小',
+                'value' => '50',
+                'group_name' => 'param',
+                'type' => 'number',
+                'sort' => 15,
+                'remark' => '附件流式视图每页默认加载条数',
+            ],
+            [
+                'key' => 'admin.api.timeout',
                 'name' => '接口超时时间',
                 'value' => '30',
                 'group_name' => 'param',
                 'type' => 'number',
                 'sort' => 20,
-                'remark' => 'HTTP 接口请求超时时间（秒）',
+                'remark' => '管理端 HTTP 请求超时时间（秒）',
             ],
             [
-                'key' => 'app.jwt.ttl',
+                'key' => 'admin.jwt.ttl',
                 'name' => '登录有效期',
                 'value' => '120',
                 'group_name' => 'param',
@@ -482,22 +491,22 @@ class ConfigSeeder extends Seeder
                 'remark' => '管理员 Token 有效时长（分钟）',
             ],
             [
-                'key' => 'app.login.captcha',
+                'key' => 'admin.login.captcha',
                 'name' => '登录验证码',
                 'value' => 'false',
                 'group_name' => 'param',
                 'type' => 'bool',
                 'sort' => 40,
-                'remark' => '是否在登录页启用图形验证码',
+                'remark' => '管理端登录页是否启用图形验证码',
             ],
             [
-                'key' => 'app.maintenance',
+                'key' => 'admin.maintenance',
                 'name' => '维护模式',
                 'value' => 'false',
                 'group_name' => 'param',
                 'type' => 'bool',
                 'sort' => 50,
-                'remark' => '开启后普通管理员无法访问系统',
+                'remark' => '开启后普通管理员无法访问管理端',
             ],
         ];
 
@@ -506,5 +515,5 @@ class ConfigSeeder extends Seeder
             unset($config['key']);
             Setting::query()->updateOrCreate(['key' => $key], $config);
         }
-        }
+    }
 }

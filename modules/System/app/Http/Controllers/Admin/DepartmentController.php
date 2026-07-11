@@ -11,6 +11,7 @@ use Modules\System\App\Models\Admin;
 use Modules\System\App\Models\Department;
 use Modules\System\App\Services\AdminPermissionService;
 use Modules\System\App\Services\DataScopeService;
+use Modules\System\App\Support\AdminRuntimeConfig;
 use Modules\System\App\Support\DepartmentPermissions;
 use Modules\System\App\Support\RolePermissions;
 
@@ -48,7 +49,7 @@ class DepartmentController extends Controller
             app(DataScopeService::class)->applyDepartmentScope($query, $admin);
         }
 
-        $paginator = $query->paginate((int) $request->get('per_page', 15));
+        $paginator = $query->paginate(AdminRuntimeConfig::perPage($request->get('per_page')));
         $paginator->getCollection()->transform(fn (Department $dept) => $this->formatDepartment($dept));
 
         return ApiResponse::success($paginator);

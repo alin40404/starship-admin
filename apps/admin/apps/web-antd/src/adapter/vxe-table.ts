@@ -16,6 +16,8 @@ import { get, isFunction, isString } from '@vben/utils';
 import { objectOmit } from '@vueuse/core';
 import { Button, Image, Popconfirm, Switch, Tag } from 'ant-design-vue';
 
+import { getAdminPageSizeSync } from '#/utils/admin-runtime-config';
+
 import { useVbenForm } from './form';
 
 setupVbenVxeTable({
@@ -44,6 +46,9 @@ setupVbenVxeTable({
         round: true,
         showOverflow: true,
         size: 'small',
+        pagerConfig: {
+          pageSize: getAdminPageSizeSync(),
+        },
       } as VxeTableGridOptions,
     });
 

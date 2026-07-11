@@ -11,12 +11,130 @@ import { message } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
 import { batchUpsertConfigs } from '#/api/system/config';
+import {
+  applyAdminApiTimeout,
+  clearAdminRuntimeParamsCache,
+  initAdminRuntimeConfig,
+} from '#/utils/admin-runtime-config';
 
 const PARAM_GROUP = 'param';
 
 const emits = defineEmits<{ success: [] }>();
 
 const editingKey = ref<string | null>(null);
+
+function getDefaultValueForType(type: string): number | string | undefined {
+  switch (type) {
+    case 'bool': {
+      return 'false';
+    }
+    case 'json':
+    case 'string': {
+      return '';
+    }
+    case 'number': {
+      return undefined;
+    }
+    default: {
+      return '';
+    }
+  }
+}
+
+function normalizeValueForForm(
+  type: string,
+  value: ConfigRow['value'],
+): number | string | undefined {
+  const raw = String(value ?? '');
+
+  if (type === 'number') {
+    const parsed = Number(raw);
+
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+
+  if (type === 'bool') {
+    return ['true', '1', 'yes', 'on'].includes(raw.toLowerCase())
+      ? 'true'
+      : 'false';
+  }
+
+  return raw;
+}
+
+function serializeParamValue(type: string, value: unknown): string {
+  if (type === 'number') {
+    return value === null || value === undefined || value === ''
+      ? ''
+      : String(value);
+  }
+
+  if (type === 'bool') {
+    return String(value ?? 'false');
+  }
+
+  return String(value ?? '').trim();
+}
+
+function buildValueFieldSchema(type: string): VbenFormSchema {
+  if (type === 'json') {
+    return {
+      component: 'Textarea',
+      componentProps: {
+        class: 'w-full',
+        placeholder: $t('platform.config.param.jsonPlaceholder'),
+        rows: 4,
+      },
+      fieldName: 'value',
+      formItemClass: 'col-span-full w-full items-start',
+      label: $t('platform.config.param.value'),
+    };
+  }
+
+  if (type === 'number') {
+    return {
+      component: 'InputNumber',
+      componentProps: {
+        class: 'w-full',
+        placeholder: $t('platform.config.param.numberPlaceholder'),
+      },
+      fieldName: 'value',
+      label: $t('platform.config.param.value'),
+    };
+  }
+
+  if (type === 'bool') {
+    return {
+      component: 'Select',
+      componentProps: {
+        class: 'w-full',
+        options: [
+          {
+            label: $t('platform.config.param.boolTrue'),
+            value: 'true',
+          },
+          {
+            label: $t('platform.config.param.boolFalse'),
+            value: 'false',
+          },
+        ],
+      },
+      defaultValue: 'false',
+      fieldName: 'value',
+      label: $t('platform.config.param.value'),
+    };
+  }
+
+  return {
+    component: 'Input',
+    componentProps: {
+      class: 'w-full',
+      placeholder: $t('platform.config.param.stringPlaceholder'),
+    },
+    fieldName: 'value',
+    label: $t('platform.config.param.value'),
+  };
+}
 
 function getParamFormSchema(): VbenFormSchema[] {
   return [
@@ -61,12 +179,7 @@ function getParamFormSchema(): VbenFormSchema[] {
       fieldName: 'type',
       label: $t('platform.config.param.valueType'),
     },
-    {
-      component: 'Input',
-      componentProps: { class: 'w-full' },
-      fieldName: 'value',
-      label: $t('platform.config.param.value'),
-    },
+    buildValueFieldSchema('string'),
     {
       component: 'InputNumber',
       componentProps: { class: 'w-full', min: 0 },
@@ -84,39 +197,6 @@ function getParamFormSchema(): VbenFormSchema[] {
   ];
 }
 
-function buildValueFieldSchema(type: string): VbenFormSchema {
-  if (type === 'json') {
-    return {
-      component: 'Textarea',
-      componentProps: {
-        class: 'w-full',
-        placeholder: $t('platform.config.param.jsonPlaceholder'),
-        rows: 4,
-      },
-      fieldName: 'value',
-      formItemClass: 'col-span-full w-full items-start',
-      label: $t('platform.config.param.value'),
-    };
-  }
-
-  const placeholderMap: Record<string, string> = {
-    bool: $t('platform.config.param.boolPlaceholder'),
-    number: $t('platform.config.param.numberPlaceholder'),
-    string: $t('platform.config.param.stringPlaceholder'),
-  };
-
-  return {
-    component: 'Input',
-    componentProps: {
-      class: 'w-full',
-      placeholder:
-        placeholderMap[type] ?? $t('platform.config.param.stringPlaceholder'),
-    },
-    fieldName: 'value',
-    label: $t('platform.config.param.value'),
-  };
-}
-
 const [Form, formApi] = useVbenForm({
   commonConfig: {
     componentProps: { class: 'w-full' },
@@ -128,7 +208,9 @@ const [Form, formApi] = useVbenForm({
   wrapperClass: 'grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1',
   handleValuesChange(values, fieldsChanged) {
     if (fieldsChanged.includes('type')) {
-      syncValueFieldByType(String(values.type ?? 'string'));
+      const type = String(values.type ?? 'string');
+      syncValueFieldByType(type);
+      formApi.setFieldValue('value', getDefaultValueForType(type));
     }
   },
 });
@@ -165,6 +247,7 @@ const [Modal, modalApi] = useVbenModal({
     if (!valid) return;
 
     const values = await formApi.getValues();
+    const type = String(values.type ?? 'string');
     modalApi.lock();
     try {
       await batchUpsertConfigs([
@@ -174,10 +257,16 @@ const [Modal, modalApi] = useVbenModal({
           name: values.name as string,
           remark: (values.remark as string) || null,
           sort: Number(values.sort ?? 0),
-          type: values.type as string,
-          value: (values.value as string) ?? '',
+          type,
+          value: serializeParamValue(type, values.value),
         },
       ]);
+      if (String(values.key).startsWith('admin.')) {
+        clearAdminRuntimeParamsCache();
+        await initAdminRuntimeConfig(true);
+        const { requestClient, baseRequestClient } = await import('#/api/request');
+        applyAdminApiTimeout(requestClient, baseRequestClient);
+      }
       message.success($t('crud.saved'));
       modalApi.close();
       emits('success');
@@ -191,16 +280,17 @@ const [Modal, modalApi] = useVbenModal({
     const data = modalApi.getData<ConfigRow | Record<string, never>>();
     const row = data as ConfigRow;
     if (row?.key) {
+      const type = row.type ?? 'string';
       editingKey.value = row.key;
       syncKeyFieldDisabled(true);
-      syncValueFieldByType(row.type ?? 'string');
+      syncValueFieldByType(type);
       formApi.setValues({
         key: row.key,
         name: row.name,
         remark: row.remark ?? '',
         sort: row.sort ?? 0,
-        type: row.type ?? 'string',
-        value: row.value ?? '',
+        type,
+        value: normalizeValueForForm(type, row.value),
       });
     } else {
       editingKey.value = null;

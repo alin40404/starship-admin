@@ -7,6 +7,8 @@ use Starship\Core\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\System\App\Models\Setting;
+use Modules\System\App\Support\AdminRuntimeConfig;
+use Modules\System\App\Support\SettingStore;
 use Modules\System\App\Support\SiteBrandingSync;
 use Modules\System\App\Support\SiteConfig;
 use Modules\System\App\Support\StorageConfigRegistrar;
@@ -16,6 +18,11 @@ class ConfigController extends Controller
     public function site(): JsonResponse
     {
         return ApiResponse::success(SiteConfig::branding());
+    }
+
+    public function runtime(): JsonResponse
+    {
+        return ApiResponse::success(AdminRuntimeConfig::publicSnapshot());
     }
 
     public function index(Request $request): JsonResponse
@@ -85,6 +92,7 @@ class ConfigController extends Controller
 
         StorageConfigRegistrar::reset();
         StorageConfigRegistrar::apply();
+        SettingStore::forget();
 
         SiteBrandingSync::afterConfigBatchUpsert($data['items'], $previousValues);
 

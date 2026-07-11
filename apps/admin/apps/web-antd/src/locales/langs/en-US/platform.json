@@ -148,14 +148,17 @@
       "valueType": "Value Type",
       "sort": "Sort",
       "remark": "Remark",
-      "jsonPlaceholder": "Enter JSON, e.g. {\"key\": \"value\"}",
+      "jsonPlaceholder": "Enter valid JSON content",
       "boolPlaceholder": "Enter true or false",
+      "boolTrue": "Yes (true)",
+      "boolFalse": "No (false)",
       "numberPlaceholder": "Enter a number",
       "stringPlaceholder": "Enter parameter value",
       "createParam": "Create Parameter",
       "editParam": "Edit Parameter",
       "batchDeleteConfirm": "Delete {0} selected parameter(s)?",
-      "batchDeleted": "Deleted {0} parameter(s)"
+      "batchDeleted": "Deleted {0} parameter(s)",
+      "valueInvalid": "Invalid parameter value format"
     },
     "fields": {
       "site": {
@@ -282,6 +285,40 @@
           "remark": "Sender address for system emails"
         }
       },
+      "admin": {
+        "page_size": {
+          "label": "Default Page Size",
+          "remark": "Default page size for admin lists"
+        },
+        "attachment": {
+          "flow_page_size": {
+            "label": "Flow View Page Size",
+            "remark": "Default page size for attachment flow view"
+          }
+        },
+        "api": {
+          "timeout": {
+            "label": "API Timeout",
+            "remark": "HTTP request timeout for the admin app (seconds)"
+          }
+        },
+        "jwt": {
+          "ttl": {
+            "label": "Login Session TTL",
+            "remark": "Admin token lifetime in minutes"
+          }
+        },
+        "login": {
+          "captcha": {
+            "label": "Login Captcha",
+            "remark": "Whether to enable captcha on the admin login page"
+          }
+        },
+        "maintenance": {
+          "label": "Maintenance Mode",
+          "remark": "When enabled, regular admins cannot access the admin app"
+        }
+      },
       "app": {
         "storage": {
           "driver": {
@@ -298,32 +335,6 @@
             "label": "Allowed Extensions",
             "remark": "JSON array of allowed file extensions"
           }
-        },
-        "page_size": {
-          "label": "Default Page Size",
-          "remark": "Default page size for admin lists"
-        },
-        "api": {
-          "timeout": {
-            "label": "API Timeout",
-            "remark": "HTTP request timeout in seconds"
-          }
-        },
-        "jwt": {
-          "ttl": {
-            "label": "Login Session TTL",
-            "remark": "Admin token lifetime in minutes"
-          }
-        },
-        "login": {
-          "captcha": {
-            "label": "Login Captcha",
-            "remark": "Whether to enable captcha on the login page"
-          }
-        },
-        "maintenance": {
-          "label": "Maintenance Mode",
-          "remark": "When enabled, regular admins cannot access the system"
         }
       },
       "storage": {
