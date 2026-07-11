@@ -21,7 +21,7 @@ Starship Admin 框架内核包（Layer 1）。
     "starship/core": "@dev"
   },
   "repositories": [
-    { "type": "path", "url": "../packages/starship-core" }
+    { "type": "path", "url": "../packages/core" }
   ]
 }
 ```

@@ -549,14 +549,14 @@ private_key
 - 同步菜单和权限
 - 提供插件启用状态查询
 
-建议后端核心类（已迁入 `packages/starship-core`）：
+建议后端核心类（已迁入 `packages/core`）：
 
 ```text
-packages/starship-core/src/Plugin/PluginManager.php
-packages/starship-core/src/Plugin/PluginManifest.php
-packages/starship-core/src/Plugin/PluginLoader.php
-packages/starship-core/src/Plugin/PluginLifecycle.php
-packages/starship-core/src/Providers/CoreServiceProvider.php
+packages/core/src/Plugin/PluginManager.php
+packages/core/src/Plugin/PluginManifest.php
+packages/core/src/Plugin/PluginLoader.php
+packages/core/src/Plugin/PluginLifecycle.php
+packages/core/src/Providers/CoreServiceProvider.php
 ```
 
 `backend/app/` 仅保留 Laravel 薄壳（`AppServiceProvider`、`User`、空 `Controller` 基类）。
@@ -825,7 +825,7 @@ starship-admin/
 │  └─ .gitkeep                        # 第一阶段可先保留空目录
 │
 ├─ packages/                          # 框架内核与共享包
-│  └─ starship-core/                  # Layer 1 内核（Module/Plugin 引擎，阶段二迁入）
+│  └─ core/                           # Layer 1 内核 starship/core（Module/Plugin 引擎）
 │
 ├─ docs/                              # 项目文档
 │  ├─ architecture/                   # 架构设计（见 docs/architecture/framework.md）

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "790436103bb8751e0415baa5c64a6898",
+    "content-hash": "bb6990c41ffe41e7f05b1c530f9832a8",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -4719,7 +4719,7 @@
             "version": "0.1.0",
             "dist": {
                 "type": "path",
-                "url": "../packages/starship-core",
+                "url": "../packages/core",
                 "reference": "c021fd295c4459a3772192b2bbff2e6fa6b05626"
             },
             "require": {

@@ -34,7 +34,7 @@ Layer 3  可选插件     plugins/SmsAliyun、plugins/StorageQiniu
     ↓
 Layer 2  底座模块     modules/System、Monitor、Generator（可开关）
     ↓
-Layer 1  框架内核     packages/starship-core（Module/Plugin 引擎、契约、ApiResponse）
+Layer 1  框架内核     packages/core（Module/Plugin 引擎、契约、ApiResponse）
     ↓
 Layer 0  Laravel 壳  backend/（bootstrap、config、artisan，尽量保持官方骨架）
 ```
@@ -53,25 +53,25 @@ Layer 0  Laravel 壳  backend/（bootstrap、config、artisan，尽量保持官�
 **禁止存放**：
 
 - 业务 Controller / Service
-- 插件运行时逻辑（应迁入 `starship-core`）
+- 插件运行时逻辑（应放在 `packages/core`）
 - 与具体业务绑定的 Model
 
 **Laravel 升级策略**：大版本时主要 diff 本层 + `composer.json` 框架约束。
 
-### 2.2 Layer 1 — 框架内核（`packages/starship-core`）✅ 已迁入
+### 2.2 Layer 1 — 框架内核（`packages/core`）✅ 已迁入
 
 **职责**：模块扫描、插件引擎、统一响应、扩展契约、全局辅助函数。
 
 | 原路径（已删除） | 现路径 |
 |----------|----------|
-| `backend/app/Support/Module/*` | `packages/starship-core/src/Module/` |
-| `backend/app/Foundation/Plugin/*` | `packages/starship-core/src/Plugin/` |
-| `backend/app/Support/ApiResponse.php` | `packages/starship-core/src/Support/ApiResponse.php` |
-| `backend/app/helpers.php` | `packages/starship-core/src/helpers.php` |
-| `backend/app/Console/Commands/Plugin*.php` | `packages/starship-core/src/Console/Commands/` |
-| `backend/app/Providers/ModuleServiceProvider.php` | `packages/starship-core/src/Providers/CoreServiceProvider.php` |
+| `backend/app/Support/Module/*` | `packages/core/src/Module/` |
+| `backend/app/Foundation/Plugin/*` | `packages/core/src/Plugin/` |
+| `backend/app/Support/ApiResponse.php` | `packages/core/src/Support/ApiResponse.php` |
+| `backend/app/helpers.php` | `packages/core/src/helpers.php` |
+| `backend/app/Console/Commands/Plugin*.php` | `packages/core/src/Console/Commands/` |
+| `backend/app/Providers/ModuleServiceProvider.php` | `packages/core/src/Providers/CoreServiceProvider.php` |
 | `backend/app/Providers/PluginServiceProvider.php` | ↑ 合并至 CoreServiceProvider |
-| `modules/System/app/Models/Plugin*.php` | `packages/starship-core/src/Models/` |
+| `modules/System/app/Models/Plugin*.php` | `packages/core/src/Models/` |
 
 **内核依赖原则**：
 
@@ -139,7 +139,7 @@ apps/admin/
 
 ## 4. 扩展契约（Contracts）
 
-内核与 System 解耦的关键。建议在 `packages/starship-core/src/Contracts/` 定义：
+内核与 System 解耦的关键。建议在 `packages/core/src/Contracts/` 定义：
 
 ```php
 // 插件注册表读写
@@ -165,7 +165,7 @@ interface PluginConfigStoreInterface
 
 | 方案 | 做法 | 推荐度 |
 |------|------|--------|
-| A | 将 `Plugin`、`PluginConfig` 模型与迁移迁入 `starship-core` | ★★★ 简单直接 |
+| A | 将 `Plugin`、`PluginConfig` 模型与迁移迁入 `packages/core` | ★★★ 简单直接 |
 | B | 模型留 System，Core 只依赖 Contract，System Provider 绑定实现 | ★★☆ 更解耦 |
 
 阶段二抽包时优先采用 **方案 A**。
@@ -292,7 +292,7 @@ interface PluginConfigStoreInterface
 
 ### 阶段二：框架产品化（底座稳定后 → 约 1～2 个月）
 
-- [x] 创建 `packages/starship-core` 并迁移内核代码
+- [x] 创建 `packages/core` 并迁移内核代码
 - [x] Plugin 模型迁入 Core
 - [x] `backend/bootstrap/providers.php` 仅注册 `CoreServiceProvider`
 - [ ] 脚手架：`php artisan starship:module:make`、`starship:plugin:make`
@@ -342,7 +342,7 @@ php artisan starship:generate:crud erp_orders
 | 改 CRUD 生成逻辑 | `modules/Generator/` |
 | 接阿里云短信 | `plugins/SmsAliyun/` |
 | 开发商城订单管理 | 业务仓库 `modules/Shop/` |
-| 改模块扫描、插件引擎 | `packages/starship-core/` |
+| 改模块扫描、插件引擎 | `packages/core/` |
 | 改 Laravel 配置 | `backend/config/` |
 | 改管理端 UI 布局 | `apps/admin/apps/web-antd/` |
 
@@ -364,4 +364,4 @@ php artisan starship:generate:crud erp_orders
 - [README.md](../../README.md) — 项目总览与功能范围
 - [public-storage-link.md](../deployment/public-storage-link.md) — 部署说明
 - [generator/cli.md](../generator/cli.md) — 生成器 CLI
-- [packages/starship-core/README.md](../../packages/starship-core/README.md) — 内核包说明（规划）
+- [packages/core/README.md](../../packages/core/README.md) — 内核包说明（规划）
