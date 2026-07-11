@@ -211,6 +211,14 @@ defineExpose({
   padding: 0 0 2px;
 }
 
+.config-settings-form :deep(.ant-form-item-label > label) {
+  font-size: 13.5px;
+}
+
+.config-settings-form :deep(.ant-form-item-extra) {
+  font-size: 13px;
+}
+
 .config-settings-form :deep(.config-field-control),
 .config-settings-form :deep(.config-field-control.ant-input-textarea) {
   width: 100%;

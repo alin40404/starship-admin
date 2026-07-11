@@ -5,7 +5,7 @@ import { computed } from 'vue';
 
 import { cn } from '@vben-core/shared/utils';
 
-import { TooltipContent, TooltipPortal, useForwardPropsEmits } from 'reka-ui';
+import { TooltipArrow, TooltipContent, TooltipPortal, useForwardPropsEmits } from 'reka-ui';
 
 defineOptions({
   inheritAttrs: false,
@@ -43,6 +43,11 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
       "
     >
       <slot></slot>
+      <TooltipArrow
+        :height="5"
+        :width="10"
+        class="fill-accent stroke-border stroke-1"
+      />
     </TooltipContent>
   </TooltipPortal>
 </template>
