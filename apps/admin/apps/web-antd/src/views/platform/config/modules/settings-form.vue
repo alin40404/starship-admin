@@ -19,6 +19,8 @@ import { batchUpsertConfigs, fetchConfigs } from '#/api/system/config';
 import { AttachmentField } from '#/components/attachment-field';
 
 import {
+  configFieldLabel,
+  configFieldRemark,
   getConfigSelectOptions,
   isAttachmentImageField,
   isStorageFieldVisible,
@@ -134,10 +136,10 @@ defineExpose({
             <Form.Item
               v-for="row in visibleRows"
               :key="row.key"
-              :label="row.name"
+              :label="configFieldLabel(row)"
             >
-              <template v-if="row.remark" #extra>
-                {{ row.remark }}
+              <template v-if="configFieldRemark(row)" #extra>
+                {{ configFieldRemark(row) }}
               </template>
 
               <Switch

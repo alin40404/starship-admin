@@ -1,4 +1,8 @@
 /** 站点配置分组（basic / email 分组） */
+import type { ConfigRow } from '#/api/system/config';
+
+import { $te } from '@vben/locales';
+
 import { $t } from '#/locales';
 
 export function getConfigGroupLabels(): Record<string, string> {
@@ -31,6 +35,29 @@ export const CONFIG_SETTINGS_GROUPS = [
 ] as const;
 
 export type ConfigSettingsGroup = (typeof CONFIG_SETTINGS_GROUPS)[number];
+
+export function configFieldLocaleKey(
+  configKey: string,
+  part: 'label' | 'remark',
+): string {
+  return `platform.config.fields.${configKey}.${part}`;
+}
+
+export function configFieldLabel(row: Pick<ConfigRow, 'key' | 'name'>): string {
+  const localeKey = configFieldLocaleKey(row.key, 'label');
+  return $te(localeKey) ? $t(localeKey) : row.name;
+}
+
+export function configFieldRemark(
+  row: Pick<ConfigRow, 'key' | 'remark'>,
+): string | undefined {
+  const fallback = row.remark?.trim();
+  const localeKey = configFieldLocaleKey(row.key, 'remark');
+  if ($te(localeKey)) {
+    return $t(localeKey);
+  }
+  return fallback || undefined;
+}
 
 /** 存储配置：默认驱动字段 key */
 export const STORAGE_DRIVER_KEY = 'app.storage.driver';

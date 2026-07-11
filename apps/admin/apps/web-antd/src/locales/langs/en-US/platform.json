@@ -153,6 +153,244 @@
       "editParam": "Edit Parameter",
       "batchDeleteConfirm": "Delete {0} selected parameter(s)?",
       "batchDeleted": "Deleted {0} parameter(s)"
+    },
+    "fields": {
+      "site": {
+        "name": {
+          "label": "System Name",
+          "remark": "Shown in the admin header and browser title"
+        },
+        "logo": {
+          "label": "System Logo",
+          "remark": "Recommended size 128×128; leave blank for the default icon"
+        },
+        "beian": {
+          "label": "ICP Filing Number",
+          "remark": "Website ICP filing number, e.g. Guangdong ICP 15000000-1"
+        },
+        "cdn_url": {
+          "label": "CDN URL",
+          "remark": "Use when static assets are served from a third-party CDN"
+        },
+        "version": {
+          "label": "Version",
+          "remark": "Increment when static assets change to bust cache"
+        },
+        "timezone": {
+          "label": "Timezone",
+          "remark": "PHP timezone identifier, e.g. Asia/Shanghai"
+        },
+        "forbidden_ip": {
+          "label": "Blocked IPs",
+          "remark": "One IP per line; matching clients will be denied access"
+        },
+        "fixed_page": {
+          "label": "Default Home Page",
+          "remark": "Menu route opened by default after login"
+        }
+      },
+      "sms": {
+        "enabled": {
+          "label": "Enable SMS",
+          "remark": "When disabled, the system will not send SMS notifications"
+        },
+        "provider": {
+          "label": "SMS Provider",
+          "remark": "Select the integrated SMS platform"
+        },
+        "access_key": {
+          "label": "AccessKey ID",
+          "remark": "AccessKey ID from your cloud provider console"
+        },
+        "secret_key": {
+          "label": "AccessKey Secret",
+          "remark": "AccessKey Secret from your cloud provider console"
+        },
+        "sign_name": {
+          "label": "SMS Signature",
+          "remark": "Approved signature name on the SMS platform"
+        },
+        "template_code": {
+          "label": "Default Template ID",
+          "remark": "Default SMS template ID for verification codes and similar"
+        },
+        "region": {
+          "label": "Region",
+          "remark": "e.g. cn-hangzhou, ap-guangzhou"
+        }
+      },
+      "inbox": {
+        "enabled": {
+          "label": "Enable Inbox",
+          "remark": "When disabled, new inbox messages will not be created"
+        },
+        "retention_days": {
+          "label": "Message Retention Days",
+          "remark": "0 means keep forever; expired messages will be purged"
+        },
+        "page_size": {
+          "label": "Inbox Page Size",
+          "remark": "Default page size for the inbox list"
+        },
+        "notify_system": {
+          "label": "System Notifications",
+          "remark": "Whether system inbox messages are allowed"
+        },
+        "notify_todo": {
+          "label": "Todo Notifications",
+          "remark": "Whether todo inbox messages are allowed"
+        },
+        "notify_account": {
+          "label": "Account Security Notifications",
+          "remark": "Whether account security inbox messages are allowed"
+        }
+      },
+      "mail": {
+        "type": {
+          "label": "Mail Delivery Method",
+          "remark": "SMTP is currently supported"
+        },
+        "smtp_host": {
+          "label": "SMTP Host",
+          "remark": "Incorrect settings may cause mail delivery timeouts"
+        },
+        "smtp_port": {
+          "label": "SMTP Port",
+          "remark": "Default ports: 25 (plain), 465 (SSL), 587 (TLS)"
+        },
+        "smtp_user": {
+          "label": "SMTP Username",
+          "remark": "Full email account address"
+        },
+        "smtp_pass": {
+          "label": "SMTP Password",
+          "remark": "Mailbox password or SMTP authorization code"
+        },
+        "verify_type": {
+          "label": "SMTP Encryption",
+          "remark": "SSL is recommended"
+        },
+        "from": {
+          "label": "From Address",
+          "remark": "Sender address for system emails"
+        }
+      },
+      "app": {
+        "storage": {
+          "driver": {
+            "label": "Default Storage Driver",
+            "remark": "Default disk for uploads; public storage is available at /storage"
+          }
+        },
+        "upload": {
+          "max_size": {
+            "label": "Max Upload Size",
+            "remark": "Maximum single file size (MB)"
+          },
+          "allowed_ext": {
+            "label": "Allowed Extensions",
+            "remark": "JSON array of allowed file extensions"
+          }
+        },
+        "page_size": {
+          "label": "Default Page Size",
+          "remark": "Default page size for admin lists"
+        },
+        "api": {
+          "timeout": {
+            "label": "API Timeout",
+            "remark": "HTTP request timeout in seconds"
+          }
+        },
+        "jwt": {
+          "ttl": {
+            "label": "Login Session TTL",
+            "remark": "Admin token lifetime in minutes"
+          }
+        },
+        "login": {
+          "captcha": {
+            "label": "Login Captcha",
+            "remark": "Whether to enable captcha on the login page"
+          }
+        },
+        "maintenance": {
+          "label": "Maintenance Mode",
+          "remark": "When enabled, regular admins cannot access the system"
+        }
+      },
+      "storage": {
+        "public_url": {
+          "label": "Public Base URL",
+          "remark": "For cloud drivers; leave blank for public storage to use APP_URL/storage"
+        },
+        "oss": {
+          "access_key": {
+            "label": "OSS AccessKey ID",
+            "remark": "Required when using Alibaba Cloud OSS"
+          },
+          "secret_key": {
+            "label": "OSS AccessKey Secret",
+            "remark": "Required when using Alibaba Cloud OSS"
+          },
+          "bucket": {
+            "label": "OSS Bucket",
+            "remark": "Object storage bucket name"
+          },
+          "endpoint": {
+            "label": "OSS Endpoint",
+            "remark": "e.g. oss-cn-hangzhou.aliyuncs.com; auto-generated from region if empty"
+          },
+          "region": {
+            "label": "OSS Region",
+            "remark": "e.g. cn-hangzhou, cn-beijing"
+          }
+        },
+        "cos": {
+          "secret_id": {
+            "label": "COS SecretId",
+            "remark": "Required when using Tencent Cloud COS"
+          },
+          "secret_key": {
+            "label": "COS SecretKey",
+            "remark": "Required when using Tencent Cloud COS"
+          },
+          "bucket": {
+            "label": "COS Bucket",
+            "remark": "Object storage bucket name"
+          },
+          "region": {
+            "label": "COS Region",
+            "remark": "e.g. ap-guangzhou, ap-shanghai"
+          },
+          "endpoint": {
+            "label": "COS Endpoint",
+            "remark": "Auto-generated from region if empty, e.g. cos.ap-guangzhou.myqcloud.com"
+          }
+        },
+        "s3": {
+          "access_key": {
+            "label": "S3 Access Key",
+            "remark": "Required for AWS S3 or S3-compatible storage"
+          },
+          "secret_key": {
+            "label": "S3 Secret Key",
+            "remark": "Required for AWS S3 or S3-compatible storage"
+          },
+          "bucket": {
+            "label": "S3 Bucket",
+            "remark": "Object storage bucket name"
+          },
+          "region": {
+            "label": "S3 Region",
+            "remark": "AWS region identifier, e.g. us-east-1, ap-southeast-1"
+          },
+          "endpoint": {
+            "label": "S3 Endpoint",
+            "remark": "Leave blank for AWS; required for MinIO and other S3-compatible storage"
+          }
+        }
+      }
     }
   }
 }

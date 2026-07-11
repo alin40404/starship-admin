@@ -22,7 +22,7 @@ import {
 import { CONFIG_PERMISSIONS } from '#/constants/config-permissions';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 
-import { getParamTypeTagOptions } from '../data';
+import { configFieldLabel, configFieldRemark, getParamTypeTagOptions } from '../data';
 import ParamForm from './param-form.vue';
 
 const props = defineProps<{
@@ -114,7 +114,13 @@ const [Grid, gridApi] = useVbenVxeGrid<ConfigRow>({
         type: 'checkbox',
         width: 48,
       },
-      { align: 'left', field: 'name', minWidth: 140, title: $t('platform.config.param.name') },
+      {
+        align: 'left',
+        field: 'name',
+        formatter: ({ row }) => configFieldLabel(row as ConfigRow),
+        minWidth: 140,
+        title: $t('platform.config.param.name'),
+      },
       { align: 'left', field: 'key', minWidth: 160, title: $t('platform.config.param.key') },
       {
         align: 'left',
@@ -135,8 +141,8 @@ const [Grid, gridApi] = useVbenVxeGrid<ConfigRow>({
       {
         align: 'left',
         field: 'remark',
-        formatter: ({ cellValue }: { cellValue: ConfigRow['remark'] }) =>
-          cellValue ?? TABLE_CELL_EMPTY,
+        formatter: ({ row }) =>
+          configFieldRemark(row as ConfigRow) ?? TABLE_CELL_EMPTY,
         minWidth: 160,
         title: $t('platform.config.param.remark'),
       },
