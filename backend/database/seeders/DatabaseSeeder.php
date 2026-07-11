@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Support\Module\ModuleManager;
+use Starship\Core\Module\ModuleManager;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $manager = new ModuleManager(base_path('../modules'));
+        $manager = app(ModuleManager::class);
 
         foreach ($manager->enabled() as $module) {
             foreach ($module->seeders() as $seeder) {

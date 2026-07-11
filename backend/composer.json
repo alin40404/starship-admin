@@ -12,6 +12,7 @@
         "laravel/tinker": "^3.0",
         "league/flysystem-aws-s3-v3": "3.0",
         "overtrue/pinyin": "5.0",
+        "starship/core": "@dev",
         "starship/generator": "@dev",
         "starship/monitor": "@dev",
         "starship/system": "@dev"
@@ -29,12 +30,13 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        },
-        "files": [
-            "app/helpers.php"
-        ]
+        }
     },
     "repositories": [
+        {
+            "type": "path",
+            "url": "../packages/starship-core"
+        },
         {
             "type": "path",
             "url": "../modules/System"

@@ -2,7 +2,7 @@
 
 namespace Modules\System\App\Http\Middleware\Concerns;
 
-use App\Support\ApiResponse;
+use Starship\Core\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\System\App\Models\Admin;
@@ -13,7 +13,7 @@ trait ChecksAdminPermission
     {
         $admin = $request->user();
         if (! $admin instanceof Admin) {
-            return ApiResponse::error('未登录', 401);
+            return ApiResponse::error('未登�?, 401);
         }
 
         if (! $allowed($admin)) {

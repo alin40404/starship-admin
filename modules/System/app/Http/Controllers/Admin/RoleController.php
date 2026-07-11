@@ -3,7 +3,7 @@
 namespace Modules\System\App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Support\ApiResponse;
+use Starship\Core\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -97,7 +97,7 @@ class RoleController extends Controller
         $role = Role::query()->findOrFail($id);
 
         if ($role->code === 'super_admin') {
-            return ApiResponse::error('系统内置角色不允许修改', 422);
+            return ApiResponse::error('系统内置角色不允许修�?, 422);
         }
 
         $data = $request->validate([
@@ -122,7 +122,7 @@ class RoleController extends Controller
         $role = Role::query()->findOrFail($id);
 
         if ($role->code === 'super_admin') {
-            return ApiResponse::error('系统内置角色不允许修改', 422);
+            return ApiResponse::error('系统内置角色不允许修�?, 422);
         }
 
         $data = $request->validate([
@@ -139,12 +139,12 @@ class RoleController extends Controller
         $role = Role::query()->whereKey($id)->firstOrFail();
 
         if ($role->code === 'super_admin') {
-            return ApiResponse::error('系统内置角色不允许删除', 422);
+            return ApiResponse::error('系统内置角色不允许删�?, 422);
         }
 
         $role->delete();
 
-        return ApiResponse::success(null, '已删除');
+        return ApiResponse::success(null, '已删�?);
     }
 
     public function batchDestroy(Request $request): JsonResponse
@@ -159,7 +159,7 @@ class RoleController extends Controller
             ->where('code', '!=', 'super_admin')
             ->delete();
 
-        return ApiResponse::success(['deleted' => $deleted], '已批量删除');
+        return ApiResponse::success(['deleted' => $deleted], '已批量删�?);
     }
 
     public function batchUpdateStatus(Request $request): JsonResponse
@@ -175,7 +175,7 @@ class RoleController extends Controller
             ->where('code', '!=', 'super_admin')
             ->update(['status' => $data['status']]);
 
-        return ApiResponse::success(['updated' => $updated], '已批量更新状态');
+        return ApiResponse::success(['updated' => $updated], '已批量更新状�?);
     }
 
     public function syncMenus(Request $request, int $id): JsonResponse
@@ -188,7 +188,7 @@ class RoleController extends Controller
 
         $role->menus()->sync($validated['menu_ids']);
 
-        return ApiResponse::success(['menu_ids' => $validated['menu_ids']], '菜单权限已更新');
+        return ApiResponse::success(['menu_ids' => $validated['menu_ids']], '菜单权限已更�?);
     }
 
     public function syncDepts(Request $request, int $id): JsonResponse
@@ -196,11 +196,11 @@ class RoleController extends Controller
         $role = Role::query()->findOrFail($id);
 
         if ($role->code === 'super_admin') {
-            return ApiResponse::error('系统内置角色不允许修改', 422);
+            return ApiResponse::error('系统内置角色不允许修�?, 422);
         }
 
         if ((int) $role->data_scope !== DataScope::CUSTOM) {
-            return ApiResponse::error('仅自定义数据范围可配置部门', 422);
+            return ApiResponse::error('仅自定义数据范围可配置部�?, 422);
         }
 
         $validated = $request->validate([
@@ -210,6 +210,6 @@ class RoleController extends Controller
 
         $role->departments()->sync($validated['dept_ids']);
 
-        return ApiResponse::success(['dept_ids' => $validated['dept_ids']], '数据部门已更新');
+        return ApiResponse::success(['dept_ids' => $validated['dept_ids']], '数据部门已更�?);
     }
 }

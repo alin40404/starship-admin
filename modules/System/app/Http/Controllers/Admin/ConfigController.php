@@ -3,7 +3,7 @@
 namespace Modules\System\App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Support\ApiResponse;
+use Starship\Core\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\System\App\Models\Setting;
@@ -62,7 +62,7 @@ class ConfigController extends Controller
         StorageConfigRegistrar::reset();
         StorageConfigRegistrar::apply();
 
-        return ApiResponse::success(null, '配置已保存');
+        return ApiResponse::success(null, '配置已保�?);
     }
 
     public function destroy(int $id): JsonResponse
@@ -74,7 +74,7 @@ class ConfigController extends Controller
 
         $config->delete();
 
-        return ApiResponse::success(null, '已删除');
+        return ApiResponse::success(null, '已删�?);
     }
 
     public function batchDestroy(Request $request): JsonResponse
@@ -90,9 +90,9 @@ class ConfigController extends Controller
             ->delete();
 
         if ($deleted === 0) {
-            return ApiResponse::error('未找到可删除的运行参数', 422);
+            return ApiResponse::error('未找到可删除的运行参�?, 422);
         }
 
-        return ApiResponse::success(['deleted' => $deleted], '已批量删除');
+        return ApiResponse::success(['deleted' => $deleted], '已批量删�?);
     }
 }

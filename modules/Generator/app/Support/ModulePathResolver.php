@@ -2,7 +2,7 @@
 
 namespace Modules\Generator\App\Support;
 
-use App\Support\Module\ModuleManager;
+use Starship\Core\Module\ModuleManager;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use InvalidArgumentException;

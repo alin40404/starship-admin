@@ -3,7 +3,7 @@
 namespace Modules\System\App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Support\ApiResponse;
+use Starship\Core\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -69,7 +69,7 @@ class AuthController extends Controller
                 username: $admin->username,
                 success: true,
                 adminId: $admin->id,
-                message: '退出登录',
+                message: '退出登�?,
                 request: $request,
                 action: 'logout',
             );
@@ -77,7 +77,7 @@ class AuthController extends Controller
 
         $admin?->currentAccessToken()?->delete();
 
-        return ApiResponse::success(null, '已退出');
+        return ApiResponse::success(null, '已退�?);
     }
 
     public function me(Request $request, AdminPermissionService $permission): JsonResponse
@@ -99,7 +99,7 @@ class AuthController extends Controller
     {
         $admin = $request->user();
         if (! $admin instanceof Admin) {
-            return ApiResponse::error('未登录', 401);
+            return ApiResponse::error('未登�?, 401);
         }
 
         return ApiResponse::success($permission->menuTreeForAdmin($admin));
@@ -109,7 +109,7 @@ class AuthController extends Controller
     {
         $admin = $request->user();
         if (! $admin instanceof Admin) {
-            return ApiResponse::error('未登录', 401);
+            return ApiResponse::error('未登�?, 401);
         }
 
         return ApiResponse::success([
@@ -121,7 +121,7 @@ class AuthController extends Controller
     {
         $admin = $request->user();
         if (! $admin instanceof Admin) {
-            return ApiResponse::error('未登录', 401);
+            return ApiResponse::error('未登�?, 401);
         }
 
         $data = $request->validate([
@@ -135,14 +135,14 @@ class AuthController extends Controller
         $admin->fill($data);
         $admin->save();
 
-        return ApiResponse::success($this->formatAdmin($admin->fresh()), '个人信息已更新');
+        return ApiResponse::success($this->formatAdmin($admin->fresh()), '个人信息已更�?);
     }
 
     public function updatePassword(Request $request): JsonResponse
     {
         $admin = $request->user();
         if (! $admin instanceof Admin) {
-            return ApiResponse::error('未登录', 401);
+            return ApiResponse::error('未登�?, 401);
         }
 
         $data = $request->validate([
@@ -158,7 +158,7 @@ class AuthController extends Controller
         }
 
         if (Hash::check($newPassword, $admin->password)) {
-            return ApiResponse::error('新密码不能与旧密码相同', 422);
+            return ApiResponse::error('新密码不能与旧密码相�?, 422);
         }
 
         $admin->password = Hash::make($newPassword);

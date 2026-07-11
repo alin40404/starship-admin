@@ -549,28 +549,17 @@ private_key
 - 同步菜单和权限
 - 提供插件启用状态查询
 
-建议后端核心类：
+建议后端核心类（已迁入 `packages/starship-core`）：
 
 ```text
-backend/app/Foundation/Plugin/PluginManager.php
-backend/app/Foundation/Plugin/PluginManifest.php
-backend/app/Foundation/Plugin/PluginLoader.php
-backend/app/Foundation/Plugin/PluginLifecycle.php
+packages/starship-core/src/Plugin/PluginManager.php
+packages/starship-core/src/Plugin/PluginManifest.php
+packages/starship-core/src/Plugin/PluginLoader.php
+packages/starship-core/src/Plugin/PluginLifecycle.php
+packages/starship-core/src/Providers/CoreServiceProvider.php
 ```
 
-如果不希望污染 `backend/app`，也可以放在：
-
-```text
-packages/core/src/Plugin/
-```
-
-第一版更推荐先放在：
-
-```text
-backend/app/Foundation/Plugin/
-```
-
-等插件机制稳定后，再抽到 `packages/core`。
+`backend/app/` 仅保留 Laravel 薄壳（`AppServiceProvider`、`User`、空 `Controller` 基类）。
 
 ### 7.8 插件前端扩展机制
 
@@ -835,12 +824,11 @@ starship-admin/
 ├─ plugins/                           # 插件预留目录，放可选插件和第三方服务适配器
 │  └─ .gitkeep                        # 第一阶段可先保留空目录
 │
-├─ packages/                          # 代码级共享能力
-│  ├─ contracts/                      # 扩展契约、接口定义
-│  └─ shared/                         # 共享常量、枚举、协议
+├─ packages/                          # 框架内核与共享包
+│  └─ starship-core/                  # Layer 1 内核（Module/Plugin 引擎，阶段二迁入）
 │
 ├─ docs/                              # 项目文档
-│  ├─ architecture/                   # 架构设计
+│  ├─ architecture/                   # 架构设计（见 docs/architecture/framework.md）
 │  ├─ modules/                        # 模块开发规范
 │  ├─ generator/                      # 代码生成器设计
 │  ├─ plugins/                        # 插件机制设计

@@ -2,8 +2,8 @@
 
 namespace Modules\System\App\Services;
 
-use App\Support\Module\Module;
-use App\Support\Module\ModuleManager;
+use Starship\Core\Module\Module;
+use Starship\Core\Module\ModuleManager;
 use Illuminate\Support\Collection;
 use Modules\System\App\Models\Menu;
 
@@ -15,7 +15,7 @@ class ModuleMenuFilter
     }
 
     /**
-     * 属于已禁用模块、应从权限/菜单树中排除的菜单 ID（含子节点）。
+     * 属于已禁用模块、应从权�?菜单树中排除的菜�?ID（含子节点）�?
      *
      * @return list<int>
      */
@@ -37,7 +37,7 @@ class ModuleMenuFilter
     }
 
     /**
-     * 菜单管理页：解析菜单归属模块（按 module.json 的 menus / permissions 规则）。
+     * 菜单管理页：解析菜单归属模块（按 module.json �?menus / permissions 规则）�?
      *
      * @return array<int, array{name: string, title: string, enabled: bool}>
      */
@@ -136,7 +136,7 @@ class ModuleMenuFilter
     }
 
     /**
-     * 匹配强度：path 精确 > permission 精确 > 最长 permission 前缀。
+     * 匹配强度：path 精确 > permission 精确 > 最�?permission 前缀�?
      *
      * @param  array{
      *   paths: list<string>,

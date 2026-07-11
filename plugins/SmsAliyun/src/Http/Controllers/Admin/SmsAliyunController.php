@@ -2,9 +2,9 @@
 
 namespace Plugins\SmsAliyun\Http\Controllers\Admin;
 
-use App\Foundation\Plugin\PluginConfigRepository;
+use Starship\Core\Plugin\PluginConfigRepository;
 use App\Http\Controllers\Controller;
-use App\Support\ApiResponse;
+use Starship\Core\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -29,7 +29,7 @@ class SmsAliyunController extends Controller
             'mobile' => $data['mobile'],
             'sign_name' => $signName,
             'template_code' => $templateCode,
-            'message' => '测试请求已通过插件路由校验（第一版不调用真实阿里云 SDK）',
+            'message' => '测试请求已通过插件路由校验（第一版不调用真实阿里�?SDK�?,
         ], '测试成功');
     }
 }

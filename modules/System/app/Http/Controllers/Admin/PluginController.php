@@ -3,7 +3,7 @@
 namespace Modules\System\App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Support\ApiResponse;
+use Starship\Core\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
@@ -82,7 +82,7 @@ class PluginController extends Controller
         try {
             return ApiResponse::success(
                 $pluginService->updateConfig($slug, $request->all()),
-                '配置已保存',
+                '配置已保�?,
             );
         } catch (InvalidArgumentException $exception) {
             return ApiResponse::error($exception->getMessage(), 422);

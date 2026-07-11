@@ -3,7 +3,7 @@
 namespace Modules\System\App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Support\ApiResponse;
+use Starship\Core\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -88,7 +88,7 @@ class PostController extends Controller
     {
         Post::query()->whereKey($id)->firstOrFail()->delete();
 
-        return ApiResponse::success(null, '已删除');
+        return ApiResponse::success(null, '已删�?);
     }
 
     public function batchDestroy(Request $request): JsonResponse
@@ -100,7 +100,7 @@ class PostController extends Controller
 
         $deleted = Post::query()->whereIn('id', $ids)->delete();
 
-        return ApiResponse::success(['deleted' => $deleted], '已批量删除');
+        return ApiResponse::success(['deleted' => $deleted], '已批量删�?);
     }
 
     public function batchUpdateStatus(Request $request): JsonResponse
@@ -115,6 +115,6 @@ class PostController extends Controller
             ->whereIn('id', $data['ids'])
             ->update(['status' => $data['status']]);
 
-        return ApiResponse::success(['updated' => $updated], '已批量更新状态');
+        return ApiResponse::success(['updated' => $updated], '已批量更新状�?);
     }
 }

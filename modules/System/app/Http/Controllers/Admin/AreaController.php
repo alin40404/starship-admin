@@ -3,7 +3,7 @@
 namespace Modules\System\App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Support\ApiResponse;
+use Starship\Core\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\System\App\Models\Area;
@@ -120,10 +120,10 @@ class AreaController extends Controller
         if (isset($data['pid'])) {
             $pid = (int) $data['pid'];
             if ($pid === (int) $area->id) {
-                return ApiResponse::error('上级区域不能为自身', 422);
+                return ApiResponse::error('上级区域不能为自�?, 422);
             }
             if ($this->isDescendant($pid, (int) $area->id)) {
-                return ApiResponse::error('上级区域不能为下级', 422);
+                return ApiResponse::error('上级区域不能为下�?, 422);
             }
             $data['pid'] = $pid;
         }
@@ -150,12 +150,12 @@ class AreaController extends Controller
         $area = Area::query()->whereKey($id)->firstOrFail();
 
         if (Area::query()->where('pid', $area->id)->exists()) {
-            return ApiResponse::error('存在下级区域，无法删除', 422);
+            return ApiResponse::error('存在下级区域，无法删�?, 422);
         }
 
         $area->delete();
 
-        return ApiResponse::success(null, '已删除');
+        return ApiResponse::success(null, '已删�?);
     }
 
     public function batchDestroy(Request $request): JsonResponse
@@ -182,7 +182,7 @@ class AreaController extends Controller
 
         return ApiResponse::success(
             ['deleted' => $deleted, 'skipped' => $skipped],
-            $skipped > 0 ? "已删除 {$deleted} 个，{$skipped} 个因存在下级未删除" : '已批量删除',
+            $skipped > 0 ? "已删�?{$deleted} 个，{$skipped} 个因存在下级未删�? : '已批量删�?,
         );
     }
 

@@ -3,7 +3,7 @@
 namespace Modules\System\App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Support\ApiResponse;
+use Starship\Core\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -84,6 +84,6 @@ class DictTypeController extends Controller
     {
         DictType::query()->whereKey($id)->firstOrFail()->delete();
 
-        return ApiResponse::success(null, '已删除');
+        return ApiResponse::success(null, '已删�?);
     }
 }

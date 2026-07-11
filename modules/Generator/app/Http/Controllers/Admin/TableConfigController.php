@@ -3,7 +3,7 @@
 namespace Modules\Generator\App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Support\ApiResponse;
+use Starship\Core\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Generator\App\Models\GeneratorTable;
@@ -70,7 +70,7 @@ class TableConfigController extends Controller
 
         $config = $tableConfigService->update($config, $payload);
 
-        return ApiResponse::success($config, '已保存');
+        return ApiResponse::success($config, '已保�?);
     }
 
     public function destroy(int $id): JsonResponse
@@ -79,6 +79,6 @@ class TableConfigController extends Controller
         $config->columns()->delete();
         $config->delete();
 
-        return ApiResponse::success(null, '已删除');
+        return ApiResponse::success(null, '已删�?);
     }
 }

@@ -3,7 +3,7 @@
 namespace Modules\System\App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Support\ApiResponse;
+use Starship\Core\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -99,7 +99,7 @@ class DepartmentController extends Controller
         ]);
 
         if (isset($data['parent_id']) && (int) $data['parent_id'] === (int) $dept->id) {
-            return ApiResponse::error('上级部门不能为自身', 422);
+            return ApiResponse::error('上级部门不能为自�?, 422);
         }
 
         $dept->update($data);
@@ -136,7 +136,7 @@ class DepartmentController extends Controller
 
         return ApiResponse::success(
             $this->formatDepartment($dept->fresh()->load('leader:id,nickname,real_name,username')),
-            '排序已更新',
+            '排序已更�?,
         );
     }
 
@@ -145,16 +145,16 @@ class DepartmentController extends Controller
         $dept = Department::query()->whereKey($id)->firstOrFail();
 
         if (Department::query()->where('parent_id', $dept->id)->exists()) {
-            return ApiResponse::error('存在下级部门，无法删除', 422);
+            return ApiResponse::error('存在下级部门，无法删�?, 422);
         }
 
         if (Admin::query()->where('dept_id', $dept->id)->exists()) {
-            return ApiResponse::error('部门下存在管理员，无法删除', 422);
+            return ApiResponse::error('部门下存在管理员，无法删�?, 422);
         }
 
         $dept->delete();
 
-        return ApiResponse::success(null, '已删除');
+        return ApiResponse::success(null, '已删�?);
     }
 
     public function batchDestroy(Request $request): JsonResponse
@@ -184,7 +184,7 @@ class DepartmentController extends Controller
 
         return ApiResponse::success(
             ['deleted' => $deleted, 'skipped' => $skipped],
-            $skipped > 0 ? "已删除 {$deleted} 个，{$skipped} 个因存在下级或管理员未删除" : '已批量删除',
+            $skipped > 0 ? "已删�?{$deleted} 个，{$skipped} 个因存在下级或管理员未删�? : '已批量删�?,
         );
     }
 
@@ -200,7 +200,7 @@ class DepartmentController extends Controller
             ->whereIn('id', $data['ids'])
             ->update(['status' => $data['status']]);
 
-        return ApiResponse::success(['updated' => $updated], '已批量更新状态');
+        return ApiResponse::success(['updated' => $updated], '已批量更新状�?);
     }
 
     /**

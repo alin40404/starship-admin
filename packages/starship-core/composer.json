@@ -1,0 +1,22 @@
+{
+    "name": "starship/core",
+    "description": "Starship Admin framework kernel — module scanner, plugin engine, contracts",
+    "type": "library",
+    "license": "MIT",
+    "version": "0.1.0",
+    "require": {
+        "php": "^8.3",
+        "laravel/framework": "^13.0",
+        "composer/composer": "^2.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "Starship\\Core\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

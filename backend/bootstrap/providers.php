@@ -1,11 +1,9 @@
 <?php
 
 use App\Providers\AppServiceProvider;
-use App\Providers\ModuleServiceProvider;
-use App\Providers\PluginServiceProvider;
+use Starship\Core\Providers\CoreServiceProvider;
 
 return [
     AppServiceProvider::class,
-    ModuleServiceProvider::class,
-    PluginServiceProvider::class,
+    CoreServiceProvider::class,
 ];

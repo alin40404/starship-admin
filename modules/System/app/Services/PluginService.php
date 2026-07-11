@@ -2,10 +2,10 @@
 
 namespace Modules\System\App\Services;
 
-use App\Foundation\Plugin\Plugin;
-use App\Foundation\Plugin\PluginConfigRepository;
-use App\Foundation\Plugin\PluginLifecycle;
-use App\Foundation\Plugin\PluginManager;
+use Starship\Core\Plugin\Plugin;
+use Starship\Core\Plugin\PluginConfigRepository;
+use Starship\Core\Plugin\PluginLifecycle;
+use Starship\Core\Plugin\PluginManager;
 
 class PluginService
 {

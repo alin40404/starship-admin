@@ -3,7 +3,7 @@
 namespace Modules\Monitor\App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Support\ApiResponse;
+use Starship\Core\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Monitor\App\Models\OperationLog;
@@ -68,7 +68,7 @@ class OperationLogController extends Controller
     {
         OperationLog::query()->whereKey($id)->firstOrFail()->delete();
 
-        return ApiResponse::success(null, '已删除');
+        return ApiResponse::success(null, '已删�?);
     }
 
     public function batchDestroy(Request $request): JsonResponse
@@ -80,6 +80,6 @@ class OperationLogController extends Controller
 
         $deleted = OperationLog::query()->whereIn('id', $ids)->delete();
 
-        return ApiResponse::success(['deleted' => $deleted], '已批量删除');
+        return ApiResponse::success(['deleted' => $deleted], '已批量删�?);
     }
 }
