@@ -53,7 +53,18 @@ class ConfigController extends Controller
 
         foreach ($data['items'] as $item) {
             $key = $item['key'];
-            $payload = collect($item)->except('key')->filter(fn ($v) => $v !== null)->all();
+            $payload = collect($item)
+                ->except('key')
+                ->map(function ($value, $field) {
+                    // 允许清空 value / remark：中间件会把 "" 转为 null，需还原为空串再写入
+                    if (in_array($field, ['value', 'remark'], true) && $value === null) {
+                        return '';
+                    }
+
+                    return $value;
+                })
+                ->filter(fn ($value) => $value !== null)
+                ->all();
 
             Setting::query()->updateOrCreate(
                 ['key' => $key],

@@ -23,7 +23,7 @@ class ConfigSeeder extends Seeder
             [
                 'key' => 'site.logo',
                 'name' => '系统 Logo',
-                'value' => '',
+                'value' => '/logo.png',
                 'group_name' => 'basic',
                 'type' => 'string',
                 'sort' => 20,
