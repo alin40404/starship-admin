@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Modules\System\App\Models\Attachment;
 use Modules\System\App\Support\AdminRuntimeConfig;
+use Modules\System\App\Support\AttachmentCategory;
 use Modules\System\App\Support\StorageConfigRegistrar;
 
 class AttachmentController extends Controller
