@@ -15,15 +15,18 @@ final class SiteConfig
 
     public const KEY_BEIAN = 'site.beian';
 
+    public const KEY_FIXED_PAGE = 'site.fixed_page';
+
     /** @var list<string> */
     private const PUBLIC_KEYS = [
         self::KEY_NAME,
         self::KEY_LOGO,
         self::KEY_BEIAN,
+        self::KEY_FIXED_PAGE,
     ];
 
     /**
-     * @return array{name: string, logo: string, beian: string}
+     * @return array{name: string, logo: string, beian: string, defaultHomePath: string}
      */
     public static function branding(): array
     {
@@ -35,6 +38,17 @@ final class SiteConfig
             'name' => trim((string) ($values[self::KEY_NAME] ?? '')),
             'logo' => trim((string) ($values[self::KEY_LOGO] ?? '')),
             'beian' => trim((string) ($values[self::KEY_BEIAN] ?? '')),
+            'defaultHomePath' => self::normalizeHomePath((string) ($values[self::KEY_FIXED_PAGE] ?? '')),
         ];
+    }
+
+    private static function normalizeHomePath(string $path): string
+    {
+        $trimmed = trim($path);
+        if ($trimmed === '') {
+            return '';
+        }
+
+        return str_starts_with($trimmed, '/') ? $trimmed : '/'.$trimmed;
     }
 }

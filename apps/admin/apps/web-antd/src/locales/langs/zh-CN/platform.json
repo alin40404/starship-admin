@@ -127,7 +127,9 @@
       "storageLocal": "本地存储",
       "storageOss": "阿里云 OSS",
       "storageCos": "腾讯云 COS",
-      "storageS3": "AWS S3"
+      "storageS3": "AWS S3",
+      "homePathLegacy": "{path}（未在菜单中）",
+      "homePathPlaceholder": "请选择登录后默认打开的菜单"
     },
     "paramType": {
       "string": "字符串",

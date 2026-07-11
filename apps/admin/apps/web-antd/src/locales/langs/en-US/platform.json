@@ -127,7 +127,9 @@
       "storageLocal": "Local Storage",
       "storageOss": "Alibaba Cloud OSS",
       "storageCos": "Tencent Cloud COS",
-      "storageS3": "AWS S3"
+      "storageS3": "AWS S3",
+      "homePathLegacy": "{path} (not in menu list)",
+      "homePathPlaceholder": "Select default page after login"
     },
     "paramType": {
       "string": "String",

@@ -1,9 +1,11 @@
 /** 站点配置分组（basic / email 分组） */
 import type { ConfigRow } from '#/api/system/config';
+import type { MenuTreeNode } from '#/api/system/menu';
 
 import { $te } from '@vben/locales';
 
 import { $t } from '#/locales';
+import { menuDisplayLabel } from '#/views/permission/menu/data';
 
 export function getConfigGroupLabels(): Record<string, string> {
   return {
@@ -105,8 +107,82 @@ export function isStorageFieldVisible(key: string, driver: string): boolean {
 /** 使用附件图片上传组件的配置项 key */
 export const CONFIG_ATTACHMENT_IMAGE_KEYS = ['site.logo'] as const;
 
+/** 默认主页：从菜单路由下拉选择 */
+export const SITE_FIXED_PAGE_KEY = 'site.fixed_page';
+
 export function isAttachmentImageField(key: string): boolean {
   return (CONFIG_ATTACHMENT_IMAGE_KEYS as readonly string[]).includes(key);
+}
+
+export function isHomePathSelectField(key: string): boolean {
+  return key === SITE_FIXED_PAGE_KEY;
+}
+
+function normalizeMenuPath(path: string): string {
+  const trimmed = path.trim();
+  return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+}
+
+/** 可作为登录默认主页的菜单类型：目录 / 菜单 / 内嵌 */
+function isHomePathMenuType(type: number): boolean {
+  return type === 1 || type === 2 || type === 4;
+}
+
+/** 将菜单树扁平化为默认主页下拉选项 */
+export function flattenMenuTreeForHomePathSelect(
+  nodes: MenuTreeNode[],
+  ancestors: string[] = [],
+): { label: string; value: string }[] {
+  const options: { label: string; value: string }[] = [];
+
+  for (const node of nodes) {
+    if (node.type === 3 || node.type === 5 || node.status !== 1) {
+      continue;
+    }
+
+    const path = node.path?.trim();
+    const title = menuDisplayLabel(node);
+    const labelParts = [...ancestors, title];
+
+    if (path && isHomePathMenuType(node.type)) {
+      const normalized = normalizeMenuPath(path);
+      options.push({
+        value: normalized,
+        label: `${labelParts.join(' / ')} (${normalized})`,
+      });
+    }
+
+    if (node.children?.length) {
+      options.push(
+        ...flattenMenuTreeForHomePathSelect(node.children, labelParts),
+      );
+    }
+  }
+
+  return options;
+}
+
+/** 若当前值不在菜单列表中，保留一项以便回显 */
+export function mergeLegacyHomePathOption(
+  options: { label: string; value: string }[],
+  currentValue: string,
+): { label: string; value: string }[] {
+  const normalized = normalizeMenuPath(currentValue);
+  if (!normalized) {
+    return options;
+  }
+  if (options.some((item) => item.value === normalized)) {
+    return options;
+  }
+  return [
+    {
+      label: $t('platform.config.selectOptions.homePathLegacy', {
+        path: normalized,
+      }),
+      value: normalized,
+    },
+    ...options,
+  ];
 }
 
 /** 下拉类配置项选项（mail_type / mail_verify_type） */

@@ -77,9 +77,9 @@ class ConfigSeeder extends Seeder
             [
                 'key' => 'site.fixed_page',
                 'name' => '默认主页',
-                'value' => 'dashboard',
+                'value' => '/dashboard/console',
                 'group_name' => 'basic',
-                'type' => 'string',
+                'type' => 'select',
                 'sort' => 80,
                 'remark' => '登录后默认打开的菜单路由',
             ],

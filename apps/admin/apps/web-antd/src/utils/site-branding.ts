@@ -6,8 +6,17 @@ import { overridesPreferences } from '#/preferences';
 
 export interface SiteBranding {
   beian: string;
+  defaultHomePath: string;
   logo: string;
   name: string;
+}
+
+function normalizeHomePath(path: string, fallback: string): string {
+  const trimmed = path.trim();
+  if (!trimmed) {
+    return fallback;
+  }
+  return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
 }
 
 export async function fetchSiteBranding(): Promise<SiteBranding | null> {
@@ -31,20 +40,26 @@ export async function fetchSiteBranding(): Promise<SiteBranding | null> {
 }
 
 /**
- * 将基础配置中的 site.* 同步到 Vben preferences（侧栏、登录页、页脚备案等）。
+ * 将基础配置中的 site.* 同步到 Vben preferences（侧栏、登录页、页脚备案、默认主页等）。
  */
 export async function applySiteBranding(): Promise<void> {
   const branding = await fetchSiteBranding();
   const defaultLogo = overridesPreferences.logo?.source ?? VBEN_LOGO_URL;
   const defaultName =
     overridesPreferences.app?.name ?? import.meta.env.VITE_APP_TITLE ?? '';
+  const defaultHomePath =
+    overridesPreferences.app?.defaultHomePath ?? '/dashboard/console';
 
   const name = branding?.name?.trim() || defaultName;
   const logo = branding?.logo?.trim() || defaultLogo;
   const beian = branding?.beian?.trim() ?? '';
+  const homePath = normalizeHomePath(
+    branding?.defaultHomePath ?? '',
+    defaultHomePath,
+  );
 
   updatePreferences({
-    app: { name },
+    app: { name, defaultHomePath: homePath },
     copyright: {
       companyName: name,
       companySiteLink: '',

@@ -17,16 +17,23 @@ import {
 
 import { batchUpsertConfigs, fetchConfigs } from '#/api/system/config';
 import { AttachmentField } from '#/components/attachment-field';
+import { useUserStore } from '@vben/stores';
+import { preferences } from '@vben/preferences';
 
 import {
   configFieldLabel,
   configFieldRemark,
+  flattenMenuTreeForHomePathSelect,
   getConfigSelectOptions,
   isAttachmentImageField,
+  isHomePathSelectField,
   isStorageFieldVisible,
+  mergeLegacyHomePathOption,
+  SITE_FIXED_PAGE_KEY,
   STORAGE_DRIVER_KEY,
 } from '../data';
 import { applySiteBranding } from '#/utils/site-branding';
+import { fetchMenuTree } from '#/api/system/menu';
 
 const props = defineProps<{
   canManage: boolean;
@@ -40,6 +47,7 @@ const loading = ref(false);
 const saving = ref(false);
 const rows = ref<ConfigRow[]>([]);
 const draftValues = ref<Record<string, string>>({});
+const homePathOptions = ref<{ label: string; value: string }[]>([]);
 
 const scrollStyle = computed(() => ({
   height: `${Math.max(Math.floor(scrollWrapHeight.value), 280)}px`,
@@ -75,12 +83,26 @@ function syncDraftFromRows(list: ConfigRow[]) {
 async function loadConfigs() {
   loading.value = true;
   try {
-    const result = await fetchConfigs(props.groupName);
+    const [result, menuTree] = await Promise.all([
+      fetchConfigs(props.groupName),
+      props.groupName === 'basic' ? fetchMenuTree() : Promise.resolve([]),
+    ]);
     rows.value = result.list ?? [];
     syncDraftFromRows(rows.value);
+    if (props.groupName === 'basic') {
+      refreshHomePathOptions(menuTree);
+    }
   } finally {
     loading.value = false;
   }
+}
+
+function refreshHomePathOptions(menuTree: Awaited<ReturnType<typeof fetchMenuTree>>) {
+  const options = flattenMenuTreeForHomePathSelect(menuTree);
+  homePathOptions.value = mergeLegacyHomePathOption(
+    options,
+    draftValues.value[SITE_FIXED_PAGE_KEY] ?? '',
+  );
 }
 
 async function onSave() {
@@ -100,6 +122,13 @@ async function onSave() {
     await loadConfigs();
     if (props.groupName === 'basic') {
       await applySiteBranding();
+      const userStore = useUserStore();
+      if (userStore.userInfo) {
+        userStore.setUserInfo({
+          ...userStore.userInfo,
+          homePath: preferences.app.defaultHomePath,
+        });
+      }
     }
   } finally {
     saving.value = false;
@@ -107,11 +136,18 @@ async function onSave() {
 }
 
 function selectOptions(key: string) {
+  if (isHomePathSelectField(key)) {
+    return homePathOptions.value;
+  }
   return getConfigSelectOptions()[key] ?? [];
 }
 
 function isSelectField(row: ConfigRow) {
-  return row.type === 'select' || !!getConfigSelectOptions()[row.key];
+  return (
+    row.type === 'select' ||
+    isHomePathSelectField(row.key) ||
+    !!getConfigSelectOptions()[row.key]
+  );
 }
 
 watch(
@@ -169,6 +205,20 @@ defineExpose({
                 :disabled="!props.canManage"
                 :class="fieldControlClass"
                 :options="selectOptions(row.key)"
+                :placeholder="
+                  isHomePathSelectField(row.key)
+                    ? $t('platform.config.selectOptions.homePathPlaceholder')
+                    : undefined
+                "
+                :show-search="isHomePathSelectField(row.key)"
+                :filter-option="
+                  isHomePathSelectField(row.key)
+                    ? (input, option) =>
+                        String(option?.label ?? '')
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
+                    : undefined
+                "
                 :value="draftValues[row.key] || undefined"
                 @update:value="
                   (val) => (draftValues[row.key] = String(val ?? ''))
