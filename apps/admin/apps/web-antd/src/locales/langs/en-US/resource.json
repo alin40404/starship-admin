@@ -1,0 +1,73 @@
+{
+  "attachment": {
+    "entity": "Attachment",
+    "categoryTitle": "Categories",
+    "uploadBtn": "Upload attachment",
+    "batchDeleteTitle": "Batch delete",
+    "batchDeleteConfirm": "Delete {0} selected attachment(s)? Physical files in storage will also be removed.",
+    "batchDeleted": "Deleted {0} attachment(s)",
+    "linkCopied": "Link copied",
+    "copyFailed": "Copy failed, please copy manually",
+    "listView": "List view",
+    "flowView": "Grid view",
+    "filter": "Filter",
+    "searchFileName": "Search file name",
+    "fileExtPlaceholder": "Extension, e.g. png",
+    "storagePlaceholder": "Storage driver",
+    "categoryFilter": "Category",
+    "columns": {
+      "preview": "Preview",
+      "fileName": "File name",
+      "category": "Category",
+      "extension": "Extension",
+      "size": "Size",
+      "storage": "Storage",
+      "uploader": "Uploader",
+      "uploadedAt": "Uploaded at",
+      "mime": "MIME",
+      "link": "Link",
+      "copyLink": "Copy link",
+      "actions": "Actions"
+    },
+    "storage": {
+      "public": "Public storage",
+      "local": "Local storage",
+      "oss": "Alibaba Cloud OSS",
+      "cos": "Tencent Cloud COS",
+      "s3": "AWS S3"
+    },
+    "field": {
+      "placeholder": "Select or upload attachment",
+      "upload": "Upload",
+      "select": "Select",
+      "remove": "Remove",
+      "preview": "Preview",
+      "open": "Open",
+      "noUploadPermission": "No permission to upload attachments",
+      "singleModeWarning": "Single selection only; uploading the first file",
+      "uploadNoUrl": "Upload failed: no file URL returned",
+      "uploadSuccess": "Uploaded successfully",
+      "uploadFailed": "Upload failed"
+    },
+    "picker": {
+      "title": "Select attachment",
+      "searchPlaceholder": "Search file name",
+      "selectOne": "Please select an attachment",
+      "selectAtLeastOne": "Please select at least one attachment"
+    },
+    "upload": {
+      "title": "Upload attachment",
+      "draggerHint": "Click or drag files here to upload; multiple files supported",
+      "uploadingWait": "Upload in progress, please wait",
+      "done": "Done",
+      "failed": "Upload failed",
+      "deleteKeyHint": "Press Delete to remove"
+    },
+    "flow": {
+      "loadedMeta": "Loaded {0} / {1} total",
+      "loadMore": "Load more",
+      "allLoaded": "All loaded",
+      "empty": "No attachments"
+    }
+  }
+}

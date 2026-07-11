@@ -7,6 +7,7 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useAccess } from '@vben/access';
 import { Page } from '@vben/common-ui';
 import { IconifyIcon, Plus } from '@vben/icons';
+import { $t } from '@vben/locales';
 import { usePreferences } from '@vben/preferences';
 
 import { Button, message, Modal, Tooltip } from 'ant-design-vue';
@@ -237,9 +238,9 @@ async function onCopyLink(row: AttachmentRow) {
   if (!row.file_url) return;
   try {
     await navigator.clipboard.writeText(row.file_url);
-    message.success('链接已复制');
+    message.success($t('resource.attachment.linkCopied'));
   } catch {
-    message.error('复制失败，请手动复制');
+    message.error($t('resource.attachment.copyFailed'));
   }
 }
 
@@ -249,7 +250,7 @@ async function onDelete(row: AttachmentRow) {
 
 async function performDelete(row: AttachmentRow) {
   await deleteAttachment(row.id);
-  message.success('已删除');
+  message.success($t('crud.deleted'));
   clearSelection();
   onRefresh();
 }
@@ -258,14 +259,14 @@ function onBatchDelete() {
   const ids = selectedRows.value.map((row) => row.id);
   if (ids.length === 0) return;
   Modal.confirm({
-    content: `确定删除选中的 ${ids.length} 个附件吗？将同时删除存储中的物理文件。`,
-    okText: '删除',
+    content: $t('resource.attachment.batchDeleteConfirm', [ids.length]),
+    okText: $t('common.delete'),
     okType: 'danger',
-    cancelText: '取消',
-    title: '批量删除',
+    cancelText: $t('common.cancel'),
+    title: $t('resource.attachment.batchDeleteTitle'),
     async onOk() {
       const result = await batchDeleteAttachments(ids);
-      message.success(`已删除 ${result.deleted} 个附件`);
+      message.success($t('resource.attachment.batchDeleted', [result.deleted]));
       clearSelection();
       onRefresh();
     },
@@ -299,7 +300,7 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
     commonConfig: { componentProps: { class: 'w-full' } },
     schema: useGridFormSchema(),
     submitOnChange: true,
-    submitButtonOptions: { content: '查询' },
+    submitButtonOptions: { content: $t('common.query') },
   },
   gridEvents: {
     checkboxAll: syncSelection,
@@ -343,7 +344,9 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
       <aside
         class="attachment-category-panel hidden shrink-0 flex-col overflow-hidden border-b border-border md:flex md:w-[168px] md:border-b-0 md:border-r"
       >
-        <div class="attachment-category-header">附件分类</div>
+        <div class="attachment-category-header">
+          {{ $t('resource.attachment.categoryTitle') }}
+        </div>
         <div class="attachment-category-tabs">
           <button
             class="attachment-category-item"
@@ -351,7 +354,7 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
             type="button"
             @click="onCategoryChange(ALL_CATEGORY_KEY)"
           >
-            全部
+            {{ $t('system.shared.all') }}
           </button>
           <button
             v-for="item in categoryOptions"
@@ -409,10 +412,10 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
                     danger
                     @click="onBatchDelete"
                   >
-                    批量删除（{{ selectedRows.length }}）
+                    {{ $t('system.shared.batchDeleteWithCount', [selectedRows.length]) }}
                   </Button>
                   <Button class="ml-2" type="link" @click="clearSelection">
-                    取消选择
+                    {{ $t('system.shared.clearSelection') }}
                   </Button>
                 </div>
                 <Button
@@ -425,13 +428,13 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
                   @click="onUpload"
                 >
                   <Plus class="size-4" />
-                  上传附件
+                  {{ $t('resource.attachment.uploadBtn') }}
                 </Button>
               </div>
             </template>
             <template #toolbar-tools>
               <div class="attachment-view-toggle ml-2">
-                <Tooltip title="列表视图">
+                <Tooltip :title="$t('resource.attachment.listView')">
                   <button
                     class="attachment-view-toggle__btn"
                     :class="{ 'is-active': viewMode === 'list' }"
@@ -441,7 +444,7 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
                     <IconifyIcon class="size-4" icon="lucide:list" />
                   </button>
                 </Tooltip>
-                <Tooltip title="流式视图">
+                <Tooltip :title="$t('resource.attachment.flowView')">
                   <button
                     class="attachment-view-toggle__btn"
                     :class="{ 'is-active': viewMode === 'flow' }"

@@ -1,0 +1,73 @@
+{
+  "attachment": {
+    "entity": "附件",
+    "categoryTitle": "附件分类",
+    "uploadBtn": "上传附件",
+    "batchDeleteTitle": "批量删除",
+    "batchDeleteConfirm": "确定删除选中的 {0} 个附件吗？将同时删除存储中的物理文件。",
+    "batchDeleted": "已删除 {0} 个附件",
+    "linkCopied": "链接已复制",
+    "copyFailed": "复制失败，请手动复制",
+    "listView": "列表视图",
+    "flowView": "流式视图",
+    "filter": "筛选",
+    "searchFileName": "搜索文件名",
+    "fileExtPlaceholder": "扩展名，如 png",
+    "storagePlaceholder": "存储驱动",
+    "categoryFilter": "附件分类",
+    "columns": {
+      "preview": "预览",
+      "fileName": "文件名",
+      "category": "分类",
+      "extension": "扩展名",
+      "size": "大小",
+      "storage": "存储",
+      "uploader": "上传者",
+      "uploadedAt": "上传时间",
+      "mime": "MIME",
+      "link": "链接",
+      "copyLink": "复制链接",
+      "actions": "操作"
+    },
+    "storage": {
+      "public": "公共存储",
+      "local": "本地存储",
+      "oss": "阿里云 OSS",
+      "cos": "腾讯云 COS",
+      "s3": "AWS S3"
+    },
+    "field": {
+      "placeholder": "请选择或上传附件",
+      "upload": "上传",
+      "select": "选择",
+      "remove": "删除",
+      "preview": "预览",
+      "open": "打开",
+      "noUploadPermission": "暂无附件上传权限",
+      "singleModeWarning": "当前为单选模式，仅上传第一个文件",
+      "uploadNoUrl": "上传失败，未获取到文件链接",
+      "uploadSuccess": "上传成功",
+      "uploadFailed": "上传失败"
+    },
+    "picker": {
+      "title": "选择附件",
+      "searchPlaceholder": "搜索文件名",
+      "selectOne": "请选择一个附件",
+      "selectAtLeastOne": "请至少选择一个附件"
+    },
+    "upload": {
+      "title": "上传附件",
+      "draggerHint": "点击或拖拽文件到此区域上传，支持多文件",
+      "uploadingWait": "文件上传中，请稍候",
+      "done": "完成",
+      "failed": "上传失败",
+      "deleteKeyHint": "按 Delete 键可删除"
+    },
+    "flow": {
+      "loadedMeta": "已加载 {0} / 共 {1} 条",
+      "loadMore": "加载更多",
+      "allLoaded": "已加载全部",
+      "empty": "暂无附件"
+    }
+  }
+}

@@ -3,6 +3,7 @@ import { computed, ref, useTemplateRef } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { IconifyIcon } from '@vben/icons';
+import { $t } from '@vben/locales';
 
 import { Button, Image, Input, message, Space } from 'ant-design-vue';
 
@@ -31,7 +32,7 @@ const props = withDefaults(
     accept: 'all',
     disabled: false,
     multiple: false,
-    placeholder: '请选择或上传附件',
+    placeholder: undefined,
     value: '',
   },
 );
@@ -71,6 +72,10 @@ const inputText = computed({
   },
 });
 
+const resolvedPlaceholder = computed(
+  () => props.placeholder ?? $t('resource.attachment.field.placeholder'),
+);
+
 function emitValue(urls: string[]) {
   const nextValue = props.multiple ? urls : (urls[0] ?? '');
   emit('update:value', nextValue);
@@ -82,7 +87,7 @@ function onUploadClick() {
     return;
   }
   if (!canUpload.value) {
-    message.warning('暂无附件上传权限');
+    message.warning($t('resource.attachment.field.noUploadPermission'));
     return;
   }
   fileInputRef.value?.click();
@@ -104,7 +109,7 @@ async function onFileInputChange(event: Event) {
   }
 
   if (!props.multiple && files.length > 1) {
-    message.warning('当前为单选模式，仅上传第一个文件');
+    message.warning($t('resource.attachment.field.singleModeWarning'));
   }
 
   const uploadFiles = props.multiple ? files : files.slice(0, 1);
@@ -118,7 +123,7 @@ async function onFileInputChange(event: Event) {
       }
     }
     if (uploadedUrls.length === 0) {
-      message.error('上传失败，未获取到文件链接');
+      message.error($t('resource.attachment.field.uploadNoUrl'));
       return;
     }
     if (props.multiple) {
@@ -126,9 +131,9 @@ async function onFileInputChange(event: Event) {
     } else {
       emitValue([uploadedUrls[0]!]);
     }
-    message.success(uploadedUrls.length > 1 ? '上传成功' : '上传成功');
+    message.success($t('resource.attachment.field.uploadSuccess'));
   } catch {
-    message.error('上传失败');
+    message.error($t('resource.attachment.field.uploadFailed'));
   } finally {
     uploading.value = false;
   }
@@ -191,7 +196,7 @@ function onPreviewVisibleChange(visible: boolean) {
         v-model:value="inputText"
         class="attachment-field__input min-w-0 flex-1"
         :disabled="disabled"
-        :placeholder="placeholder"
+        :placeholder="resolvedPlaceholder"
       />
       <Button
         class="attachment-field__btn attachment-field__btn--upload"
@@ -201,7 +206,7 @@ function onPreviewVisibleChange(visible: boolean) {
         @click="onUploadClick"
       >
         <IconifyIcon class="size-3.5" icon="lucide:upload" />
-        <span>上传</span>
+        <span>{{ $t('resource.attachment.field.upload') }}</span>
       </Button>
       <Button
         class="attachment-field__btn attachment-field__btn--select attachment-field__btn--select-last"
@@ -210,7 +215,7 @@ function onPreviewVisibleChange(visible: boolean) {
         @click="onSelectClick"
       >
         <IconifyIcon class="size-3.5" icon="lucide:folder-open" />
-        <span>选择</span>
+        <span>{{ $t('resource.attachment.field.select') }}</span>
       </Button>
     </Space.Compact>
 
@@ -237,7 +242,7 @@ function onPreviewVisibleChange(visible: boolean) {
         <button
           v-if="!disabled"
           class="attachment-field__preview-remove"
-          title="删除"
+          :title="$t('resource.attachment.field.remove')"
           type="button"
           @click="onRemoveUrl(url)"
         >
@@ -245,7 +250,11 @@ function onPreviewVisibleChange(visible: boolean) {
         </button>
         <button
           class="attachment-field__preview-open"
-          :title="shouldShowImagePreview(url) ? '预览' : '打开'"
+          :title="
+            shouldShowImagePreview(url)
+              ? $t('resource.attachment.field.preview')
+              : $t('resource.attachment.field.open')
+          "
           type="button"
           @click="
             shouldShowImagePreview(url)

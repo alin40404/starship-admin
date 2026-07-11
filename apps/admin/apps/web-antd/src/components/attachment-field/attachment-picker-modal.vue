@@ -6,6 +6,7 @@ import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 
 import { useVbenDrawer, useVbenModal } from '@vben/common-ui';
 import { IconifyIcon } from '@vben/icons';
+import { $t } from '@vben/locales';
 import { usePreferences } from '@vben/preferences';
 
 import { useDebounceFn, useElementSize } from '@vueuse/core';
@@ -259,7 +260,11 @@ function confirmWithRows(rows: AttachmentRow[]) {
     .map((row) => row.file_url)
     .filter((url): url is string => Boolean(url));
   if (urls.length === 0) {
-    message.warning(props.multiple ? '请至少选择一个附件' : '请选择一个附件');
+    message.warning(
+      props.multiple
+        ? $t('resource.attachment.picker.selectAtLeastOne')
+        : $t('resource.attachment.picker.selectOne'),
+    );
     return;
   }
   emit('confirm', props.multiple ? urls : [urls[0]!]);
@@ -286,9 +291,9 @@ async function onCopyLink(row: AttachmentRow) {
   }
   try {
     await navigator.clipboard.writeText(row.file_url);
-    message.success('链接已复制');
+    message.success($t('resource.attachment.linkCopied'));
   } catch {
-    message.error('复制失败，请手动复制');
+    message.error($t('resource.attachment.copyFailed'));
   }
 }
 
@@ -467,7 +472,7 @@ watch(
     v-if="!isMobile"
     class="w-[1180px] max-w-[96vw]"
     content-class="flex min-h-0 flex-1 flex-col overflow-hidden !p-0"
-    title="选择附件"
+    :title="$t('resource.attachment.picker.title')"
   >
     <div :class="contentWrapClass">
       <div
@@ -487,13 +492,13 @@ watch(
                   v-model:value="fileNameQuery"
                   allow-clear
                   class="attachment-picker-search__input"
-                  placeholder="搜索文件名"
+                  :placeholder="$t('resource.attachment.picker.searchPlaceholder')"
                 />
               </div>
             </template>
             <template #toolbar-tools>
               <div class="attachment-view-toggle ml-2">
-                <Tooltip title="列表视图">
+                <Tooltip :title="$t('resource.attachment.listView')">
                   <button
                     class="attachment-view-toggle__btn"
                     :class="{ 'is-active': viewMode === 'list' }"
@@ -503,7 +508,7 @@ watch(
                     <IconifyIcon class="size-4" icon="lucide:list" />
                   </button>
                 </Tooltip>
-                <Tooltip title="流式视图">
+                <Tooltip :title="$t('resource.attachment.flowView')">
                   <button
                     class="attachment-view-toggle__btn"
                     :class="{ 'is-active': viewMode === 'flow' }"
@@ -539,14 +544,14 @@ watch(
     </div>
 
     <template #footer>
-      <Button @click="closePopup()">取消</Button>
+      <Button @click="closePopup()">{{ $t('common.cancel') }}</Button>
       <Button
         type="primary"
         class="attachment-picker-confirm"
         :class="{ 'is-inactive': !hasSelection }"
         @click="handleConfirm"
       >
-        确定
+        {{ $t('common.confirm') }}
       </Button>
     </template>
   </Modal>
@@ -555,7 +560,7 @@ watch(
     v-else
     class="h-full max-h-[100dvh] w-full"
     content-class="flex min-h-0 flex-1 flex-col overflow-hidden !p-0"
-    title="选择附件"
+    :title="$t('resource.attachment.picker.title')"
   >
     <div :class="contentWrapClass">
       <div
@@ -575,13 +580,13 @@ watch(
                   v-model:value="fileNameQuery"
                   allow-clear
                   class="attachment-picker-search__input"
-                  placeholder="搜索文件名"
+                  :placeholder="$t('resource.attachment.picker.searchPlaceholder')"
                 />
               </div>
             </template>
             <template #toolbar-tools>
               <div class="attachment-view-toggle ml-2">
-                <Tooltip title="列表视图">
+                <Tooltip :title="$t('resource.attachment.listView')">
                   <button
                     class="attachment-view-toggle__btn"
                     :class="{ 'is-active': viewMode === 'list' }"
@@ -591,7 +596,7 @@ watch(
                     <IconifyIcon class="size-4" icon="lucide:list" />
                   </button>
                 </Tooltip>
-                <Tooltip title="流式视图">
+                <Tooltip :title="$t('resource.attachment.flowView')">
                   <button
                     class="attachment-view-toggle__btn"
                     :class="{ 'is-active': viewMode === 'flow' }"
@@ -627,14 +632,14 @@ watch(
     </div>
 
     <template #footer>
-      <Button @click="closePopup()">取消</Button>
+      <Button @click="closePopup()">{{ $t('common.cancel') }}</Button>
       <Button
         type="primary"
         class="attachment-picker-confirm"
         :class="{ 'is-inactive': !hasSelection }"
         @click="handleConfirm"
       >
-        确定
+        {{ $t('common.confirm') }}
       </Button>
     </template>
   </Drawer>

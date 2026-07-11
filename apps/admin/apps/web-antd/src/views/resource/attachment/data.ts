@@ -8,26 +8,31 @@ import type {
 import type { AttachmentRow } from '#/api/system/attachment';
 import { ATTACHMENT_PERMISSIONS } from '#/constants/attachment-permissions';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
+import { $t } from '#/locales';
 
 export type AttachmentAccessChecker = {
   can: (code: string) => boolean;
 };
 
-export const ATTACHMENT_STORAGE_OPTIONS = [
-  { label: '公共存储', value: 'public' },
-  { label: '本地存储', value: 'local' },
-  { label: '阿里云 OSS', value: 'oss' },
-  { label: '腾讯云 COS', value: 'cos' },
-  { label: 'AWS S3', value: 's3' },
-] as const;
+export function getAttachmentStorageOptions() {
+  return [
+    { label: $t('resource.attachment.storage.public'), value: 'public' },
+    { label: $t('resource.attachment.storage.local'), value: 'local' },
+    { label: $t('resource.attachment.storage.oss'), value: 'oss' },
+    { label: $t('resource.attachment.storage.cos'), value: 'cos' },
+    { label: $t('resource.attachment.storage.s3'), value: 's3' },
+  ] as const;
+}
 
-export const ATTACHMENT_STORAGE_TAG_OPTIONS = [
-  { color: 'processing', label: '公共存储', value: 'public' },
-  { color: 'default', label: '本地存储', value: 'local' },
-  { color: 'orange', label: '阿里云 OSS', value: 'oss' },
-  { color: 'blue', label: '腾讯云 COS', value: 'cos' },
-  { color: 'purple', label: 'AWS S3', value: 's3' },
-] as const;
+export function getAttachmentStorageTagOptions() {
+  return [
+    { color: 'processing', label: $t('resource.attachment.storage.public'), value: 'public' },
+    { color: 'default', label: $t('resource.attachment.storage.local'), value: 'local' },
+    { color: 'orange', label: $t('resource.attachment.storage.oss'), value: 'oss' },
+    { color: 'blue', label: $t('resource.attachment.storage.cos'), value: 'cos' },
+    { color: 'purple', label: $t('resource.attachment.storage.s3'), value: 's3' },
+  ] as const;
+}
 
 const CATEGORY_TAG_COLORS = [
   'blue',
@@ -110,15 +115,19 @@ export function getMimeTagColor(mime: string | null | undefined) {
   return 'default';
 }
 
-const STORAGE_LABEL_MAP = Object.fromEntries(
-  ATTACHMENT_STORAGE_OPTIONS.map((item) => [item.value, item.label]),
-) as Record<string, string>;
-
 export function formatStorageLabel(value: string | null | undefined) {
   if (!value) {
     return TABLE_CELL_EMPTY;
   }
-  return STORAGE_LABEL_MAP[value] ?? value;
+  const storageKeyMap: Record<string, string> = {
+    public: 'resource.attachment.storage.public',
+    local: 'resource.attachment.storage.local',
+    oss: 'resource.attachment.storage.oss',
+    cos: 'resource.attachment.storage.cos',
+    s3: 'resource.attachment.storage.s3',
+  };
+  const key = storageKeyMap[value];
+  return key ? $t(key) : value;
 }
 
 export function isImageAttachment(row: AttachmentRow) {
@@ -280,26 +289,32 @@ export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
-      componentProps: { class: 'w-full', placeholder: '文件名' },
+      componentProps: {
+        class: 'w-full',
+        placeholder: $t('resource.attachment.columns.fileName'),
+      },
       fieldName: 'file_name',
-      label: '文件名',
+      label: $t('resource.attachment.columns.fileName'),
     },
     {
       component: 'Input',
-      componentProps: { class: 'w-full', placeholder: '扩展名，如 png' },
+      componentProps: {
+        class: 'w-full',
+        placeholder: $t('resource.attachment.fileExtPlaceholder'),
+      },
       fieldName: 'file_ext',
-      label: '扩展名',
+      label: $t('resource.attachment.columns.extension'),
     },
     {
       component: 'Select',
       componentProps: {
         allowClear: true,
         class: 'w-full',
-        options: [...ATTACHMENT_STORAGE_OPTIONS],
-        placeholder: '存储驱动',
+        options: [...getAttachmentStorageOptions()],
+        placeholder: $t('resource.attachment.storagePlaceholder'),
       },
       fieldName: 'storage',
-      label: '存储',
+      label: $t('resource.attachment.columns.storage'),
     },
   ];
 }
@@ -314,10 +329,10 @@ export function useMobileAttachmentFilterSchema(
         allowClear: true,
         class: 'w-full',
         options: categoryOptions,
-        placeholder: '全部',
+        placeholder: $t('system.shared.all'),
       },
       fieldName: 'category',
-      label: '附件分类',
+      label: $t('resource.attachment.categoryFilter'),
     },
     ...useGridFormSchema(),
   ];
@@ -336,7 +351,7 @@ export function buildAttachmentMobileCrudConfig(params: {
     search: {
       filterSchema: useMobileAttachmentFilterSchema(params.categoryOptions ?? []),
       keywordFields: ['file_name'],
-      placeholder: '搜索文件名',
+      placeholder: $t('resource.attachment.searchFileName'),
       submitOnChange: true,
     },
     selection: {
@@ -366,7 +381,7 @@ export function useColumns(
     {
       align: 'center',
       field: 'file_url',
-      title: '预览',
+      title: $t('resource.attachment.columns.preview'),
       width: 72,
       cellRender: {
         name: 'CellImage',
@@ -389,7 +404,7 @@ export function useColumns(
       field: 'file_name',
       minWidth: 180,
       sortable: true,
-      title: '文件名',
+      title: $t('resource.attachment.columns.fileName'),
     },
   ];
 
@@ -408,7 +423,7 @@ export function useColumns(
       mobile: {
         format: (row) => formatCategoryLabel(row),
       },
-      title: '分类',
+      title: $t('resource.attachment.columns.category'),
     });
   }
 
@@ -422,7 +437,7 @@ export function useColumns(
         name: 'CellTag',
       },
       field: 'file_ext',
-      title: '扩展名',
+      title: $t('resource.attachment.columns.extension'),
       width: 96,
     },
     {
@@ -435,7 +450,7 @@ export function useColumns(
       },
       field: 'mime_type',
       minWidth: 148,
-      title: 'MIME',
+      title: $t('resource.attachment.columns.mime'),
       visible: false,
     },
     {
@@ -443,21 +458,21 @@ export function useColumns(
       field: 'file_size',
       formatter: ({ cellValue }) => formatFileSize(cellValue as number),
       sortable: true,
-      title: '大小',
+      title: $t('resource.attachment.columns.size'),
       width: 96,
     },
     {
       align: 'center',
       cellRender: {
         name: 'CellTag',
-        options: [...ATTACHMENT_STORAGE_TAG_OPTIONS],
+        options: [...getAttachmentStorageTagOptions()],
       },
       field: 'storage',
       mobile: {
         format: (row) => formatStorageLabel(row.storage),
       },
       sortable: true,
-      title: '存储',
+      title: $t('resource.attachment.columns.storage'),
       width: 108,
     },
     {
@@ -465,21 +480,21 @@ export function useColumns(
       field: 'admin_id',
       formatter: ({ row }) => formatUploader(row as AttachmentRow),
       minWidth: 100,
-      title: '上传者',
+      title: $t('resource.attachment.columns.uploader'),
     },
     {
       field: 'created_at',
       formatter: 'formatDateTime',
       minWidth: 170,
       sortable: true,
-      title: '上传时间',
+      title: $t('resource.attachment.columns.uploadedAt'),
     },
     {
       align: 'center',
       cellRender: {
         attrs: {
           nameField: 'file_name',
-          nameTitle: '附件',
+          nameTitle: $t('resource.attachment.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -487,26 +502,26 @@ export function useColumns(
           {
             code: 'open',
             show: (row: AttachmentRow) => !!row.file_url,
-            text: '打开',
+            text: $t('resource.attachment.field.open'),
             type: 'link',
           },
           {
             code: 'copy',
             show: (row: AttachmentRow) => !!row.file_url,
-            text: '复制链接',
+            text: $t('resource.attachment.columns.copyLink'),
             type: 'link',
           },
           {
             code: 'delete',
             danger: true,
             show: () => access.can(ATTACHMENT_PERMISSIONS.DELETE),
-            text: '删除',
+            text: $t('common.delete'),
             type: 'link',
           },
         ],
       },
       fixed: 'right',
-      title: '操作',
+      title: $t('resource.attachment.columns.actions'),
       width: 180,
     },
   );

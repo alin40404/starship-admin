@@ -4,6 +4,7 @@ import type { AttachmentRow } from '#/api/system/attachment';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 import { IconifyIcon } from '@vben/icons';
+import { $t } from '@vben/locales';
 
 import { Button, Image, Tooltip } from 'ant-design-vue';
 
@@ -268,7 +269,7 @@ function onPreviewVisibleChange(visible: boolean) {
         <div class="attachment-flow-item__actions">
           <Tooltip
             v-if="isImageAttachment(row) && row.file_url"
-            title="预览"
+            :title="$t('resource.attachment.field.preview')"
           >
             <button
               class="attachment-flow-item__action"
@@ -278,7 +279,7 @@ function onPreviewVisibleChange(visible: boolean) {
               <IconifyIcon class="size-3.5" icon="lucide:eye" />
             </button>
           </Tooltip>
-          <Tooltip v-if="row.file_url" title="打开">
+          <Tooltip v-if="row.file_url" :title="$t('resource.attachment.field.open')">
             <button
               class="attachment-flow-item__action"
               type="button"
@@ -287,7 +288,7 @@ function onPreviewVisibleChange(visible: boolean) {
               <IconifyIcon class="size-3.5" icon="lucide:external-link" />
             </button>
           </Tooltip>
-          <Tooltip v-if="showCopy && row.file_url" title="复制链接">
+          <Tooltip v-if="showCopy && row.file_url" :title="$t('resource.attachment.columns.copyLink')">
             <button
               class="attachment-flow-item__action"
               type="button"
@@ -296,7 +297,7 @@ function onPreviewVisibleChange(visible: boolean) {
               <IconifyIcon class="size-3.5" icon="lucide:link" />
             </button>
           </Tooltip>
-          <Tooltip v-if="canDelete" title="删除">
+          <Tooltip v-if="canDelete" :title="$t('resource.attachment.field.remove')">
             <button
               class="attachment-flow-item__action attachment-flow-item__action--danger"
               type="button"
@@ -327,7 +328,7 @@ function onPreviewVisibleChange(visible: boolean) {
       class="attachment-flow-loadmore"
     >
       <span class="attachment-flow-loadmore__meta">
-        已加载 {{ rows.length }} / 共 {{ total }} 条
+        {{ $t('resource.attachment.flow.loadedMeta', [rows.length, total]) }}
       </span>
       <Button
         v-if="hasMore"
@@ -336,9 +337,9 @@ function onPreviewVisibleChange(visible: boolean) {
         type="default"
         @click="emit('load-more')"
       >
-        加载更多
+        {{ $t('resource.attachment.flow.loadMore') }}
       </Button>
-      <span v-else class="attachment-flow-loadmore__done">已加载全部</span>
+      <span v-else class="attachment-flow-loadmore__done">{{ $t('resource.attachment.flow.allLoaded') }}</span>
     </div>
 
     <div
@@ -350,7 +351,7 @@ function onPreviewVisibleChange(visible: boolean) {
 
     <div v-else-if="rows.length === 0" class="attachment-flow-empty">
       <IconifyIcon class="mx-auto size-16 text-muted-foreground/40" icon="lucide:inbox" />
-      <div class="mt-2 text-sm text-muted-foreground">暂无附件</div>
+      <div class="mt-2 text-sm text-muted-foreground">{{ $t('resource.attachment.flow.empty') }}</div>
     </div>
 
     <Image

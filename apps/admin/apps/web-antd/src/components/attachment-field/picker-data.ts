@@ -3,6 +3,7 @@ import type { VbenFormSchema } from '#/adapter/form';
 
 import type { AttachmentRow } from '#/api/system/attachment';
 
+import { $t } from '#/locales';
 import {
   buildCategoryTagOptions,
   formatCategoryLabel,
@@ -17,9 +18,12 @@ export function usePickerGridFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
-      componentProps: { class: 'w-full', placeholder: '文件名' },
+      componentProps: {
+        class: 'w-full',
+        placeholder: $t('resource.attachment.columns.fileName'),
+      },
       fieldName: 'file_name',
-      label: '文件名',
+      label: $t('resource.attachment.columns.fileName'),
     },
   ];
 }
@@ -40,7 +44,7 @@ export function usePickerColumns(options: {
     {
       align: 'center',
       field: 'file_url',
-      title: '预览',
+      title: $t('resource.attachment.columns.preview'),
       width: 72,
       cellRender: {
         name: 'CellImage',
@@ -63,7 +67,7 @@ export function usePickerColumns(options: {
       field: 'file_name',
       minWidth: 200,
       sortable: true,
-      title: '文件名',
+      title: $t('resource.attachment.columns.fileName'),
     },
   ];
 
@@ -79,7 +83,7 @@ export function usePickerColumns(options: {
       },
       field: 'category',
       minWidth: 96,
-      title: '分类',
+      title: $t('resource.attachment.columns.category'),
     });
   }
 
@@ -93,7 +97,7 @@ export function usePickerColumns(options: {
         name: 'CellTag',
       },
       field: 'file_ext',
-      title: '扩展名',
+      title: $t('resource.attachment.columns.extension'),
       width: 96,
     },
     {
@@ -101,7 +105,7 @@ export function usePickerColumns(options: {
       field: 'file_size',
       formatter: ({ cellValue }) => formatFileSize(cellValue as number),
       sortable: true,
-      title: '大小',
+      title: $t('resource.attachment.columns.size'),
       width: 96,
     },
     {
@@ -109,14 +113,14 @@ export function usePickerColumns(options: {
       formatter: 'formatDateTime',
       minWidth: 170,
       sortable: true,
-      title: '上传时间',
+      title: $t('resource.attachment.columns.uploadedAt'),
     },
     {
       align: 'center',
       cellRender: {
         attrs: {
           nameField: 'file_name',
-          nameTitle: '附件',
+          nameTitle: $t('resource.attachment.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -124,20 +128,20 @@ export function usePickerColumns(options: {
           {
             code: 'open',
             show: (row: AttachmentRow) => !!row.file_url,
-            text: '打开',
+            text: $t('resource.attachment.field.open'),
             type: 'link',
           },
           {
             code: 'copy',
             show: (row: AttachmentRow) => !!row.file_url,
-            text: '复制链接',
+            text: $t('resource.attachment.columns.copyLink'),
             type: 'link',
           },
         ],
       },
       field: 'actions',
       fixed: 'right',
-      title: '链接',
+      title: $t('resource.attachment.columns.link'),
       width: 150,
     },
   );

@@ -308,10 +308,10 @@ defineExpose({ clearSelection, reload });
           class="vxe-grid-batch-toolbar"
         >
           <Button v-if="canBatchDelete" danger @click="emit('batchDelete')">
-            批量删除（{{ selectedRows.length }}）
+            {{ $t('system.shared.batchDeleteWithCount', [selectedRows.length]) }}
           </Button>
           <Button class="ml-2" type="link" @click="clearSelection">
-            取消选择
+            {{ $t('system.shared.clearSelection') }}
           </Button>
         </div>
         <Button
@@ -321,7 +321,7 @@ defineExpose({ clearSelection, reload });
           @click="emit('upload')"
         >
           <Plus class="size-4" />
-          上传附件
+          {{ $t('resource.attachment.uploadBtn') }}
         </Button>
       </template>
       <template #toolbar-tools>
@@ -329,7 +329,7 @@ defineExpose({ clearSelection, reload });
           v-if="!hasSelection"
           class="attachment-view-toggle ml-2"
         >
-          <Tooltip title="列表视图">
+          <Tooltip :title="$t('resource.attachment.listView')">
             <button
               class="attachment-view-toggle__btn"
               :class="{ 'is-active': viewMode === 'list' }"
@@ -339,7 +339,7 @@ defineExpose({ clearSelection, reload });
               <IconifyIcon class="size-4" icon="lucide:list" />
             </button>
           </Tooltip>
-          <Tooltip title="流式视图">
+          <Tooltip :title="$t('resource.attachment.flowView')">
             <button
               class="attachment-view-toggle__btn"
               :class="{ 'is-active': viewMode === 'flow' }"
@@ -370,10 +370,10 @@ defineExpose({ clearSelection, reload });
             class="vxe-grid-batch-toolbar"
           >
             <Button v-if="canBatchDelete" danger @click="emit('batchDelete')">
-              批量删除（{{ selectedRows.length }}）
+              {{ $t('system.shared.batchDeleteWithCount', [selectedRows.length]) }}
             </Button>
             <Button class="ml-2" type="link" @click="clearSelection">
-              取消选择
+              {{ $t('system.shared.clearSelection') }}
             </Button>
           </div>
           <Button
@@ -383,7 +383,7 @@ defineExpose({ clearSelection, reload });
             @click="emit('upload')"
           >
             <Plus class="size-4" />
-            上传附件
+            {{ $t('resource.attachment.uploadBtn') }}
           </Button>
         </template>
         <template #tools>
@@ -391,7 +391,7 @@ defineExpose({ clearSelection, reload });
             v-if="!hasSelection"
             class="attachment-view-toggle ml-2"
           >
-            <Tooltip title="列表视图">
+            <Tooltip :title="$t('resource.attachment.listView')">
               <button
                 class="attachment-view-toggle__btn"
                 :class="{ 'is-active': viewMode === 'list' }"
@@ -401,7 +401,7 @@ defineExpose({ clearSelection, reload });
                 <IconifyIcon class="size-4" icon="lucide:list" />
               </button>
             </Tooltip>
-            <Tooltip title="流式视图">
+            <Tooltip :title="$t('resource.attachment.flowView')">
               <button
                 class="attachment-view-toggle__btn"
                 :class="{ 'is-active': viewMode === 'flow' }"
@@ -455,7 +455,7 @@ defineExpose({ clearSelection, reload });
               @click="filterDrawerOpen = true"
             >
               <IconifyIcon class="size-3.5" icon="lucide:sliders-horizontal" />
-              <span>筛选</span>
+              <span>{{ $t('resource.attachment.filter') }}</span>
             </Button>
           </Badge>
         </Space.Compact>
@@ -495,13 +495,13 @@ defineExpose({ clearSelection, reload });
         class="mobile-crud-list__filter-drawer"
         :height="480"
         placement="bottom"
-        title="筛选"
+        :title="$t('resource.attachment.filter')"
       >
         <FilterForm />
         <template #footer>
           <div class="mobile-crud-list__filter-footer">
-            <Button @click="handleFlowFilterReset">重置</Button>
-            <Button type="primary" @click="handleFlowFilterSearch">查询</Button>
+            <Button @click="handleFlowFilterReset">{{ $t('common.reset') }}</Button>
+            <Button type="primary" @click="handleFlowFilterSearch">{{ $t('common.query') }}</Button>
           </div>
         </template>
       </Drawer>

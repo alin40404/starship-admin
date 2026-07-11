@@ -5,6 +5,7 @@ import { ref } from 'vue';
 
 import { useVbenDrawer, useVbenModal } from '@vben/common-ui';
 import { IconifyIcon } from '@vben/icons';
+import { $t } from '@vben/locales';
 import { usePreferences } from '@vben/preferences';
 
 import { message, Progress, Upload } from 'ant-design-vue';
@@ -25,7 +26,7 @@ async function onUpload(options: any) {
   try {
     await uploadAttachment(options?.file);
     hasUploaded.value = true;
-    message.success('上传成功');
+    message.success($t('resource.attachment.field.uploadSuccess'));
     options?.onSuccess?.({});
   } catch (error) {
     options?.onError?.(error);
@@ -61,7 +62,7 @@ type PopupApi = {
 
 function finishAndClose(popupApi: PopupApi) {
   if (uploadingCount.value > 0) {
-    message.warning('文件上传中，请稍候');
+    message.warning($t('resource.attachment.upload.uploadingWait'));
     return;
   }
   popupApi.close();
@@ -80,7 +81,7 @@ function handleOpenChange(isOpen: boolean) {
 
 const [Modal, modalApi] = useVbenModal({
   animationType: 'scale',
-  confirmText: '完成',
+  confirmText: $t('resource.attachment.upload.done'),
   destroyOnClose: true,
   fullscreenButton: false,
   onConfirm() {
@@ -90,7 +91,7 @@ const [Modal, modalApi] = useVbenModal({
 });
 
 const [Drawer, drawerApi] = useVbenDrawer({
-  confirmText: '完成',
+  confirmText: $t('resource.attachment.upload.done'),
   destroyOnClose: true,
   onConfirm() {
     finishAndClose(drawerApi as PopupApi);
@@ -113,7 +114,7 @@ defineExpose({ open });
   <Modal
     v-if="!isMobile"
     class="w-full max-w-full md:w-[560px] md:max-w-[560px]"
-    title="上传附件"
+    :title="$t('resource.attachment.upload.title')"
   >
     <div class="attachment-upload-panel">
       <Upload.Dragger
@@ -125,7 +126,7 @@ defineExpose({ open });
         :show-upload-list="false"
       >
         <div class="text-muted-foreground px-4 py-4 text-sm">
-          点击或拖拽文件到此区域上传，支持多文件
+          {{ $t('resource.attachment.upload.draggerHint') }}
         </div>
       </Upload.Dragger>
 
@@ -168,14 +169,14 @@ defineExpose({ open });
             v-else-if="file.status === 'error'"
             class="attachment-upload-list__error-tip"
           >
-            上传失败
+            {{ $t('resource.attachment.upload.failed') }}
           </span>
 
           <span
             v-else-if="focusingUid === file.uid"
             class="attachment-upload-list__delete-tip"
           >
-            按 Delete 键可删除
+            {{ $t('resource.attachment.upload.deleteKeyHint') }}
           </span>
 
           <IconifyIcon
@@ -187,7 +188,7 @@ defineExpose({ open });
           <button
             v-if="file.status !== 'uploading'"
             class="attachment-upload-list__remove-btn"
-            title="删除"
+            :title="$t('resource.attachment.field.remove')"
             type="button"
             @click="removeFile(file)"
           >
@@ -198,7 +199,7 @@ defineExpose({ open });
     </div>
   </Modal>
 
-  <Drawer v-else class="w-full" title="上传附件">
+  <Drawer v-else class="w-full" :title="$t('resource.attachment.upload.title')">
     <div class="attachment-upload-panel">
       <Upload.Dragger
         v-model:file-list="fileList"
@@ -209,7 +210,7 @@ defineExpose({ open });
         :show-upload-list="false"
       >
         <div class="text-muted-foreground px-4 py-4 text-sm">
-          点击或拖拽文件到此区域上传，支持多文件
+          {{ $t('resource.attachment.upload.draggerHint') }}
         </div>
       </Upload.Dragger>
 
@@ -252,14 +253,14 @@ defineExpose({ open });
             v-else-if="file.status === 'error'"
             class="attachment-upload-list__error-tip"
           >
-            上传失败
+            {{ $t('resource.attachment.upload.failed') }}
           </span>
 
           <span
             v-else-if="focusingUid === file.uid"
             class="attachment-upload-list__delete-tip"
           >
-            按 Delete 键可删除
+            {{ $t('resource.attachment.upload.deleteKeyHint') }}
           </span>
 
           <IconifyIcon
@@ -271,7 +272,7 @@ defineExpose({ open });
           <button
             v-if="file.status !== 'uploading'"
             class="attachment-upload-list__remove-btn"
-            title="删除"
+            :title="$t('resource.attachment.field.remove')"
             type="button"
             @click="removeFile(file)"
           >

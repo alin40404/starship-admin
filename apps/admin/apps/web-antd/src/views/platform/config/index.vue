@@ -11,8 +11,6 @@ import { Button } from 'ant-design-vue';
 import { CONFIG_PERMISSIONS } from '#/constants/config-permissions';
 import { PARAM_PERMISSIONS } from '#/constants/param-permissions';
 
-import { $t } from '@vben/locales';
-
 import {
   getConfigGroupDescriptions,
   getConfigGroupLabels,
