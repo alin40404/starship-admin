@@ -43,5 +43,33 @@ class AdminSeeder extends Seeder
         }
 
         Department::query()->whereKey($dept->id)->update(['leader_id' => $admin->id]);
+
+        $normalRole = Role::query()->where('code', 'normal_admin')->first();
+        $rdDept = Department::query()
+            ->where('parent_id', $dept->id)
+            ->where('name', '研发中心')
+            ->first();
+        $normalPassword = (string) env(
+            'SYSTEM_NORMAL_ADMIN_PASSWORD',
+            env('SYSTEM_ADMIN_PASSWORD', 'admin123'),
+        );
+
+        $normalAdmin = Admin::query()->updateOrCreate(
+            ['username' => 'manager'],
+            [
+                'nickname' => '普通管理员',
+                'password' => $normalPassword,
+                'email' => 'manager@starship.org',
+                'mobile' => '13800000001',
+                'dept_id' => $rdDept?->id ?? $dept->id,
+                'status' => 1,
+                'is_super' => 0,
+                'remark' => '默认普通管理员账号',
+            ]
+        );
+
+        if ($normalRole) {
+            $normalAdmin->roles()->sync([$normalRole->id]);
+        }
     }
 }

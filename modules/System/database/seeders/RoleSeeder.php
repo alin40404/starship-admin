@@ -18,5 +18,15 @@ class RoleSeeder extends Seeder
                 'remark' => '系统内置，绑定全部菜单',
             ]
         );
+
+        Role::query()->updateOrCreate(
+            ['code' => 'normal_admin'],
+            [
+                'name' => '普通管理员',
+                'data_scope' => 3,
+                'status' => 1,
+                'remark' => '日常业务管理，不含权限中心与开发工具',
+            ]
+        );
     }
 }
