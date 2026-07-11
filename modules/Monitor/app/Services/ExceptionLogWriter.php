@@ -3,6 +3,7 @@
 namespace Modules\Monitor\App\Services;
 
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Modules\Monitor\App\Models\ExceptionLog;
@@ -17,7 +18,7 @@ class ExceptionLogWriter
 
     public function record(Throwable $exception): void
     {
-        if (! $exception->shouldReport()) {
+        if (! Exceptions::shouldReport($exception)) {
             return;
         }
 
@@ -49,7 +50,7 @@ class ExceptionLogWriter
 
         ExceptionLog::query()->create([
             'trace_id' => $traceId,
-            'exception_class' => Str::limit($exceptionClass, 255, ''),
+            'exception_class' => Str::limit($exceptionClass, 191, ''),
             'message' => $message,
             'file' => Str::limit($file, 500, ''),
             'line' => $line,

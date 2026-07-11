@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -16,7 +17,15 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->redirectGuestsTo(function (Request $request) {
+            // admin-api：纯 JSON 接口，未登录返回 401，不重定向
+            if ($request->is('admin-api/*')) {
+                return null;
+            }
+
+            // web：当前无鉴权路由；若将来有 Blade 登录页，改为 return route('login')
+            return null;
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
