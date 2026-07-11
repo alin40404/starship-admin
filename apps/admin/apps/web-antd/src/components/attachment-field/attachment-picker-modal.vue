@@ -14,9 +14,8 @@ import { useDebounceFn, useElementSize } from '@vueuse/core';
 import { Button, Input, message, Tooltip } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { fetchAttachmentPickerPage } from '#/api/system/attachment';
+import { fetchAttachmentPickerPage, uploadAttachment } from '#/api/system/attachment';
 import { ATTACHMENT_PERMISSIONS } from '#/constants/attachment-permissions';
-import UploadForm from '#/views/resource/attachment/modules/upload-form.vue';
 import AttachmentFlowView from '#/views/resource/attachment/modules/flow-view.vue';
 
 import { usePickerColumns } from './picker-data';
@@ -26,9 +25,6 @@ import { isAttachmentAcceptable, resolveMimeFilter, resolveUploadAccept } from '
 const ATTACHMENT_PICKER_VIEW_MODE_KEY = 'attachment-picker-view-mode';
 
 type AttachmentViewMode = 'flow' | 'list';
-type UploadFormExpose = {
-  open: () => void;
-};
 
 const props = withDefaults(
   defineProps<{
@@ -57,7 +53,7 @@ const canUpload = computed(() =>
   hasAccessByCodes([ATTACHMENT_PERMISSIONS.UPLOAD]),
 );
 const uploadAccept = computed(() => resolveUploadAccept(props.accept));
-const uploadFormRef = ref<UploadFormExpose>();
+const uploading = ref(false);
 
 const fileNameQuery = ref('');
 const selectedRows = ref<AttachmentRow[]>([]);
@@ -267,12 +263,57 @@ async function onUploadSuccess(uploadedRows: AttachmentRow[] = []) {
   selectUploadedRows(uploadedRows);
 }
 
+async function uploadPickerFiles(files: File[]) {
+  if (files.length === 0) {
+    return;
+  }
+
+  uploading.value = true;
+  const uploadedRows: AttachmentRow[] = [];
+  try {
+    for (const file of files) {
+      uploadedRows.push(await uploadAttachment(file));
+    }
+    if (uploadedRows.length === 0) {
+      message.error($t('resource.attachment.field.uploadNoUrl'));
+      return;
+    }
+    message.success($t('resource.attachment.field.uploadSuccess'));
+    await onUploadSuccess(uploadedRows);
+  } catch {
+    message.error($t('resource.attachment.field.uploadFailed'));
+  } finally {
+    uploading.value = false;
+  }
+}
+
 function onOpenUpload() {
   if (!canUpload.value) {
     message.warning($t('resource.attachment.field.noUploadPermission'));
     return;
   }
-  uploadFormRef.value?.open();
+  if (uploading.value) {
+    return;
+  }
+
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.multiple = true;
+  if (uploadAccept.value) {
+    input.accept = uploadAccept.value;
+  }
+  input.style.display = 'none';
+  input.addEventListener(
+    'change',
+    () => {
+      const files = input.files ? [...input.files] : [];
+      input.remove();
+      void uploadPickerFiles(files);
+    },
+    { once: true },
+  );
+  document.body.appendChild(input);
+  input.click();
 }
 
 const debouncedRefreshGrid = useDebounceFn(() => {
@@ -559,6 +600,7 @@ watch(
                 <Button
                   v-if="canUpload"
                   class="ml-2 shrink-0"
+                  :loading="uploading"
                   type="primary"
                   @click="onOpenUpload"
                 >
@@ -608,19 +650,7 @@ watch(
               :total="flowTotal"
               @load-more="loadMoreFlow"
               @open="onOpenAttachment"
-            >
-              <template #empty-extra>
-                <Button
-                  v-if="canUpload"
-                  class="mt-4"
-                  type="primary"
-                  @click="onOpenUpload"
-                >
-                  <Plus class="size-4" />
-                  {{ $t('resource.attachment.picker.upload') }}
-                </Button>
-              </template>
-            </AttachmentFlowView>
+            />
           </Teleport>
         </div>
       </div>
@@ -670,6 +700,7 @@ watch(
                 <Button
                   v-if="canUpload"
                   class="ml-2 shrink-0"
+                  :loading="uploading"
                   type="primary"
                   @click="onOpenUpload"
                 >
@@ -719,19 +750,7 @@ watch(
               :total="flowTotal"
               @load-more="loadMoreFlow"
               @open="onOpenAttachment"
-            >
-              <template #empty-extra>
-                <Button
-                  v-if="canUpload"
-                  class="mt-4"
-                  type="primary"
-                  @click="onOpenUpload"
-                >
-                  <Plus class="size-4" />
-                  {{ $t('resource.attachment.picker.upload') }}
-                </Button>
-              </template>
-            </AttachmentFlowView>
+            />
           </Teleport>
         </div>
       </div>
@@ -749,12 +768,6 @@ watch(
       </Button>
     </template>
   </Drawer>
-
-  <UploadForm
-    ref="uploadFormRef"
-    :accept="uploadAccept"
-    @success="onUploadSuccess"
-  />
 </template>
 
 <style scoped>
