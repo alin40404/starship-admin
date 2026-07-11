@@ -296,7 +296,7 @@ interface PluginConfigStoreInterface
 - [x] Plugin 模型迁入 Core
 - [x] `backend/bootstrap/providers.php` 仅注册 `CoreServiceProvider`
 - [ ] 脚手架：`php artisan starship:module:make`、`starship:plugin:make`
-- [ ] 项目模板：`starship/admin-skeleton`（`composer create-project`）
+- [ ] 项目模板：`starship/admin`（`composer create-project`）
 - [ ] 框架级 Feature Test（启动、模块、插件、ping）
 
 ### 阶段三：生态与工具（长期）
@@ -312,7 +312,7 @@ interface PluginConfigStoreInterface
 
 ```bash
 # 1. 从模板创建
-composer create-project starship/admin-skeleton my-erp-admin
+composer create-project starship/admin my-erp-admin
 cd my-erp-admin
 
 # 2. 环境初始化
@@ -364,4 +364,5 @@ php artisan starship:generate:crud erp_orders
 - [README.md](../../README.md) — 项目总览与功能范围
 - [public-storage-link.md](../deployment/public-storage-link.md) — 部署说明
 - [generator/cli.md](../generator/cli.md) — 生成器 CLI
-- [packages/core/README.md](../../packages/core/README.md) — 内核包说明（规划）
+- [packages/core/README.md](../../packages/core/README.md) — 内核包说明
+- [skeleton-backend.md](./skeleton-backend.md) — starship/admin 中 backend/ 文件清单
