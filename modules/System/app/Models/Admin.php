@@ -47,6 +47,20 @@ class Admin extends Authenticatable
         return $date->format('Y-m-d H:i:s');
     }
 
+    public static function findByLoginIdentifier(string $identifier): ?self
+    {
+        $identifier = trim($identifier);
+        if ($identifier === '') {
+            return null;
+        }
+
+        return static::query()
+            ->where('username', $identifier)
+            ->orWhere('email', $identifier)
+            ->orWhere('mobile', $identifier)
+            ->first();
+    }
+
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class, 'dept_id');

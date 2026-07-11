@@ -18,18 +18,19 @@ class AuthController extends Controller
     public function login(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'username' => ['required', 'string', 'max:50'],
+            'username' => ['required', 'string', 'max:100'],
             'password' => ['required', 'string', 'max:255'],
         ]);
 
-        $admin = Admin::query()->where('username', $validated['username'])->first();
+        $identifier = trim($validated['username']);
+        $admin = Admin::findByLoginIdentifier($identifier);
 
         if (! $admin || (int) $admin->status !== 1 || ! Hash::check($validated['password'], $admin->password)) {
             $this->writeLoginLog(
-                username: $validated['username'],
+                username: $identifier,
                 success: false,
                 adminId: $admin?->id,
-                message: '用户名或密码错误',
+                message: '账号或密码错误',
                 request: $request,
             );
 

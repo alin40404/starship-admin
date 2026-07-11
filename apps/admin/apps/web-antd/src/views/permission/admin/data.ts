@@ -234,10 +234,10 @@ export function useColumns(
     { field: 'mobile', minWidth: 130, sortable: true, title: $t('permission.admin.mobile') },
     {
       field: 'email',
+      formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 180,
       sortable: true,
       title: $t('permission.admin.email'),
-      visible: false,
     },
     {
       field: 'dept_id',

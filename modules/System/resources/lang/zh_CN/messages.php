@@ -20,7 +20,7 @@ return [
     'module_restart_required' => '已更新，请重启后端服务后生效',
     'login_success' => '登录成功',
     'logout_success' => '已退出',
-    'invalid_credentials' => '用户名或密码错误',
+    'invalid_credentials' => '账号或密码错误',
     'captcha_required' => '请完成验证码校验',
     'maintenance_mode' => '系统维护中，请稍后再试',
     'old_password_invalid' => '旧密码不正确',

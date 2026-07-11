@@ -20,7 +20,7 @@ return [
     'module_restart_required' => 'Updated. Please restart the backend service.',
     'login_success' => 'Login successful',
     'logout_success' => 'Logged out',
-    'invalid_credentials' => 'Invalid username or password',
+    'invalid_credentials' => 'Invalid account or password',
     'captcha_required' => 'Please complete the captcha verification',
     'maintenance_mode' => 'System is under maintenance. Please try again later.',
     'old_password_invalid' => 'Incorrect old password',

@@ -25,7 +25,9 @@ class AdminPermissionService
                 ->orderBy('id')
                 ->get();
         } else {
-            $roleIds = $admin->roles()->pluck('id');
+            $roleIds = $admin->roles()->pluck(
+                $admin->roles()->getRelated()->getQualifiedKeyName(),
+            );
             if ($roleIds->isEmpty()) {
                 return collect();
             }
