@@ -23,17 +23,19 @@ import { preferences } from '@vben/preferences';
 import {
   configFieldLabel,
   configFieldRemark,
-  flattenMenuTreeForHomePathSelect,
   getConfigSelectOptions,
   isAttachmentImageField,
   isHomePathSelectField,
   isStorageFieldVisible,
-  mergeLegacyHomePathOption,
+  mapMenuTreeForHomePathCascader,
+  mergeLegacyHomePathCascaderOption,
   SITE_FIXED_PAGE_KEY,
   STORAGE_DRIVER_KEY,
+  type HomePathCascaderOption,
 } from '../data';
 import { applySiteBranding } from '#/utils/site-branding';
 import { fetchMenuTree } from '#/api/system/menu';
+import HomePathCascader from './home-path-cascader.vue';
 
 const props = defineProps<{
   canManage: boolean;
@@ -47,7 +49,7 @@ const loading = ref(false);
 const saving = ref(false);
 const rows = ref<ConfigRow[]>([]);
 const draftValues = ref<Record<string, string>>({});
-const homePathOptions = ref<{ label: string; value: string }[]>([]);
+const homePathCascaderOptions = ref<HomePathCascaderOption[]>([]);
 
 const scrollStyle = computed(() => ({
   height: `${Math.max(Math.floor(scrollWrapHeight.value), 280)}px`,
@@ -90,16 +92,16 @@ async function loadConfigs() {
     rows.value = result.list ?? [];
     syncDraftFromRows(rows.value);
     if (props.groupName === 'basic') {
-      refreshHomePathOptions(menuTree);
+      refreshHomePathCascader(menuTree);
     }
   } finally {
     loading.value = false;
   }
 }
 
-function refreshHomePathOptions(menuTree: Awaited<ReturnType<typeof fetchMenuTree>>) {
-  const options = flattenMenuTreeForHomePathSelect(menuTree);
-  homePathOptions.value = mergeLegacyHomePathOption(
+function refreshHomePathCascader(menuTree: Awaited<ReturnType<typeof fetchMenuTree>>) {
+  const options = mapMenuTreeForHomePathCascader(menuTree);
+  homePathCascaderOptions.value = mergeLegacyHomePathCascaderOption(
     options,
     draftValues.value[SITE_FIXED_PAGE_KEY] ?? '',
   );
@@ -136,18 +138,11 @@ async function onSave() {
 }
 
 function selectOptions(key: string) {
-  if (isHomePathSelectField(key)) {
-    return homePathOptions.value;
-  }
   return getConfigSelectOptions()[key] ?? [];
 }
 
 function isSelectField(row: ConfigRow) {
-  return (
-    row.type === 'select' ||
-    isHomePathSelectField(row.key) ||
-    !!getConfigSelectOptions()[row.key]
-  );
+  return row.type === 'select' || !!getConfigSelectOptions()[row.key];
 }
 
 watch(
@@ -200,25 +195,18 @@ defineExpose({
                   (val) => (draftValues[row.key] = String(val ?? ''))
                 "
               />
+              <HomePathCascader
+                v-else-if="isHomePathSelectField(row.key)"
+                :disabled="!props.canManage"
+                :options="homePathCascaderOptions"
+                :value="draftValues[row.key]"
+                @update:value="(val) => (draftValues[row.key] = val)"
+              />
               <Select
                 v-else-if="isSelectField(row)"
                 :disabled="!props.canManage"
                 :class="fieldControlClass"
                 :options="selectOptions(row.key)"
-                :placeholder="
-                  isHomePathSelectField(row.key)
-                    ? $t('platform.config.selectOptions.homePathPlaceholder')
-                    : undefined
-                "
-                :show-search="isHomePathSelectField(row.key)"
-                :filter-option="
-                  isHomePathSelectField(row.key)
-                    ? (input, option) =>
-                        String(option?.label ?? '')
-                          .toLowerCase()
-                          .includes(input.toLowerCase())
-                    : undefined
-                "
                 :value="draftValues[row.key] || undefined"
                 @update:value="
                   (val) => (draftValues[row.key] = String(val ?? ''))

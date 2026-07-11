@@ -128,12 +128,26 @@ function isHomePathMenuType(type: number): boolean {
   return type === 1 || type === 2 || type === 4;
 }
 
-/** 将菜单树扁平化为默认主页下拉选项 */
-export function flattenMenuTreeForHomePathSelect(
+export interface HomePathCascaderOption {
+  children?: HomePathCascaderOption[];
+  disabled?: boolean;
+  label: string;
+  value: string;
+}
+
+function menuNodeGroupValue(id: number): string {
+  return `__menu_${id}`;
+}
+
+function isStoredHomePathValue(value: string): boolean {
+  return value.startsWith('/');
+}
+
+/** 将菜单树转为默认主页 Cascader 联动选项 */
+export function mapMenuTreeForHomePathCascader(
   nodes: MenuTreeNode[],
-  ancestors: string[] = [],
-): { label: string; value: string }[] {
-  const options: { label: string; value: string }[] = [];
+): HomePathCascaderOption[] {
+  const result: HomePathCascaderOption[] = [];
 
   for (const node of nodes) {
     if (node.type === 3 || node.type === 5 || node.status !== 1) {
@@ -141,37 +155,48 @@ export function flattenMenuTreeForHomePathSelect(
     }
 
     const path = node.path?.trim();
-    const title = menuDisplayLabel(node);
-    const labelParts = [...ancestors, title];
+    const selectable = Boolean(path && isHomePathMenuType(node.type));
+    const children = node.children?.length
+      ? mapMenuTreeForHomePathCascader(node.children)
+      : undefined;
 
-    if (path && isHomePathMenuType(node.type)) {
-      const normalized = normalizeMenuPath(path);
-      options.push({
-        value: normalized,
-        label: `${labelParts.join(' / ')} (${normalized})`,
-      });
+    if (!selectable && !children?.length) {
+      continue;
     }
 
-    if (node.children?.length) {
-      options.push(
-        ...flattenMenuTreeForHomePathSelect(node.children, labelParts),
-      );
-    }
+    result.push({
+      label: menuDisplayLabel(node),
+      value: selectable ? normalizeMenuPath(path!) : menuNodeGroupValue(node.id),
+      disabled: !selectable && !children?.length,
+      children: children?.length ? children : undefined,
+    });
   }
 
-  return options;
+  return result;
+}
+
+function homePathExistsInCascader(
+  nodes: HomePathCascaderOption[],
+  path: string,
+): boolean {
+  for (const node of nodes) {
+    if (node.value === path) {
+      return true;
+    }
+    if (node.children?.length && homePathExistsInCascader(node.children, path)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /** 若当前值不在菜单列表中，保留一项以便回显 */
-export function mergeLegacyHomePathOption(
-  options: { label: string; value: string }[],
+export function mergeLegacyHomePathCascaderOption(
+  options: HomePathCascaderOption[],
   currentValue: string,
-): { label: string; value: string }[] {
+): HomePathCascaderOption[] {
   const normalized = normalizeMenuPath(currentValue);
-  if (!normalized) {
-    return options;
-  }
-  if (options.some((item) => item.value === normalized)) {
+  if (!normalized || homePathExistsInCascader(options, normalized)) {
     return options;
   }
   return [
@@ -183,6 +208,89 @@ export function mergeLegacyHomePathOption(
     },
     ...options,
   ];
+}
+
+/** 路由 path → Cascader 选中路径 */
+export function homePathToCascaderValue(
+  options: HomePathCascaderOption[],
+  path: string,
+): string[] {
+  const normalized = normalizeMenuPath(path);
+  if (!normalized) {
+    return [];
+  }
+
+  function walk(
+    nodes: HomePathCascaderOption[],
+    trail: string[],
+  ): null | string[] {
+    for (const node of nodes) {
+      const current = [...trail, node.value];
+      if (node.value === normalized) {
+        return current;
+      }
+      if (node.children?.length) {
+        const found = walk(node.children, current);
+        if (found) {
+          return found;
+        }
+      }
+    }
+    return null;
+  }
+
+  return walk(options, []) ?? (normalized ? [normalized] : []);
+}
+
+/** Cascader 选中路径 → 路由 path */
+export function cascaderValueToHomePath(values: string[] | undefined): string {
+  if (!values?.length) {
+    return '';
+  }
+  for (let index = values.length - 1; index >= 0; index -= 1) {
+    const value = values[index];
+    if (value && isStoredHomePathValue(value)) {
+      return value;
+    }
+  }
+  return '';
+}
+
+/** 根据 Cascader 值解析各级菜单标题 */
+export function resolveHomePathCascaderLabels(
+  options: HomePathCascaderOption[],
+  values: string[],
+): string[] {
+  const labels: string[] = [];
+  let current = options;
+
+  for (const value of values) {
+    const node = current.find((item) => item.value === value);
+    if (!node) {
+      break;
+    }
+    labels.push(node.label);
+    current = node.children ?? [];
+  }
+
+  return labels;
+}
+
+/** 选中后展示：工作台 / 控制台 (/dashboard/console) */
+export function formatHomePathDisplay(
+  labels: string[],
+  homePath: string,
+): string {
+  const normalized = normalizeMenuPath(homePath);
+  const title = labels.filter(Boolean).join(' / ');
+
+  if (title && normalized) {
+    return `${title} (${normalized})`;
+  }
+  if (title) {
+    return title;
+  }
+  return normalized;
 }
 
 /** 下拉类配置项选项（mail_type / mail_verify_type） */

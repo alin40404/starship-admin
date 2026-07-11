@@ -45,6 +45,8 @@ textarea.ant-input,
 .ant-divider-inner-text,
 .ant-picker .ant-picker-input > input,
 .ant-cascader-input,
+.ant-cascader-menu-item,
+.ant-cascader-menu-item-content,
 .ant-mentions textarea {
   font-size: var(--text-sm, 0.875rem) !important;
 }
