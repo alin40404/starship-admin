@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('monitor_exception_logs', function (Blueprint $table): void {
             $table->id();
             $table->uuid('trace_id')->comment('追踪ID(关联文件日志)');
-            $table->string('exception_class', 255)->comment('异常类');
+            $table->string('exception_class', 191)->comment('异常类');
             $table->string('message', 500)->comment('异常消息摘要');
             $table->string('file', 500)->nullable()->comment('文件');
             $table->unsignedInteger('line')->nullable()->comment('行号');
