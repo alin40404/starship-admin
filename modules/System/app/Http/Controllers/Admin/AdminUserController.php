@@ -190,7 +190,7 @@ class AdminUserController extends Controller
         $admin = Admin::query()->findOrFail($id);
 
         if ((int) $admin->is_super === 1) {
-            return ApiResponse::error('超级管理员不允许修改状�?, 422);
+            return ApiResponse::error('超级管理员不允许修改状态', 422);
         }
 
         $data = $request->validate([
@@ -212,7 +212,7 @@ class AdminUserController extends Controller
 
         $admin->delete();
 
-        return ApiResponse::success(null, '已删�?);
+        return ApiResponse::success(null, '已删除');
     }
 
     public function batchDestroy(Request $request): JsonResponse
@@ -236,7 +236,7 @@ class AdminUserController extends Controller
             ->where('is_super', 0)
             ->delete();
 
-        return ApiResponse::success(['deleted' => $deleted], '已批量删�?);
+        return ApiResponse::success(['deleted' => $deleted], '已批量删除');
     }
 
     public function batchUpdateStatus(Request $request): JsonResponse
@@ -253,7 +253,7 @@ class AdminUserController extends Controller
             ->exists();
 
         if ($hasSuper) {
-            return ApiResponse::error('所选记录中包含超级管理员，无法修改状�?, 422);
+            return ApiResponse::error('所选记录中包含超级管理员，无法修改状态', 422);
         }
 
         $updated = Admin::query()
@@ -261,6 +261,6 @@ class AdminUserController extends Controller
             ->where('is_super', 0)
             ->update(['status' => $data['status']]);
 
-        return ApiResponse::success(['updated' => $updated], '已批量更新状�?);
+        return ApiResponse::success(['updated' => $updated], '已批量更新状态');
     }
 }

@@ -70,7 +70,7 @@ class TableConfigController extends Controller
 
         $config = $tableConfigService->update($config, $payload);
 
-        return ApiResponse::success($config, '已保�?);
+        return ApiResponse::success($config, '已保存');
     }
 
     public function destroy(int $id): JsonResponse
@@ -79,6 +79,6 @@ class TableConfigController extends Controller
         $config->columns()->delete();
         $config->delete();
 
-        return ApiResponse::success(null, '已删�?);
+        return ApiResponse::success(null, '已删除');
     }
 }

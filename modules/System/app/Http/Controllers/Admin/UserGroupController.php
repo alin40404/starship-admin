@@ -103,7 +103,7 @@ class UserGroupController extends Controller
     {
         UserGroup::query()->whereKey($id)->firstOrFail()->delete();
 
-        return ApiResponse::success(null, '已删�?);
+        return ApiResponse::success(null, '已删除');
     }
 
     public function batchDestroy(Request $request): JsonResponse
@@ -115,7 +115,7 @@ class UserGroupController extends Controller
 
         $deleted = UserGroup::query()->whereIn('id', $ids)->delete();
 
-        return ApiResponse::success(['deleted' => $deleted], '已批量删�?);
+        return ApiResponse::success(['deleted' => $deleted], '已批量删除');
     }
 
     public function syncAdmins(Request $request, int $id): JsonResponse
@@ -128,6 +128,6 @@ class UserGroupController extends Controller
 
         $group->admins()->sync($validated['admin_ids']);
 
-        return ApiResponse::success(['admin_ids' => $validated['admin_ids']], '成员已更�?);
+        return ApiResponse::success(['admin_ids' => $validated['admin_ids']], '成员已更新');
     }
 }

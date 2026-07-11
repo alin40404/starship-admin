@@ -63,7 +63,7 @@ class CategoryController extends Controller
         if (isset($data['parent_id']) && (int) $data['parent_id'] !== (int) $category->parent_id) {
             $parentId = (int) $data['parent_id'];
             if ($parentId === (int) $category->id) {
-                return ApiResponse::error('上级分类不能为自�?, 422);
+                return ApiResponse::error('上级分类不能为自身', 422);
             }
             if ($parentId > 0 && in_array($parentId, $this->descendantIds($category->id), true)) {
                 return ApiResponse::error('上级分类不能为下级或自身', 422);
@@ -96,7 +96,7 @@ class CategoryController extends Controller
 
         $category->update($data);
 
-        return ApiResponse::success($this->formatCategory($category->fresh()), '排序已更�?);
+        return ApiResponse::success($this->formatCategory($category->fresh()), '排序已更新');
     }
 
     public function destroy(int $id): JsonResponse
@@ -104,12 +104,12 @@ class CategoryController extends Controller
         $category = Category::query()->whereKey($id)->firstOrFail();
 
         if (Category::query()->where('parent_id', $category->id)->exists()) {
-            return ApiResponse::error('存在下级分类，无法删�?, 422);
+            return ApiResponse::error('存在下级分类，无法删除', 422);
         }
 
         $category->delete();
 
-        return ApiResponse::success(null, '已删�?);
+        return ApiResponse::success(null, '已删除');
     }
 
     public function batchDestroy(Request $request): JsonResponse
@@ -136,7 +136,7 @@ class CategoryController extends Controller
 
         return ApiResponse::success(
             ['deleted' => $deleted, 'skipped' => $skipped],
-            $skipped > 0 ? "已删�?{$deleted} 个，{$skipped} 个因存在下级未删�? : '已批量删�?,
+            $skipped > 0 ? "已删除 {$deleted} 个，{$skipped} 个因存在下级未删除" : '已批量删除',
         );
     }
 
@@ -257,7 +257,7 @@ class CategoryController extends Controller
         $data = $request->validate($rules);
 
         if (array_key_exists('type', $data) && ! CategoryType::isValid($data['type'])) {
-            abort(422, '无效的栏目类型，请先在字典管理维�?category_type');
+            abort(422, '无效的栏目类型，请先在字典管理维护 category_type');
         }
 
         if (array_key_exists('flag', $data)) {

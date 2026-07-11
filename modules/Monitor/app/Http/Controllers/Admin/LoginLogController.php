@@ -60,7 +60,7 @@ class LoginLogController extends Controller
     {
         LoginLog::query()->whereKey($id)->firstOrFail()->delete();
 
-        return ApiResponse::success(null, '已删�?);
+        return ApiResponse::success(null, '已删除');
     }
 
     public function batchDestroy(Request $request): JsonResponse
@@ -72,6 +72,6 @@ class LoginLogController extends Controller
 
         $deleted = LoginLog::query()->whereIn('id', $ids)->delete();
 
-        return ApiResponse::success(['deleted' => $deleted], '已批量删�?);
+        return ApiResponse::success(['deleted' => $deleted], '已批量删除');
     }
 }

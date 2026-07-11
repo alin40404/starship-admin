@@ -13,7 +13,7 @@ trait ChecksAdminPermission
     {
         $admin = $request->user();
         if (! $admin instanceof Admin) {
-            return ApiResponse::error('未登�?, 401);
+            return ApiResponse::error('未登录', 401);
         }
 
         if (! $allowed($admin)) {

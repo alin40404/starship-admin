@@ -20,7 +20,7 @@ class AttachmentController extends Controller
     }
 
     /**
-     * 表单附件选择弹窗：分类列表，仅需登录�?
+     * 表单附件选择弹窗：分类列表，仅需登录。
      */
     public function pickerCategories(): JsonResponse
     {
@@ -35,7 +35,7 @@ class AttachmentController extends Controller
     }
 
     /**
-     * 表单附件选择弹窗：附件分页列表，仅需登录�?
+     * 表单附件选择弹窗：附件分页列表，仅需登录。
      */
     public function pickerIndex(Request $request): JsonResponse
     {
@@ -126,7 +126,7 @@ class AttachmentController extends Controller
         $ext = strtolower((string) $file->getClientOriginalExtension());
         $allowedExt = StorageConfigRegistrar::allowedExtensions();
         if ($allowedExt !== [] && ! in_array($ext, $allowedExt, true)) {
-            return ApiResponse::error('不允许上传该类型的文�?, 422);
+            return ApiResponse::error('不允许上传该类型的文件', 422);
         }
 
         $category = AttachmentCategory::resolveFromFile(
@@ -138,7 +138,7 @@ class AttachmentController extends Controller
 
         if (in_array($disk, StorageConfigRegistrar::CLOUD_DISKS, true)
             && ! StorageConfigRegistrar::isCloudDiskReady($disk)) {
-            return ApiResponse::error('云存储未配置完整，请先在系统配置 �?存储配置中填写接入参�?, 422);
+            return ApiResponse::error('云存储未配置完整，请先在系统配置 → 存储配置中填写接入参数', 422);
         }
 
         $path = $file->store('uploads/'.date('Y/m/d'), $disk);
@@ -178,7 +178,7 @@ class AttachmentController extends Controller
         $this->deletePhysicalFile($attachment);
         $attachment->delete();
 
-        return ApiResponse::success(null, '已删�?);
+        return ApiResponse::success(null, '已删除');
     }
 
     public function batchDestroy(Request $request): JsonResponse
@@ -195,7 +195,7 @@ class AttachmentController extends Controller
 
         $deleted = Attachment::query()->whereIn('id', $ids)->delete();
 
-        return ApiResponse::success(['deleted' => $deleted], '已批量删�?);
+        return ApiResponse::success(['deleted' => $deleted], '已批量删除');
     }
 
     private function deletePhysicalFile(Attachment $attachment): void

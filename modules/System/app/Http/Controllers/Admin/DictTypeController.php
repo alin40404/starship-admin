@@ -84,6 +84,6 @@ class DictTypeController extends Controller
     {
         DictType::query()->whereKey($id)->firstOrFail()->delete();
 
-        return ApiResponse::success(null, '已删�?);
+        return ApiResponse::success(null, '已删除');
     }
 }

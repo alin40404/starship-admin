@@ -62,7 +62,7 @@ class ConfigController extends Controller
         StorageConfigRegistrar::reset();
         StorageConfigRegistrar::apply();
 
-        return ApiResponse::success(null, '配置已保�?);
+        return ApiResponse::success(null, '配置已保存');
     }
 
     public function destroy(int $id): JsonResponse
@@ -74,7 +74,7 @@ class ConfigController extends Controller
 
         $config->delete();
 
-        return ApiResponse::success(null, '已删�?);
+        return ApiResponse::success(null, '已删除');
     }
 
     public function batchDestroy(Request $request): JsonResponse
@@ -90,9 +90,9 @@ class ConfigController extends Controller
             ->delete();
 
         if ($deleted === 0) {
-            return ApiResponse::error('未找到可删除的运行参�?, 422);
+            return ApiResponse::error('未找到可删除的运行参数', 422);
         }
 
-        return ApiResponse::success(['deleted' => $deleted], '已批量删�?);
+        return ApiResponse::success(['deleted' => $deleted], '已批量删除');
     }
 }

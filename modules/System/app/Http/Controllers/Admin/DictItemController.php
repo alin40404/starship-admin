@@ -65,6 +65,6 @@ class DictItemController extends Controller
     {
         DictItem::query()->whereKey($id)->firstOrFail()->delete();
 
-        return ApiResponse::success(null, '已删�?);
+        return ApiResponse::success(null, '已删除');
     }
 }

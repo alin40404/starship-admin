@@ -29,7 +29,7 @@ class SmsAliyunController extends Controller
             'mobile' => $data['mobile'],
             'sign_name' => $signName,
             'template_code' => $templateCode,
-            'message' => '测试请求已通过插件路由校验（第一版不调用真实阿里�?SDK�?,
+            'message' => '测试请求已通过插件路由校验（第一版不调用真实阿里云 SDK）',
         ], '测试成功');
     }
 }

@@ -83,14 +83,14 @@ class MenuController extends Controller
 
         $menu->update(['sort' => $data['sort']]);
 
-        return ApiResponse::success($menu->fresh(), '排序已更�?);
+        return ApiResponse::success($menu->fresh(), '排序已更新');
     }
 
     public function destroy(int $id): JsonResponse
     {
         Menu::query()->whereKey($id)->firstOrFail()->delete();
 
-        return ApiResponse::success(null, '已删�?);
+        return ApiResponse::success(null, '已删除');
     }
 
     public function batchDestroy(Request $request): JsonResponse
@@ -102,7 +102,7 @@ class MenuController extends Controller
 
         $deleted = Menu::query()->whereIn('id', $ids)->delete();
 
-        return ApiResponse::success(['deleted' => $deleted], '已批量删�?);
+        return ApiResponse::success(['deleted' => $deleted], '已批量删除');
     }
 
     public function batchUpdateStatus(Request $request): JsonResponse
@@ -117,11 +117,11 @@ class MenuController extends Controller
             ->whereIn('id', $data['ids'])
             ->update(['status' => $data['status']]);
 
-        return ApiResponse::success(['updated' => $updated], '已批量更新状�?);
+        return ApiResponse::success(['updated' => $updated], '已批量更新状态');
     }
 
     /**
-     * 校验路由地址是否已被其它菜单占用（编辑时�?exclude_id 排除自身）�?
+     * 校验路由地址是否已被其它菜单占用（编辑时传 exclude_id 排除自身）。
      */
     public function pathExists(Request $request): JsonResponse
     {
@@ -180,7 +180,7 @@ class MenuController extends Controller
     }
 
     /**
-     * parent_id > 0 时要求父菜单存在且不能为按钮(type=3)；更新时禁止指向自身�?
+     * parent_id > 0 时要求父菜单存在且不能为按钮(type=3)；更新时禁止指向自身。
      */
     private function parentMenuRule(?Menu $existing = null): \Closure
     {
@@ -200,7 +200,7 @@ class MenuController extends Controller
 
             $parent = Menu::query()->find($parentId);
             if ($parent === null) {
-                $fail('上级菜单不存�?);
+                $fail('上级菜单不存在');
 
                 return;
             }
@@ -256,7 +256,7 @@ class MenuController extends Controller
     }
 
     /**
-     * type �?3（按钮）�?（外链）时不要求路由地址；其余类型必填；更新时未提交 path 则沿用原记录�?
+     * type 为 3（按钮）、5（外链）时不要求路由地址；其余类型必填；更新时未提交 path 则沿用原记录。
      */
     private function pathRequiredUnlessLinkRule(?Menu $existing = null): \Closure
     {
@@ -280,7 +280,7 @@ class MenuController extends Controller
     }
 
     /**
-     * 非空 path 全局唯一（与其它菜单记录不重复）；更新时排除当前 id�?
+     * 非空 path 全局唯一（与其它菜单记录不重复）；更新时排除当前 id。
      */
     private function pathUniqueRule(bool $isCreate, ?Menu $existing = null): \Closure
     {
@@ -297,13 +297,13 @@ class MenuController extends Controller
                 $query->where('id', '!=', $existing->id);
             }
             if ($query->exists()) {
-                $fail('路由地址已存�?);
+                $fail('路由地址已存在');
             }
         };
     }
 
     /**
-     * type=3（按钮）时权限标识必填�?
+     * type=3（按钮）时权限标识必填。
      */
     private function permissionRequiredWhenButtonRule(?Menu $existing = null): \Closure
     {
@@ -319,7 +319,7 @@ class MenuController extends Controller
     }
 
     /**
-     * type=4（内嵌）�?iframe_src 必填且为合法 URL�?
+     * type=4（内嵌）时 iframe_src 必填且为合法 URL。
      */
     private function iframeSrcRule(?Menu $existing = null): \Closure
     {
@@ -341,7 +341,7 @@ class MenuController extends Controller
     }
 
     /**
-     * type=5（外链）�?link_url 必填且为合法 URL�?
+     * type=5（外链）时 link_url 必填且为合法 URL。
      */
     private function linkUrlRule(?Menu $existing = null): \Closure
     {
@@ -363,7 +363,7 @@ class MenuController extends Controller
     }
 
     /**
-     * 非空时须�?/ 开头，且须与某条菜单记录的 path 一致（用于侧栏高亮）�?
+     * 非空时须以 / 开头，且须与某条菜单记录的 path 一致（用于侧栏高亮）。
      */
     private function activePathRule(): \Closure
     {
@@ -376,12 +376,12 @@ class MenuController extends Controller
                 return;
             }
             if (! Str::startsWith($v, '/')) {
-                $fail('激活路径须�?/ 开�?);
+                $fail('激活路径须以 / 开头');
 
                 return;
             }
             if (mb_strlen($v) < 2) {
-                $fail('激活路径长度至�?2 个字�?);
+                $fail('激活路径长度至少 2 个字符');
 
                 return;
             }

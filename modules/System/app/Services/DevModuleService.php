@@ -67,7 +67,7 @@ class DevModuleService
         $found = $this->findModuleDirectory($name);
         $data = ModuleManifest::load($found['manifest_path']);
         if (! $data) {
-            throw new InvalidArgumentException("模块 {$name} �?module.json 无效");
+            throw new InvalidArgumentException("模块 {$name} 的 module.json 无效");
         }
 
         return array_merge(
@@ -101,7 +101,7 @@ class DevModuleService
         $found = $this->findModuleDirectory($name);
         $data = ModuleManifest::load($found['manifest_path']);
         if (! $data) {
-            throw new InvalidArgumentException("模块 {$name} �?module.json 无效");
+            throw new InvalidArgumentException("模块 {$name} 的 module.json 无效");
         }
 
         $data['enabled'] = $enabled;

@@ -82,7 +82,7 @@ class PluginController extends Controller
         try {
             return ApiResponse::success(
                 $pluginService->updateConfig($slug, $request->all()),
-                '配置已保�?,
+                '配置已保存',
             );
         } catch (InvalidArgumentException $exception) {
             return ApiResponse::error($exception->getMessage(), 422);
