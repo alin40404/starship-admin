@@ -126,7 +126,7 @@ class AttachmentController extends Controller
         $ext = strtolower((string) $file->getClientOriginalExtension());
         $allowedExt = StorageConfigRegistrar::allowedExtensions();
         if ($allowedExt !== [] && ! in_array($ext, $allowedExt, true)) {
-            return ApiResponse::error('不允许上传该类型的文件', 422);
+            return ApiResponse::error(__('system::messages.file_type_not_allowed'), 422);
         }
 
         $category = AttachmentCategory::resolveFromFile(
@@ -138,7 +138,7 @@ class AttachmentController extends Controller
 
         if (in_array($disk, StorageConfigRegistrar::CLOUD_DISKS, true)
             && ! StorageConfigRegistrar::isCloudDiskReady($disk)) {
-            return ApiResponse::error('云存储未配置完整，请先在系统配置 → 存储配置中填写接入参数', 422);
+            return ApiResponse::error(__('system::messages.cloud_storage_incomplete'), 422);
         }
 
         $path = $file->store('uploads/'.date('Y/m/d'), $disk);
@@ -169,7 +169,7 @@ class AttachmentController extends Controller
             $category ? (AttachmentCategory::label($category) ?? $category) : null,
         );
 
-        return ApiResponse::success($row, '上传成功');
+        return ApiResponse::success($row, __('system::messages.uploaded'));
     }
 
     public function destroy(int $id): JsonResponse
@@ -178,7 +178,7 @@ class AttachmentController extends Controller
         $this->deletePhysicalFile($attachment);
         $attachment->delete();
 
-        return ApiResponse::success(null, '已删除');
+        return ApiResponse::success(null, __('system::messages.deleted'));
     }
 
     public function batchDestroy(Request $request): JsonResponse
@@ -195,7 +195,7 @@ class AttachmentController extends Controller
 
         $deleted = Attachment::query()->whereIn('id', $ids)->delete();
 
-        return ApiResponse::success(['deleted' => $deleted], '已批量删除');
+        return ApiResponse::success(['deleted' => $deleted], __('system::messages.batch_deleted'));
     }
 
     private function deletePhysicalFile(Attachment $attachment): void

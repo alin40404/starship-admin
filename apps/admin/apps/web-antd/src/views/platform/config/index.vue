@@ -4,14 +4,18 @@ import { computed, ref, useTemplateRef } from 'vue';
 import { useAccess } from '@vben/access';
 import { Page } from '@vben/common-ui';
 
+import { $t } from '@vben/locales';
+
 import { Button } from 'ant-design-vue';
 
 import { CONFIG_PERMISSIONS } from '#/constants/config-permissions';
 import { PARAM_PERMISSIONS } from '#/constants/param-permissions';
 
+import { $t } from '@vben/locales';
+
 import {
-  CONFIG_GROUP_DESCRIPTIONS,
-  CONFIG_GROUP_LABELS,
+  getConfigGroupDescriptions,
+  getConfigGroupLabels,
   CONFIG_SETTINGS_GROUPS,
   type ConfigSettingsGroup,
 } from './data';
@@ -60,33 +64,33 @@ async function onSettingsSave() {
 const sections: ConfigSection[] = [
   {
     key: 'basic',
-    label: CONFIG_GROUP_LABELS.basic!,
-    description: CONFIG_GROUP_DESCRIPTIONS.basic!,
+    label: getConfigGroupLabels().basic!,
+    description: getConfigGroupDescriptions().basic!,
   },
   {
     key: 'param',
-    label: '运行参数',
-    description: '维护可动态增删的运行参数',
+    label: $t('system.platform.config.groups.runtime'),
+    description: $t('system.platform.config.groupDescriptions.runtime'),
   },
   {
     key: 'sms',
-    label: CONFIG_GROUP_LABELS.sms!,
-    description: CONFIG_GROUP_DESCRIPTIONS.sms!,
+    label: getConfigGroupLabels().sms!,
+    description: getConfigGroupDescriptions().sms!,
   },
   {
     key: 'inbox',
-    label: CONFIG_GROUP_LABELS.inbox!,
-    description: CONFIG_GROUP_DESCRIPTIONS.inbox!,
+    label: getConfigGroupLabels().inbox!,
+    description: getConfigGroupDescriptions().inbox!,
   },
   {
     key: 'email',
-    label: CONFIG_GROUP_LABELS.email!,
-    description: CONFIG_GROUP_DESCRIPTIONS.email!,
+    label: getConfigGroupLabels().email!,
+    description: getConfigGroupDescriptions().email!,
   },
   {
     key: 'storage',
-    label: CONFIG_GROUP_LABELS.storage!,
-    description: CONFIG_GROUP_DESCRIPTIONS.storage!,
+    label: getConfigGroupLabels().storage!,
+    description: getConfigGroupDescriptions().storage!,
   },
 ];
 
@@ -141,7 +145,7 @@ const currentSection = computed(
             type="primary"
             @click="onSettingsSave"
           >
-            保存配置
+            {{ $t('system.platform.config.saveConfig') }}
           </Button>
         </div>
 

@@ -52,7 +52,7 @@ class CategoryController extends Controller
 
         $category = Category::query()->create($data);
 
-        return ApiResponse::success($this->formatCategory($category->fresh()), '创建成功');
+        return ApiResponse::success($this->formatCategory($category->fresh()), __('system::messages.created'));
     }
 
     public function update(Request $request, int $id): JsonResponse
@@ -63,16 +63,16 @@ class CategoryController extends Controller
         if (isset($data['parent_id']) && (int) $data['parent_id'] !== (int) $category->parent_id) {
             $parentId = (int) $data['parent_id'];
             if ($parentId === (int) $category->id) {
-                return ApiResponse::error('上级分类不能为自身', 422);
+                return ApiResponse::error(__('system::messages.category_parent_self'), 422);
             }
             if ($parentId > 0 && in_array($parentId, $this->descendantIds($category->id), true)) {
-                return ApiResponse::error('上级分类不能为下级或自身', 422);
+                return ApiResponse::error(__('system::messages.category_parent_invalid'), 422);
             }
         }
 
         $category->update($data);
 
-        return ApiResponse::success($this->formatCategory($category->fresh()), '更新成功');
+        return ApiResponse::success($this->formatCategory($category->fresh()), __('system::messages.updated'));
     }
 
     public function updateStatus(Request $request, int $id): JsonResponse
@@ -84,7 +84,7 @@ class CategoryController extends Controller
 
         $category->update($data);
 
-        return ApiResponse::success($this->formatCategory($category->fresh()), '状态已更新');
+        return ApiResponse::success($this->formatCategory($category->fresh()), __('system::messages.status_updated'));
     }
 
     public function updateSort(Request $request, int $id): JsonResponse
@@ -96,7 +96,7 @@ class CategoryController extends Controller
 
         $category->update($data);
 
-        return ApiResponse::success($this->formatCategory($category->fresh()), '排序已更新');
+        return ApiResponse::success($this->formatCategory($category->fresh()), __('system::messages.sort_updated'));
     }
 
     public function destroy(int $id): JsonResponse
@@ -104,12 +104,12 @@ class CategoryController extends Controller
         $category = Category::query()->whereKey($id)->firstOrFail();
 
         if (Category::query()->where('parent_id', $category->id)->exists()) {
-            return ApiResponse::error('存在下级分类，无法删除', 422);
+            return ApiResponse::error(__('system::messages.category_has_children'), 422);
         }
 
         $category->delete();
 
-        return ApiResponse::success(null, '已删除');
+        return ApiResponse::success(null, __('system::messages.deleted'));
     }
 
     public function batchDestroy(Request $request): JsonResponse
@@ -128,7 +128,7 @@ class CategoryController extends Controller
         }
 
         if ($deletableIds === []) {
-            return ApiResponse::error('所选分类存在下级，无法删除', 422);
+            return ApiResponse::error(__('system::messages.category_batch_has_children'), 422);
         }
 
         $deleted = Category::query()->whereIn('id', $deletableIds)->delete();
@@ -136,7 +136,7 @@ class CategoryController extends Controller
 
         return ApiResponse::success(
             ['deleted' => $deleted, 'skipped' => $skipped],
-            $skipped > 0 ? "已删除 {$deleted} 个，{$skipped} 个因存在下级未删除" : '已批量删除',
+            $skipped > 0 ? __('system::messages.batch_deleted_partial_children', ['deleted' => $deleted, 'skipped' => $skipped]) : __('system::messages.batch_deleted'),
         );
     }
 
@@ -152,7 +152,7 @@ class CategoryController extends Controller
             ->whereIn('id', $data['ids'])
             ->update(['status' => $data['status']]);
 
-        return ApiResponse::success(['updated' => $updated], '状态已批量更新');
+        return ApiResponse::success(['updated' => $updated], __('system::messages.category_batch_status_updated'));
     }
 
     /**

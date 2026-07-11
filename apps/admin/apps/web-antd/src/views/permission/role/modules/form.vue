@@ -10,6 +10,7 @@ import { computed, defineAsyncComponent, nextTick, reactive, ref, watch } from '
 
 import { useAccess } from '@vben/access';
 import { Tree, useVbenDrawer } from '@vben/common-ui';
+import { $t } from '@vben/locales';
 import { IconifyIcon } from '@vben/icons';
 
 import { message, Spin } from 'ant-design-vue';
@@ -150,10 +151,14 @@ watch(
 
 const drawerTitle = computed(() => {
   if (openMode.value === 'view') {
-    return '查看角色';
+    return $t('system.permission.role.viewRole');
   }
-  return editingId.value ? '编辑角色' : '新增角色';
+  return editingId.value
+    ? $t('system.permission.role.editRole')
+    : $t('system.permission.role.createRoleTitle');
 });
+
+const allLabelCss = computed(() => `"${$t('system.shared.all')}"`);
 
 function stripRolePayload(values: Record<string, unknown>): RoleSavePayload {
   const { menu_ids: _m, dept_ids: _d, ...rest } = values;
@@ -190,14 +195,14 @@ const [Drawer, drawerApi] = useVbenDrawer({
         if (dataScope === DATA_SCOPE_CUSTOM) {
           await syncRoleDepts(created.id, deptIds);
         }
-        message.success('创建成功');
+        message.success($t('crud.created'));
       } else {
         await updateRole(editingId.value, values);
         await syncRoleMenus(editingId.value, menuIds);
         if (dataScope === DATA_SCOPE_CUSTOM) {
           await syncRoleDepts(editingId.value, deptIds);
         }
-        message.success('已保存');
+        message.success($t('crud.saved'));
       }
       drawerApi.close();
       emits('success');
@@ -234,7 +239,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
 
     if (openMode.value === 'view' || !canWriteRole.value) {
       drawerApi.setState({
-        cancelText: '关闭',
+        cancelText: $t('system.shared.close'),
         showConfirmButton: false,
       });
     } else {
@@ -337,7 +342,7 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
             max-tag-count="responsive"
             :multiple="true"
             :options="deptCascaderOptions"
-            placeholder="请选择数据部门"
+            :placeholder="$t('system.permission.role.selectDataDept')"
             show-checked-strategy="SHOW_CHILD"
             style="width: 100%"
             :value="
@@ -453,7 +458,7 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
       > div:has(> .flex.size-5.flex-1.cursor-pointer)
       > .flex.size-5.flex-1.cursor-pointer::after
   ) {
-  content: '全部';
+  content: v-bind(allLabelCss);
   font-size: 0.875rem;
   font-weight: 500;
   line-height: 1.25rem;

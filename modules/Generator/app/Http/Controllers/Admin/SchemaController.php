@@ -17,7 +17,7 @@ class SchemaController extends Controller
     public function columns(string $tableName, SchemaReader $schemaReader): JsonResponse
     {
         if (! $schemaReader->tableExists($tableName)) {
-            return ApiResponse::error('数据表不存在', 404);
+            return ApiResponse::error(__('generator::messages.table_not_found'), 404);
         }
 
         return ApiResponse::success($schemaReader->listColumns($tableName));

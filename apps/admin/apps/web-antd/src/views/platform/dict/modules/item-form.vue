@@ -9,6 +9,8 @@ import { computed, ref } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
 
+import { $t } from '@vben/locales';
+
 import { message } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
@@ -33,11 +35,13 @@ const [Form, formApi] = useVbenForm({
 });
 
 const modalTitle = computed(() =>
-  editingItemId.value ? '编辑字典项' : '新增字典项',
+  editingItemId.value
+    ? $t('system.platform.dict.editItem')
+    : $t('system.platform.dict.createItemTitle'),
 );
 
 const [Modal, modalApi] = useVbenModal({
-  confirmText: '保存',
+  confirmText: $t('system.platform.dict.save'),
   destroyOnClose: true,
   fullscreenButton: false,
   async onConfirm() {
@@ -58,10 +62,10 @@ const [Modal, modalApi] = useVbenModal({
     try {
       if (!editingItemId.value) {
         await createDictItem(payload);
-        message.success('创建成功');
+        message.success($t('crud.created'));
       } else {
         await updateDictItem(editingItemId.value, payload);
-        message.success('已保存');
+        message.success($t('crud.saved'));
       }
       modalApi.close();
       emits('success');

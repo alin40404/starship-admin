@@ -8,6 +8,7 @@ import type {
 import { computed, reactive, ref, watch } from 'vue';
 
 import { useVbenDrawer, useVbenModal } from '@vben/common-ui';
+import { $t } from '@vben/locales';
 import { usePreferences } from '@vben/preferences';
 
 import { message } from 'ant-design-vue';
@@ -64,7 +65,9 @@ watch([editingId, typeOptions], () => {
 });
 
 const formTitle = computed(() =>
-  editingId.value ? '编辑分类' : '新增分类',
+  editingId.value
+    ? $t('system.platform.category.editCategory')
+    : $t('system.platform.category.createCategoryTitle'),
 );
 
 type PopupApi = {
@@ -87,10 +90,10 @@ async function handleConfirm(popupApi: PopupApi) {
   try {
     if (!editingId.value) {
       await createCategory(values);
-      message.success('创建成功');
+      message.success($t('crud.created'));
     } else {
       await updateCategory(editingId.value, values);
-      message.success('已保存');
+      message.success($t('crud.saved'));
     }
     popupApi.close();
     emits('success');
@@ -198,7 +201,7 @@ defineExpose({ open });
     <div
       class="mb-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800"
     >
-      栏目类型请在「字典管理」中维护 <code>category_type</code>；分类支持无限级，上级分类需与当前栏目类型一致。
+      {{ $t('system.platform.category.typeHint') }}
     </div>
     <Form />
   </Modal>
@@ -206,7 +209,7 @@ defineExpose({ open });
     <div
       class="mb-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800"
     >
-      栏目类型请在「字典管理」中维护 <code>category_type</code>；分类支持无限级，上级分类需与当前栏目类型一致。
+      {{ $t('system.platform.category.typeHint') }}
     </div>
     <Form />
   </Drawer>

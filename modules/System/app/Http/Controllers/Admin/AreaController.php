@@ -109,7 +109,7 @@ class AreaController extends Controller
 
         $area = Area::query()->create($data);
 
-        return ApiResponse::success($this->formatArea($area), '创建成功');
+        return ApiResponse::success($this->formatArea($area), __('system::messages.created'));
     }
 
     public function update(Request $request, int $id): JsonResponse
@@ -120,10 +120,10 @@ class AreaController extends Controller
         if (isset($data['pid'])) {
             $pid = (int) $data['pid'];
             if ($pid === (int) $area->id) {
-                return ApiResponse::error('上级区域不能为自身', 422);
+                return ApiResponse::error(__('system::messages.area_parent_self'), 422);
             }
             if ($this->isDescendant($pid, (int) $area->id)) {
-                return ApiResponse::error('上级区域不能为下级', 422);
+                return ApiResponse::error(__('system::messages.area_parent_descendant'), 422);
             }
             $data['pid'] = $pid;
         }
@@ -142,7 +142,7 @@ class AreaController extends Controller
 
         $area->update($data);
 
-        return ApiResponse::success($this->formatArea($area->fresh()), '更新成功');
+        return ApiResponse::success($this->formatArea($area->fresh()), __('system::messages.updated'));
     }
 
     public function destroy(int $id): JsonResponse
@@ -150,12 +150,12 @@ class AreaController extends Controller
         $area = Area::query()->whereKey($id)->firstOrFail();
 
         if (Area::query()->where('pid', $area->id)->exists()) {
-            return ApiResponse::error('存在下级区域，无法删除', 422);
+            return ApiResponse::error(__('system::messages.area_has_children'), 422);
         }
 
         $area->delete();
 
-        return ApiResponse::success(null, '已删除');
+        return ApiResponse::success(null, __('system::messages.deleted'));
     }
 
     public function batchDestroy(Request $request): JsonResponse
@@ -174,7 +174,7 @@ class AreaController extends Controller
         }
 
         if ($deletableIds === []) {
-            return ApiResponse::error('所选区域存在下级，无法删除', 422);
+            return ApiResponse::error(__('system::messages.area_batch_has_children'), 422);
         }
 
         $deleted = Area::query()->whereIn('id', $deletableIds)->delete();
@@ -182,7 +182,7 @@ class AreaController extends Controller
 
         return ApiResponse::success(
             ['deleted' => $deleted, 'skipped' => $skipped],
-            $skipped > 0 ? "已删除 {$deleted} 个，{$skipped} 个因存在下级未删除" : '已批量删除',
+            $skipped > 0 ? __('system::messages.batch_deleted_partial_children', ['deleted' => $deleted, 'skipped' => $skipped]) : __('system::messages.batch_deleted'),
         );
     }
 

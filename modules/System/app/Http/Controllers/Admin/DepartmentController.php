@@ -80,7 +80,7 @@ class DepartmentController extends Controller
 
         return ApiResponse::success(
             $this->formatDepartment($dept->load('leader:id,nickname,real_name,username')),
-            '创建成功',
+            __('system::messages.created'),
         );
     }
 
@@ -99,14 +99,14 @@ class DepartmentController extends Controller
         ]);
 
         if (isset($data['parent_id']) && (int) $data['parent_id'] === (int) $dept->id) {
-            return ApiResponse::error('上级部门不能为自身', 422);
+            return ApiResponse::error(__('system::messages.dept_parent_self'), 422);
         }
 
         $dept->update($data);
 
         return ApiResponse::success(
             $this->formatDepartment($dept->fresh()->load('leader:id,nickname,real_name,username')),
-            '更新成功',
+            __('system::messages.updated'),
         );
     }
 
@@ -121,7 +121,7 @@ class DepartmentController extends Controller
 
         return ApiResponse::success(
             $this->formatDepartment($dept->fresh()->load('leader:id,nickname,real_name,username')),
-            '状态已更新',
+            __('system::messages.status_updated'),
         );
     }
 
@@ -136,7 +136,7 @@ class DepartmentController extends Controller
 
         return ApiResponse::success(
             $this->formatDepartment($dept->fresh()->load('leader:id,nickname,real_name,username')),
-            '排序已更新',
+            __('system::messages.sort_updated'),
         );
     }
 
@@ -145,16 +145,16 @@ class DepartmentController extends Controller
         $dept = Department::query()->whereKey($id)->firstOrFail();
 
         if (Department::query()->where('parent_id', $dept->id)->exists()) {
-            return ApiResponse::error('存在下级部门，无法删除', 422);
+            return ApiResponse::error(__('system::messages.dept_has_children'), 422);
         }
 
         if (Admin::query()->where('dept_id', $dept->id)->exists()) {
-            return ApiResponse::error('部门下存在管理员，无法删除', 422);
+            return ApiResponse::error(__('system::messages.dept_has_admins'), 422);
         }
 
         $dept->delete();
 
-        return ApiResponse::success(null, '已删除');
+        return ApiResponse::success(null, __('system::messages.deleted'));
     }
 
     public function batchDestroy(Request $request): JsonResponse
@@ -176,7 +176,7 @@ class DepartmentController extends Controller
         }
 
         if ($deletableIds === []) {
-            return ApiResponse::error('所选部门存在下级或管理员，无法删除', 422);
+            return ApiResponse::error(__('system::messages.dept_batch_has_children_or_admins'), 422);
         }
 
         $deleted = Department::query()->whereIn('id', $deletableIds)->delete();
@@ -184,7 +184,7 @@ class DepartmentController extends Controller
 
         return ApiResponse::success(
             ['deleted' => $deleted, 'skipped' => $skipped],
-            $skipped > 0 ? "已删除 {$deleted} 个，{$skipped} 个因存在下级或管理员未删除" : '已批量删除',
+            $skipped > 0 ? __('system::messages.batch_deleted_partial_dept', ['deleted' => $deleted, 'skipped' => $skipped]) : __('system::messages.batch_deleted'),
         );
     }
 
@@ -200,7 +200,7 @@ class DepartmentController extends Controller
             ->whereIn('id', $data['ids'])
             ->update(['status' => $data['status']]);
 
-        return ApiResponse::success(['updated' => $updated], '已批量更新状态');
+        return ApiResponse::success(['updated' => $updated], __('system::messages.batch_status_updated'));
     }
 
     /**

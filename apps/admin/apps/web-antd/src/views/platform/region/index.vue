@@ -8,6 +8,8 @@ import { useAccess } from '@vben/access';
 import { Page } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
+import { $t } from '@vben/locales';
+
 import { Button, message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -102,7 +104,7 @@ function onActionClick({ code, row }: OnActionClickParams<AreaTreeNode>) {
 
 async function onDelete(row: AreaTreeNode) {
   await deleteArea(row.id);
-  message.success('已删除');
+  message.success($t('crud.deleted'));
   clearSelection();
   onRefresh();
 }
@@ -111,19 +113,22 @@ function onBatchDelete() {
   const ids = selectedRows.value.map((row) => row.id);
   if (ids.length === 0) return;
   Modal.confirm({
-    content: `确定删除选中的 ${ids.length} 个区域吗？存在下级区域时将无法删除。`,
-    okText: '删除',
+    content: $t('system.platform.region.batchDeleteConfirm', [ids.length]),
+    okText: $t('common.delete'),
     okType: 'danger',
-    cancelText: '取消',
-    title: '批量删除',
+    cancelText: $t('common.cancel'),
+    title: $t('system.shared.batchDelete'),
     async onOk() {
       const result = await batchDeleteAreas(ids);
       if (result.skipped > 0) {
         message.warning(
-          `已删除 ${result.deleted} 个，${result.skipped} 个因存在下级未删除`,
+          $t('system.platform.region.batchDeletePartial', [
+            result.deleted,
+            result.skipped,
+          ]),
         );
       } else {
-        message.success('已批量删除');
+        message.success($t('crud.batchDeleted'));
       }
       clearSelection();
       onRefresh();
@@ -136,7 +141,7 @@ const [Grid, gridApi] = useVbenVxeGrid<AreaTreeNode>({
     commonConfig: { componentProps: { class: 'w-full' } },
     schema: useAreaGridFormSchema(),
     submitOnChange: true,
-    submitButtonOptions: { content: '查询' },
+    submitButtonOptions: { content: $t('common.query') },
   },
   gridEvents: {
     checkboxAll: syncSelection,
@@ -193,10 +198,10 @@ const [Grid, gridApi] = useVbenVxeGrid<AreaTreeNode>({
             danger
             @click="onBatchDelete"
           >
-            批量删除（{{ selectedRows.length }}）
+            {{ $t('system.shared.batchDeleteWithCount', [selectedRows.length]) }}
           </Button>
           <Button class="ml-2" type="link" @click="clearSelection">
-            取消选择
+            {{ $t('system.shared.clearSelection') }}
           </Button>
         </div>
         <Button
@@ -205,7 +210,7 @@ const [Grid, gridApi] = useVbenVxeGrid<AreaTreeNode>({
           @click="onCreate"
         >
           <Plus class="size-4" />
-          新增区域
+          {{ $t('system.platform.region.createRegion') }}
         </Button>
       </template>
     </Grid>

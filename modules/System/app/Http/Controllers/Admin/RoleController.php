@@ -89,7 +89,7 @@ class RoleController extends Controller
 
         $role = Role::query()->create($data);
 
-        return ApiResponse::success($role, '创建成功');
+        return ApiResponse::success($role, __('system::messages.created'));
     }
 
     public function update(Request $request, int $id): JsonResponse
@@ -97,7 +97,7 @@ class RoleController extends Controller
         $role = Role::query()->findOrFail($id);
 
         if ($role->code === 'super_admin') {
-            return ApiResponse::error('系统内置角色不允许修改', 422);
+            return ApiResponse::error(__('system::messages.role_builtin_readonly'), 422);
         }
 
         $data = $request->validate([
@@ -114,7 +114,7 @@ class RoleController extends Controller
             $role->departments()->sync([]);
         }
 
-        return ApiResponse::success($role->fresh(), '更新成功');
+        return ApiResponse::success($role->fresh(), __('system::messages.updated'));
     }
 
     public function updateStatus(Request $request, int $id): JsonResponse
@@ -122,7 +122,7 @@ class RoleController extends Controller
         $role = Role::query()->findOrFail($id);
 
         if ($role->code === 'super_admin') {
-            return ApiResponse::error('系统内置角色不允许修改', 422);
+            return ApiResponse::error(__('system::messages.role_builtin_readonly'), 422);
         }
 
         $data = $request->validate([
@@ -131,7 +131,7 @@ class RoleController extends Controller
 
         $role->update($data);
 
-        return ApiResponse::success($role->fresh(), '状态已更新');
+        return ApiResponse::success($role->fresh(), __('system::messages.status_updated'));
     }
 
     public function destroy(int $id): JsonResponse
@@ -139,12 +139,12 @@ class RoleController extends Controller
         $role = Role::query()->whereKey($id)->firstOrFail();
 
         if ($role->code === 'super_admin') {
-            return ApiResponse::error('系统内置角色不允许删除', 422);
+            return ApiResponse::error(__('system::messages.role_builtin_no_delete'), 422);
         }
 
         $role->delete();
 
-        return ApiResponse::success(null, '已删除');
+        return ApiResponse::success(null, __('system::messages.deleted'));
     }
 
     public function batchDestroy(Request $request): JsonResponse
@@ -159,7 +159,7 @@ class RoleController extends Controller
             ->where('code', '!=', 'super_admin')
             ->delete();
 
-        return ApiResponse::success(['deleted' => $deleted], '已批量删除');
+        return ApiResponse::success(['deleted' => $deleted], __('system::messages.batch_deleted'));
     }
 
     public function batchUpdateStatus(Request $request): JsonResponse
@@ -175,7 +175,7 @@ class RoleController extends Controller
             ->where('code', '!=', 'super_admin')
             ->update(['status' => $data['status']]);
 
-        return ApiResponse::success(['updated' => $updated], '已批量更新状态');
+        return ApiResponse::success(['updated' => $updated], __('system::messages.batch_status_updated'));
     }
 
     public function syncMenus(Request $request, int $id): JsonResponse
@@ -188,7 +188,7 @@ class RoleController extends Controller
 
         $role->menus()->sync($validated['menu_ids']);
 
-        return ApiResponse::success(['menu_ids' => $validated['menu_ids']], '菜单权限已更新');
+        return ApiResponse::success(['menu_ids' => $validated['menu_ids']], __('system::messages.menu_permissions_updated'));
     }
 
     public function syncDepts(Request $request, int $id): JsonResponse
@@ -196,11 +196,11 @@ class RoleController extends Controller
         $role = Role::query()->findOrFail($id);
 
         if ($role->code === 'super_admin') {
-            return ApiResponse::error('系统内置角色不允许修改', 422);
+            return ApiResponse::error(__('system::messages.role_builtin_readonly'), 422);
         }
 
         if ((int) $role->data_scope !== DataScope::CUSTOM) {
-            return ApiResponse::error('仅自定义数据范围可配置部门', 422);
+            return ApiResponse::error(__('system::messages.role_custom_dept_only'), 422);
         }
 
         $validated = $request->validate([
@@ -210,6 +210,6 @@ class RoleController extends Controller
 
         $role->departments()->sync($validated['dept_ids']);
 
-        return ApiResponse::success(['dept_ids' => $validated['dept_ids']], '数据部门已更新');
+        return ApiResponse::success(['dept_ids' => $validated['dept_ids']], __('system::messages.dept_permissions_updated'));
     }
 }

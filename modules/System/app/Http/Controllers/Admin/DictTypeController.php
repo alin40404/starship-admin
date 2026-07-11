@@ -62,7 +62,7 @@ class DictTypeController extends Controller
 
         $type = DictType::query()->create($data);
 
-        return ApiResponse::success($type, '创建成功');
+        return ApiResponse::success($type, __('system::messages.created'));
     }
 
     public function update(Request $request, int $id): JsonResponse
@@ -77,13 +77,13 @@ class DictTypeController extends Controller
 
         $type->update($data);
 
-        return ApiResponse::success($type->fresh(), '更新成功');
+        return ApiResponse::success($type->fresh(), __('system::messages.updated'));
     }
 
     public function destroy(int $id): JsonResponse
     {
         DictType::query()->whereKey($id)->firstOrFail()->delete();
 
-        return ApiResponse::success(null, '已删除');
+        return ApiResponse::success(null, __('system::messages.deleted'));
     }
 }

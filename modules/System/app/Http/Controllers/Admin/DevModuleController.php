@@ -34,7 +34,7 @@ class DevModuleController extends Controller
         try {
             $module = $devModuleService->updateEnabled($name, (bool) $data['enabled']);
 
-            return ApiResponse::success($module, '已更新，请重启后端服务后生效');
+            return ApiResponse::success($module, __('system::messages.module_restart_required'));
         } catch (InvalidArgumentException $exception) {
             return ApiResponse::error($exception->getMessage(), 422);
         }

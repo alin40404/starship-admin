@@ -13,6 +13,6 @@ class SmsAliyunServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        //
+        $this->loadTranslationsFrom(__DIR__.'/../../resources/lang', 'sms-aliyun');
     }
 }

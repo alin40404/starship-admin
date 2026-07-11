@@ -9,6 +9,7 @@ import { computed, nextTick, reactive, ref, watch } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { useVbenDrawer } from '@vben/common-ui';
+import { $t } from '@vben/locales';
 import { usePreferences } from '@vben/preferences';
 
 import { message } from 'ant-design-vue';
@@ -116,7 +117,9 @@ watch(
 );
 
 const drawerTitle = computed(() =>
-  editingId.value ? '编辑管理员' : '新增管理员',
+  editingId.value
+    ? $t('ui.actionTitle.edit', [$t('system.permission.admin.entity')])
+    : $t('ui.actionTitle.create', [$t('system.permission.admin.entity')]),
 );
 
 const canWriteAdmin = computed(() => {
@@ -138,7 +141,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
     }
     const values = (await formApi.getValues()) as AdminSavePayload;
     if (!editingId.value && !String(values.password ?? '').trim()) {
-      message.warning('请填写密码');
+      message.warning($t('system.permission.admin.passwordRequired'));
       return;
     }
     drawerApi.lock();
@@ -167,10 +170,10 @@ const [Drawer, drawerApi] = useVbenDrawer({
       }
       if (!editingId.value) {
         await createAdmin(payload);
-        message.success('创建成功');
+        message.success($t('crud.created'));
       } else {
         await updateAdmin(editingId.value, payload);
-        message.success('已保存');
+        message.success($t('crud.saved'));
       }
       drawerApi.close();
       emits('success');
@@ -207,7 +210,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
 
     if (!canWriteAdmin.value) {
       drawerApi.setState({
-        cancelText: '关闭',
+        cancelText: $t('system.shared.close'),
         showConfirmButton: false,
       });
     } else {

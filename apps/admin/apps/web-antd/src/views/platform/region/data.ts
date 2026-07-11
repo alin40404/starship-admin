@@ -7,27 +7,44 @@ import type {
 import type { AreaTreeNode } from '#/api/system/region';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { REGION_PERMISSIONS } from '#/constants/region-permissions';
+import { $t } from '#/locales';
 
 export type AreaAccessChecker = {
   can: (code: string) => boolean;
 };
 
-export const AREA_LEVEL_OPTIONS = [
-  { label: '省', value: 1 },
-  { label: '市', value: 2 },
-  { label: '区/县', value: 3 },
-] as const;
+export function getAreaLevelOptions() {
+  return [
+    { label: $t('system.platform.region.levelOptions.province'), value: 1 },
+    { label: $t('system.platform.region.levelOptions.city'), value: 2 },
+    { label: $t('system.platform.region.levelOptions.district'), value: 3 },
+  ] as const;
+}
 
-export const AREA_LEVEL_TAG_OPTIONS = [
-  { color: 'processing', label: '省', value: 1 },
-  { color: 'success', label: '市', value: 2 },
-  { color: 'default', label: '区/县', value: 3 },
-];
+export function getAreaLevelTagOptions() {
+  return [
+    {
+      color: 'processing',
+      label: $t('system.platform.region.levelOptions.province'),
+      value: 1,
+    },
+    {
+      color: 'success',
+      label: $t('system.platform.region.levelOptions.city'),
+      value: 2,
+    },
+    {
+      color: 'default',
+      label: $t('system.platform.region.levelOptions.district'),
+      value: 3,
+    },
+  ];
+}
 
 export function formatAreaLevel(level: AreaTreeNode['level']) {
-  if (level === 1) return '省';
-  if (level === 2) return '市';
-  if (level === 3) return '区/县';
+  if (level === 1) return $t('system.platform.region.levelOptions.province');
+  if (level === 2) return $t('system.platform.region.levelOptions.city');
+  if (level === 3) return $t('system.platform.region.levelOptions.district');
   return TABLE_CELL_EMPTY;
 }
 
@@ -35,26 +52,32 @@ export function useAreaGridFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
-      componentProps: { class: 'w-full', placeholder: '区域名称' },
+      componentProps: {
+        class: 'w-full',
+        placeholder: $t('system.platform.region.searchName'),
+      },
       fieldName: 'name',
-      label: '名称',
+      label: $t('system.platform.region.name'),
     },
     {
       component: 'Select',
       componentProps: {
         allowClear: true,
         class: 'w-full',
-        options: [...AREA_LEVEL_OPTIONS],
-        placeholder: '层级',
+        options: [...getAreaLevelOptions()],
+        placeholder: $t('system.platform.region.searchLevel'),
       },
       fieldName: 'level',
-      label: '层级',
+      label: $t('system.platform.region.level'),
     },
     {
       component: 'Input',
-      componentProps: { class: 'w-full', placeholder: '拼音' },
+      componentProps: {
+        class: 'w-full',
+        placeholder: $t('system.platform.region.searchPinyin'),
+      },
       fieldName: 'pinyin',
-      label: '拼音',
+      label: $t('system.platform.region.pinyin'),
     },
   ];
 }
@@ -74,7 +97,7 @@ export function useAreaColumns(
       align: 'left',
       field: 'name',
       minWidth: 180,
-      title: '名称',
+      title: $t('system.platform.region.name'),
       treeNode: true,
     },
     {
@@ -82,13 +105,13 @@ export function useAreaColumns(
       field: 'shortname',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 100,
-      title: '简称',
+      title: $t('system.platform.region.shortname'),
     },
     {
       align: 'center',
-      cellRender: { name: 'CellTag', options: AREA_LEVEL_TAG_OPTIONS },
+      cellRender: { name: 'CellTag', options: getAreaLevelTagOptions() },
       field: 'level',
-      title: '层级',
+      title: $t('system.platform.region.level'),
       width: 88,
     },
     {
@@ -96,32 +119,32 @@ export function useAreaColumns(
       field: 'mergename',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 220,
-      title: '全称',
+      title: $t('system.platform.region.mergename'),
     },
     {
       align: 'left',
       field: 'pinyin',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 120,
-      title: '拼音',
+      title: $t('system.platform.region.pinyin'),
     },
     {
       field: 'code',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 90,
-      title: '区号',
+      title: $t('system.platform.region.code'),
     },
     {
       field: 'zip',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 90,
-      title: '邮编',
+      title: $t('system.platform.region.zip'),
     },
     {
       align: 'center',
       field: 'first',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
-      title: '首字母',
+      title: $t('system.platform.region.first'),
       width: 80,
     },
     {
@@ -129,7 +152,7 @@ export function useAreaColumns(
       cellRender: {
         attrs: {
           nameField: 'name',
-          nameTitle: '区域',
+          nameTitle: $t('system.platform.region.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -137,26 +160,26 @@ export function useAreaColumns(
           {
             code: 'append',
             show: () => access.can(REGION_PERMISSIONS.APPEND),
-            text: '新增下级',
+            text: $t('system.shared.appendChild'),
             type: 'link',
           },
           {
             code: 'edit',
             show: () => access.can(REGION_PERMISSIONS.UPDATE),
-            text: '编辑',
+            text: $t('common.edit'),
             type: 'link',
           },
           {
             code: 'delete',
             danger: true,
             show: () => access.can(REGION_PERMISSIONS.DELETE),
-            text: '删除',
+            text: $t('common.delete'),
             type: 'link',
           },
         ],
       },
       fixed: 'right',
-      title: '操作',
+      title: $t('crud.columnActions'),
       width: 220,
     },
   ];
@@ -169,83 +192,83 @@ export function buildAreaFormSchema(): VbenFormSchema[] {
       controlClass: 'w-full min-w-0',
       fieldName: 'pid',
       formItemClass: 'col-span-full w-full items-start',
-      label: '上级区域',
+      label: $t('system.platform.region.parent'),
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'name',
-      label: '名称',
+      label: $t('system.platform.region.name'),
       rules: 'required',
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'shortname',
-      label: '简称',
+      label: $t('system.platform.region.shortname'),
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'mergename',
-      label: '全称',
+      label: $t('system.platform.region.mergename'),
     },
     {
       component: 'Select',
       componentProps: {
         allowClear: true,
         class: 'w-full',
-        options: [...AREA_LEVEL_OPTIONS],
-        placeholder: '留空则根据上级自动推断',
+        options: [...getAreaLevelOptions()],
+        placeholder: $t('system.platform.region.levelAuto'),
       },
       fieldName: 'level',
-      label: '层级',
+      label: $t('system.platform.region.level'),
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
         disabled: true,
-        placeholder: '根据简称自动生成',
+        placeholder: $t('system.platform.region.pinyinAuto'),
         readonly: true,
       },
       fieldName: 'pinyin',
-      label: '拼音',
+      label: $t('system.platform.region.pinyin'),
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'code',
-      label: '长途区号',
+      label: $t('system.platform.region.areaCode'),
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'zip',
-      label: '邮编',
+      label: $t('system.platform.region.zip'),
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
         disabled: true,
-        placeholder: '根据拼音自动生成',
+        placeholder: $t('system.platform.region.firstAuto'),
         readonly: true,
       },
       fieldName: 'first',
-      label: '首字母',
+      label: $t('system.platform.region.first'),
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'lng',
-      label: '经度',
+      label: $t('system.platform.region.lng'),
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'lat',
-      label: '纬度',
+      label: $t('system.platform.region.lat'),
     },
   ];
 }

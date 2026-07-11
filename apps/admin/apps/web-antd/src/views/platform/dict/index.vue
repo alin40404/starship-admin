@@ -8,6 +8,8 @@ import { useAccess } from '@vben/access';
 import { Page, useVbenDrawer } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
+import { $t } from '@vben/locales';
+
 import { Button, message } from 'ant-design-vue';
 
 import { useResponsiveCrud } from '#/adapter/mobile-list';
@@ -55,7 +57,7 @@ function onActionClick({ code, row }: OnActionClickParams<DictTypeRow>) {
 
 async function onDelete(row: DictTypeRow) {
   await deleteDictType(row.id);
-  message.success('已删除');
+  message.success($t('crud.deleted'));
   onRefresh();
 }
 
@@ -66,7 +68,7 @@ const [CrudView, crudApi] = useResponsiveCrud<DictTypeRow>({
     commonConfig: { componentProps: { class: 'w-full' } },
     schema: useDictTypeGridFormSchema(),
     submitOnChange: true,
-    submitButtonOptions: { content: '查询' },
+    submitButtonOptions: { content: $t('common.query') },
   },
   gridOptions: {
     columns: columns as VxeTableGridOptions<DictTypeRow>['columns'],
@@ -139,7 +141,7 @@ function onRefresh() {
           @click="onCreate"
         >
           <Plus class="size-4" />
-          新增字典
+          {{ $t('system.platform.dict.createDict') }}
         </Button>
       </template>
     </CrudView>

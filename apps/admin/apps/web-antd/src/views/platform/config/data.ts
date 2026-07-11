@@ -1,19 +1,25 @@
 /** 站点配置分组（basic / email 分组） */
-export const CONFIG_GROUP_LABELS: Record<string, string> = {
-  basic: '基础配置',
-  sms: '短信配置',
-  inbox: '站内信配置',
-  email: '邮件配置',
-  storage: '存储配置',
-};
+import { $t } from '#/locales';
 
-export const CONFIG_GROUP_DESCRIPTIONS: Record<string, string> = {
-  basic: '系统名称、版本号、时区等基础信息',
-  sms: '短信网关接入与签名模板等发送参数',
-  inbox: '站内消息开关、保留策略与通知类型',
-  email: 'SMTP 邮件发送相关配置',
-  storage: '附件存储驱动、上传限制与云存储接入参数',
-};
+export function getConfigGroupLabels(): Record<string, string> {
+  return {
+    basic: $t('system.platform.config.groups.basic'),
+    sms: $t('system.platform.config.groups.sms'),
+    inbox: $t('system.platform.config.groups.inbox'),
+    email: $t('system.platform.config.groups.email'),
+    storage: $t('system.platform.config.groups.storage'),
+  };
+}
+
+export function getConfigGroupDescriptions(): Record<string, string> {
+  return {
+    basic: $t('system.platform.config.groupDescriptions.basic'),
+    sms: $t('system.platform.config.groupDescriptions.sms'),
+    inbox: $t('system.platform.config.groupDescriptions.inbox'),
+    email: $t('system.platform.config.groupDescriptions.email'),
+    storage: $t('system.platform.config.groupDescriptions.storage'),
+  };
+}
 
 /** 表单类配置分组（非运行参数） */
 export const CONFIG_SETTINGS_GROUPS = [
@@ -77,33 +83,77 @@ export function isAttachmentImageField(key: string): boolean {
 }
 
 /** 下拉类配置项选项（mail_type / mail_verify_type） */
-export const CONFIG_SELECT_OPTIONS: Record<
+export function getConfigSelectOptions(): Record<
   string,
   { label: string; value: string }[]
-> = {
-  'mail.type': [{ label: 'SMTP', value: '1' }],
-  'mail.verify_type': [
-    { label: '无', value: '0' },
-    { label: 'TLS', value: '1' },
-    { label: 'SSL', value: '2' },
-  ],
-  'sms.provider': [
-    { label: '阿里云短信', value: 'aliyun' },
-    { label: '腾讯云短信', value: 'tencent' },
-    { label: '华为云短信', value: 'huawei' },
-  ],
-  [STORAGE_DRIVER_KEY]: [
-    { label: '公共存储', value: 'public' },
-    { label: '本地存储', value: 'local' },
-    { label: '阿里云 OSS', value: 'oss' },
-    { label: '腾讯云 COS', value: 'cos' },
-    { label: 'AWS S3', value: 's3' },
-  ],
-};
+> {
+  return {
+    'mail.type': [{ label: 'SMTP', value: '1' }],
+    'mail.verify_type': [
+      { label: $t('system.platform.config.selectOptions.mailVerifyNone'), value: '0' },
+      { label: 'TLS', value: '1' },
+      { label: 'SSL', value: '2' },
+    ],
+    'sms.provider': [
+      {
+        label: $t('system.platform.config.selectOptions.smsAliyun'),
+        value: 'aliyun',
+      },
+      {
+        label: $t('system.platform.config.selectOptions.smsTencent'),
+        value: 'tencent',
+      },
+      {
+        label: $t('system.platform.config.selectOptions.smsHuawei'),
+        value: 'huawei',
+      },
+    ],
+    [STORAGE_DRIVER_KEY]: [
+      {
+        label: $t('system.platform.config.selectOptions.storagePublic'),
+        value: 'public',
+      },
+      {
+        label: $t('system.platform.config.selectOptions.storageLocal'),
+        value: 'local',
+      },
+      {
+        label: $t('system.platform.config.selectOptions.storageOss'),
+        value: 'oss',
+      },
+      {
+        label: $t('system.platform.config.selectOptions.storageCos'),
+        value: 'cos',
+      },
+      {
+        label: $t('system.platform.config.selectOptions.storageS3'),
+        value: 's3',
+      },
+    ],
+  };
+}
 
-export const PARAM_TYPE_TAG_OPTIONS = [
-  { color: 'default', label: '字符串', value: 'string' },
-  { color: 'processing', label: '数字', value: 'number' },
-  { color: 'warning', label: '布尔', value: 'bool' },
-  { color: 'success', label: 'JSON', value: 'json' },
-] as const;
+export function getParamTypeTagOptions() {
+  return [
+    {
+      color: 'default',
+      label: $t('system.platform.config.paramType.string'),
+      value: 'string',
+    },
+    {
+      color: 'processing',
+      label: $t('system.platform.config.paramType.number'),
+      value: 'number',
+    },
+    {
+      color: 'warning',
+      label: $t('system.platform.config.paramType.bool'),
+      value: 'bool',
+    },
+    {
+      color: 'success',
+      label: $t('system.platform.config.paramType.json'),
+      value: 'json',
+    },
+  ] as const;
+}

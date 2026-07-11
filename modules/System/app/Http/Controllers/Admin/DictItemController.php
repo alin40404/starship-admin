@@ -40,7 +40,7 @@ class DictItemController extends Controller
 
         $item = DictItem::query()->create($data);
 
-        return ApiResponse::success($item, '创建成功');
+        return ApiResponse::success($item, __('system::messages.created'));
     }
 
     public function update(Request $request, int $id): JsonResponse
@@ -58,13 +58,13 @@ class DictItemController extends Controller
 
         $item->update($data);
 
-        return ApiResponse::success($item->fresh(), '更新成功');
+        return ApiResponse::success($item->fresh(), __('system::messages.updated'));
     }
 
     public function destroy(int $id): JsonResponse
     {
         DictItem::query()->whereKey($id)->firstOrFail()->delete();
 
-        return ApiResponse::success(null, '已删除');
+        return ApiResponse::success(null, __('system::messages.deleted'));
     }
 }

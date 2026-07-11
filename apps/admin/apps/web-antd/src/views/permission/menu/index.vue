@@ -12,6 +12,8 @@ import { Page, useVbenDrawer } from '@vben/common-ui';
 import { IconifyIcon, Plus } from '@vben/icons';
 import { MenuBadge } from '@vben-core/menu-ui';
 
+import { $t } from '@vben/locales';
+
 import { Button, message, Modal, Tag, Tooltip } from 'ant-design-vue';
 
 import {
@@ -39,9 +41,12 @@ function moduleTooltip(
   module: NonNullable<MenuTreeNode['module']>,
 ): string {
   if (module.enabled) {
-    return `归属模块：${module.title}（${module.name}）`;
+    return $t('system.permission.menu.moduleBelong', [
+      module.title,
+      module.name,
+    ]);
   }
-  return `模块「${module.title}」已禁用，侧栏与权限不会生效`;
+  return $t('system.permission.menu.moduleDisabled', [module.title]);
 }
 
 const [MenuFormDrawer, menuFormDrawerApi] = useVbenDrawer({
@@ -63,16 +68,22 @@ function clearSelection() {
 
 async function onMenuStatusToggle(nextStatus: number, row: MenuTreeNode) {
   return new Promise<boolean>((resolve) => {
-    const label = nextStatus === 1 ? '启用' : '禁用';
+    const label =
+      nextStatus === 1
+        ? $t('system.shared.status.enable')
+        : $t('system.shared.status.disable');
     Modal.confirm({
-      content: `确定将「${menuDisplayLabel(row)}」的状态切换为【${label}】吗？`,
-      okText: '确定',
-      cancelText: '取消',
-      title: '切换状态',
+      content: $t('system.shared.toggleStatusConfirm', [
+        menuDisplayLabel(row),
+        label,
+      ]),
+      okText: $t('common.confirm'),
+      cancelText: $t('common.cancel'),
+      title: $t('system.shared.toggleStatusTitle'),
       async onOk() {
         try {
           await updateMenuStatus(row.id, nextStatus as 0 | 1);
-          message.success('状态已更新');
+          message.success($t('crud.statusUpdated'));
           onRefresh();
           resolve(true);
         } catch {
@@ -107,7 +118,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
 
       const sort = Number(row.sort);
       if (!Number.isFinite(sort) || sort < 0 || !Number.isInteger(sort)) {
-        message.warning('请输入有效整数');
+        message.warning($t('system.permission.menu.sortInvalid'));
         await gridApi.reload();
         return;
       }
@@ -115,7 +126,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       gridApi.setLoading(true);
       try {
         await updateMenuSort(row.id, sort);
-        message.success('排序已更新');
+        message.success($t('system.permission.menu.sortUpdated'));
         onRefresh();
       } catch {
         await gridApi.reload();
@@ -209,7 +220,7 @@ function onAppend(row: MenuTreeNode) {
 
 async function onDelete(row: MenuTreeNode) {
   await deleteMenu(row.id);
-  message.success('已删除');
+  message.success($t('crud.deleted'));
   clearSelection();
   onRefresh();
 }
@@ -220,14 +231,14 @@ function onBatchDelete() {
     return;
   }
   Modal.confirm({
-    content: `确定删除选中的 ${ids.length} 条菜单吗？若存在未选中的子菜单，删除可能失败。`,
-    okText: '删除',
+    content: $t('system.permission.menu.batchDeleteConfirm', [ids.length]),
+    okText: $t('common.delete'),
     okType: 'danger',
-    cancelText: '取消',
-    title: '批量删除',
+    cancelText: $t('common.cancel'),
+    title: $t('system.shared.batchDelete'),
     async onOk() {
       await batchDeleteMenus(ids);
-      message.success('已批量删除');
+      message.success($t('crud.batchDeleted'));
       clearSelection();
       onRefresh();
     },
@@ -239,15 +250,24 @@ function onBatchUpdateStatus(status: 0 | 1) {
   if (ids.length === 0) {
     return;
   }
-  const label = status === 1 ? '启用' : '禁用';
+  const label =
+    status === 1
+      ? $t('system.shared.status.enable')
+      : $t('system.shared.status.disable');
   Modal.confirm({
-    content: `确定将选中的 ${ids.length} 条菜单批量【${label}】吗？`,
-    okText: '确定',
-    cancelText: '取消',
-    title: `批量${label}`,
+    content: $t('system.permission.menu.batchStatusConfirm', [
+      ids.length,
+      label,
+    ]),
+    okText: $t('common.confirm'),
+    cancelText: $t('common.cancel'),
+    title:
+      status === 1
+        ? $t('system.shared.batchEnable')
+        : $t('system.shared.batchDisable'),
     async onOk() {
       await batchUpdateMenuStatus(ids, status);
-      message.success(`已批量${label}`);
+      message.success($t('system.shared.batchStatusDone', [label]));
       clearSelection();
       onRefresh();
     },
@@ -266,23 +286,25 @@ function onBatchUpdateStatus(status: 0 | 1) {
             danger
             @click="onBatchDelete"
           >
-            批量删除（{{ selectedRows.length }}）
+            {{ $t('system.shared.batchDeleteWithCount', [selectedRows.length]) }}
           </Button>
           <Button
             v-if="menuAccess.can(MENU_PERMISSIONS.BATCH_STATUS)"
             class="menu-batch-btn-enable ml-2"
             @click="onBatchUpdateStatus(1)"
           >
-            批量启用
+            {{ $t('system.shared.batchEnable') }}
           </Button>
           <Button
             v-if="menuAccess.can(MENU_PERMISSIONS.BATCH_STATUS)"
             class="menu-batch-btn-disable ml-2"
             @click="onBatchUpdateStatus(0)"
           >
-            批量禁用
+            {{ $t('system.shared.batchDisable') }}
           </Button>
-          <Button class="ml-2" type="link" @click="clearSelection">取消选择</Button>
+          <Button class="ml-2" type="link" @click="clearSelection">
+            {{ $t('system.shared.clearSelection') }}
+          </Button>
         </div>
         <Button
           v-else-if="menuAccess.can(MENU_PERMISSIONS.CREATE)"
@@ -290,7 +312,7 @@ function onBatchUpdateStatus(status: 0 | 1) {
           @click="onCreate"
         >
           <Plus class="size-4" />
-          新增菜单
+          {{ $t('system.permission.menu.createMenu') }}
         </Button>
       </template>
       <template #title="{ row }">
@@ -325,7 +347,9 @@ function onBatchUpdateStatus(status: 0 | 1) {
         <Tooltip v-if="row.module" :title="moduleTooltip(row.module)">
           <Tag :color="row.module.enabled ? 'processing' : 'warning'">
             {{ row.module.title }}
-            <template v-if="!row.module.enabled"> · 已禁用</template>
+            <template v-if="!row.module.enabled">
+              {{ $t('system.permission.menu.moduleDisabledTag') }}
+            </template>
           </Tag>
         </Tooltip>
         <span v-else class="text-muted-foreground">—</span>

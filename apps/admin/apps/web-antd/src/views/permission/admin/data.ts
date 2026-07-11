@@ -18,6 +18,7 @@ import { formatDateTime } from '@vben/utils';
 import { fetchDepartmentTree } from '#/api/system/department';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { ADMIN_PERMISSIONS } from '#/constants/admin-permissions';
+import { $t } from '#/locales';
 
 export function mapDeptForTreeSelect(
   nodes: DeptNode[],
@@ -37,19 +38,19 @@ export function useAdminMobileFilterSchema(): VbenFormSchema[] {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: '搜索邮箱',
+        placeholder: $t('system.permission.admin.searchEmail'),
       },
       fieldName: 'email',
-      label: '邮箱',
+      label: $t('system.permission.admin.email'),
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: '搜索手机',
+        placeholder: $t('system.permission.admin.searchMobile'),
       },
       fieldName: 'mobile',
-      label: '手机',
+      label: $t('system.permission.admin.mobile'),
     },
     {
       component: 'ApiTreeSelect',
@@ -58,12 +59,12 @@ export function useAdminMobileFilterSchema(): VbenFormSchema[] {
         api: async () => mapDeptForTreeSelect(await fetchDepartmentTree()),
         class: 'w-full',
         fieldNames: { children: 'children', label: 'label', value: 'value' },
-        placeholder: '请选择部门',
+        placeholder: $t('system.permission.admin.searchDept'),
         treeIcon: false,
         treeLine: false,
       },
       fieldName: 'dept_id',
-      label: '部门',
+      label: $t('system.permission.admin.dept'),
     },
     {
       component: 'RangePicker',
@@ -72,7 +73,7 @@ export function useAdminMobileFilterSchema(): VbenFormSchema[] {
         class: 'w-full',
       },
       fieldName: 'updatedTime',
-      label: '更新时间',
+      label: $t('system.permission.admin.updatedAt'),
     },
   ];
 }
@@ -101,7 +102,7 @@ export function buildAdminMobileCrudConfig(params: {
       ],
       filterSchema: useAdminMobileFilterSchema(),
       keywordFields: ['username', 'name'],
-      placeholder: '搜索用户名/昵称',
+      placeholder: $t('system.permission.admin.searchKeyword'),
     },
     selection: {
       checkable: (row) => row.is_super !== 1,
@@ -116,37 +117,37 @@ export function useGridFormSchema(): VbenFormSchema[] {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: '搜索用户名',
+        placeholder: $t('system.permission.admin.searchUsername'),
       },
       fieldName: 'username',
-      label: '用户名',
+      label: $t('system.permission.admin.username'),
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: '搜索真实姓名/昵称',
+        placeholder: $t('system.permission.admin.searchName'),
       },
       fieldName: 'name',
-      label: '姓名',
+      label: $t('system.permission.admin.name'),
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: '搜索邮箱',
+        placeholder: $t('system.permission.admin.searchEmail'),
       },
       fieldName: 'email',
-      label: '邮箱',
+      label: $t('system.permission.admin.email'),
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: '搜索手机',
+        placeholder: $t('system.permission.admin.searchMobile'),
       },
       fieldName: 'mobile',
-      label: '手机',
+      label: $t('system.permission.admin.mobile'),
     },
     {
       component: 'ApiTreeSelect',
@@ -155,13 +156,13 @@ export function useGridFormSchema(): VbenFormSchema[] {
         api: async () => mapDeptForTreeSelect(await fetchDepartmentTree()),
         class: 'w-full',
         fieldNames: { children: 'children', label: 'label', value: 'value' },
-        placeholder: '请选择部门',
+        placeholder: $t('system.permission.admin.searchDept'),
         /** 关闭树连接线/叶节点装饰，避免下拉项左侧出现圆点等图标感样式 */
         treeIcon: false,
         treeLine: false,
       },
       fieldName: 'dept_id',
-      label: '部门',
+      label: $t('system.permission.admin.dept'),
     },
     {
       component: 'RangePicker',
@@ -170,7 +171,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
         class: 'w-full',
       },
       fieldName: 'updatedTime',
-      label: '更新时间',
+      label: $t('system.permission.admin.updatedAt'),
     },
   ];
 }
@@ -198,24 +199,24 @@ export function useColumns(
       field: 'username',
       minWidth: 120,
       sortable: true,
-      title: '用户名',
+      title: $t('system.permission.admin.username'),
     },
     {
       field: 'real_name',
       minWidth: 120,
       sortable: true,
-      title: '真实姓名',
+      title: $t('system.permission.admin.realName'),
       visible: false,
     },
     {
       field: 'nickname',
       minWidth: 100,
       sortable: true,
-      title: '昵称',
+      title: $t('system.permission.admin.nickname'),
     },
     {
       field: 'avatar',
-      title: '头像',
+      title: $t('system.permission.admin.avatar'),
       width: 90,
       cellRender: {
         attrs: {
@@ -230,12 +231,12 @@ export function useColumns(
         },
       },
     },
-    { field: 'mobile', minWidth: 130, sortable: true, title: '手机' },
+    { field: 'mobile', minWidth: 130, sortable: true, title: $t('system.permission.admin.mobile') },
     {
       field: 'email',
       minWidth: 180,
       sortable: true,
-      title: '邮箱',
+      title: $t('system.permission.admin.email'),
       visible: false,
     },
     {
@@ -244,14 +245,14 @@ export function useColumns(
         row.department?.name ?? TABLE_CELL_EMPTY,
       minWidth: 120,
       sortable: true,
-      title: '部门',
+      title: $t('system.permission.admin.dept'),
     },
     {
       field: 'roles',
       formatter: ({ row }: { row: AdminRow }) => formatAdminRoles(row),
       minWidth: 160,
       sortable: false,
-      title: '角色',
+      title: $t('system.permission.admin.roles'),
     },
     {
       field: 'updated_at',
@@ -259,7 +260,7 @@ export function useColumns(
         row.updated_at ? formatDateTime(row.updated_at) : TABLE_CELL_EMPTY,
       minWidth: 170,
       sortable: true,
-      title: '更新时间',
+      title: $t('system.permission.admin.updatedAt'),
     },
     {
       field: 'created_at',
@@ -267,13 +268,13 @@ export function useColumns(
         row.created_at ? formatDateTime(row.created_at) : TABLE_CELL_EMPTY,
       minWidth: 170,
       sortable: true,
-      title: '创建时间',
+      title: $t('system.permission.admin.createdAt'),
       visible: false,
     },
     {
       field: 'status',
       sortable: true,
-      title: '状态',
+      title: $t('system.permission.admin.status'),
       width: 100,
       cellRender: {
         attrs: {
@@ -292,7 +293,7 @@ export function useColumns(
       cellRender: {
         attrs: {
           nameField: 'username',
-          nameTitle: '管理员',
+          nameTitle: $t('system.permission.admin.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -302,7 +303,7 @@ export function useColumns(
             show: (row: AdminRow) =>
               row.is_super !== 1 &&
               access.can(ADMIN_PERMISSIONS.UPDATE),
-            text: '编辑',
+            text: $t('common.edit'),
             type: 'link',
           },
           {
@@ -311,13 +312,13 @@ export function useColumns(
             show: (row: AdminRow) =>
               row.is_super !== 1 &&
               access.can(ADMIN_PERMISSIONS.DELETE),
-            text: '删除',
+            text: $t('common.delete'),
             type: 'link',
           },
         ],
       },
       fixed: 'right',
-      title: '操作',
+      title: $t('crud.columnActions'),
       width: 160,
     },
   ] as CrudGridColumn<AdminRow>[];
@@ -349,17 +350,21 @@ export function buildAdminFormSchema(params: {
         disabled: isEdit,
       },
       fieldName: 'username',
-      label: '用户名',
+      label: $t('system.permission.admin.username'),
       rules: 'required',
     },
     {
       component: 'InputPassword',
       componentProps: {
         class: 'w-full',
-        placeholder: isEdit ? '留空则不修改密码' : undefined,
+        placeholder: isEdit
+          ? $t('system.permission.admin.passwordKeepEmpty')
+          : undefined,
       },
       fieldName: 'password',
-      label: isEdit ? '新密码' : '密码',
+      label: isEdit
+        ? $t('system.permission.admin.newPassword')
+        : $t('system.permission.admin.password'),
       rules: isEdit ? undefined : 'required',
     },
     {
@@ -368,7 +373,7 @@ export function buildAdminFormSchema(params: {
         class: 'w-full',
       },
       fieldName: 'nickname',
-      label: '昵称',
+      label: $t('system.permission.admin.nickname'),
     },
     {
       component: 'Input',
@@ -376,7 +381,7 @@ export function buildAdminFormSchema(params: {
         class: 'w-full',
       },
       fieldName: 'real_name',
-      label: '真实姓名',
+      label: $t('system.permission.admin.realName'),
     },
     {
       component: 'Upload',
@@ -389,7 +394,7 @@ export function buildAdminFormSchema(params: {
         maxCount: 1,
       },
       fieldName: 'avatar',
-      label: '头像',
+      label: $t('system.permission.admin.avatar'),
     },
     {
       component: 'Input',
@@ -397,11 +402,11 @@ export function buildAdminFormSchema(params: {
         class: 'w-full',
       },
       fieldName: 'email',
-      label: '邮箱',
+      label: $t('system.permission.admin.email'),
       rules: z
-        .string({ required_error: '请输入邮箱' })
-        .min(1, { message: '请输入邮箱' })
-        .email('请输入正确的邮箱格式'),
+        .string({ required_error: $t('system.permission.admin.emailRequired') })
+        .min(1, { message: $t('system.permission.admin.emailRequired') })
+        .email($t('system.permission.admin.emailInvalid')),
     },
     {
       component: 'Input',
@@ -409,10 +414,10 @@ export function buildAdminFormSchema(params: {
         class: 'w-full',
       },
       fieldName: 'mobile',
-      label: '手机',
+      label: $t('system.permission.admin.mobile'),
       rules: z
-        .string({ required_error: '请输入手机号' })
-        .regex(/^1[3-9]\d{9}$/, '请输入正确的手机号格式'),
+        .string({ required_error: $t('system.permission.admin.mobileRequired') })
+        .regex(/^1[3-9]\d{9}$/, $t('system.permission.admin.mobileInvalid')),
     },
     {
       component: 'TreeSelect',
@@ -420,7 +425,7 @@ export function buildAdminFormSchema(params: {
         allowClear: true,
         class: 'w-full',
         fieldNames: { children: 'children', label: 'label', value: 'value' },
-        placeholder: '选择部门',
+        placeholder: $t('system.permission.admin.selectDept'),
         showSearch: true,
         treeData: deptTreeData,
         treeDefaultExpandAll: true,
@@ -429,7 +434,7 @@ export function buildAdminFormSchema(params: {
         treeLine: false,
       },
       fieldName: 'dept_id',
-      label: '部门',
+      label: $t('system.permission.admin.dept'),
     },
     {
       component: 'Select',
@@ -439,10 +444,10 @@ export function buildAdminFormSchema(params: {
         disabled: lockRoles,
         mode: 'multiple',
         options: roleOptions,
-        placeholder: '选择角色',
+        placeholder: $t('system.permission.admin.selectRole'),
       },
       fieldName: 'role_ids',
-      label: '角色',
+      label: $t('system.permission.admin.roles'),
       rules: lockRoles ? undefined : 'selectRequired',
     },
     {
@@ -452,10 +457,10 @@ export function buildAdminFormSchema(params: {
         class: 'w-full',
         mode: 'multiple',
         options: postOptions,
-        placeholder: '可选',
+        placeholder: $t('system.shared.optional'),
       },
       fieldName: 'post_ids',
-      label: '岗位',
+      label: $t('system.permission.admin.post'),
     },
     {
       component: 'RadioGroup',
@@ -465,13 +470,13 @@ export function buildAdminFormSchema(params: {
         disabled: lockRoles,
         optionType: 'button',
         options: [
-          { label: '启用', value: 1 },
-          { label: '禁用', value: 0 },
+          { label: $t('system.shared.status.enable'), value: 1 },
+          { label: $t('system.shared.status.disable'), value: 0 },
         ],
       },
       defaultValue: 1,
       fieldName: 'status',
-      label: '状态',
+      label: $t('system.permission.admin.status'),
     },
     {
       component: 'Textarea',
@@ -480,7 +485,7 @@ export function buildAdminFormSchema(params: {
         rows: 2,
       },
       fieldName: 'remark',
-      label: '备注',
+      label: $t('system.permission.admin.remark'),
     },
   ];
 }

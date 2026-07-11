@@ -20,7 +20,7 @@ class PluginController extends Controller
     {
         $result = $pluginService->discover();
 
-        return ApiResponse::success($result, '插件发现完成');
+        return ApiResponse::success($result, __('system::messages.plugin_discover_done'));
     }
 
     public function show(string $slug, PluginService $pluginService): JsonResponse
@@ -35,7 +35,7 @@ class PluginController extends Controller
     public function install(string $slug, PluginService $pluginService): JsonResponse
     {
         try {
-            return ApiResponse::success($pluginService->install($slug), '安装成功');
+            return ApiResponse::success($pluginService->install($slug), __('system::messages.plugin_installed'));
         } catch (InvalidArgumentException $exception) {
             return ApiResponse::error($exception->getMessage(), 422);
         }
@@ -44,7 +44,7 @@ class PluginController extends Controller
     public function enable(string $slug, PluginService $pluginService): JsonResponse
     {
         try {
-            return ApiResponse::success($pluginService->enable($slug), '已启用，请重启后端服务后生效');
+            return ApiResponse::success($pluginService->enable($slug), __('system::messages.plugin_enabled'));
         } catch (InvalidArgumentException $exception) {
             return ApiResponse::error($exception->getMessage(), 422);
         }
@@ -53,7 +53,7 @@ class PluginController extends Controller
     public function disable(string $slug, PluginService $pluginService): JsonResponse
     {
         try {
-            return ApiResponse::success($pluginService->disable($slug), '已禁用，请重启后端服务后生效');
+            return ApiResponse::success($pluginService->disable($slug), __('system::messages.plugin_disabled'));
         } catch (InvalidArgumentException $exception) {
             return ApiResponse::error($exception->getMessage(), 422);
         }
@@ -62,7 +62,7 @@ class PluginController extends Controller
     public function uninstall(string $slug, PluginService $pluginService): JsonResponse
     {
         try {
-            return ApiResponse::success($pluginService->uninstall($slug), '卸载成功');
+            return ApiResponse::success($pluginService->uninstall($slug), __('system::messages.plugin_uninstalled'));
         } catch (InvalidArgumentException $exception) {
             return ApiResponse::error($exception->getMessage(), 422);
         }
@@ -82,7 +82,7 @@ class PluginController extends Controller
         try {
             return ApiResponse::success(
                 $pluginService->updateConfig($slug, $request->all()),
-                '配置已保存',
+                __('system::messages.plugin_config_saved'),
             );
         } catch (InvalidArgumentException $exception) {
             return ApiResponse::error($exception->getMessage(), 422);

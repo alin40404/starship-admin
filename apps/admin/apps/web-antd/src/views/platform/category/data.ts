@@ -11,24 +11,33 @@ import {
 } from '#/api/system/category';
 import { CATEGORY_PERMISSIONS } from '#/constants/category-permissions';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
+import { $t } from '#/locales';
 
 export type CategoryAccessChecker = {
   can: (code: string) => boolean;
 };
 
-export const CATEGORY_FLAG_OPTIONS = [
-  { label: '热门', value: 'hot' },
-  { label: '首页', value: 'index' },
-  { label: '推荐', value: 'recommend' },
-];
+export function getCategoryFlagOptions() {
+  return [
+    { label: $t('system.platform.category.flagOptions.hot'), value: 'hot' },
+    { label: $t('system.platform.category.flagOptions.index'), value: 'index' },
+    {
+      label: $t('system.platform.category.flagOptions.recommend'),
+      value: 'recommend',
+    },
+  ];
+}
 
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
-      componentProps: { class: 'w-full', placeholder: '名称 / 别名' },
+      componentProps: {
+        class: 'w-full',
+        placeholder: $t('system.platform.category.searchPlaceholder'),
+      },
       fieldName: 'search',
-      label: '关键词',
+      label: $t('system.platform.category.keyword'),
     },
   ];
 }
@@ -50,10 +59,10 @@ export function buildFormSchema(params: {
           label: item.label,
           value: item.value,
         })),
-        placeholder: '栏目类型',
+        placeholder: $t('system.platform.category.typePlaceholder'),
       },
       fieldName: 'type',
-      label: '栏目类型',
+      label: $t('system.platform.category.columnType'),
       rules: 'required',
     },
     {
@@ -71,7 +80,7 @@ export function buildFormSchema(params: {
           excludeId,
           typeKey: '',
         },
-        placeholder: '上级分类（留空为顶级）',
+        placeholder: $t('system.platform.category.parentPlaceholder'),
         shouldFetch: (queryParams?: { typeKey?: string }) =>
           Boolean(queryParams?.typeKey),
         showSearch: true,
@@ -89,28 +98,34 @@ export function buildFormSchema(params: {
               typeKey: type ?? '',
             },
             placeholder: type
-              ? '上级分类（留空为顶级）'
-              : '请先选择栏目类型',
+              ? $t('system.platform.category.parentPlaceholder')
+              : $t('system.platform.category.selectTypeFirst'),
           };
         },
         triggerFields: ['type'],
       },
       defaultValue: 0,
       fieldName: 'parent_id',
-      label: '上级分类',
+      label: $t('system.platform.category.parent'),
     },
     {
       component: 'Input',
-      componentProps: { class: 'w-full', placeholder: '分类名称' },
+      componentProps: {
+        class: 'w-full',
+        placeholder: $t('system.platform.category.namePlaceholder'),
+      },
       fieldName: 'name',
-      label: '分类名称',
+      label: $t('system.platform.category.name'),
       rules: 'required',
     },
     {
       component: 'Input',
-      componentProps: { class: 'w-full', placeholder: '英文别名' },
+      componentProps: {
+        class: 'w-full',
+        placeholder: $t('system.platform.category.nicknamePlaceholder'),
+      },
       fieldName: 'nickname',
-      label: '分类别名',
+      label: $t('system.platform.category.nickname'),
       rules: 'required',
     },
     {
@@ -119,48 +134,51 @@ export function buildFormSchema(params: {
         allowClear: true,
         class: 'w-full',
         mode: 'multiple',
-        options: CATEGORY_FLAG_OPTIONS,
-        placeholder: '分类标志',
+        options: getCategoryFlagOptions(),
+        placeholder: $t('system.platform.category.flagPlaceholder'),
       },
       fieldName: 'flag',
-      label: '分类标志',
+      label: $t('system.platform.category.flag'),
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'keywords',
-      label: '关键字',
+      label: $t('system.platform.category.keywords'),
     },
     {
       component: 'AttachmentField',
       componentProps: {
         accept: 'image',
         multiple: false,
-        placeholder: '图片 URL',
+        placeholder: $t('system.platform.category.imagePlaceholder'),
       },
       fieldName: 'image',
       formItemClass: 'items-start',
-      label: '图片',
+      label: $t('system.platform.category.image'),
     },
     {
       component: 'Textarea',
       componentProps: { rows: 2 },
       fieldName: 'description',
       formItemClass: 'items-start',
-      label: '描述',
+      label: $t('system.platform.category.description'),
     },
     {
       component: 'Input',
-      componentProps: { class: 'w-full', placeholder: 'URL 自定义名称' },
+      componentProps: {
+        class: 'w-full',
+        placeholder: $t('system.platform.category.diynamePlaceholder'),
+      },
       fieldName: 'diyname',
-      label: '自定义名称',
+      label: $t('system.platform.category.diyname'),
     },
     {
       component: 'InputNumber',
       componentProps: { class: 'w-full', min: 0 },
       defaultValue: 0,
       fieldName: 'sort',
-      label: '权重',
+      label: $t('system.platform.category.sort'),
     },
     {
       component: 'RadioGroup',
@@ -169,13 +187,13 @@ export function buildFormSchema(params: {
         class: 'w-full',
         optionType: 'button',
         options: [
-          { label: '正常', value: 'normal' },
-          { label: '隐藏', value: 'hidden' },
+          { label: $t('system.shared.status.normal'), value: 'normal' },
+          { label: $t('system.shared.status.hidden'), value: 'hidden' },
         ],
       },
       defaultValue: 'normal',
       fieldName: 'status',
-      label: '状态',
+      label: $t('system.platform.category.status'),
     },
   ];
 }
@@ -214,7 +232,7 @@ export function useColumns(
         options: typeTagOptions,
       },
       field: 'type',
-      title: '类型',
+      title: $t('system.platform.category.type'),
       width: 100,
     });
   }
@@ -224,14 +242,14 @@ export function useColumns(
       align: 'left',
       field: 'name',
       minWidth: 180,
-      title: '名称',
+      title: $t('system.platform.category.name'),
       treeNode: true,
     },
     {
       align: 'left',
       field: 'nickname',
       minWidth: 120,
-      title: '别名',
+      title: $t('system.platform.category.alias'),
     },
     {
       align: 'center',
@@ -241,7 +259,7 @@ export function useColumns(
           ? cellValue.join('、')
           : TABLE_CELL_EMPTY,
       minWidth: 120,
-      title: '标志',
+      title: $t('system.platform.category.flags'),
     },
     {
       align: 'center',
@@ -253,7 +271,7 @@ export function useColumns(
         props: { height: 40, width: 40 },
       },
       field: 'image',
-      title: '图片',
+      title: $t('system.platform.category.image'),
       width: 80,
     },
     {
@@ -279,12 +297,12 @@ export function useColumns(
           }
         : undefined,
       field: 'sort',
-      title: '权重',
+      title: $t('system.platform.category.sort'),
       width: 100,
     },
     {
       field: 'status',
-      title: '状态',
+      title: $t('system.platform.category.status'),
       width: 100,
       cellRender: {
         attrs: {
@@ -295,10 +313,10 @@ export function useColumns(
             );
           },
           getSwitchProps: () => ({
-            checkedChildren: '正常',
+            checkedChildren: $t('system.shared.status.normal'),
             checkedValue: 'normal',
             disabled: !canStatus,
-            unCheckedChildren: '隐藏',
+            unCheckedChildren: $t('system.shared.status.hidden'),
             unCheckedValue: 'hidden',
           }),
         },
@@ -310,7 +328,7 @@ export function useColumns(
       cellRender: {
         attrs: {
           nameField: 'name',
-          nameTitle: '分类',
+          nameTitle: $t('system.platform.category.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -318,26 +336,26 @@ export function useColumns(
           {
             code: 'append',
             show: () => access.can(CATEGORY_PERMISSIONS.APPEND),
-            text: '新增下级',
+            text: $t('system.shared.appendChild'),
             type: 'link',
           },
           {
             code: 'edit',
             show: () => access.can(CATEGORY_PERMISSIONS.UPDATE),
-            text: '编辑',
+            text: $t('common.edit'),
             type: 'link',
           },
           {
             code: 'delete',
             danger: true,
             show: () => access.can(CATEGORY_PERMISSIONS.DELETE),
-            text: '删除',
+            text: $t('common.delete'),
             type: 'link',
           },
         ],
       },
       fixed: 'right',
-      title: '操作',
+      title: $t('crud.columnActions'),
       width: 220,
     },
   );
@@ -362,5 +380,8 @@ export async function loadCategoryTreeForParent(
 
   const filtered = excludeId ? filter(tree) : tree;
 
-  return [{ label: '无', value: 0 }, ...mapCategoryForTreeSelect(filtered)];
+  return [
+    { label: $t('system.shared.none'), value: 0 },
+    ...mapCategoryForTreeSelect(filtered),
+  ];
 }

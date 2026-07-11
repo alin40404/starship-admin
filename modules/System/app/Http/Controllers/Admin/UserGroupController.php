@@ -80,7 +80,7 @@ class UserGroupController extends Controller
 
         $group = UserGroup::query()->create($data);
 
-        return ApiResponse::success($group, '创建成功');
+        return ApiResponse::success($group, __('system::messages.created'));
     }
 
     public function update(Request $request, int $id): JsonResponse
@@ -96,14 +96,14 @@ class UserGroupController extends Controller
 
         $group->update($data);
 
-        return ApiResponse::success($group->fresh(), '更新成功');
+        return ApiResponse::success($group->fresh(), __('system::messages.updated'));
     }
 
     public function destroy(int $id): JsonResponse
     {
         UserGroup::query()->whereKey($id)->firstOrFail()->delete();
 
-        return ApiResponse::success(null, '已删除');
+        return ApiResponse::success(null, __('system::messages.deleted'));
     }
 
     public function batchDestroy(Request $request): JsonResponse
@@ -115,7 +115,7 @@ class UserGroupController extends Controller
 
         $deleted = UserGroup::query()->whereIn('id', $ids)->delete();
 
-        return ApiResponse::success(['deleted' => $deleted], '已批量删除');
+        return ApiResponse::success(['deleted' => $deleted], __('system::messages.batch_deleted'));
     }
 
     public function syncAdmins(Request $request, int $id): JsonResponse
@@ -128,6 +128,6 @@ class UserGroupController extends Controller
 
         $group->admins()->sync($validated['admin_ids']);
 
-        return ApiResponse::success(['admin_ids' => $validated['admin_ids']], '成员已更新');
+        return ApiResponse::success(['admin_ids' => $validated['admin_ids']], __('system::messages.members_updated'));
     }
 }

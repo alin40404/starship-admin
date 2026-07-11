@@ -22,7 +22,7 @@ class SmsAliyunController extends Controller
         $templateCode = (string) $pluginConfigRepository->get('sms-aliyun', 'template_code', '');
 
         if ($accessKey === '' || $secretKey === '' || $signName === '' || $templateCode === '') {
-            return ApiResponse::error('请先完善短信插件配置', 422);
+            return ApiResponse::error(__('sms-aliyun::messages.config_incomplete'), 422);
         }
 
         return ApiResponse::success([

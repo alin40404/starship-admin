@@ -4,6 +4,7 @@ import type { AreaCascaderOption, AreaSavePayload, AreaTreeNode } from '#/api/sy
 import { computed, defineAsyncComponent, ref } from 'vue';
 
 import { useVbenDrawer, useVbenModal } from '@vben/common-ui';
+import { $t } from '@vben/locales';
 import { usePreferences } from '@vben/preferences';
 
 import { useDebounceFn } from '@vueuse/core';
@@ -102,7 +103,9 @@ const syncPinyinPreview = useDebounceFn(async (shortname: string) => {
 }, 300);
 
 const formTitle = computed(() =>
-  editingId.value ? '编辑区域' : '新增区域',
+  editingId.value
+    ? $t('system.platform.region.editRegion')
+    : $t('system.platform.region.createRegionTitle'),
 );
 
 type PopupApi = {
@@ -125,10 +128,10 @@ async function handleConfirm(popupApi: PopupApi) {
   try {
     if (!editingId.value) {
       await createArea(values);
-      message.success('创建成功');
+      message.success($t('crud.created'));
     } else {
       await updateArea(editingId.value, values);
-      message.success('已保存');
+      message.success($t('crud.saved'));
     }
     popupApi.close();
     emits('success');
@@ -236,7 +239,7 @@ defineExpose({ open });
             class="area-parent-cascader w-full"
             :load-data="loadCascaderData"
             :options="cascaderOptions"
-            placeholder="请选择上级区域（留空为顶级）"
+            :placeholder="$t('system.platform.region.selectParent')"
             popup-class-name="area-parent-cascader-popup"
             style="width: 100%"
             @change="onCascaderChange"
@@ -261,7 +264,7 @@ defineExpose({ open });
             class="area-parent-cascader w-full"
             :load-data="loadCascaderData"
             :options="cascaderOptions"
-            placeholder="请选择上级区域（留空为顶级）"
+            :placeholder="$t('system.platform.region.selectParent')"
             popup-class-name="area-parent-cascader-popup"
             style="width: 100%"
             @change="onCascaderChange"

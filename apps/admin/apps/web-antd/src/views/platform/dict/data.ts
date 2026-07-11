@@ -10,38 +10,49 @@ import type { DictItemRow, DictTypeRow } from '#/api/system/dict';
 import { formatDateTime } from '@vben/utils';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { DICT_PERMISSIONS } from '#/constants/dict-permissions';
+import { $t } from '#/locales';
 
 export type DictAccessChecker = {
   can: (code: string) => boolean;
 };
 
+function getStatusOptions() {
+  return [
+    { label: $t('system.shared.status.enable'), value: 1 },
+    { label: $t('system.shared.status.disable'), value: 0 },
+  ];
+}
+
 export function useDictTypeGridFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
-      componentProps: { class: 'w-full', placeholder: '字典名称' },
+      componentProps: {
+        class: 'w-full',
+        placeholder: $t('system.platform.dict.searchName'),
+      },
       fieldName: 'name',
-      label: '名称',
+      label: $t('system.platform.dict.name'),
     },
     {
       component: 'Input',
-      componentProps: { class: 'w-full', placeholder: '字典编码' },
+      componentProps: {
+        class: 'w-full',
+        placeholder: $t('system.platform.dict.searchCode'),
+      },
       fieldName: 'code',
-      label: '编码',
+      label: $t('system.platform.dict.code'),
     },
     {
       component: 'Select',
       componentProps: {
         allowClear: true,
         class: 'w-full',
-        options: [
-          { label: '启用', value: 1 },
-          { label: '禁用', value: 0 },
-        ],
-        placeholder: '状态',
+        options: getStatusOptions(),
+        placeholder: $t('system.platform.dict.status'),
       },
       fieldName: 'status',
-      label: '状态',
+      label: $t('system.platform.dict.status'),
     },
   ];
 }
@@ -58,7 +69,7 @@ export function buildDictTypeMobileCrudConfig(params: {
     search: {
       filterSchema: useDictTypeGridFormSchema(),
       keywordFields: ['name', 'code'],
-      placeholder: '搜索名称/编码',
+      placeholder: $t('system.platform.dict.searchKeyword'),
     },
   });
 }
@@ -69,15 +80,27 @@ export function useDictTypeColumns(
 ): CrudGridColumn<DictTypeRow>[] {
   return [
     { field: 'id', sortable: true, title: 'ID', width: 72 },
-    { align: 'left', field: 'name', minWidth: 140, sortable: true, title: '名称' },
-    { align: 'left', field: 'code', minWidth: 140, sortable: true, title: '编码' },
+    {
+      align: 'left',
+      field: 'name',
+      minWidth: 140,
+      sortable: true,
+      title: $t('system.platform.dict.name'),
+    },
+    {
+      align: 'left',
+      field: 'code',
+      minWidth: 140,
+      sortable: true,
+      title: $t('system.platform.dict.code'),
+    },
     {
       field: 'items_count',
       formatter: ({ cellValue }: { cellValue: DictTypeRow['items_count'] }) =>
         cellValue === undefined || cellValue === null
           ? TABLE_CELL_EMPTY
           : String(cellValue),
-      title: '字典项数',
+      title: $t('system.platform.dict.itemsCount'),
       width: 100,
     },
     {
@@ -85,10 +108,13 @@ export function useDictTypeColumns(
       cellRender: { name: 'CellTag' },
       field: 'status',
       mobile: {
-        format: (row) => (row.status === 1 ? '启用' : '禁用'),
+        format: (row) =>
+          row.status === 1
+            ? $t('system.shared.status.enable')
+            : $t('system.shared.status.disable'),
       },
       sortable: true,
-      title: '状态',
+      title: $t('system.platform.dict.status'),
       width: 100,
     },
     {
@@ -96,7 +122,7 @@ export function useDictTypeColumns(
       formatter: ({ cellValue }: { cellValue: DictTypeRow['remark'] }) =>
         cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 160,
-      title: '备注',
+      title: $t('system.platform.dict.remark'),
     },
     {
       field: 'updated_at',
@@ -107,14 +133,14 @@ export function useDictTypeColumns(
           row.updated_at ? formatDateTime(row.updated_at) : TABLE_CELL_EMPTY,
       },
       sortable: true,
-      title: '更新时间',
+      title: $t('system.platform.dict.updatedAt'),
     },
     {
       align: 'center',
       cellRender: {
         attrs: {
           nameField: 'name',
-          nameTitle: '字典',
+          nameTitle: $t('system.platform.dict.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -122,26 +148,26 @@ export function useDictTypeColumns(
           {
             code: 'items',
             show: () => access.can(DICT_PERMISSIONS.QUERY),
-            text: '字典项',
+            text: $t('system.platform.dict.dictItems'),
             type: 'link',
           },
           {
             code: 'edit',
             show: () => access.can(DICT_PERMISSIONS.UPDATE),
-            text: '编辑',
+            text: $t('common.edit'),
             type: 'link',
           },
           {
             code: 'delete',
             danger: true,
             show: () => access.can(DICT_PERMISSIONS.DELETE),
-            text: '删除',
+            text: $t('common.delete'),
             type: 'link',
           },
         ],
       },
       fixed: 'right',
-      title: '操作',
+      title: $t('crud.columnActions'),
       width: 200,
     },
   ] as CrudGridColumn<DictTypeRow>[];
@@ -153,14 +179,14 @@ export function buildDictTypeFormSchema(isEdit = false): VbenFormSchema[] {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'name',
-      label: '名称',
+      label: $t('system.platform.dict.name'),
       rules: 'required',
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full', disabled: isEdit },
       fieldName: 'code',
-      label: '编码',
+      label: $t('system.platform.dict.code'),
       rules: 'required',
     },
     {
@@ -169,15 +195,12 @@ export function buildDictTypeFormSchema(isEdit = false): VbenFormSchema[] {
         buttonStyle: 'solid',
         class: 'w-full',
         optionType: 'button',
-        options: [
-          { label: '启用', value: 1 },
-          { label: '禁用', value: 0 },
-        ],
+        options: getStatusOptions(),
       },
       defaultValue: 1,
       fieldName: 'status',
       formItemClass: 'col-span-full w-full',
-      label: '状态',
+      label: $t('system.platform.dict.status'),
     },
     {
       component: 'Textarea',
@@ -187,7 +210,7 @@ export function buildDictTypeFormSchema(isEdit = false): VbenFormSchema[] {
       },
       fieldName: 'remark',
       formItemClass: 'col-span-full w-full items-start',
-      label: '备注',
+      label: $t('system.platform.dict.remark'),
     },
   ];
 }
@@ -210,17 +233,30 @@ export function useDictItemColumns(
 ): CrudGridColumn<DictItemRow>[] {
   return [
     { field: 'id', title: 'ID', width: 72 },
-    { align: 'left', field: 'label', minWidth: 120, title: '标签' },
-    { align: 'left', field: 'value', minWidth: 120, title: '值' },
-    { field: 'sort', title: '排序', width: 80 },
+    {
+      align: 'left',
+      field: 'label',
+      minWidth: 120,
+      title: $t('system.platform.dict.label'),
+    },
+    {
+      align: 'left',
+      field: 'value',
+      minWidth: 120,
+      title: $t('system.platform.dict.value'),
+    },
+    { field: 'sort', title: $t('system.platform.dict.sort'), width: 80 },
     {
       align: 'center',
       cellRender: { name: 'CellTag' },
       field: 'status',
       mobile: {
-        format: (row) => (row.status === 1 ? '启用' : '禁用'),
+        format: (row) =>
+          row.status === 1
+            ? $t('system.shared.status.enable')
+            : $t('system.shared.status.disable'),
       },
-      title: '状态',
+      title: $t('system.platform.dict.status'),
       width: 100,
     },
     {
@@ -228,14 +264,14 @@ export function useDictItemColumns(
       formatter: ({ cellValue }: { cellValue: DictItemRow['remark'] }) =>
         cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 120,
-      title: '备注',
+      title: $t('system.platform.dict.remark'),
     },
     {
       align: 'center',
       cellRender: {
         attrs: {
           nameField: 'label',
-          nameTitle: '字典项',
+          nameTitle: $t('system.platform.dict.itemEntity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -243,20 +279,20 @@ export function useDictItemColumns(
           {
             code: 'edit',
             show: () => access.can(DICT_PERMISSIONS.UPDATE),
-            text: '编辑',
+            text: $t('common.edit'),
             type: 'link',
           },
           {
             code: 'delete',
             danger: true,
             show: () => access.can(DICT_PERMISSIONS.DELETE),
-            text: '删除',
+            text: $t('common.delete'),
             type: 'link',
           },
         ],
       },
       fixed: 'right',
-      title: '操作',
+      title: $t('crud.columnActions'),
       width: 140,
     },
   ] as CrudGridColumn<DictItemRow>[];
@@ -268,14 +304,14 @@ export function buildDictItemFormSchema(isEdit = false): VbenFormSchema[] {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'label',
-      label: '标签',
+      label: $t('system.platform.dict.label'),
       rules: 'required',
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full', disabled: isEdit },
       fieldName: 'value',
-      label: '值',
+      label: $t('system.platform.dict.value'),
       rules: 'required',
     },
     {
@@ -283,7 +319,7 @@ export function buildDictItemFormSchema(isEdit = false): VbenFormSchema[] {
       componentProps: { class: 'w-full', min: 0 },
       defaultValue: 0,
       fieldName: 'sort',
-      label: '排序',
+      label: $t('system.platform.dict.sort'),
     },
     {
       component: 'RadioGroup',
@@ -291,21 +327,18 @@ export function buildDictItemFormSchema(isEdit = false): VbenFormSchema[] {
         buttonStyle: 'solid',
         class: 'w-full',
         optionType: 'button',
-        options: [
-          { label: '启用', value: 1 },
-          { label: '禁用', value: 0 },
-        ],
+        options: getStatusOptions(),
       },
       defaultValue: 1,
       fieldName: 'status',
-      label: '状态',
+      label: $t('system.platform.dict.status'),
     },
     {
       component: 'Textarea',
       componentProps: { class: 'w-full', rows: 2 },
       fieldName: 'remark',
       formItemClass: 'col-span-full w-full items-start',
-      label: '备注',
+      label: $t('system.platform.dict.remark'),
     },
   ];
 }

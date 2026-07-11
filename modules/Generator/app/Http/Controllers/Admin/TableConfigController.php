@@ -50,7 +50,7 @@ class TableConfigController extends Controller
 
         $config = $tableConfigService->import($data['table_name'], $data);
 
-        return ApiResponse::success($config, '导入成功');
+        return ApiResponse::success($config, __('generator::messages.import_success'));
     }
 
     public function update(int $id, Request $request, TableConfigService $tableConfigService): JsonResponse
@@ -70,7 +70,7 @@ class TableConfigController extends Controller
 
         $config = $tableConfigService->update($config, $payload);
 
-        return ApiResponse::success($config, '已保存');
+        return ApiResponse::success($config, __('generator::messages.saved'));
     }
 
     public function destroy(int $id): JsonResponse
@@ -79,6 +79,6 @@ class TableConfigController extends Controller
         $config->columns()->delete();
         $config->delete();
 
-        return ApiResponse::success(null, '已删除');
+        return ApiResponse::success(null, __('generator::messages.deleted'));
     }
 }

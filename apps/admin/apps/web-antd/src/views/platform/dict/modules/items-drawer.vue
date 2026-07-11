@@ -9,6 +9,8 @@ import { useVbenDrawer } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
 import { useElementSize } from '@vueuse/core';
+import { $t } from '@vben/locales';
+
 import { Button, message } from 'ant-design-vue';
 
 import { useResponsiveCrud } from '#/adapter/mobile-list';
@@ -32,7 +34,9 @@ const { height: gridWrapHeight } = useElementSize(gridWrapRef);
 
 const drawerTitle = computed(() => {
   const name = activeType.value?.name ?? '';
-  return name ? `字典项：${name}` : '字典项';
+  return name
+    ? $t('system.platform.dict.itemsTitle', [name])
+    : $t('system.platform.dict.itemEntity');
 });
 
 function onRefresh() {
@@ -52,7 +56,7 @@ function onEditItem(row: DictItemRow) {
 
 async function onDeleteItem(row: DictItemRow) {
   await deleteDictItem(row.id);
-  message.success('已删除');
+  message.success($t('crud.deleted'));
   onRefresh();
 }
 
@@ -147,7 +151,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
             @click="onCreateItem"
           >
             <Plus class="size-4" />
-            新增字典项
+            {{ $t('system.platform.dict.createItem') }}
           </Button>
         </template>
       </CrudView>

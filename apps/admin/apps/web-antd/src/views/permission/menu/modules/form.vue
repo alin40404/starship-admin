@@ -9,6 +9,7 @@ import type {
 import { computed, nextTick, reactive, ref, watch } from 'vue';
 
 import { useVbenDrawer } from '@vben/common-ui';
+import { $t } from '@vben/locales';
 import { usePreferences } from '@vben/preferences';
 
 import { message } from 'ant-design-vue';
@@ -139,7 +140,9 @@ watch(
 );
 
 const drawerTitle = computed(() =>
-  editingId.value ? '编辑菜单' : '新增菜单',
+  editingId.value
+    ? $t('system.permission.menu.editMenu')
+    : $t('system.permission.menu.createMenuTitle'),
 );
 
 const [Drawer, drawerApi] = useVbenDrawer({
@@ -152,11 +155,11 @@ const [Drawer, drawerApi] = useVbenDrawer({
     const type = Number(raw.type);
     const needsPath = [1, 2, 4].includes(type);
     if (needsPath && !String(raw.path ?? '').trim()) {
-      message.warning('请填写路由地址');
+      message.warning($t('system.permission.menu.routeRequired'));
       return;
     }
     if (type === 3 && !String(raw.permission ?? '').trim()) {
-      message.warning('请填写权限标识');
+      message.warning($t('system.permission.menu.permissionRequired'));
       return;
     }
     const pathTrim = String(raw.path ?? '').trim();
@@ -166,7 +169,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
         editingId.value ?? undefined,
       );
       if (duplicate) {
-        message.warning('路由地址已存在');
+        message.warning($t('system.permission.menu.routeExists'));
         return;
       }
     }
@@ -244,10 +247,10 @@ const [Drawer, drawerApi] = useVbenDrawer({
     try {
       if (editingId.value) {
         await updateMenu(editingId.value, payload);
-        message.success('已保存');
+        message.success($t('crud.saved'));
       } else {
         await createMenu(payload);
-        message.success('创建成功');
+        message.success($t('crud.created'));
       }
       drawerApi.close();
       emits('success');

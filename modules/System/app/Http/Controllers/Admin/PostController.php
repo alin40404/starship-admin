@@ -65,7 +65,7 @@ class PostController extends Controller
 
         $post = Post::query()->create($data);
 
-        return ApiResponse::success($post, '创建成功');
+        return ApiResponse::success($post, __('system::messages.created'));
     }
 
     public function update(Request $request, int $id): JsonResponse
@@ -81,14 +81,14 @@ class PostController extends Controller
 
         $post->update($data);
 
-        return ApiResponse::success($post->fresh(), '更新成功');
+        return ApiResponse::success($post->fresh(), __('system::messages.updated'));
     }
 
     public function destroy(int $id): JsonResponse
     {
         Post::query()->whereKey($id)->firstOrFail()->delete();
 
-        return ApiResponse::success(null, '已删除');
+        return ApiResponse::success(null, __('system::messages.deleted'));
     }
 
     public function batchDestroy(Request $request): JsonResponse
@@ -100,7 +100,7 @@ class PostController extends Controller
 
         $deleted = Post::query()->whereIn('id', $ids)->delete();
 
-        return ApiResponse::success(['deleted' => $deleted], '已批量删除');
+        return ApiResponse::success(['deleted' => $deleted], __('system::messages.batch_deleted'));
     }
 
     public function batchUpdateStatus(Request $request): JsonResponse
@@ -115,6 +115,6 @@ class PostController extends Controller
             ->whereIn('id', $data['ids'])
             ->update(['status' => $data['status']]);
 
-        return ApiResponse::success(['updated' => $updated], '已批量更新状态');
+        return ApiResponse::success(['updated' => $updated], __('system::messages.batch_status_updated'));
     }
 }

@@ -5,6 +5,7 @@ import type { VbenFormSchema } from '#/adapter/form';
 import { computed, ref } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
+import { $t } from '@vben/locales';
 
 import { message } from 'ant-design-vue';
 
@@ -17,57 +18,71 @@ const emits = defineEmits<{ success: [] }>();
 
 const editingKey = ref<string | null>(null);
 
-const PARAM_FORM_SCHEMA: VbenFormSchema[] = [
-  {
-    component: 'Input',
-    componentProps: { class: 'w-full' },
-    fieldName: 'key',
-    label: '参数键',
-    rules: 'required',
-  },
-  {
-    component: 'Input',
-    componentProps: { class: 'w-full' },
-    fieldName: 'name',
-    label: '参数名称',
-    rules: 'required',
-  },
-  {
-    component: 'Select',
-    componentProps: {
-      class: 'w-full',
-      options: [
-        { label: '字符串', value: 'string' },
-        { label: '数字', value: 'number' },
-        { label: '布尔', value: 'bool' },
-        { label: 'JSON', value: 'json' },
-      ],
+function getParamFormSchema(): VbenFormSchema[] {
+  return [
+    {
+      component: 'Input',
+      componentProps: { class: 'w-full' },
+      fieldName: 'key',
+      label: $t('system.platform.config.param.keyLabel'),
+      rules: 'required',
     },
-    defaultValue: 'string',
-    fieldName: 'type',
-    label: '值类型',
-  },
-  {
-    component: 'Input',
-    componentProps: { class: 'w-full' },
-    fieldName: 'value',
-    label: '参数值',
-  },
-  {
-    component: 'InputNumber',
-    componentProps: { class: 'w-full', min: 0 },
-    defaultValue: 0,
-    fieldName: 'sort',
-    label: '排序',
-  },
-  {
-    component: 'Textarea',
-    componentProps: { class: 'w-full', rows: 2 },
-    fieldName: 'remark',
-    formItemClass: 'col-span-full w-full items-start',
-    label: '备注',
-  },
-];
+    {
+      component: 'Input',
+      componentProps: { class: 'w-full' },
+      fieldName: 'name',
+      label: $t('system.platform.config.param.nameLabel'),
+      rules: 'required',
+    },
+    {
+      component: 'Select',
+      componentProps: {
+        class: 'w-full',
+        options: [
+          {
+            label: $t('system.platform.config.paramType.string'),
+            value: 'string',
+          },
+          {
+            label: $t('system.platform.config.paramType.number'),
+            value: 'number',
+          },
+          {
+            label: $t('system.platform.config.paramType.bool'),
+            value: 'bool',
+          },
+          {
+            label: $t('system.platform.config.paramType.json'),
+            value: 'json',
+          },
+        ],
+      },
+      defaultValue: 'string',
+      fieldName: 'type',
+      label: $t('system.platform.config.param.valueType'),
+    },
+    {
+      component: 'Input',
+      componentProps: { class: 'w-full' },
+      fieldName: 'value',
+      label: $t('system.platform.config.param.value'),
+    },
+    {
+      component: 'InputNumber',
+      componentProps: { class: 'w-full', min: 0 },
+      defaultValue: 0,
+      fieldName: 'sort',
+      label: $t('system.platform.config.param.sort'),
+    },
+    {
+      component: 'Textarea',
+      componentProps: { class: 'w-full', rows: 2 },
+      fieldName: 'remark',
+      formItemClass: 'col-span-full w-full items-start',
+      label: $t('system.platform.config.param.remark'),
+    },
+  ];
+}
 
 function buildValueFieldSchema(type: string): VbenFormSchema {
   if (type === 'json') {
@@ -75,29 +90,30 @@ function buildValueFieldSchema(type: string): VbenFormSchema {
       component: 'Textarea',
       componentProps: {
         class: 'w-full',
-        placeholder: '请输入 JSON，如 {"key": "value"}',
+        placeholder: $t('system.platform.config.param.jsonPlaceholder'),
         rows: 4,
       },
       fieldName: 'value',
       formItemClass: 'col-span-full w-full items-start',
-      label: '参数值',
+      label: $t('system.platform.config.param.value'),
     };
   }
 
   const placeholderMap: Record<string, string> = {
-    bool: '请输入 true 或 false',
-    number: '请输入数字',
-    string: '请输入参数值',
+    bool: $t('system.platform.config.param.boolPlaceholder'),
+    number: $t('system.platform.config.param.numberPlaceholder'),
+    string: $t('system.platform.config.param.stringPlaceholder'),
   };
 
   return {
     component: 'Input',
     componentProps: {
       class: 'w-full',
-      placeholder: placeholderMap[type] ?? '请输入参数值',
+      placeholder:
+        placeholderMap[type] ?? $t('system.platform.config.param.stringPlaceholder'),
     },
     fieldName: 'value',
-    label: '参数值',
+    label: $t('system.platform.config.param.value'),
   };
 }
 
@@ -107,7 +123,7 @@ const [Form, formApi] = useVbenForm({
     labelClass: 'justify-start',
   },
   layout: 'vertical',
-  schema: PARAM_FORM_SCHEMA,
+  schema: getParamFormSchema(),
   showDefaultActions: false,
   wrapperClass: 'grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1',
   handleValuesChange(values, fieldsChanged) {
@@ -118,7 +134,7 @@ const [Form, formApi] = useVbenForm({
 });
 
 function syncValueFieldByType(type: string) {
-  const schema = [...(formApi.getState()?.schema ?? PARAM_FORM_SCHEMA)];
+  const schema = [...(formApi.getState()?.schema ?? getParamFormSchema())];
   const index = schema.findIndex((item) => item.fieldName === 'value');
   if (index < 0) {
     return;
@@ -128,7 +144,9 @@ function syncValueFieldByType(type: string) {
 }
 
 const modalTitle = computed(() =>
-  editingKey.value ? '编辑参数' : '新增参数',
+  editingKey.value
+    ? $t('system.platform.config.param.editParam')
+    : $t('system.platform.config.param.createParam'),
 );
 
 function syncKeyFieldDisabled(isEdit: boolean) {
@@ -160,7 +178,7 @@ const [Modal, modalApi] = useVbenModal({
           value: (values.value as string) ?? '',
         },
       ]);
-      message.success('已保存');
+      message.success($t('crud.saved'));
       modalApi.close();
       emits('success');
     } finally {
@@ -202,10 +220,7 @@ const [Modal, modalApi] = useVbenModal({
 </script>
 
 <template>
-  <Modal
-    :title="modalTitle"
-    class="w-full max-w-full md:w-[560px] md:max-w-[560px]"
-  >
+  <Modal :title="modalTitle" class="w-[560px]">
     <Form />
   </Modal>
 </template>

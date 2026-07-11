@@ -46,7 +46,7 @@ class MenuController extends Controller
 
         $menu = Menu::query()->create($data);
 
-        return ApiResponse::success($menu, '创建成功');
+        return ApiResponse::success($menu, __('system::messages.created'));
     }
 
     public function update(Request $request, int $id): JsonResponse
@@ -59,7 +59,7 @@ class MenuController extends Controller
 
         $menu->update($data);
 
-        return ApiResponse::success($menu->fresh(), '更新成功');
+        return ApiResponse::success($menu->fresh(), __('system::messages.updated'));
     }
 
     public function updateStatus(Request $request, int $id): JsonResponse
@@ -71,7 +71,7 @@ class MenuController extends Controller
 
         $menu->update(['status' => $data['status']]);
 
-        return ApiResponse::success($menu->fresh(), '状态已更新');
+        return ApiResponse::success($menu->fresh(), __('system::messages.status_updated'));
     }
 
     public function updateSort(Request $request, int $id): JsonResponse
@@ -83,14 +83,14 @@ class MenuController extends Controller
 
         $menu->update(['sort' => $data['sort']]);
 
-        return ApiResponse::success($menu->fresh(), '排序已更新');
+        return ApiResponse::success($menu->fresh(), __('system::messages.sort_updated'));
     }
 
     public function destroy(int $id): JsonResponse
     {
         Menu::query()->whereKey($id)->firstOrFail()->delete();
 
-        return ApiResponse::success(null, '已删除');
+        return ApiResponse::success(null, __('system::messages.deleted'));
     }
 
     public function batchDestroy(Request $request): JsonResponse
@@ -102,7 +102,7 @@ class MenuController extends Controller
 
         $deleted = Menu::query()->whereIn('id', $ids)->delete();
 
-        return ApiResponse::success(['deleted' => $deleted], '已批量删除');
+        return ApiResponse::success(['deleted' => $deleted], __('system::messages.batch_deleted'));
     }
 
     public function batchUpdateStatus(Request $request): JsonResponse
@@ -117,7 +117,7 @@ class MenuController extends Controller
             ->whereIn('id', $data['ids'])
             ->update(['status' => $data['status']]);
 
-        return ApiResponse::success(['updated' => $updated], '已批量更新状态');
+        return ApiResponse::success(['updated' => $updated], __('system::messages.batch_status_updated'));
     }
 
     /**

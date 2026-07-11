@@ -8,6 +8,8 @@ import { useAccess } from '@vben/access';
 import { Page } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
+import { $t } from '@vben/locales';
+
 import { Button, message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -129,16 +131,22 @@ async function onCategoryStatusToggle(
   row: CategoryTreeNode,
 ) {
   return new Promise<boolean>((resolve) => {
-    const label = nextStatus === 'normal' ? '正常' : '隐藏';
+    const label =
+      nextStatus === 'normal'
+        ? $t('system.shared.status.normal')
+        : $t('system.shared.status.hidden');
     Modal.confirm({
-      content: `确定将「${row.name}」的状态切换为【${label}】吗？`,
-      okText: '确定',
-      cancelText: '取消',
-      title: '切换状态',
+      content: $t('system.platform.category.toggleStatusConfirm', [
+        row.name,
+        label,
+      ]),
+      okText: $t('common.confirm'),
+      cancelText: $t('common.cancel'),
+      title: $t('system.shared.toggleStatusTitle'),
       async onOk() {
         try {
           await updateCategoryStatus(row.id, nextStatus);
-          message.success('状态已更新');
+          message.success($t('crud.statusUpdated'));
           onRefresh();
           resolve(true);
         } catch {
@@ -154,7 +162,7 @@ async function onCategoryStatusToggle(
 
 async function onDelete(row: CategoryTreeNode) {
   await deleteCategory(row.id);
-  message.success('已删除');
+  message.success($t('crud.deleted'));
   clearSelection();
   onRefresh();
 }
@@ -163,19 +171,22 @@ function onBatchDelete() {
   const ids = selectedRows.value.map((row) => row.id);
   if (ids.length === 0) return;
   Modal.confirm({
-    content: `确定删除选中的 ${ids.length} 个分类吗？存在下级分类的将跳过。`,
-    okText: '删除',
+    content: $t('system.platform.category.batchDeleteConfirm', [ids.length]),
+    okText: $t('common.delete'),
     okType: 'danger',
-    cancelText: '取消',
-    title: '批量删除',
+    cancelText: $t('common.cancel'),
+    title: $t('system.shared.batchDelete'),
     async onOk() {
       const result = await batchDeleteCategories(ids);
       if (result.skipped > 0) {
         message.warning(
-          `已删除 ${result.deleted} 个，${result.skipped} 个因存在下级未删除`,
+          $t('system.platform.category.batchDeletePartial', [
+            result.deleted,
+            result.skipped,
+          ]),
         );
       } else {
-        message.success('已批量删除');
+        message.success($t('crud.batchDeleted'));
       }
       clearSelection();
       onRefresh();
@@ -186,15 +197,21 @@ function onBatchDelete() {
 function onBatchUpdateStatus(status: CategoryTreeNode['status']) {
   const ids = selectedRows.value.map((row) => row.id);
   if (ids.length === 0) return;
-  const label = status === 'normal' ? '正常' : '隐藏';
+  const label =
+    status === 'normal'
+      ? $t('system.shared.status.normal')
+      : $t('system.shared.status.hidden');
   Modal.confirm({
-    content: `确定将选中的 ${ids.length} 个分类批量设为【${label}】吗？`,
-    okText: '确定',
-    cancelText: '取消',
-    title: `批量设为${label}`,
+    content: $t('system.platform.category.batchStatusConfirmCategory', [
+      ids.length,
+      label,
+    ]),
+    okText: $t('common.confirm'),
+    cancelText: $t('common.cancel'),
+    title: $t('system.shared.batchSet', [label]),
     async onOk() {
       await batchUpdateCategoryStatus(ids, status);
-      message.success(`已批量设为${label}`);
+      message.success($t('system.shared.batchSetDone', [label]));
       clearSelection();
       onRefresh();
     },
@@ -215,7 +232,7 @@ const [Grid, gridApi] = useVbenVxeGrid<CategoryTreeNode>({
     commonConfig: { componentProps: { class: 'w-full' } },
     schema: useGridFormSchema(),
     submitOnChange: true,
-    submitButtonOptions: { content: '查询' },
+    submitButtonOptions: { content: $t('common.query') },
   },
   gridEvents: {
     checkboxAll: syncSelection,
@@ -237,7 +254,7 @@ const [Grid, gridApi] = useVbenVxeGrid<CategoryTreeNode>({
 
       const sort = Number(row.sort);
       if (!Number.isFinite(sort) || sort < 0 || !Number.isInteger(sort)) {
-        message.warning('请输入有效整数');
+        message.warning($t('system.platform.category.sortInvalid'));
         await gridApi.reload();
         return;
       }
@@ -245,7 +262,7 @@ const [Grid, gridApi] = useVbenVxeGrid<CategoryTreeNode>({
       gridApi.setLoading(true);
       try {
         await updateCategorySort(row.id, sort);
-        message.success('排序已更新');
+        message.success($t('system.platform.category.sortUpdated'));
         onRefresh();
       } catch {
         await gridApi.reload();
@@ -305,7 +322,9 @@ const [Grid, gridApi] = useVbenVxeGrid<CategoryTreeNode>({
       <aside
         class="category-type-panel flex shrink-0 flex-col overflow-hidden border-b border-border md:w-[168px] md:border-b-0 md:border-r"
       >
-        <div class="category-type-header">栏目类型</div>
+        <div class="category-type-header">
+          {{ $t('system.platform.category.typeHeader') }}
+        </div>
         <div class="category-type-tabs">
           <button
             class="category-type-item"
@@ -313,7 +332,7 @@ const [Grid, gridApi] = useVbenVxeGrid<CategoryTreeNode>({
             type="button"
             @click="onTypeChange(ALL_TYPE_KEY)"
           >
-            全部
+            {{ $t('system.shared.all') }}
           </button>
           <button
             v-for="item in typeOptions"
@@ -339,24 +358,24 @@ const [Grid, gridApi] = useVbenVxeGrid<CategoryTreeNode>({
                     danger
                     @click="onBatchDelete"
                   >
-                    批量删除（{{ selectedRows.length }}）
+                    {{ $t('system.shared.batchDeleteWithCount', [selectedRows.length]) }}
                   </Button>
                   <Button
                     v-if="categoryAccess.can(CATEGORY_PERMISSIONS.BATCH_STATUS)"
                     class="ml-2"
                     @click="onBatchUpdateStatus('normal')"
                   >
-                    批量正常
+                    {{ $t('system.shared.batchNormal') }}
                   </Button>
                   <Button
                     v-if="categoryAccess.can(CATEGORY_PERMISSIONS.BATCH_STATUS)"
                     class="ml-2"
                     @click="onBatchUpdateStatus('hidden')"
                   >
-                    批量隐藏
+                    {{ $t('system.shared.batchHidden') }}
                   </Button>
                   <Button class="ml-2" type="link" @click="clearSelection">
-                    取消选择
+                    {{ $t('system.shared.clearSelection') }}
                   </Button>
                 </div>
                 <Button
@@ -365,7 +384,7 @@ const [Grid, gridApi] = useVbenVxeGrid<CategoryTreeNode>({
                   @click="onCreate"
                 >
                   <Plus class="size-4" />
-                  新增分类
+                  {{ $t('system.platform.category.createCategory') }}
                 </Button>
               </div>
             </template>

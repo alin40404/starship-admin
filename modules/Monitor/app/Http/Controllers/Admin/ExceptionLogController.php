@@ -52,7 +52,7 @@ class ExceptionLogController extends Controller
 
         return ApiResponse::success([
             ...$log->toArray(),
-            'log_hint' => '完整堆栈请查看服务器日志 storage/logs/laravel.log，搜索 trace_id='.$log->trace_id,
+            'log_hint' => __('monitor::messages.log_hint', ['trace_id' => $log->trace_id]),
         ]);
     }
 
@@ -60,7 +60,7 @@ class ExceptionLogController extends Controller
     {
         ExceptionLog::query()->whereKey($id)->firstOrFail()->delete();
 
-        return ApiResponse::success(null, '已删除');
+        return ApiResponse::success(null, __('monitor::messages.deleted'));
     }
 
     public function batchDestroy(Request $request): JsonResponse
@@ -72,6 +72,6 @@ class ExceptionLogController extends Controller
 
         $deleted = ExceptionLog::query()->whereIn('id', $ids)->delete();
 
-        return ApiResponse::success(['deleted' => $deleted], '已批量删除');
+        return ApiResponse::success(['deleted' => $deleted], __('monitor::messages.batch_deleted'));
     }
 }

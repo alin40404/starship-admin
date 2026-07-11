@@ -36,7 +36,7 @@ class CodegenController extends Controller
             'operator_name' => $admin?->username ?? $admin?->name ?? 'web',
         ]);
 
-        return ApiResponse::success($result, '生成完成');
+        return ApiResponse::success($result, __('generator::messages.generate_complete'));
     }
 
     public function records(): JsonResponse

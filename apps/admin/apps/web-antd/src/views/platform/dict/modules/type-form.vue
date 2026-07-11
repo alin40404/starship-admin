@@ -4,6 +4,7 @@ import type { DictTypeRow, DictTypeSavePayload } from '#/api/system/dict';
 import { computed, ref } from 'vue';
 
 import { useVbenDrawer, useVbenModal } from '@vben/common-ui';
+import { $t } from '@vben/locales';
 import { usePreferences } from '@vben/preferences';
 
 import { message } from 'ant-design-vue';
@@ -31,7 +32,9 @@ const [Form, formApi] = useVbenForm({
 });
 
 const formTitle = computed(() =>
-  editingId.value ? '编辑字典' : '新增字典',
+  editingId.value
+    ? $t('system.platform.dict.editDict')
+    : $t('system.platform.dict.createDictTitle'),
 );
 
 type PopupApi = {
@@ -52,10 +55,10 @@ async function handleConfirm(popupApi: PopupApi) {
   try {
     if (!editingId.value) {
       await createDictType(values);
-      message.success('创建成功');
+      message.success($t('crud.created'));
     } else {
       await updateDictType(editingId.value, values);
-      message.success('已保存');
+      message.success($t('crud.saved'));
     }
     popupApi.close();
     emits('success');

@@ -4,6 +4,7 @@ import type { ConfigRow } from '#/api/system/config';
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
 
 import { useElementSize } from '@vueuse/core';
+import { $t } from '@vben/locales';
 import {
   Form,
   Input,
@@ -18,7 +19,7 @@ import { batchUpsertConfigs, fetchConfigs } from '#/api/system/config';
 import { AttachmentField } from '#/components/attachment-field';
 
 import {
-  CONFIG_SELECT_OPTIONS,
+  getConfigSelectOptions,
   isAttachmentImageField,
   isStorageFieldVisible,
   STORAGE_DRIVER_KEY,
@@ -92,7 +93,7 @@ async function onSave() {
   saving.value = true;
   try {
     await batchUpsertConfigs(items);
-    message.success('配置已保存');
+    message.success($t('system.platform.config.saved'));
     await loadConfigs();
   } finally {
     saving.value = false;
@@ -100,11 +101,11 @@ async function onSave() {
 }
 
 function selectOptions(key: string) {
-  return CONFIG_SELECT_OPTIONS[key] ?? [];
+  return getConfigSelectOptions()[key] ?? [];
 }
 
 function isSelectField(row: ConfigRow) {
-  return row.type === 'select' || !!CONFIG_SELECT_OPTIONS[row.key];
+  return row.type === 'select' || !!getConfigSelectOptions()[row.key];
 }
 
 watch(
@@ -127,7 +128,7 @@ defineExpose({
 <template>
   <div class="flex h-full min-h-0 flex-col overflow-hidden">
     <div ref="scrollWrapRef" class="min-h-0 flex-1">
-      <Spin :spinning="loading" tip="加载中…">
+      <Spin :spinning="loading" :tip="$t('system.shared.loading')">
         <div :style="scrollStyle">
           <Form class="config-settings-form w-full max-w-3xl pb-4" layout="vertical">
             <Form.Item
@@ -172,7 +173,7 @@ defineExpose({
                 accept="image"
                 :disabled="!props.canManage"
                 :multiple="false"
-                placeholder="请选择或上传 Logo"
+                :placeholder="$t('system.platform.config.logoPlaceholder')"
                 :value="draftValues[row.key]"
                 @update:value="(val) => (draftValues[row.key] = String(val ?? ''))"
               />

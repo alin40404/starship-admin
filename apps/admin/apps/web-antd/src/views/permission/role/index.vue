@@ -6,6 +6,8 @@ import { useAccess } from '@vben/access';
 import { Page, useVbenDrawer } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
+import { $t } from '@vben/locales';
+
 import { Button, message, Modal } from 'ant-design-vue';
 
 import { useResponsiveCrud } from '#/adapter/mobile-list';
@@ -65,16 +67,19 @@ async function onRoleStatusToggle(nextStatus: number, row: RoleRow) {
     return false;
   }
   return new Promise<boolean>((resolve) => {
-    const label = nextStatus === 1 ? '启用' : '禁用';
+    const label =
+      nextStatus === 1
+        ? $t('system.shared.status.enable')
+        : $t('system.shared.status.disable');
     Modal.confirm({
-      content: `确定将「${row.name}」的状态切换为【${label}】吗？`,
-      okText: '确定',
-      cancelText: '取消',
-      title: '切换状态',
+      content: $t('system.shared.toggleStatusConfirm', [row.name, label]),
+      okText: $t('common.confirm'),
+      cancelText: $t('common.cancel'),
+      title: $t('system.shared.toggleStatusTitle'),
       async onOk() {
         try {
           await updateRoleStatus(row.id, nextStatus as 0 | 1);
-          message.success('状态已更新');
+          message.success($t('crud.statusUpdated'));
           resolve(true);
         } catch {
           resolve(false);
@@ -99,7 +104,7 @@ const [CrudView, crudApi] = useResponsiveCrud<RoleRow>({
     schema: useGridFormSchema(),
     submitOnChange: true,
     submitButtonOptions: {
-      content: '查询',
+      content: $t('common.query'),
     },
   },
   gridOptions: {
@@ -176,7 +181,7 @@ function onRefresh() {
 
 async function onDelete(row: RoleRow) {
   await deleteRole(row.id);
-  message.success('已删除');
+  message.success($t('crud.deleted'));
   clearSelection();
   onRefresh();
 }
@@ -187,14 +192,14 @@ function onBatchDelete() {
     return;
   }
   Modal.confirm({
-    content: `确定删除选中的 ${ids.length} 条角色吗？删除后不可恢复。`,
-    okText: '删除',
+    content: $t('system.permission.role.batchDeleteConfirm', [ids.length]),
+    okText: $t('common.delete'),
     okType: 'danger',
-    cancelText: '取消',
-    title: '批量删除',
+    cancelText: $t('common.cancel'),
+    title: $t('system.shared.batchDelete'),
     async onOk() {
       await batchDeleteRoles(ids);
-      message.success('已批量删除');
+      message.success($t('crud.batchDeleted'));
       clearSelection();
       onRefresh();
     },
@@ -206,15 +211,24 @@ function onBatchUpdateStatus(status: 0 | 1) {
   if (ids.length === 0) {
     return;
   }
-  const label = status === 1 ? '启用' : '禁用';
+  const label =
+    status === 1
+      ? $t('system.shared.status.enable')
+      : $t('system.shared.status.disable');
   Modal.confirm({
-    content: `确定将选中的 ${ids.length} 条角色批量【${label}】吗？`,
-    okText: '确定',
-    cancelText: '取消',
-    title: `批量${label}`,
+    content: $t('system.permission.role.batchStatusConfirm', [
+      ids.length,
+      label,
+    ]),
+    okText: $t('common.confirm'),
+    cancelText: $t('common.cancel'),
+    title:
+      status === 1
+        ? $t('system.shared.batchEnable')
+        : $t('system.shared.batchDisable'),
     async onOk() {
       await batchUpdateRoleStatus(ids, status);
-      message.success(`已批量${label}`);
+      message.success($t('system.shared.batchStatusDone', [label]));
       clearSelection();
       onRefresh();
     },
@@ -233,24 +247,24 @@ function onBatchUpdateStatus(status: 0 | 1) {
             danger
             @click="onBatchDelete"
           >
-            批量删除（{{ selectedRows.length }}）
+            {{ $t('system.shared.batchDeleteWithCount', [selectedRows.length]) }}
           </Button>
           <Button
             v-if="roleAccess.can(ROLE_PERMISSIONS.BATCH_STATUS)"
             class="role-batch-btn-enable ml-2"
             @click="onBatchUpdateStatus(1)"
           >
-            批量启用
+            {{ $t('system.shared.batchEnable') }}
           </Button>
           <Button
             v-if="roleAccess.can(ROLE_PERMISSIONS.BATCH_STATUS)"
             class="role-batch-btn-disable ml-2"
             @click="onBatchUpdateStatus(0)"
           >
-            批量禁用
+            {{ $t('system.shared.batchDisable') }}
           </Button>
           <Button class="ml-2" type="link" @click="clearSelection">
-            取消选择
+            {{ $t('system.shared.clearSelection') }}
           </Button>
         </div>
         <Button
@@ -259,7 +273,7 @@ function onBatchUpdateStatus(status: 0 | 1) {
           @click="onCreate"
         >
           <Plus class="size-4" />
-          新增角色
+          {{ $t('system.permission.role.createRole') }}
         </Button>
       </template>
     </CrudView>

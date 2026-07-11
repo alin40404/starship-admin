@@ -32,7 +32,7 @@ class AuthController extends Controller
                 request: $request,
             );
 
-            return ApiResponse::error('用户名或密码错误', 401);
+            return ApiResponse::error(__('system::messages.invalid_credentials'), 401);
         }
 
         $admin->forceFill([
@@ -58,7 +58,7 @@ class AuthController extends Controller
             'admin' => $this->formatAdmin($admin),
             'permissions' => $permission->permissionCodes($admin),
             'menus' => $permission->menuTreeForAdmin($admin),
-        ], '登录成功');
+        ], __('system::messages.login_success'));
     }
 
     public function logout(Request $request): JsonResponse
@@ -77,7 +77,7 @@ class AuthController extends Controller
 
         $admin?->currentAccessToken()?->delete();
 
-        return ApiResponse::success(null, '已退出');
+        return ApiResponse::success(null, __('system::messages.logout_success'));
     }
 
     public function me(Request $request, AdminPermissionService $permission): JsonResponse
@@ -99,7 +99,7 @@ class AuthController extends Controller
     {
         $admin = $request->user();
         if (! $admin instanceof Admin) {
-            return ApiResponse::error('未登录', 401);
+            return ApiResponse::error(__('core::api.unauthorized'), 401);
         }
 
         return ApiResponse::success($permission->menuTreeForAdmin($admin));
@@ -109,7 +109,7 @@ class AuthController extends Controller
     {
         $admin = $request->user();
         if (! $admin instanceof Admin) {
-            return ApiResponse::error('未登录', 401);
+            return ApiResponse::error(__('core::api.unauthorized'), 401);
         }
 
         return ApiResponse::success([
@@ -121,7 +121,7 @@ class AuthController extends Controller
     {
         $admin = $request->user();
         if (! $admin instanceof Admin) {
-            return ApiResponse::error('未登录', 401);
+            return ApiResponse::error(__('core::api.unauthorized'), 401);
         }
 
         $data = $request->validate([
@@ -135,14 +135,14 @@ class AuthController extends Controller
         $admin->fill($data);
         $admin->save();
 
-        return ApiResponse::success($this->formatAdmin($admin->fresh()), '个人信息已更新');
+        return ApiResponse::success($this->formatAdmin($admin->fresh()), __('system::messages.profile_updated'));
     }
 
     public function updatePassword(Request $request): JsonResponse
     {
         $admin = $request->user();
         if (! $admin instanceof Admin) {
-            return ApiResponse::error('未登录', 401);
+            return ApiResponse::error(__('core::api.unauthorized'), 401);
         }
 
         $data = $request->validate([
@@ -154,17 +154,17 @@ class AuthController extends Controller
         $newPassword = trim((string) $data['new_password']);
 
         if (! Hash::check($oldPassword, $admin->password)) {
-            return ApiResponse::error('旧密码不正确', 422);
+            return ApiResponse::error(__('system::messages.old_password_invalid'), 422);
         }
 
         if (Hash::check($newPassword, $admin->password)) {
-            return ApiResponse::error('新密码不能与旧密码相同', 422);
+            return ApiResponse::error(__('system::messages.new_password_same'), 422);
         }
 
         $admin->password = Hash::make($newPassword);
         $admin->save();
 
-        return ApiResponse::success(null, '密码修改成功');
+        return ApiResponse::success(null, __('system::messages.password_changed'));
     }
 
     /**

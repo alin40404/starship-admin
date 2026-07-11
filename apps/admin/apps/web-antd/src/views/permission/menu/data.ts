@@ -13,29 +13,64 @@ import { componentKeys } from '#/router/routes';
 import { IconifyIcon } from '@vben/icons';
 import { getPopupContainer } from '@vben/utils';
 import { h } from 'vue';
+import { $t } from '#/locales';
 
 /** 1目录 2菜单 3按钮 4内嵌 5外链 */
-export const MENU_TYPE_OPTIONS = [
-  { label: '目录', value: 1 },
-  { label: '菜单', value: 2 },
-  { label: '按钮', value: 3 },
-  { label: '内嵌', value: 4 },
-  { label: '外链', value: 5 },
-];
+export function getMenuTypeOptions() {
+  return [
+    { label: $t('system.permission.menu.typeOptions.catalog'), value: 1 },
+    { label: $t('system.permission.menu.typeOptions.menu'), value: 2 },
+    { label: $t('system.permission.menu.typeOptions.button'), value: 3 },
+    { label: $t('system.permission.menu.typeOptions.embedded'), value: 4 },
+    { label: $t('system.permission.menu.typeOptions.link'), value: 5 },
+  ];
+}
 
-export const MENU_TYPE_TAG_OPTIONS = [
-  { color: 'processing', label: '目录', value: 1 },
-  { color: 'default', label: '菜单', value: 2 },
-  { color: 'error', label: '按钮', value: 3 },
-  { color: 'warning', label: '内嵌', value: 4 },
-  { color: 'success', label: '外链', value: 5 },
-];
+export function getMenuTypeTagOptions() {
+  return [
+    {
+      color: 'processing',
+      label: $t('system.permission.menu.typeOptions.catalog'),
+      value: 1,
+    },
+    {
+      color: 'default',
+      label: $t('system.permission.menu.typeOptions.menu'),
+      value: 2,
+    },
+    {
+      color: 'error',
+      label: $t('system.permission.menu.typeOptions.button'),
+      value: 3,
+    },
+    {
+      color: 'warning',
+      label: $t('system.permission.menu.typeOptions.embedded'),
+      value: 4,
+    },
+    {
+      color: 'success',
+      label: $t('system.permission.menu.typeOptions.link'),
+      value: 5,
+    },
+  ];
+}
 
 /** 侧栏显示 visible：1 显示 / 0 隐藏 */
-export const MENU_VISIBLE_TAG_OPTIONS = [
-  { color: 'success', label: '显示', value: 1 },
-  { color: 'default', label: '隐藏', value: 0 },
-];
+export function getMenuVisibleTagOptions() {
+  return [
+    {
+      color: 'success',
+      label: $t('system.permission.menu.visible.show'),
+      value: 1,
+    },
+    {
+      color: 'default',
+      label: $t('system.permission.menu.visible.hide'),
+      value: 0,
+    },
+  ];
+}
 
 /** 徽标样式展示名（搜索、筛选用） */
 export const BADGE_VARIANT_DISPLAY: Record<string, string> = {
@@ -171,35 +206,35 @@ export function useColumns(
       field: 'title',
       fixed: 'left',
       slots: { default: 'title' },
-      title: '标题',
+      title: $t('system.permission.menu.title'),
       treeNode: true,
       width: 240,
     },
     {
       align: 'center',
-      cellRender: { name: 'CellTag', options: MENU_TYPE_TAG_OPTIONS },
+      cellRender: { name: 'CellTag', options: getMenuTypeTagOptions() },
       field: 'type',
-      title: '类型',
+      title: $t('system.permission.menu.type'),
       width: 96,
     },
     {
       field: 'name',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 140,
-      title: '内部名称',
+      title: $t('system.permission.menu.internalName'),
     },
     {
       align: 'left',
       field: 'permission',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 160,
-      title: '权限标识',
+      title: $t('system.permission.menu.permission'),
     },
     {
       align: 'center',
       field: 'module',
       slots: { default: 'module' },
-      title: '模块',
+      title: $t('system.permission.menu.module'),
       width: 140,
     },
     {
@@ -207,13 +242,13 @@ export function useColumns(
       field: 'path',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 160,
-      title: '路由路径',
+      title: $t('system.permission.menu.path'),
     },
     {
       field: 'component',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 180,
-      title: '页面组件',
+      title: $t('system.permission.menu.component'),
       visible: false,
     },
     {
@@ -239,17 +274,17 @@ export function useColumns(
           }
         : undefined,
       field: 'sort',
-      title: '排序',
+      title: $t('system.permission.menu.sort'),
       width: 100,
     },
     {
       align: 'center',
       cellRender: {
         name: 'CellTag',
-        options: MENU_VISIBLE_TAG_OPTIONS,
+        options: getMenuVisibleTagOptions(),
       },
       field: 'visible',
-      title: '侧栏显示',
+      title: $t('system.permission.menu.sidebarVisible'),
       width: 96,
     },
     {
@@ -266,7 +301,7 @@ export function useColumns(
         name: 'CellSwitch',
       },
       field: 'status',
-      title: '状态',
+      title: $t('system.permission.menu.status'),
       width: 100,
     },
     {
@@ -274,7 +309,7 @@ export function useColumns(
       cellRender: {
         attrs: {
           nameField: 'name',
-          nameTitle: '菜单',
+          nameTitle: $t('system.permission.menu.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -283,26 +318,26 @@ export function useColumns(
             code: 'append',
             show: (row: MenuTreeNode) =>
               row.type !== 3 && access.can(MENU_PERMISSIONS.APPEND),
-            text: '新增下级',
+            text: $t('system.shared.appendChild'),
             type: 'link',
           },
           {
             code: 'edit',
             show: () => access.can(MENU_PERMISSIONS.UPDATE),
-            text: '编辑',
+            text: $t('common.edit'),
             type: 'link',
           },
           {
             code: 'delete',
             danger: true,
             show: () => access.can(MENU_PERMISSIONS.DELETE),
-            text: '删除',
+            text: $t('common.delete'),
             type: 'link',
           },
         ],
       },
       fixed: 'right',
-      title: '操作',
+      title: $t('crud.columnActions'),
       width: 200,
     },
   ];
@@ -328,22 +363,22 @@ export function buildMenuFormSchema(params: {
         buttonStyle: 'solid',
         class: 'w-full flex flex-wrap gap-1',
         optionType: 'button',
-        options: MENU_TYPE_OPTIONS,
+        options: getMenuTypeOptions(),
       },
       defaultValue: 2,
       fieldName: 'type',
       formItemClass: 'col-span-2 md:col-span-2',
-      label: '类型',
+      label: $t('system.permission.menu.type'),
       rules: 'selectRequired',
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: '请输入',
+        placeholder: $t('ui.placeholder.input'),
       },
       fieldName: 'name',
-      label: '菜单名称',
+      label: $t('system.permission.menu.menuName'),
       rules: 'required',
     },
     {
@@ -369,7 +404,7 @@ export function buildMenuFormSchema(params: {
         },
         getPopupContainer,
         labelField: 'meta.title',
-        placeholder: '请选择',
+        placeholder: $t('ui.placeholder.select'),
         showSearch: true,
         treeDefaultExpandAll: true,
         treeIcon: false,
@@ -378,7 +413,7 @@ export function buildMenuFormSchema(params: {
         valueField: 'id',
       },
       fieldName: 'parent_id',
-      label: '上级菜单',
+      label: $t('system.permission.menu.parent'),
       renderComponentContent() {
         return {
           title({ label, meta }: { label: string; meta: Recordable<any> }) {
@@ -391,17 +426,17 @@ export function buildMenuFormSchema(params: {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: '请输入',
+        placeholder: $t('ui.placeholder.input'),
       },
       fieldName: 'title',
-      label: '标题',
+      label: $t('system.permission.menu.title'),
       rules: 'required',
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: '请输入',
+        placeholder: $t('ui.placeholder.input'),
       },
       dependencies: {
         rules: (values) =>
@@ -410,21 +445,21 @@ export function buildMenuFormSchema(params: {
         triggerFields: ['type'],
       },
       fieldName: 'path',
-      label: '路由地址',
+      label: $t('system.permission.menu.routePath'),
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: '须为已有菜单的路由地址',
+        placeholder: $t('system.permission.menu.activePathPlaceholder'),
       },
       dependencies: {
         show: (values) => typeIn(values, [2, 4]),
         triggerFields: ['type'],
       },
       fieldName: 'active_path',
-      help: '跳转到当前路由时要在侧栏高亮的菜单路径；需与某条菜单的「路由地址」一致，以 / 开头。',
-      label: '激活路径',
+      help: $t('system.permission.menu.activePathHelp'),
+      label: $t('system.permission.menu.activePath'),
     },
     {
       component: 'AutoComplete',
@@ -435,7 +470,7 @@ export function buildMenuFormSchema(params: {
           return option.value.toLowerCase().includes(input.toLowerCase());
         },
         options: componentKeys.map((v) => ({ value: v })),
-        placeholder: '选择或输入页面路径',
+        placeholder: $t('system.permission.menu.componentPlaceholder'),
       },
       dependencies: {
         rules: (values) => (Number(values.type) === 2 ? 'required' : null),
@@ -443,7 +478,7 @@ export function buildMenuFormSchema(params: {
         triggerFields: ['type'],
       },
       fieldName: 'component',
-      label: '页面组件',
+      label: $t('system.permission.menu.component'),
     },
     {
       component: 'Input',
@@ -454,30 +489,36 @@ export function buildMenuFormSchema(params: {
       dependencies: {
         rules: (values) =>
           Number(values.type) === 5
-            ? z.string().min(1, '请填写外链地址').url('请输入合法 URL')
+            ? z
+                .string()
+                .min(1, $t('system.permission.menu.linkUrlRequired'))
+                .url($t('system.permission.menu.invalidUrl'))
             : null,
         show: (values) => typeIn(values, [5]),
         triggerFields: ['type'],
       },
       fieldName: 'link_url',
-      label: '外链地址',
+      label: $t('system.permission.menu.linkUrl'),
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: 'https:// 开头的内嵌页面 URL',
+        placeholder: 'https://',
       },
       dependencies: {
         rules: (values) =>
           Number(values.type) === 4
-            ? z.string().min(1, '请填写内嵌地址').url('请输入合法 URL')
+            ? z
+                .string()
+                .min(1, $t('system.permission.menu.iframeSrcRequired'))
+                .url($t('system.permission.menu.invalidUrl'))
             : null,
         show: (values) => typeIn(values, [4]),
         triggerFields: ['type'],
       },
       fieldName: 'iframe_src',
-      label: '内嵌地址',
+      label: $t('system.permission.menu.iframeSrc'),
     },
     {
       component: 'IconPicker',
@@ -490,7 +531,7 @@ export function buildMenuFormSchema(params: {
         triggerFields: ['type'],
       },
       fieldName: 'icon',
-      label: '图标',
+      label: $t('system.permission.menu.icon'),
     },
     {
       component: 'IconPicker',
@@ -503,13 +544,13 @@ export function buildMenuFormSchema(params: {
         triggerFields: ['type'],
       },
       fieldName: 'active_icon',
-      label: '激活图标',
+      label: $t('system.permission.menu.activeIcon'),
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: '请输入',
+        placeholder: $t('ui.placeholder.input'),
       },
       dependencies: {
         rules: (values) => (Number(values.type) === 3 ? 'required' : null),
@@ -517,7 +558,7 @@ export function buildMenuFormSchema(params: {
         triggerFields: ['type'],
       },
       fieldName: 'permission',
-      label: '权限标识',
+      label: $t('system.permission.menu.permission'),
     },
     {
       component: 'RadioGroup',
@@ -526,13 +567,13 @@ export function buildMenuFormSchema(params: {
         class: 'w-full',
         optionType: 'button',
         options: [
-          { label: '已启用', value: 1 },
-          { label: '已禁用', value: 0 },
+          { label: $t('system.shared.status.enabled'), value: 1 },
+          { label: $t('system.shared.status.disabled'), value: 0 },
         ],
       },
       defaultValue: 1,
       fieldName: 'status',
-      label: '状态',
+      label: $t('system.permission.menu.status'),
     },
     {
       component: 'Select',
@@ -540,17 +581,17 @@ export function buildMenuFormSchema(params: {
         allowClear: true,
         class: 'w-full',
         options: [
-          { label: '圆点', value: 'dot' },
-          { label: '文字', value: 'normal' },
+          { label: $t('system.permission.menu.badgeDot'), value: 'dot' },
+          { label: $t('system.permission.menu.badgeText'), value: 'normal' },
         ],
-        placeholder: '请选择',
+        placeholder: $t('ui.placeholder.select'),
       },
       dependencies: {
         show: (values) => !typeIn(values, [3]),
         triggerFields: ['type'],
       },
       fieldName: 'badge_type',
-      label: '徽标类型',
+      label: $t('system.permission.menu.badgeType'),
     },
     {
       component: 'Input',
@@ -559,7 +600,7 @@ export function buildMenuFormSchema(params: {
           allowClear: true,
           class: 'w-full',
           disabled: values.badge_type !== 'normal',
-          placeholder: '请输入',
+          placeholder: $t('ui.placeholder.input'),
         };
       },
       dependencies: {
@@ -567,7 +608,7 @@ export function buildMenuFormSchema(params: {
         triggerFields: ['type', 'badge_type'],
       },
       fieldName: 'badge',
-      label: '徽标内容',
+      label: $t('system.permission.menu.badge'),
     },
     {
       component: 'Select',
@@ -588,7 +629,7 @@ export function buildMenuFormSchema(params: {
             );
           },
           options: BADGE_VARIANT_OPTIONS,
-          placeholder: '请选择',
+          placeholder: $t('ui.placeholder.select'),
           showSearch: true,
         };
       },
@@ -597,7 +638,7 @@ export function buildMenuFormSchema(params: {
         triggerFields: ['type', 'badge_variants'],
       },
       fieldName: 'badge_variants',
-      label: '徽标样式',
+      label: $t('system.permission.menu.badgeVariants'),
       renderComponentContent() {
         return {
           option: (slotProps: Record<string, unknown>) => {
@@ -615,7 +656,7 @@ export function buildMenuFormSchema(params: {
       },
       defaultValue: 0,
       fieldName: 'sort',
-      label: '排序',
+      label: $t('system.permission.menu.sort'),
     },
     {
       component: 'Textarea',
@@ -625,7 +666,7 @@ export function buildMenuFormSchema(params: {
       },
       fieldName: 'remark',
       formItemClass: 'col-span-2 md:col-span-2 items-start',
-      label: '备注',
+      label: $t('system.permission.menu.remark'),
     },
     {
       component: 'Divider',
@@ -642,7 +683,7 @@ export function buildMenuFormSchema(params: {
       hideLabel: true,
       renderComponentContent() {
         return {
-          default: () => '其它设置',
+          default: () => $t('system.permission.menu.otherSettings'),
         };
       },
     },
@@ -659,7 +700,7 @@ export function buildMenuFormSchema(params: {
       formItemClass: 'col-span-2 md:col-span-1',
       renderComponentContent() {
         return {
-          default: () => '缓存标签页',
+          default: () => $t('system.permission.menu.keepAlive'),
         };
       },
     },
@@ -675,7 +716,7 @@ export function buildMenuFormSchema(params: {
       formItemClass: 'col-span-2 md:col-span-1',
       renderComponentContent() {
         return {
-          default: () => '固定在标签',
+          default: () => $t('system.permission.menu.affixTab'),
         };
       },
     },
@@ -691,7 +732,7 @@ export function buildMenuFormSchema(params: {
       formItemClass: 'col-span-2 md:col-span-1',
       renderComponentContent() {
         return {
-          default: () => '隐藏菜单',
+          default: () => $t('system.permission.menu.hideMenu'),
         };
       },
     },
@@ -707,7 +748,7 @@ export function buildMenuFormSchema(params: {
       formItemClass: 'col-span-2 md:col-span-1',
       renderComponentContent() {
         return {
-          default: () => '隐藏子菜单',
+          default: () => $t('system.permission.menu.hideSubmenu'),
         };
       },
     },
@@ -723,7 +764,7 @@ export function buildMenuFormSchema(params: {
       formItemClass: 'col-span-2 md:col-span-1',
       renderComponentContent() {
         return {
-          default: () => '在面包屑中隐藏',
+          default: () => $t('system.permission.menu.hideInBreadcrumb'),
         };
       },
     },
@@ -739,7 +780,7 @@ export function buildMenuFormSchema(params: {
       formItemClass: 'col-span-2 md:col-span-1',
       renderComponentContent() {
         return {
-          default: () => '在标签栏中隐藏',
+          default: () => $t('system.permission.menu.hideInTab'),
         };
       },
     },

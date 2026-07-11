@@ -9,6 +9,8 @@ import { useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
 import { useElementSize } from '@vueuse/core';
+import { $t } from '@vben/locales';
+
 import { Button, message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -20,7 +22,7 @@ import {
 import { CONFIG_PERMISSIONS } from '#/constants/config-permissions';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 
-import { PARAM_TYPE_TAG_OPTIONS } from '../data';
+import { getParamTypeTagOptions } from '../data';
 import ParamForm from './param-form.vue';
 
 const props = defineProps<{
@@ -71,7 +73,7 @@ function onActionClick({ code, row }: OnActionClickParams<ConfigRow>) {
 
 async function onDelete(row: ConfigRow) {
   await deleteConfig(row.id);
-  message.success('已删除');
+  message.success($t('crud.deleted'));
   clearSelection();
   onRefresh();
 }
@@ -80,14 +82,16 @@ function onBatchDelete() {
   const ids = selectedRows.value.map((row) => row.id);
   if (ids.length === 0) return;
   Modal.confirm({
-    content: `确定删除选中的 ${ids.length} 个运行参数吗？`,
-    okText: '删除',
+    content: $t('system.platform.config.param.batchDeleteConfirm', [ids.length]),
+    okText: $t('common.delete'),
     okType: 'danger',
-    cancelText: '取消',
-    title: '批量删除',
+    cancelText: $t('common.cancel'),
+    title: $t('system.shared.batchDelete'),
     async onOk() {
       const result = await batchDeleteConfigs(ids);
-      message.success(`已删除 ${result.deleted} 个参数`);
+      message.success(
+        $t('system.platform.config.param.batchDeleted', [result.deleted]),
+      );
       clearSelection();
       onRefresh();
     },
@@ -110,38 +114,38 @@ const [Grid, gridApi] = useVbenVxeGrid<ConfigRow>({
         type: 'checkbox',
         width: 48,
       },
-      { align: 'left', field: 'name', minWidth: 140, title: '名称' },
-      { align: 'left', field: 'key', minWidth: 160, title: '参数键' },
+      { align: 'left', field: 'name', minWidth: 140, title: $t('system.platform.config.param.name') },
+      { align: 'left', field: 'key', minWidth: 160, title: $t('system.platform.config.param.key') },
       {
         align: 'left',
         field: 'value',
         formatter: ({ cellValue }: { cellValue: ConfigRow['value'] }) =>
           cellValue ?? TABLE_CELL_EMPTY,
         minWidth: 180,
-        title: '参数值',
+        title: $t('system.platform.config.param.value'),
       },
       {
         align: 'center',
-        cellRender: { name: 'CellTag', options: [...PARAM_TYPE_TAG_OPTIONS] },
+        cellRender: { name: 'CellTag', options: [...getParamTypeTagOptions()] },
         field: 'type',
-        title: '类型',
+        title: $t('system.platform.config.param.valueType'),
         width: 96,
       },
-      { field: 'sort', title: '排序', width: 80 },
+      { field: 'sort', title: $t('system.platform.config.param.sort'), width: 80 },
       {
         align: 'left',
         field: 'remark',
         formatter: ({ cellValue }: { cellValue: ConfigRow['remark'] }) =>
           cellValue ?? TABLE_CELL_EMPTY,
         minWidth: 160,
-        title: '备注',
+        title: $t('system.platform.config.param.remark'),
       },
       {
         align: 'center',
         cellRender: {
           attrs: {
             nameField: 'name',
-            nameTitle: '参数',
+            nameTitle: $t('system.platform.config.param.entity'),
             onClick: onActionClick,
           },
           name: 'CellOperation',
@@ -149,20 +153,20 @@ const [Grid, gridApi] = useVbenVxeGrid<ConfigRow>({
             {
               code: 'edit',
               show: () => props.canManage,
-              text: '编辑',
+              text: $t('common.edit'),
               type: 'link',
             },
             {
               code: 'delete',
               danger: true,
               show: () => paramAccess.can(CONFIG_PERMISSIONS.DELETE),
-              text: '删除',
+              text: $t('common.delete'),
               type: 'link',
             },
           ],
         },
         fixed: 'right',
-        title: '操作',
+        title: $t('crud.columnActions'),
         width: 140,
       },
     ],
@@ -205,10 +209,10 @@ watch(
               danger
               @click="onBatchDelete"
             >
-              批量删除（{{ selectedRows.length }}）
+              {{ $t('system.shared.batchDeleteWithCount', [selectedRows.length]) }}
             </Button>
             <Button class="ml-2" type="link" @click="clearSelection">
-              取消选择
+              {{ $t('system.shared.clearSelection') }}
             </Button>
           </div>
           <Button
@@ -217,7 +221,7 @@ watch(
             @click="onCreate"
           >
             <Plus class="size-4" />
-            新增参数
+            {{ $t('system.platform.config.param.createParam') }}
           </Button>
         </template>
       </Grid>
