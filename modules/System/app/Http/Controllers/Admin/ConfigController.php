@@ -7,6 +7,7 @@ use Starship\Core\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\System\App\Models\Setting;
+use Modules\System\App\Support\SiteBrandingSync;
 use Modules\System\App\Support\SiteConfig;
 use Modules\System\App\Support\StorageConfigRegistrar;
 
@@ -67,6 +68,8 @@ class ConfigController extends Controller
 
         StorageConfigRegistrar::reset();
         StorageConfigRegistrar::apply();
+
+        SiteBrandingSync::afterConfigBatchUpsert($data['items']);
 
         return ApiResponse::success(null, __('system::messages.config_saved'));
     }

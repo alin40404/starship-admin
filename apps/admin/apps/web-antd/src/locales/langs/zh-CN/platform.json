@@ -164,7 +164,11 @@
         },
         "logo": {
           "label": "系统 Logo",
-          "remark": "建议尺寸 128×128，留空则使用默认图标"
+          "remark": "建议尺寸 128×128，留空则使用默认图标；保存后会按「站点图标」路径自动生成 favicon"
+        },
+        "favicon": {
+          "label": "站点图标",
+          "remark": "浏览器标签页 favicon 路径，默认 /favicon.ico；修改 Logo 时会自动生成，也可手动填写"
         },
         "beian": {
           "label": "备案号",

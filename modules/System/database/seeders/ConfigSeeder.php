@@ -30,6 +30,15 @@ class ConfigSeeder extends Seeder
                 'remark' => '建议尺寸 128×128，留空则使用默认图标',
             ],
             [
+                'key' => 'site.favicon',
+                'name' => '站点图标',
+                'value' => '/favicon.ico',
+                'group_name' => 'basic',
+                'type' => 'string',
+                'sort' => 25,
+                'remark' => '浏览器标签页 favicon 路径，修改 Logo 时会自动生成；也可手动填写',
+            ],
+            [
                 'key' => 'site.beian',
                 'name' => '备案号',
                 'value' => '',
