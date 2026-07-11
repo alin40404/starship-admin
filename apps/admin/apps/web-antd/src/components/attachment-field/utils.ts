@@ -6,6 +6,7 @@ import type { AttachmentAcceptMode } from './types';
 const IMAGE_EXTENSIONS = new Set([
   'bmp',
   'gif',
+  'ico',
   'jpeg',
   'jpg',
   'png',

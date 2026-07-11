@@ -51,6 +51,12 @@ class ConfigController extends Controller
             'items.*.remark' => ['nullable', 'string', 'max:255'],
         ]);
 
+        $keys = collect($data['items'])->pluck('key')->all();
+        $previousValues = Setting::query()
+            ->whereIn('key', $keys)
+            ->pluck('value', 'key')
+            ->all();
+
         foreach ($data['items'] as $item) {
             $key = $item['key'];
             $payload = collect($item)
@@ -80,7 +86,7 @@ class ConfigController extends Controller
         StorageConfigRegistrar::reset();
         StorageConfigRegistrar::apply();
 
-        SiteBrandingSync::afterConfigBatchUpsert($data['items']);
+        SiteBrandingSync::afterConfigBatchUpsert($data['items'], $previousValues);
 
         return ApiResponse::success(null, __('system::messages.config_saved'));
     }

@@ -3,108 +3,68 @@
 namespace Modules\System\App\Support;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 /**
- * 由站点 Logo 生成 favicon 文件（写入 site.favicon 配置指向的本地路径）。
+ * 由站点 Logo 生成 favicon，写入上传目录（不覆盖 public/favicon.ico）。
  */
 final class SiteFaviconGenerator
 {
     public const DEFAULT_PUBLIC_PATH = '/favicon.ico';
 
+    /** 固定写入 public disk 的相对路径 */
+    public const UPLOAD_RELATIVE_PATH = 'uploads/favicon.ico';
+
     private const FAVICON_SIZE = 32;
 
-    public static function generateFromLogo(string $logoUrl, string $faviconPath = self::DEFAULT_PUBLIC_PATH): bool
+    /**
+     * @return string|null 可访问 URL，失败返回 null
+     */
+    public static function generateFromLogo(string $logoUrl): ?string
     {
         $logoUrl = trim($logoUrl);
-        $faviconPath = trim($faviconPath) ?: self::DEFAULT_PUBLIC_PATH;
 
         if ($logoUrl === '' || ! extension_loaded('gd')) {
-            return false;
-        }
-
-        if (str_starts_with($faviconPath, 'http://') || str_starts_with($faviconPath, 'https://')) {
-            return false;
+            return null;
         }
 
         $binary = self::loadImageBinary($logoUrl);
         if ($binary === null) {
-            return false;
+            return null;
         }
 
         $image = @imagecreatefromstring($binary);
         if ($image === false) {
-            return false;
+            return null;
         }
 
         $resized = imagescale($image, self::FAVICON_SIZE, self::FAVICON_SIZE, IMG_BILINEAR_FIXED);
         imagedestroy($image);
 
         if ($resized === false) {
-            return false;
+            return null;
         }
 
         imagealphablending($resized, false);
         imagesavealpha($resized, true);
 
-        $ok = false;
-        foreach (self::resolveLocalTargets($faviconPath) as $target) {
-            $directory = dirname($target);
-            if (! is_dir($directory) && ! @mkdir($directory, 0755, true) && ! is_dir($directory)) {
-                continue;
-            }
-
-            if (@imagepng($resized, $target)) {
-                $ok = true;
-            }
-        }
-
+        ob_start();
+        $written = @imagepng($resized);
+        $pngData = ob_get_clean();
         imagedestroy($resized);
 
-        return $ok;
-    }
-
-    /**
-     * @return list<string>
-     */
-    private static function resolveLocalTargets(string $publicPath): array
-    {
-        $path = '/'.ltrim(parse_url($publicPath, PHP_URL_PATH) ?? $publicPath, '/');
-        $targets = [];
-
-        if (str_starts_with($path, '/storage/')) {
-            $relative = substr($path, strlen('/storage/'));
-            $storageTarget = storage_path('app/public/'.ltrim($relative, '/'));
-            $targets[] = $storageTarget;
-            $publicTarget = public_path('storage/'.ltrim($relative, '/'));
-            if ($publicTarget !== $storageTarget) {
-                $targets[] = $publicTarget;
-            }
-
-            return array_values(array_unique($targets));
+        if (! $written || ! is_string($pngData) || $pngData === '') {
+            return null;
         }
 
-        $backendPublic = public_path(ltrim($path, '/'));
-        $targets[] = $backendPublic;
+        StorageConfigRegistrar::apply();
+        $disk = StorageConfigRegistrar::defaultDisk();
 
-        $adminWebPublic = self::adminWebPublicPath(ltrim($path, '/'));
-        if ($adminWebPublic !== null && $adminWebPublic !== $backendPublic) {
-            $targets[] = $adminWebPublic;
+        if (! Storage::disk($disk)->put(self::UPLOAD_RELATIVE_PATH, $pngData)) {
+            return null;
         }
 
-        return array_values(array_unique($targets));
-    }
-
-    private static function adminWebPublicPath(string $relativePath): ?string
-    {
-        $root = dirname(base_path());
-        $full = $root.DIRECTORY_SEPARATOR.'apps'
-            .DIRECTORY_SEPARATOR.'admin'
-            .DIRECTORY_SEPARATOR.'apps'
-            .DIRECTORY_SEPARATOR.'web-antd'
-            .DIRECTORY_SEPARATOR.'public'
-            .DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
-
-        return $full;
+        return Storage::disk($disk)->url(self::UPLOAD_RELATIVE_PATH);
     }
 
     private static function loadImageBinary(string $logoUrl): ?string
@@ -154,10 +114,26 @@ final class SiteFaviconGenerator
 
         if (str_starts_with($path, '/')) {
             $publicPath = public_path(ltrim($path, '/'));
+            if (is_file($publicPath)) {
+                return $publicPath;
+            }
 
-            return is_file($publicPath) ? $publicPath : null;
+            return self::adminWebPublicPath(ltrim($path, '/'));
         }
 
         return null;
+    }
+
+    private static function adminWebPublicPath(string $relativePath): ?string
+    {
+        $root = dirname(base_path());
+        $full = $root.DIRECTORY_SEPARATOR.'apps'
+            .DIRECTORY_SEPARATOR.'admin'
+            .DIRECTORY_SEPARATOR.'apps'
+            .DIRECTORY_SEPARATOR.'web-antd'
+            .DIRECTORY_SEPARATOR.'public'
+            .DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
+
+        return is_file($full) ? $full : null;
     }
 }

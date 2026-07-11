@@ -26,6 +26,7 @@ import {
   getConfigSelectOptions,
   isAttachmentImageField,
   isHomePathSelectField,
+  configAttachmentPlaceholder,
   isStorageFieldVisible,
   mapMenuTreeForHomePathCascader,
   mergeLegacyHomePathCascaderOption,
@@ -217,7 +218,7 @@ defineExpose({
                 accept="image"
                 :disabled="!props.canManage"
                 :multiple="false"
-                :placeholder="$t('platform.config.logoPlaceholder')"
+                :placeholder="configAttachmentPlaceholder(row.key)"
                 :value="draftValues[row.key]"
                 @update:value="(val) => (draftValues[row.key] = String(val ?? ''))"
               />

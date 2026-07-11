@@ -118,6 +118,7 @@
     "saveConfig": "Save Settings",
     "saved": "Settings saved",
     "logoPlaceholder": "Select or upload logo",
+    "faviconPlaceholder": "Select or upload site icon",
     "selectOptions": {
       "mailVerifyNone": "None",
       "smsAliyun": "Alibaba Cloud SMS",
@@ -164,11 +165,11 @@
         },
         "logo": {
           "label": "System Logo",
-          "remark": "Recommended size 128×128; auto-generates favicon at the Site Icon path when saved"
+          "remark": "Recommended size 128×128; auto-generates favicon to uploads/favicon.ico when saved"
         },
         "favicon": {
           "label": "Site Icon",
-          "remark": "Favicon path for browser tabs, default /favicon.ico; auto-generated when Logo changes, or edit manually"
+          "remark": "Browser tab icon; auto-generated to uploads/favicon.ico when Logo changes; defaults to /favicon.ico when empty"
         },
         "beian": {
           "label": "ICP Filing Number",

@@ -11,8 +11,9 @@ final class SiteBrandingSync
 {
     /**
      * @param  list<array<string, mixed>>  $items
+     * @param  array<string, mixed>  $previousValues
      */
-    public static function afterConfigBatchUpsert(array $items): void
+    public static function afterConfigBatchUpsert(array $items, array $previousValues = []): void
     {
         SettingStore::forget();
 
@@ -27,28 +28,26 @@ final class SiteBrandingSync
             return;
         }
 
-        $faviconPath = $itemsByKey->has(SiteConfig::KEY_FAVICON)
-            ? trim((string) ($itemsByKey->get(SiteConfig::KEY_FAVICON)['value'] ?? ''))
-            : trim((string) (Setting::query()->where('key', SiteConfig::KEY_FAVICON)->value('value') ?? ''));
-
-        if ($faviconPath === '' || str_starts_with($faviconPath, 'http://') || str_starts_with($faviconPath, 'https://')) {
-            $faviconPath = SiteFaviconGenerator::DEFAULT_PUBLIC_PATH;
+        $previousLogo = trim((string) ($previousValues[SiteConfig::KEY_LOGO] ?? ''));
+        if ($logo === $previousLogo) {
+            return;
         }
 
-        SiteFaviconGenerator::generateFromLogo($logo, $faviconPath);
-
-        if (! $itemsByKey->has(SiteConfig::KEY_FAVICON)) {
-            Setting::query()->updateOrCreate(
-                ['key' => SiteConfig::KEY_FAVICON],
-                [
-                    'name' => '站点图标',
-                    'value' => $faviconPath,
-                    'group_name' => 'basic',
-                    'type' => 'string',
-                    'sort' => 25,
-                    'remark' => '浏览器标签页图标路径，修改 Logo 时会自动生成；也可手动填写',
-                ]
-            );
+        $faviconUrl = SiteFaviconGenerator::generateFromLogo($logo);
+        if ($faviconUrl === null) {
+            return;
         }
+
+        Setting::query()->updateOrCreate(
+            ['key' => SiteConfig::KEY_FAVICON],
+            [
+                'name' => '站点图标',
+                'value' => $faviconUrl,
+                'group_name' => 'basic',
+                'type' => 'string',
+                'sort' => 25,
+                'remark' => '浏览器标签页图标，修改 Logo 时自动生成到 uploads/favicon.ico；也可手动填写',
+            ]
+        );
     }
 }

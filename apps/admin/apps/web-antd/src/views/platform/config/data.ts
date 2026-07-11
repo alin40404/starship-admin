@@ -105,13 +105,20 @@ export function isStorageFieldVisible(key: string, driver: string): boolean {
 }
 
 /** 使用附件图片上传组件的配置项 key */
-export const CONFIG_ATTACHMENT_IMAGE_KEYS = ['site.logo'] as const;
+export const CONFIG_ATTACHMENT_IMAGE_KEYS = ['site.logo', 'site.favicon'] as const;
 
 /** 默认主页：从菜单路由下拉选择 */
 export const SITE_FIXED_PAGE_KEY = 'site.fixed_page';
 
 export function isAttachmentImageField(key: string): boolean {
   return (CONFIG_ATTACHMENT_IMAGE_KEYS as readonly string[]).includes(key);
+}
+
+export function configAttachmentPlaceholder(key: string): string {
+  if (key === 'site.favicon') {
+    return $t('platform.config.faviconPlaceholder');
+  }
+  return $t('platform.config.logoPlaceholder');
 }
 
 export function isHomePathSelectField(key: string): boolean {

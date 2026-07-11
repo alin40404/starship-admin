@@ -32,11 +32,11 @@ class ConfigSeeder extends Seeder
             [
                 'key' => 'site.favicon',
                 'name' => '站点图标',
-                'value' => '/favicon.ico',
+                'value' => '',
                 'group_name' => 'basic',
                 'type' => 'string',
                 'sort' => 25,
-                'remark' => '浏览器标签页 favicon 路径，修改 Logo 时会自动生成；也可手动填写',
+                'remark' => '浏览器标签页图标，修改 Logo 时自动生成到 uploads/favicon.ico；留空则使用默认 /favicon.ico',
             ],
             [
                 'key' => 'site.beian',
