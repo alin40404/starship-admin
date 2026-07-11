@@ -10,6 +10,7 @@ import { message } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
 import { createPost, updatePost } from '#/api/system/post';
+import { $t } from '#/locales';
 
 import { buildPostFormSchema } from '../data';
 
@@ -32,8 +33,10 @@ const [Form, formApi] = useVbenForm({
 });
 
 const formTitle = computed(() => {
-  if (readonly.value) return '查看岗位';
-  return editingId.value ? '编辑岗位' : '新增岗位';
+  if (readonly.value) return $t('system.org.post.viewTitle');
+  return editingId.value
+    ? $t('system.org.post.editTitle')
+    : $t('system.org.post.createTitle');
 });
 
 type PopupApi = {
@@ -58,10 +61,10 @@ async function handleConfirm(popupApi: PopupApi) {
   try {
     if (!editingId.value) {
       await createPost(values);
-      message.success('创建成功');
+      message.success($t('crud.created'));
     } else {
       await updatePost(editingId.value, values);
-      message.success('已保存');
+      message.success($t('crud.saved'));
     }
     popupApi.close();
     emits('success');

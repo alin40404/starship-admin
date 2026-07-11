@@ -7,9 +7,10 @@ import { Descriptions, Drawer, Tag } from 'ant-design-vue';
 
 import { fetchLoginLog } from '#/api/monitor';
 import {
-  MONITOR_LOGIN_ACTION_TAG_OPTIONS,
-  MONITOR_LOGIN_STATUS_TAG_OPTIONS,
+  getMonitorLoginActionTagOptions,
+  getMonitorLoginStatusTagOptions,
 } from '#/constants/monitor-permissions';
+import { $t } from '#/locales';
 import { formatDateTime } from '@vben/utils';
 
 const descriptionsLabelStyle = {
@@ -35,13 +36,13 @@ const detail = ref<LoginLogRow | null>(null);
 
 const actionTag = computed(() =>
   detail.value
-    ? resolveTagOption(MONITOR_LOGIN_ACTION_TAG_OPTIONS, detail.value.action)
+    ? resolveTagOption(getMonitorLoginActionTagOptions(), detail.value.action)
     : undefined,
 );
 
 const statusTag = computed(() =>
   detail.value
-    ? resolveTagOption(MONITOR_LOGIN_STATUS_TAG_OPTIONS, detail.value.status)
+    ? resolveTagOption(getMonitorLoginStatusTagOptions(), detail.value.status)
     : undefined,
 );
 
@@ -63,7 +64,7 @@ defineExpose({ open: show });
   <Drawer
     v-model:open="open"
     :loading="loading"
-    title="登录日志详情"
+    :title="$t('system.monitor.loginLog.detailTitle')"
     width="min(92vw, 880px)"
   >
     <Descriptions
@@ -74,19 +75,19 @@ defineExpose({ open: show });
       :label-style="descriptionsLabelStyle"
       size="small"
     >
-      <Descriptions.Item label="账号">{{ detail.username }}</Descriptions.Item>
-      <Descriptions.Item label="动作">
+      <Descriptions.Item :label="$t('system.monitor.loginLog.columnUsername')">{{ detail.username }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('system.monitor.shared.action')">
         <Tag v-if="actionTag" :color="actionTag.color">{{ actionTag.label }}</Tag>
         <span v-else>—</span>
       </Descriptions.Item>
-      <Descriptions.Item label="结果">
+      <Descriptions.Item :label="$t('system.monitor.shared.status')">
         <Tag v-if="statusTag" :color="statusTag.color">{{ statusTag.label }}</Tag>
         <span v-else>—</span>
       </Descriptions.Item>
-      <Descriptions.Item label="说明">{{ detail.message || '—' }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('system.monitor.shared.message')">{{ detail.message || '—' }}</Descriptions.Item>
       <Descriptions.Item label="IP">{{ detail.ip || '—' }}</Descriptions.Item>
       <Descriptions.Item label="User-Agent">{{ detail.user_agent || '—' }}</Descriptions.Item>
-      <Descriptions.Item label="时间">
+      <Descriptions.Item :label="$t('system.monitor.shared.time')">
         {{ detail.created_at ? formatDateTime(detail.created_at) : '—' }}
       </Descriptions.Item>
     </Descriptions>

@@ -9,10 +9,18 @@ import { fetchAdminPage } from '#/api/system/admin';
 import { fetchDepartmentTree, mapDeptForTreeSelect } from '#/api/system/department';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { DEPARTMENT_PERMISSIONS } from '#/constants/department-permissions';
+import { $t } from '#/locales';
 
 export type DepartmentAccessChecker = {
   can: (code: string) => boolean;
 };
+
+function getStatusRadioOptions() {
+  return [
+    { label: $t('system.shared.status.enable'), value: 1 },
+    { label: $t('system.shared.status.disable'), value: 0 },
+  ];
+}
 
 export function useColumns(
   onActionClick: OnActionClickFn<DepartmentTreeNode>,
@@ -36,7 +44,7 @@ export function useColumns(
       align: 'left',
       field: 'name',
       minWidth: 180,
-      title: '部门名称',
+      title: $t('system.org.department.columnName'),
       treeNode: true,
     },
     {
@@ -44,13 +52,13 @@ export function useColumns(
       field: 'leader_name',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 100,
-      title: '部门负责人',
+      title: $t('system.org.department.leader'),
     },
     {
       field: 'phone',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 120,
-      title: '联系电话',
+      title: $t('system.org.department.phone'),
     },
     {
       align: 'center',
@@ -75,12 +83,12 @@ export function useColumns(
           }
         : undefined,
       field: 'sort',
-      title: '排序',
+      title: $t('system.org.shared.sort'),
       width: 100,
     },
     {
       field: 'status',
-      title: '状态',
+      title: $t('system.org.shared.status'),
       width: 100,
       cellRender: {
         attrs: {
@@ -97,7 +105,7 @@ export function useColumns(
       cellRender: {
         attrs: {
           nameField: 'name',
-          nameTitle: '部门',
+          nameTitle: $t('system.org.department.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -105,26 +113,26 @@ export function useColumns(
           {
             code: 'append',
             show: () => access.can(DEPARTMENT_PERMISSIONS.APPEND),
-            text: '新增下级',
+            text: $t('system.shared.appendChild'),
             type: 'link',
           },
           {
             code: 'edit',
             show: () => access.can(DEPARTMENT_PERMISSIONS.UPDATE),
-            text: '编辑',
+            text: $t('common.edit'),
             type: 'link',
           },
           {
             code: 'delete',
             danger: true,
             show: () => access.can(DEPARTMENT_PERMISSIONS.DELETE),
-            text: '删除',
+            text: $t('common.delete'),
             type: 'link',
           },
         ],
       },
       fixed: 'right',
-      title: '操作',
+      title: $t('crud.columnActions'),
       width: 220,
     },
   ];
@@ -149,7 +157,7 @@ export function buildDepartmentFormSchema(params: {
         api: params.parentTreeLoader,
         class: 'w-full',
         fieldNames: { children: 'children', label: 'label', value: 'value' },
-        placeholder: '上级部门（留空为顶级）',
+        placeholder: $t('system.org.department.parentPlaceholder'),
         showSearch: true,
         treeDefaultExpandAll: true,
         treeIcon: false,
@@ -157,13 +165,13 @@ export function buildDepartmentFormSchema(params: {
       },
       defaultValue: 0,
       fieldName: 'parent_id',
-      label: '上级部门',
+      label: $t('system.org.department.parent'),
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'name',
-      label: '部门名称',
+      label: $t('system.org.department.columnName'),
       rules: 'required',
     },
     {
@@ -173,30 +181,30 @@ export function buildDepartmentFormSchema(params: {
         api: loadAdminOptions,
         class: 'w-full',
         optionFilterProp: 'label',
-        placeholder: '选择部门负责人',
+        placeholder: $t('system.org.department.leaderPlaceholder'),
         showSearch: true,
       },
       fieldName: 'leader_id',
-      label: '部门负责人',
+      label: $t('system.org.department.leader'),
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'phone',
-      label: '联系电话',
+      label: $t('system.org.department.phone'),
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'email',
-      label: '邮箱',
+      label: $t('system.org.shared.email'),
     },
     {
       component: 'InputNumber',
       componentProps: { class: 'w-full', min: 0 },
       defaultValue: 0,
       fieldName: 'sort',
-      label: '排序',
+      label: $t('system.org.shared.sort'),
     },
     {
       component: 'RadioGroup',
@@ -204,21 +212,18 @@ export function buildDepartmentFormSchema(params: {
         buttonStyle: 'solid',
         class: 'w-full',
         optionType: 'button',
-        options: [
-          { label: '启用', value: 1 },
-          { label: '禁用', value: 0 },
-        ],
+        options: getStatusRadioOptions(),
       },
       defaultValue: 1,
       fieldName: 'status',
-      label: '状态',
+      label: $t('system.org.shared.status'),
     },
     {
       component: 'Textarea',
       componentProps: { class: 'w-full', rows: 2 },
       fieldName: 'remark',
       formItemClass: 'col-span-full w-full items-start',
-      label: '备注',
+      label: $t('system.org.shared.remark'),
     },
   ];
 }
@@ -227,8 +232,12 @@ export async function loadDepartmentTreeForParent(
   excludeId?: number,
 ): Promise<ReturnType<typeof mapDeptForTreeSelect>> {
   const tree = await fetchDepartmentTree(true);
+  const rootOption = {
+    label: $t('system.org.department.rootOption'),
+    value: 0,
+  };
   if (!excludeId) {
-    return [{ label: '顶级部门', value: 0 }, ...mapDeptForTreeSelect(tree)];
+    return [rootOption, ...mapDeptForTreeSelect(tree)];
   }
   function filter(nodes: DepartmentTreeNode[]): DepartmentTreeNode[] {
     return nodes
@@ -238,8 +247,5 @@ export async function loadDepartmentTreeForParent(
         children: n.children?.length ? filter(n.children) : [],
       }));
   }
-  return [
-    { label: '顶级部门', value: 0 },
-    ...mapDeptForTreeSelect(filter(tree)),
-  ];
+  return [rootOption, ...mapDeptForTreeSelect(filter(tree))];
 }

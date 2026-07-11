@@ -366,5 +366,120 @@
         "batchDeleted": "已删除 {0} 个参数"
       }
     }
+  },
+  "monitor": {
+    "shared": {
+      "keyword": "关键词",
+      "module": "模块",
+      "method": "方法",
+      "action": "动作",
+      "status": "结果",
+      "message": "说明",
+      "operator": "操作人",
+      "time": "时间",
+      "exceptionClass": "异常类",
+      "detail": "详情",
+      "actionLogin": "登录",
+      "actionLogout": "退出",
+      "statusSuccess": "成功",
+      "statusFailed": "失败"
+    },
+    "operationLog": {
+      "entity": "操作日志",
+      "hint": "记录后台写操作（新增、更新、删除等），敏感字段已脱敏。",
+      "searchPlaceholder": "搜索标题/操作人/URL",
+      "keywordPlaceholder": "标题 / 操作人 / URL",
+      "modulePlaceholder": "请选择模块",
+      "methodPlaceholder": "POST / PUT",
+      "columnTitle": "操作标题",
+      "columnModule": "模块",
+      "columnMethod": "方法",
+      "columnStatusCode": "状态码",
+      "columnTime": "操作时间",
+      "columnAction": "动作",
+      "requestUrl": "请求 URL",
+      "requestSummary": "请求摘要",
+      "detailTitle": "操作日志详情",
+      "batchDeleteConfirm": "确定删除选中的 {0} 条操作日志吗？"
+    },
+    "loginLog": {
+      "entity": "登录日志",
+      "searchPlaceholder": "搜索账号/IP",
+      "keywordPlaceholder": "账号 / IP",
+      "actionPlaceholder": "动作",
+      "statusPlaceholder": "结果",
+      "columnUsername": "账号",
+      "detailTitle": "登录日志详情",
+      "batchDeleteConfirm": "确定删除选中的 {0} 条登录日志吗？"
+    },
+    "exceptionLog": {
+      "entity": "异常日志",
+      "hint": "列表仅展示异常摘要；完整堆栈请按 trace_id 在服务器 storage/logs/laravel.log 中检索。",
+      "searchPlaceholder": "搜索消息/异常类/trace_id",
+      "keywordPlaceholder": "消息 / 异常类 / trace_id",
+      "exceptionClassPlaceholder": "Exception 类名",
+      "columnMessage": "异常消息",
+      "columnExceptionType": "异常类型",
+      "columnExceptionClass": "异常类",
+      "columnFile": "文件",
+      "columnLine": "行号",
+      "columnOccurredAt": "发生时间",
+      "detailTitle": "异常日志详情",
+      "batchDeleteConfirm": "确定删除选中的 {0} 条异常日志吗？"
+    }
+  },
+  "org": {
+    "shared": {
+      "name": "名称",
+      "code": "编码",
+      "sort": "排序",
+      "status": "状态",
+      "remark": "备注",
+      "updatedAt": "更新时间",
+      "email": "邮箱",
+      "searchNameCode": "搜索名称/编码",
+      "namePlaceholder": "名称",
+      "codePlaceholder": "编码",
+      "statusPlaceholder": "状态",
+      "sortInvalid": "请输入有效整数",
+      "sortUpdated": "排序已更新"
+    },
+    "department": {
+      "entity": "部门",
+      "columnName": "部门名称",
+      "leader": "部门负责人",
+      "phone": "联系电话",
+      "parent": "上级部门",
+      "parentPlaceholder": "上级部门（留空为顶级）",
+      "leaderPlaceholder": "选择部门负责人",
+      "rootOption": "顶级部门",
+      "createDept": "新增部门",
+      "createTitle": "新增部门",
+      "editTitle": "编辑部门",
+      "batchDeleteConfirm": "确定删除选中的 {0} 个部门吗？存在下级部门或管理员时将无法删除。",
+      "batchDeletePartial": "已删除 {0} 个，{1} 个因存在下级或管理员未删除",
+      "batchStatusConfirm": "确定将选中的 {0} 个部门批量【{1}】吗？"
+    },
+    "post": {
+      "entity": "岗位",
+      "namePlaceholder": "岗位名称",
+      "createPost": "新增岗位",
+      "createTitle": "新增岗位",
+      "editTitle": "编辑岗位",
+      "viewTitle": "查看岗位",
+      "batchDeleteConfirm": "确定删除选中的 {0} 条岗位吗？",
+      "batchStatusConfirm": "确定将选中的 {0} 条岗位批量【{1}】吗？"
+    },
+    "userGroup": {
+      "entity": "用户组",
+      "namePlaceholder": "用户组名称",
+      "membersCount": "成员数",
+      "members": "组成员",
+      "membersPlaceholder": "选择组成员",
+      "createGroup": "新增用户组",
+      "createTitle": "新增用户组",
+      "editTitle": "编辑用户组",
+      "batchDeleteConfirm": "确定删除选中的 {0} 个用户组吗？"
+    }
   }
 }

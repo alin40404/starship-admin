@@ -16,6 +16,7 @@ import {
   fetchOperationLogPage,
 } from '#/api/monitor';
 import { MONITOR_OPERATION_LOG_PERMISSIONS } from '#/constants/monitor-permissions';
+import { $t } from '#/locales';
 
 import {
   buildOperationLogMobileCrudConfig,
@@ -48,7 +49,7 @@ const [CrudView, crudApi] = useResponsiveCrud<OperationLogRow>({
     commonConfig: { componentProps: { class: 'w-full' } },
     schema: useGridFormSchema(),
     submitOnChange: true,
-    submitButtonOptions: { content: '查询' },
+    submitButtonOptions: { content: $t('common.query') },
   },
   gridOptions: {
     checkboxConfig: { highlight: true },
@@ -95,7 +96,7 @@ function onRefresh() {
 
 async function onDelete(row: OperationLogRow) {
   await deleteOperationLog(row.id);
-  message.success('已删除');
+  message.success($t('crud.deleted'));
   clearSelection();
   onRefresh();
 }
@@ -106,14 +107,14 @@ function onBatchDelete() {
     return;
   }
   Modal.confirm({
-    content: `确定删除选中的 ${ids.length} 条操作日志吗？`,
-    okText: '删除',
+    content: $t('system.monitor.operationLog.batchDeleteConfirm', [ids.length]),
+    okText: $t('common.delete'),
     okType: 'danger',
-    cancelText: '取消',
-    title: '批量删除',
+    cancelText: $t('common.cancel'),
+    title: $t('system.shared.batchDelete'),
     async onOk() {
       await batchDeleteOperationLogs(ids);
-      message.success('已批量删除');
+      message.success($t('crud.batchDeleted'));
       clearSelection();
       onRefresh();
     },
@@ -126,7 +127,7 @@ function onBatchDelete() {
     <div class="flex h-full min-h-0 flex-col">
       <Alert
         class="mb-4 shrink-0"
-        message="记录后台写操作（新增、更新、删除等），敏感字段已脱敏。"
+        :message="$t('system.monitor.operationLog.hint')"
         show-icon
         type="info"
       />
@@ -143,10 +144,10 @@ function onBatchDelete() {
                 danger
                 @click="onBatchDelete"
               >
-                批量删除（{{ selectedRows.length }}）
+                {{ $t('system.shared.batchDeleteWithCount', [selectedRows.length]) }}
               </Button>
               <Button class="ml-2" type="link" @click="clearSelection">
-                取消选择
+                {{ $t('system.shared.clearSelection') }}
               </Button>
             </div>
           </template>

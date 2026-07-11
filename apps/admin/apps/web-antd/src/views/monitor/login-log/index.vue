@@ -16,6 +16,7 @@ import {
   fetchLoginLogPage,
 } from '#/api/monitor';
 import { MONITOR_LOGIN_LOG_PERMISSIONS } from '#/constants/monitor-permissions';
+import { $t } from '#/locales';
 
 import {
   buildLoginLogMobileCrudConfig,
@@ -48,7 +49,7 @@ const [CrudView, crudApi] = useResponsiveCrud<LoginLogRow>({
     commonConfig: { componentProps: { class: 'w-full' } },
     schema: useGridFormSchema(),
     submitOnChange: true,
-    submitButtonOptions: { content: '查询' },
+    submitButtonOptions: { content: $t('common.query') },
   },
   gridOptions: {
     checkboxConfig: { highlight: true },
@@ -101,7 +102,7 @@ function onRefresh() {
 
 async function onDelete(row: LoginLogRow) {
   await deleteLoginLog(row.id);
-  message.success('已删除');
+  message.success($t('crud.deleted'));
   clearSelection();
   onRefresh();
 }
@@ -112,14 +113,14 @@ function onBatchDelete() {
     return;
   }
   Modal.confirm({
-    content: `确定删除选中的 ${ids.length} 条登录日志吗？`,
-    okText: '删除',
+    content: $t('system.monitor.loginLog.batchDeleteConfirm', [ids.length]),
+    okText: $t('common.delete'),
     okType: 'danger',
-    cancelText: '取消',
-    title: '批量删除',
+    cancelText: $t('common.cancel'),
+    title: $t('system.shared.batchDelete'),
     async onOk() {
       await batchDeleteLoginLogs(ids);
-      message.success('已批量删除');
+      message.success($t('crud.batchDeleted'));
       clearSelection();
       onRefresh();
     },
@@ -141,10 +142,10 @@ function onBatchDelete() {
             danger
             @click="onBatchDelete"
           >
-            批量删除（{{ selectedRows.length }}）
+            {{ $t('system.shared.batchDeleteWithCount', [selectedRows.length]) }}
           </Button>
           <Button class="ml-2" type="link" @click="clearSelection">
-            取消选择
+            {{ $t('system.shared.clearSelection') }}
           </Button>
         </div>
       </template>

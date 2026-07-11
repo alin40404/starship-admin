@@ -20,6 +20,7 @@ import {
   updateDepartmentStatus,
 } from '#/api/system/department';
 import { DEPARTMENT_PERMISSIONS } from '#/constants/department-permissions';
+import { $t } from '#/locales';
 
 import { useColumns } from './data';
 import DepartmentForm from './modules/form.vue';
@@ -71,16 +72,19 @@ function onActionClick({ code, row }: OnActionClickParams<DepartmentTreeNode>) {
 
 async function onDeptStatusToggle(nextStatus: number, row: DepartmentTreeNode) {
   return new Promise<boolean>((resolve) => {
-    const label = nextStatus === 1 ? '启用' : '禁用';
+    const label =
+      nextStatus === 1
+        ? $t('system.shared.status.enable')
+        : $t('system.shared.status.disable');
     Modal.confirm({
-      content: `确定将「${row.name}」的状态切换为【${label}】吗？`,
-      okText: '确定',
-      cancelText: '取消',
-      title: '切换状态',
+      content: $t('system.shared.toggleStatusConfirm', [row.name, label]),
+      okText: $t('common.confirm'),
+      cancelText: $t('common.cancel'),
+      title: $t('system.shared.toggleStatusTitle'),
       async onOk() {
         try {
           await updateDepartmentStatus(row.id, nextStatus as 0 | 1);
-          message.success('状态已更新');
+          message.success($t('crud.statusUpdated'));
           onRefresh();
           resolve(true);
         } catch {
@@ -96,7 +100,7 @@ async function onDeptStatusToggle(nextStatus: number, row: DepartmentTreeNode) {
 
 async function onDelete(row: DepartmentTreeNode) {
   await deleteDepartment(row.id);
-  message.success('已删除');
+  message.success($t('crud.deleted'));
   clearSelection();
   onRefresh();
 }
@@ -105,19 +109,22 @@ function onBatchDelete() {
   const ids = selectedRows.value.map((row) => row.id);
   if (ids.length === 0) return;
   Modal.confirm({
-    content: `确定删除选中的 ${ids.length} 个部门吗？存在下级部门或管理员时将无法删除。`,
-    okText: '删除',
+    content: $t('system.org.department.batchDeleteConfirm', [ids.length]),
+    okText: $t('common.delete'),
     okType: 'danger',
-    cancelText: '取消',
-    title: '批量删除',
+    cancelText: $t('common.cancel'),
+    title: $t('system.shared.batchDelete'),
     async onOk() {
       const result = await batchDeleteDepartments(ids);
       if (result.skipped > 0) {
         message.warning(
-          `已删除 ${result.deleted} 个，${result.skipped} 个因存在下级或管理员未删除`,
+          $t('system.org.department.batchDeletePartial', [
+            result.deleted,
+            result.skipped,
+          ]),
         );
       } else {
-        message.success('已批量删除');
+        message.success($t('crud.batchDeleted'));
       }
       clearSelection();
       onRefresh();
@@ -128,15 +135,18 @@ function onBatchDelete() {
 function onBatchUpdateStatus(status: 0 | 1) {
   const ids = selectedRows.value.map((row) => row.id);
   if (ids.length === 0) return;
-  const label = status === 1 ? '启用' : '禁用';
+  const label =
+    status === 1
+      ? $t('system.shared.status.enable')
+      : $t('system.shared.status.disable');
   Modal.confirm({
-    content: `确定将选中的 ${ids.length} 个部门批量【${label}】吗？`,
-    okText: '确定',
-    cancelText: '取消',
-    title: `批量${label}`,
+    content: $t('system.org.department.batchStatusConfirm', [ids.length, label]),
+    okText: $t('common.confirm'),
+    cancelText: $t('common.cancel'),
+    title: $t('system.shared.batchSet', [label]),
     async onOk() {
       await batchUpdateDepartmentStatus(ids, status);
-      message.success(`已批量${label}`);
+      message.success($t('system.shared.batchStatusDone', [label]));
       clearSelection();
       onRefresh();
     },
@@ -164,7 +174,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
 
       const sort = Number(row.sort);
       if (!Number.isFinite(sort) || sort < 0 || !Number.isInteger(sort)) {
-        message.warning('请输入有效整数');
+        message.warning($t('system.org.shared.sortInvalid'));
         await gridApi.reload();
         return;
       }
@@ -172,7 +182,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       gridApi.setLoading(true);
       try {
         await updateDepartmentSort(row.id, sort);
-        message.success('排序已更新');
+        message.success($t('system.org.shared.sortUpdated'));
         onRefresh();
       } catch {
         await gridApi.reload();
@@ -225,24 +235,24 @@ const [Grid, gridApi] = useVbenVxeGrid({
             danger
             @click="onBatchDelete"
           >
-            批量删除（{{ selectedRows.length }}）
+            {{ $t('system.shared.batchDeleteWithCount', [selectedRows.length]) }}
           </Button>
           <Button
             v-if="deptAccess.can(DEPARTMENT_PERMISSIONS.BATCH_STATUS)"
             class="org-batch-btn-enable ml-2"
             @click="onBatchUpdateStatus(1)"
           >
-            批量启用
+            {{ $t('system.shared.batchEnable') }}
           </Button>
           <Button
             v-if="deptAccess.can(DEPARTMENT_PERMISSIONS.BATCH_STATUS)"
             class="org-batch-btn-disable ml-2"
             @click="onBatchUpdateStatus(0)"
           >
-            批量禁用
+            {{ $t('system.shared.batchDisable') }}
           </Button>
           <Button class="ml-2" type="link" @click="clearSelection">
-            取消选择
+            {{ $t('system.shared.clearSelection') }}
           </Button>
         </div>
         <Button
@@ -251,7 +261,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
           @click="onCreate"
         >
           <Plus class="size-4" />
-          新增部门
+          {{ $t('system.org.department.createDept') }}
         </Button>
       </template>
     </Grid>

@@ -11,6 +11,7 @@ import {
   getOperationLogStatusCodeColor,
   MONITOR_HTTP_METHOD_TAG_OPTIONS,
 } from '#/constants/monitor-permissions';
+import { $t } from '#/locales';
 import { formatDateTime } from '@vben/utils';
 
 const descriptionsLabelStyle = {
@@ -79,7 +80,7 @@ defineExpose({ open: show });
   <Drawer
     v-model:open="open"
     :loading="loading"
-    title="操作日志详情"
+    :title="$t('system.monitor.operationLog.detailTitle')"
     width="min(92vw, 880px)"
   >
     <Descriptions
@@ -90,31 +91,31 @@ defineExpose({ open: show });
       :label-style="descriptionsLabelStyle"
       size="small"
     >
-      <Descriptions.Item label="操作标题">{{ detail.title }}</Descriptions.Item>
-      <Descriptions.Item label="操作人">{{ detail.admin_name || '—' }}</Descriptions.Item>
-      <Descriptions.Item label="模块">
+      <Descriptions.Item :label="$t('system.monitor.operationLog.columnTitle')">{{ detail.title }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('system.monitor.shared.operator')">{{ detail.admin_name || '—' }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('system.monitor.operationLog.columnModule')">
         <Tag v-if="detail.module" :color="moduleColor">{{ detail.module }}</Tag>
         <span v-else>—</span>
       </Descriptions.Item>
-      <Descriptions.Item label="动作">{{ detail.action }}</Descriptions.Item>
-      <Descriptions.Item label="HTTP 方法">
+      <Descriptions.Item :label="$t('system.monitor.operationLog.columnAction')">{{ detail.action }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('system.monitor.shared.method')">
         <Tag v-if="methodTag" :color="methodTag.color">{{ methodTag.label }}</Tag>
         <Tag v-else-if="detail.method" color="default">{{ detail.method }}</Tag>
         <span v-else>—</span>
       </Descriptions.Item>
-      <Descriptions.Item label="状态码">
+      <Descriptions.Item :label="$t('system.monitor.operationLog.columnStatusCode')">
         <Tag v-if="detail.status_code != null" :color="statusCodeColor">
           {{ detail.status_code }}
         </Tag>
         <span v-else>—</span>
       </Descriptions.Item>
-      <Descriptions.Item label="请求 URL">{{ detail.url || '—' }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('system.monitor.operationLog.requestUrl')">{{ detail.url || '—' }}</Descriptions.Item>
       <Descriptions.Item label="IP">{{ detail.ip || '—' }}</Descriptions.Item>
       <Descriptions.Item label="User-Agent">{{ detail.user_agent || '—' }}</Descriptions.Item>
-      <Descriptions.Item label="操作时间">
+      <Descriptions.Item :label="$t('system.monitor.operationLog.columnTime')">
         {{ detail.created_at ? formatDateTime(detail.created_at) : '—' }}
       </Descriptions.Item>
-      <Descriptions.Item label="请求摘要">
+      <Descriptions.Item :label="$t('system.monitor.operationLog.requestSummary')">
         <pre
           class="max-h-80 overflow-auto whitespace-pre-wrap break-all text-sm leading-6"
         >{{ contentText || '—' }}</pre>

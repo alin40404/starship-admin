@@ -12,6 +12,7 @@ import { formatDateTime } from '@vben/utils';
 
 import { MONITOR_EXCEPTION_LOG_PERMISSIONS } from '#/constants/monitor-permissions';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
+import { $t } from '#/locales';
 
 export type MonitorAccessChecker = {
   can: (code: string) => boolean;
@@ -21,15 +22,21 @@ export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
-      componentProps: { class: 'w-full', placeholder: '消息 / 异常类 / trace_id' },
+      componentProps: {
+        class: 'w-full',
+        placeholder: $t('system.monitor.exceptionLog.keywordPlaceholder'),
+      },
       fieldName: 'keyword',
-      label: '关键词',
+      label: $t('system.monitor.shared.keyword'),
     },
     {
       component: 'Input',
-      componentProps: { class: 'w-full', placeholder: 'Exception 类名' },
+      componentProps: {
+        class: 'w-full',
+        placeholder: $t('system.monitor.exceptionLog.exceptionClassPlaceholder'),
+      },
       fieldName: 'exception_class',
-      label: '异常类',
+      label: $t('system.monitor.shared.exceptionClass'),
     },
   ];
 }
@@ -46,7 +53,7 @@ export function buildExceptionLogMobileCrudConfig(params: {
     search: {
       filterSchema: useGridFormSchema(),
       keywordFields: ['message', 'exception_class', 'trace_id', 'request_url'],
-      placeholder: '搜索消息/异常类/trace_id',
+      placeholder: $t('system.monitor.exceptionLog.searchPlaceholder'),
     },
     selection: {
       enabled: true,
@@ -69,7 +76,7 @@ export function useColumns(
       align: 'left',
       field: 'message',
       minWidth: 220,
-      title: '异常消息',
+      title: $t('system.monitor.exceptionLog.columnMessage'),
     },
     {
       align: 'left',
@@ -83,21 +90,21 @@ export function useColumns(
         return parts[parts.length - 1] || text;
       },
       minWidth: 160,
-      title: '异常类型',
+      title: $t('system.monitor.exceptionLog.columnExceptionType'),
     },
     {
       align: 'left',
       field: 'request_url',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 180,
-      title: '请求 URL',
+      title: $t('system.monitor.operationLog.requestUrl'),
     },
     {
       align: 'left',
       field: 'admin_name',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       width: 100,
-      title: '操作人',
+      title: $t('system.monitor.shared.operator'),
     },
     {
       align: 'left',
@@ -112,14 +119,14 @@ export function useColumns(
       formatter: ({ cellValue }) =>
         cellValue ? formatDateTime(cellValue as string) : TABLE_CELL_EMPTY,
       minWidth: 160,
-      title: '发生时间',
+      title: $t('system.monitor.exceptionLog.columnOccurredAt'),
     },
     {
       align: 'center',
       cellRender: {
         attrs: {
           nameField: 'message',
-          nameTitle: '异常日志',
+          nameTitle: $t('system.monitor.exceptionLog.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -127,20 +134,20 @@ export function useColumns(
           {
             code: 'detail',
             show: () => access.can(MONITOR_EXCEPTION_LOG_PERMISSIONS.QUERY),
-            text: '详情',
+            text: $t('system.monitor.shared.detail'),
             type: 'link',
           },
           {
             code: 'delete',
             danger: true,
             show: () => access.can(MONITOR_EXCEPTION_LOG_PERMISSIONS.DELETE),
-            text: '删除',
+            text: $t('common.delete'),
             type: 'link',
           },
         ],
       },
       fixed: 'right',
-      title: '操作',
+      title: $t('crud.columnActions'),
       width: 140,
     },
   ];

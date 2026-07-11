@@ -11,11 +11,12 @@ import type { LoginLogRow } from '#/api/monitor';
 import { formatDateTime } from '@vben/utils';
 
 import {
-  MONITOR_LOGIN_ACTION_TAG_OPTIONS,
+  getMonitorLoginActionTagOptions,
+  getMonitorLoginStatusTagOptions,
   MONITOR_LOGIN_LOG_PERMISSIONS,
-  MONITOR_LOGIN_STATUS_TAG_OPTIONS,
 } from '#/constants/monitor-permissions';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
+import { $t } from '#/locales';
 
 export type MonitorAccessChecker = {
   can: (code: string) => boolean;
@@ -25,31 +26,34 @@ export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
-      componentProps: { class: 'w-full', placeholder: '账号 / IP' },
+      componentProps: {
+        class: 'w-full',
+        placeholder: $t('system.monitor.loginLog.keywordPlaceholder'),
+      },
       fieldName: 'keyword',
-      label: '关键词',
+      label: $t('system.monitor.shared.keyword'),
     },
     {
       component: 'Select',
       componentProps: {
         allowClear: true,
         class: 'w-full',
-        options: [...MONITOR_LOGIN_ACTION_TAG_OPTIONS],
-        placeholder: '动作',
+        options: [...getMonitorLoginActionTagOptions()],
+        placeholder: $t('system.monitor.loginLog.actionPlaceholder'),
       },
       fieldName: 'action',
-      label: '动作',
+      label: $t('system.monitor.shared.action'),
     },
     {
       component: 'Select',
       componentProps: {
         allowClear: true,
         class: 'w-full',
-        options: [...MONITOR_LOGIN_STATUS_TAG_OPTIONS],
-        placeholder: '结果',
+        options: [...getMonitorLoginStatusTagOptions()],
+        placeholder: $t('system.monitor.loginLog.statusPlaceholder'),
       },
       fieldName: 'status',
-      label: '结果',
+      label: $t('system.monitor.shared.status'),
     },
   ];
 }
@@ -66,7 +70,7 @@ export function buildLoginLogMobileCrudConfig(params: {
     search: {
       filterSchema: useGridFormSchema(),
       keywordFields: ['username', 'message', 'ip'],
-      placeholder: '搜索账号/IP',
+      placeholder: $t('system.monitor.loginLog.searchPlaceholder'),
     },
     selection: {
       enabled: true,
@@ -89,32 +93,38 @@ export function useColumns(
       align: 'left',
       field: 'username',
       minWidth: 120,
-      title: '账号',
+      title: $t('system.monitor.loginLog.columnUsername'),
     },
     {
       align: 'center',
       cellRender: {
         name: 'CellTag',
-        options: [...MONITOR_LOGIN_ACTION_TAG_OPTIONS],
+        options: [...getMonitorLoginActionTagOptions()],
       },
       field: 'action',
       mobile: {
-        format: (row) => (row.action === 'logout' ? '退出' : '登录'),
+        format: (row) =>
+          row.action === 'logout'
+            ? $t('system.monitor.shared.actionLogout')
+            : $t('system.monitor.shared.actionLogin'),
       },
-      title: '动作',
+      title: $t('system.monitor.shared.action'),
       width: 90,
     },
     {
       align: 'center',
       cellRender: {
         name: 'CellTag',
-        options: [...MONITOR_LOGIN_STATUS_TAG_OPTIONS],
+        options: [...getMonitorLoginStatusTagOptions()],
       },
       field: 'status',
       mobile: {
-        format: (row) => (row.status === 1 ? '成功' : '失败'),
+        format: (row) =>
+          row.status === 1
+            ? $t('system.monitor.shared.statusSuccess')
+            : $t('system.monitor.shared.statusFailed'),
       },
-      title: '结果',
+      title: $t('system.monitor.shared.status'),
       width: 90,
     },
     {
@@ -122,7 +132,7 @@ export function useColumns(
       field: 'message',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 140,
-      title: '说明',
+      title: $t('system.monitor.shared.message'),
     },
     {
       align: 'left',
@@ -137,14 +147,14 @@ export function useColumns(
       formatter: ({ cellValue }) =>
         cellValue ? formatDateTime(cellValue as string) : TABLE_CELL_EMPTY,
       minWidth: 160,
-      title: '时间',
+      title: $t('system.monitor.shared.time'),
     },
     {
       align: 'center',
       cellRender: {
         attrs: {
           nameField: 'username',
-          nameTitle: '登录日志',
+          nameTitle: $t('system.monitor.loginLog.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -152,20 +162,20 @@ export function useColumns(
           {
             code: 'detail',
             show: () => access.can(MONITOR_LOGIN_LOG_PERMISSIONS.QUERY),
-            text: '详情',
+            text: $t('system.monitor.shared.detail'),
             type: 'link',
           },
           {
             code: 'delete',
             danger: true,
             show: () => access.can(MONITOR_LOGIN_LOG_PERMISSIONS.DELETE),
-            text: '删除',
+            text: $t('common.delete'),
             type: 'link',
           },
         ],
       },
       fixed: 'right',
-      title: '操作',
+      title: $t('crud.columnActions'),
       width: 140,
     },
   ];

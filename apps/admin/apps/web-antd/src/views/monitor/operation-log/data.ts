@@ -18,6 +18,7 @@ import {
   MONITOR_OPERATION_LOG_MODULE_OPTIONS,
   MONITOR_OPERATION_LOG_PERMISSIONS,
 } from '#/constants/monitor-permissions';
+import { $t } from '#/locales';
 
 export type MonitorAccessChecker = {
   can: (code: string) => boolean;
@@ -27,9 +28,12 @@ export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
-      componentProps: { class: 'w-full', placeholder: '标题 / 操作人 / URL' },
+      componentProps: {
+        class: 'w-full',
+        placeholder: $t('system.monitor.operationLog.keywordPlaceholder'),
+      },
       fieldName: 'keyword',
-      label: '关键词',
+      label: $t('system.monitor.shared.keyword'),
     },
     {
       component: 'Select',
@@ -37,10 +41,10 @@ export function useGridFormSchema(): VbenFormSchema[] {
         allowClear: true,
         class: 'w-full',
         options: [...MONITOR_OPERATION_LOG_MODULE_OPTIONS],
-        placeholder: '请选择模块',
+        placeholder: $t('system.monitor.operationLog.modulePlaceholder'),
       },
       fieldName: 'module',
-      label: '模块',
+      label: $t('system.monitor.shared.module'),
     },
     {
       component: 'Select',
@@ -48,10 +52,10 @@ export function useGridFormSchema(): VbenFormSchema[] {
         allowClear: true,
         class: 'w-full',
         options: [...MONITOR_HTTP_METHOD_TAG_OPTIONS],
-        placeholder: 'POST / PUT',
+        placeholder: $t('system.monitor.operationLog.methodPlaceholder'),
       },
       fieldName: 'method',
-      label: '方法',
+      label: $t('system.monitor.shared.method'),
     },
   ];
 }
@@ -68,7 +72,7 @@ export function buildOperationLogMobileCrudConfig(params: {
     search: {
       filterSchema: useGridFormSchema(),
       keywordFields: ['title', 'admin_name', 'url', 'action'],
-      placeholder: '搜索标题/操作人/URL',
+      placeholder: $t('system.monitor.operationLog.searchPlaceholder'),
     },
     selection: {
       enabled: true,
@@ -91,14 +95,14 @@ export function useColumns(
       align: 'left',
       field: 'title',
       minWidth: 180,
-      title: '操作标题',
+      title: $t('system.monitor.operationLog.columnTitle'),
     },
     {
       align: 'left',
       field: 'admin_name',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 100,
-      title: '操作人',
+      title: $t('system.monitor.shared.operator'),
     },
     {
       align: 'center',
@@ -113,7 +117,7 @@ export function useColumns(
       mobile: {
         format: (row) => row.module ?? TABLE_CELL_EMPTY,
       },
-      title: '模块',
+      title: $t('system.monitor.operationLog.columnModule'),
       width: 100,
     },
     {
@@ -126,7 +130,7 @@ export function useColumns(
       mobile: {
         format: (row) => row.method ?? TABLE_CELL_EMPTY,
       },
-      title: '方法',
+      title: $t('system.monitor.operationLog.columnMethod'),
       width: 80,
     },
     {
@@ -143,7 +147,7 @@ export function useColumns(
         format: (row) =>
           row.status_code == null ? TABLE_CELL_EMPTY : String(row.status_code),
       },
-      title: '状态码',
+      title: $t('system.monitor.operationLog.columnStatusCode'),
       width: 90,
     },
     {
@@ -159,14 +163,14 @@ export function useColumns(
       formatter: ({ cellValue }) =>
         cellValue ? formatDateTime(cellValue as string) : TABLE_CELL_EMPTY,
       minWidth: 160,
-      title: '操作时间',
+      title: $t('system.monitor.operationLog.columnTime'),
     },
     {
       align: 'center',
       cellRender: {
         attrs: {
           nameField: 'title',
-          nameTitle: '操作日志',
+          nameTitle: $t('system.monitor.operationLog.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -174,20 +178,20 @@ export function useColumns(
           {
             code: 'detail',
             show: () => access.can(MONITOR_OPERATION_LOG_PERMISSIONS.QUERY),
-            text: '详情',
+            text: $t('system.monitor.shared.detail'),
             type: 'link',
           },
           {
             code: 'delete',
             danger: true,
             show: () => access.can(MONITOR_OPERATION_LOG_PERMISSIONS.DELETE),
-            text: '删除',
+            text: $t('common.delete'),
             type: 'link',
           },
         ],
       },
       fixed: 'right',
-      title: '操作',
+      title: $t('crud.columnActions'),
       width: 140,
     },
   ];

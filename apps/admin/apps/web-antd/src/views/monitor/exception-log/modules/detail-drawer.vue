@@ -6,6 +6,7 @@ import { ref } from 'vue';
 import { Alert, Descriptions, Drawer } from 'ant-design-vue';
 
 import { fetchExceptionLog } from '#/api/monitor';
+import { $t } from '#/locales';
 import { formatDateTime } from '@vben/utils';
 
 const descriptionsLabelStyle = {
@@ -41,7 +42,7 @@ defineExpose({ open: show });
   <Drawer
     v-model:open="open"
     :loading="loading"
-    title="异常日志详情"
+    :title="$t('system.monitor.exceptionLog.detailTitle')"
     width="min(92vw, 880px)"
   >
     <Alert
@@ -60,16 +61,16 @@ defineExpose({ open: show });
       size="small"
     >
       <Descriptions.Item label="Trace ID">{{ detail.trace_id }}</Descriptions.Item>
-      <Descriptions.Item label="异常类">{{ detail.exception_class }}</Descriptions.Item>
-      <Descriptions.Item label="消息">{{ detail.message }}</Descriptions.Item>
-      <Descriptions.Item label="文件">{{ detail.file || '—' }}</Descriptions.Item>
-      <Descriptions.Item label="行号">{{ detail.line ?? '—' }}</Descriptions.Item>
-      <Descriptions.Item label="HTTP 方法">{{ detail.request_method || '—' }}</Descriptions.Item>
-      <Descriptions.Item label="请求 URL">{{ detail.request_url || '—' }}</Descriptions.Item>
-      <Descriptions.Item label="操作人">{{ detail.admin_name || '—' }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('system.monitor.exceptionLog.columnExceptionClass')">{{ detail.exception_class }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('system.monitor.exceptionLog.columnMessage')">{{ detail.message }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('system.monitor.exceptionLog.columnFile')">{{ detail.file || '—' }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('system.monitor.exceptionLog.columnLine')">{{ detail.line ?? '—' }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('system.monitor.shared.method')">{{ detail.request_method || '—' }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('system.monitor.operationLog.requestUrl')">{{ detail.request_url || '—' }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('system.monitor.shared.operator')">{{ detail.admin_name || '—' }}</Descriptions.Item>
       <Descriptions.Item label="IP">{{ detail.ip || '—' }}</Descriptions.Item>
       <Descriptions.Item label="User-Agent">{{ detail.user_agent || '—' }}</Descriptions.Item>
-      <Descriptions.Item label="发生时间">
+      <Descriptions.Item :label="$t('system.monitor.exceptionLog.columnOccurredAt')">
         {{ detail.created_at ? formatDateTime(detail.created_at) : '—' }}
       </Descriptions.Item>
     </Descriptions>

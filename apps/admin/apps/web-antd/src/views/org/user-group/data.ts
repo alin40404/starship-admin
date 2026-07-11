@@ -10,38 +10,53 @@ import type { UserGroupRow } from '#/api/system/user-group';
 import { fetchAdminPage } from '#/api/system/admin';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { USER_GROUP_PERMISSIONS } from '#/constants/user-group-permissions';
+import { $t } from '#/locales';
 
 export type UserGroupAccessChecker = {
   can: (code: string) => boolean;
 };
 
+function getStatusSelectOptions() {
+  return [
+    { label: $t('system.shared.status.enable'), value: 1 },
+    { label: $t('system.shared.status.disable'), value: 0 },
+  ];
+}
+
+function getStatusRadioOptions() {
+  return getStatusSelectOptions();
+}
+
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
-      componentProps: { class: 'w-full', placeholder: '用户组名称' },
+      componentProps: {
+        class: 'w-full',
+        placeholder: $t('system.org.userGroup.namePlaceholder'),
+      },
       fieldName: 'name',
-      label: '名称',
+      label: $t('system.org.shared.name'),
     },
     {
       component: 'Input',
-      componentProps: { class: 'w-full', placeholder: '编码' },
+      componentProps: {
+        class: 'w-full',
+        placeholder: $t('system.org.shared.codePlaceholder'),
+      },
       fieldName: 'code',
-      label: '编码',
+      label: $t('system.org.shared.code'),
     },
     {
       component: 'Select',
       componentProps: {
         allowClear: true,
         class: 'w-full',
-        options: [
-          { label: '启用', value: 1 },
-          { label: '禁用', value: 0 },
-        ],
-        placeholder: '状态',
+        options: getStatusSelectOptions(),
+        placeholder: $t('system.org.shared.statusPlaceholder'),
       },
       fieldName: 'status',
-      label: '状态',
+      label: $t('system.org.shared.status'),
     },
   ];
 }
@@ -58,7 +73,7 @@ export function buildUserGroupMobileCrudConfig(params: {
     search: {
       filterSchema: useGridFormSchema(),
       keywordFields: ['name', 'code'],
-      placeholder: '搜索名称/编码',
+      placeholder: $t('system.org.shared.searchNameCode'),
     },
     selection: {
       enabled: true,
@@ -78,8 +93,20 @@ export function useColumns(
       width: 48,
     },
     { field: 'id', sortable: true, title: 'ID', width: 72 },
-    { align: 'left', field: 'name', minWidth: 140, sortable: true, title: '名称' },
-    { align: 'left', field: 'code', minWidth: 140, sortable: true, title: '编码' },
+    {
+      align: 'left',
+      field: 'name',
+      minWidth: 140,
+      sortable: true,
+      title: $t('system.org.shared.name'),
+    },
+    {
+      align: 'left',
+      field: 'code',
+      minWidth: 140,
+      sortable: true,
+      title: $t('system.org.shared.code'),
+    },
     {
       align: 'center',
       field: 'admins_count',
@@ -87,16 +114,23 @@ export function useColumns(
         cellValue === undefined || cellValue === null
           ? TABLE_CELL_EMPTY
           : String(cellValue),
-      title: '成员数',
+      title: $t('system.org.userGroup.membersCount'),
       width: 120,
     },
-    { field: 'sort', sortable: true, title: '排序', width: 80 },
+    {
+      field: 'sort',
+      sortable: true,
+      title: $t('system.org.shared.sort'),
+      width: 80,
+    },
     {
       field: 'status',
       formatter: ({ cellValue }: { cellValue: UserGroupRow['status'] }) =>
-        cellValue === 1 ? '启用' : '禁用',
+        cellValue === 1
+          ? $t('system.shared.status.enable')
+          : $t('system.shared.status.disable'),
       sortable: true,
-      title: '状态',
+      title: $t('system.org.shared.status'),
       width: 90,
     },
     {
@@ -104,14 +138,14 @@ export function useColumns(
       formatter: ({ cellValue }: { cellValue: UserGroupRow['remark'] }) =>
         cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 160,
-      title: '备注',
+      title: $t('system.org.shared.remark'),
     },
     {
       align: 'center',
       cellRender: {
         attrs: {
           nameField: 'name',
-          nameTitle: '用户组',
+          nameTitle: $t('system.org.userGroup.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -119,20 +153,20 @@ export function useColumns(
           {
             code: 'edit',
             show: () => access.can(USER_GROUP_PERMISSIONS.UPDATE),
-            text: '编辑',
+            text: $t('common.edit'),
             type: 'link',
           },
           {
             code: 'delete',
             danger: true,
             show: () => access.can(USER_GROUP_PERMISSIONS.DELETE),
-            text: '删除',
+            text: $t('common.delete'),
             type: 'link',
           },
         ],
       },
       fixed: 'right',
-      title: '操作',
+      title: $t('crud.columnActions'),
       width: 140,
     },
   ] as CrudGridColumn<UserGroupRow>[];
@@ -153,14 +187,14 @@ export function buildUserGroupFormSchema(readonly = false): VbenFormSchema[] {
       component: 'Input',
       componentProps: { class: 'w-full', disabled },
       fieldName: 'name',
-      label: '名称',
+      label: $t('system.org.shared.name'),
       rules: readonly ? undefined : 'required',
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full', disabled },
       fieldName: 'code',
-      label: '编码',
+      label: $t('system.org.shared.code'),
       rules: readonly ? undefined : 'required',
     },
     {
@@ -171,20 +205,20 @@ export function buildUserGroupFormSchema(readonly = false): VbenFormSchema[] {
         disabled,
         mode: 'multiple',
         optionFilterProp: 'label',
-        placeholder: '选择组成员',
+        placeholder: $t('system.org.userGroup.membersPlaceholder'),
         showSearch: true,
       },
       defaultValue: [],
       fieldName: 'admin_ids',
       formItemClass: 'col-span-full w-full items-start',
-      label: '组成员',
+      label: $t('system.org.userGroup.members'),
     },
     {
       component: 'InputNumber',
       componentProps: { class: 'w-full', disabled, min: 0 },
       defaultValue: 0,
       fieldName: 'sort',
-      label: '排序',
+      label: $t('system.org.shared.sort'),
     },
     {
       component: 'RadioGroup',
@@ -193,21 +227,18 @@ export function buildUserGroupFormSchema(readonly = false): VbenFormSchema[] {
         class: 'w-full',
         disabled,
         optionType: 'button',
-        options: [
-          { label: '启用', value: 1 },
-          { label: '禁用', value: 0 },
-        ],
+        options: getStatusRadioOptions(),
       },
       defaultValue: 1,
       fieldName: 'status',
-      label: '状态',
+      label: $t('system.org.shared.status'),
     },
     {
       component: 'Textarea',
       componentProps: { class: 'w-full', disabled, rows: 2 },
       fieldName: 'remark',
       formItemClass: 'col-span-full w-full items-start',
-      label: '备注',
+      label: $t('system.org.shared.remark'),
     },
   ];
 }

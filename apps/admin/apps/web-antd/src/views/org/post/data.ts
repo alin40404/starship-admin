@@ -12,39 +12,54 @@ import { formatDateTime } from '@vben/utils';
 
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { POST_PERMISSIONS } from '#/constants/post-permissions';
+import { $t } from '#/locales';
 
 export type PostAccessChecker = {
   can: (code: string) => boolean;
   canAny: (codes: string[]) => boolean;
 };
 
+function getStatusSelectOptions() {
+  return [
+    { label: $t('system.shared.status.enable'), value: 1 },
+    { label: $t('system.shared.status.disable'), value: 0 },
+  ];
+}
+
+function getStatusRadioOptions() {
+  return getStatusSelectOptions();
+}
+
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
-      componentProps: { class: 'w-full', placeholder: '岗位名称' },
+      componentProps: {
+        class: 'w-full',
+        placeholder: $t('system.org.post.namePlaceholder'),
+      },
       fieldName: 'name',
-      label: '名称',
+      label: $t('system.org.shared.name'),
     },
     {
       component: 'Input',
-      componentProps: { class: 'w-full', placeholder: '编码' },
+      componentProps: {
+        class: 'w-full',
+        placeholder: $t('system.org.shared.codePlaceholder'),
+      },
       fieldName: 'code',
-      label: '编码',
+      label: $t('system.org.shared.code'),
     },
     {
       component: 'Select',
       componentProps: {
         allowClear: true,
         class: 'w-full',
-        options: [
-          { label: '启用', value: 1 },
-          { label: '禁用', value: 0 },
-        ],
-        placeholder: '状态',
+        options: getStatusSelectOptions(),
+        placeholder: $t('system.org.shared.statusPlaceholder'),
       },
       fieldName: 'status',
-      label: '状态',
+      label: $t('system.org.shared.status'),
     },
   ];
 }
@@ -61,7 +76,7 @@ export function buildPostMobileCrudConfig(params: {
     search: {
       filterSchema: useGridFormSchema(),
       keywordFields: ['name', 'code'],
-      placeholder: '搜索名称/编码',
+      placeholder: $t('system.org.shared.searchNameCode'),
     },
     selection: {
       enabled: true,
@@ -84,13 +99,30 @@ export function useColumns(
       width: 48,
     },
     { field: 'id', sortable: true, title: 'ID', width: 72 },
-    { align: 'left', field: 'name', minWidth: 140, sortable: true, title: '名称' },
-    { align: 'left', field: 'code', minWidth: 140, sortable: true, title: '编码' },
-    { field: 'sort', sortable: true, title: '排序', width: 80 },
+    {
+      align: 'left',
+      field: 'name',
+      minWidth: 140,
+      sortable: true,
+      title: $t('system.org.shared.name'),
+    },
+    {
+      align: 'left',
+      field: 'code',
+      minWidth: 140,
+      sortable: true,
+      title: $t('system.org.shared.code'),
+    },
+    {
+      field: 'sort',
+      sortable: true,
+      title: $t('system.org.shared.sort'),
+      width: 80,
+    },
     {
       field: 'status',
       sortable: true,
-      title: '状态',
+      title: $t('system.org.shared.status'),
       width: 100,
       cellRender: {
         attrs: {
@@ -108,7 +140,7 @@ export function useColumns(
       field: 'remark',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 160,
-      title: '备注',
+      title: $t('system.org.shared.remark'),
     },
     {
       field: 'updated_at',
@@ -116,14 +148,14 @@ export function useColumns(
         row.updated_at ? formatDateTime(row.updated_at) : TABLE_CELL_EMPTY,
       minWidth: 170,
       sortable: true,
-      title: '更新时间',
+      title: $t('system.org.shared.updatedAt'),
     },
     {
       align: 'center',
       cellRender: {
         attrs: {
           nameField: 'name',
-          nameTitle: '岗位',
+          nameTitle: $t('system.org.post.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -131,20 +163,20 @@ export function useColumns(
           {
             code: 'edit',
             show: () => access.can(POST_PERMISSIONS.UPDATE),
-            text: '编辑',
+            text: $t('common.edit'),
             type: 'link',
           },
           {
             code: 'delete',
             danger: true,
             show: () => access.can(POST_PERMISSIONS.DELETE),
-            text: '删除',
+            text: $t('common.delete'),
             type: 'link',
           },
         ],
       },
       fixed: 'right',
-      title: '操作',
+      title: $t('crud.columnActions'),
       width: 140,
     },
   ] as CrudGridColumn<PostRow>[];
@@ -157,14 +189,14 @@ export function buildPostFormSchema(readonly = false): VbenFormSchema[] {
       component: 'Input',
       componentProps: { class: 'w-full', disabled },
       fieldName: 'name',
-      label: '名称',
+      label: $t('system.org.shared.name'),
       rules: readonly ? undefined : 'required',
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full', disabled },
       fieldName: 'code',
-      label: '编码',
+      label: $t('system.org.shared.code'),
       rules: readonly ? undefined : 'required',
     },
     {
@@ -172,7 +204,7 @@ export function buildPostFormSchema(readonly = false): VbenFormSchema[] {
       componentProps: { class: 'w-full', disabled, min: 0 },
       defaultValue: 0,
       fieldName: 'sort',
-      label: '排序',
+      label: $t('system.org.shared.sort'),
     },
     {
       component: 'RadioGroup',
@@ -181,21 +213,18 @@ export function buildPostFormSchema(readonly = false): VbenFormSchema[] {
         class: 'w-full',
         disabled,
         optionType: 'button',
-        options: [
-          { label: '启用', value: 1 },
-          { label: '禁用', value: 0 },
-        ],
+        options: getStatusRadioOptions(),
       },
       defaultValue: 1,
       fieldName: 'status',
-      label: '状态',
+      label: $t('system.org.shared.status'),
     },
     {
       component: 'Textarea',
       componentProps: { class: 'w-full', disabled, rows: 2 },
       fieldName: 'remark',
       formItemClass: 'col-span-full w-full items-start',
-      label: '备注',
+      label: $t('system.org.shared.remark'),
     },
   ];
 }

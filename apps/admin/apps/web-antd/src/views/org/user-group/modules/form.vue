@@ -17,6 +17,7 @@ import {
 } from '#/api/system/user-group';
 
 import { buildUserGroupFormSchema } from '../data';
+import { $t } from '#/locales';
 
 const emits = defineEmits<{ success: [] }>();
 
@@ -36,7 +37,9 @@ const [Form, formApi] = useVbenForm({
 });
 
 const formTitle = computed(() =>
-  editingId.value ? '编辑用户组' : '新增用户组',
+  editingId.value
+    ? $t('system.org.userGroup.editTitle')
+    : $t('system.org.userGroup.createTitle'),
 );
 
 type PopupApi = {
@@ -66,11 +69,11 @@ async function handleConfirm(popupApi: PopupApi) {
     if (!editingId.value) {
       const created = await createUserGroup(values);
       await syncUserGroupAdmins(created.id, adminIds);
-      message.success('创建成功');
+      message.success($t('crud.created'));
     } else {
       await updateUserGroup(editingId.value, values);
       await syncUserGroupAdmins(editingId.value, adminIds);
-      message.success('已保存');
+      message.success($t('crud.saved'));
     }
     popupApi.close();
     emits('success');

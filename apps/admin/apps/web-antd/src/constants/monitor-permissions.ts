@@ -1,6 +1,8 @@
 /**
  * 监控中心权限，与 modules/Monitor/app/Support/*Permissions.php 保持一致。
  */
+import { $t } from '#/locales';
+
 export const MONITOR_OPERATION_LOG_PERMISSIONS = {
   MANAGE: 'monitor.operation_logs',
   QUERY: 'monitor.operation_logs.query',
@@ -22,15 +24,19 @@ export const MONITOR_EXCEPTION_LOG_PERMISSIONS = {
   BATCH_DELETE: 'monitor.exception_logs.batch_delete',
 } as const;
 
-export const MONITOR_LOGIN_STATUS_TAG_OPTIONS = [
-  { color: 'error', label: '失败', value: 0 },
-  { color: 'success', label: '成功', value: 1 },
-] as const;
+export function getMonitorLoginStatusTagOptions() {
+  return [
+    { color: 'error', label: $t('system.monitor.shared.statusFailed'), value: 0 },
+    { color: 'success', label: $t('system.monitor.shared.statusSuccess'), value: 1 },
+  ] as const;
+}
 
-export const MONITOR_LOGIN_ACTION_TAG_OPTIONS = [
-  { color: 'processing', label: '登录', value: 'login' },
-  { color: 'default', label: '退出', value: 'logout' },
-] as const;
+export function getMonitorLoginActionTagOptions() {
+  return [
+    { color: 'processing', label: $t('system.monitor.shared.actionLogin'), value: 'login' },
+    { color: 'default', label: $t('system.monitor.shared.actionLogout'), value: 'logout' },
+  ] as const;
+}
 
 export const MONITOR_HTTP_METHOD_TAG_OPTIONS = [
   { color: 'success', label: 'POST', value: 'POST' },

@@ -17,6 +17,7 @@ import {
   fetchDepartment,
   updateDepartment,
 } from '#/api/system/department';
+import { $t } from '#/locales';
 
 import { buildDepartmentFormSchema, loadDepartmentTreeForParent } from '../data';
 
@@ -51,7 +52,9 @@ watch(editingId, () => {
 });
 
 const formTitle = computed(() =>
-  editingId.value ? '编辑部门' : '新增部门',
+  editingId.value
+    ? $t('system.org.department.editTitle')
+    : $t('system.org.department.createTitle'),
 );
 
 type PopupApi = {
@@ -74,10 +77,10 @@ async function handleConfirm(popupApi: PopupApi) {
   try {
     if (!editingId.value) {
       await createDepartment(values);
-      message.success('创建成功');
+      message.success($t('crud.created'));
     } else {
       await updateDepartment(editingId.value, values);
-      message.success('已保存');
+      message.success($t('crud.saved'));
     }
     popupApi.close();
     emits('success');
