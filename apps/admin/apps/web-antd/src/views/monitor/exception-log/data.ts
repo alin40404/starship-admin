@@ -10,7 +10,11 @@ import type { ExceptionLogRow } from '#/api/monitor';
 
 import { formatDateTime } from '@vben/utils';
 
-import { MONITOR_EXCEPTION_LOG_PERMISSIONS } from '#/constants/monitor-permissions';
+import {
+  formatExceptionClassLabel,
+  getExceptionTypeColor,
+  MONITOR_EXCEPTION_LOG_PERMISSIONS,
+} from '#/constants/monitor-permissions';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { $t } from '#/locales';
 
@@ -80,16 +84,21 @@ export function useColumns(
     },
     {
       align: 'left',
-      field: 'exception_class',
-      formatter: ({ cellValue }) => {
-        if (!cellValue) {
-          return TABLE_CELL_EMPTY;
-        }
-        const text = String(cellValue);
-        const parts = text.split('\\');
-        return parts[parts.length - 1] || text;
+      cellRender: {
+        attrs: {
+          getColor: (row: ExceptionLogRow) =>
+            getExceptionTypeColor(row.exception_class),
+          getLabel: (row: ExceptionLogRow) =>
+            formatExceptionClassLabel(row.exception_class) || TABLE_CELL_EMPTY,
+        },
+        name: 'CellTag',
       },
+      field: 'exception_class',
       minWidth: 160,
+      mobile: {
+        format: (row) =>
+          formatExceptionClassLabel(row.exception_class) || TABLE_CELL_EMPTY,
+      },
       title: $t('monitor.exceptionLog.columnExceptionType'),
     },
     {

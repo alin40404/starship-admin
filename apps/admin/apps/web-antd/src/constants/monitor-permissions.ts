@@ -117,3 +117,68 @@ export function getOperationLogStatusCodeColor(
   }
   return 'default';
 }
+
+/** 异常日志「异常类型」列：已知异常类固定配色，展示短类名 */
+const EXCEPTION_TYPE_COLORS: Record<string, string> = {
+  AuthenticationException: 'error',
+  AuthorizationException: 'error',
+  HttpResponseException: 'processing',
+  MethodNotAllowedHttpException: 'orange',
+  ModelNotFoundException: 'warning',
+  NotFoundHttpException: 'warning',
+  QueryException: 'red',
+  UnauthorizedHttpException: 'error',
+  ValidationException: 'gold',
+};
+
+const EXCEPTION_TYPE_COLOR_PALETTE = [
+  'processing',
+  'success',
+  'warning',
+  'magenta',
+  'red',
+  'volcano',
+  'orange',
+  'gold',
+  'lime',
+  'green',
+  'cyan',
+  'blue',
+  'geekblue',
+  'purple',
+] as const;
+
+function hashExceptionTypeName(name: string): number {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+  }
+  return hash;
+}
+
+export function formatExceptionClassLabel(
+  exceptionClass: string | null | undefined,
+): string {
+  if (!exceptionClass) {
+    return '';
+  }
+  const text = String(exceptionClass);
+  const parts = text.split('\\');
+  return parts[parts.length - 1] || text;
+}
+
+export function getExceptionTypeColor(
+  exceptionClass: string | null | undefined,
+): string {
+  const shortName = formatExceptionClassLabel(exceptionClass);
+  if (!shortName) {
+    return 'default';
+  }
+  const mapped = EXCEPTION_TYPE_COLORS[shortName];
+  if (mapped) {
+    return mapped;
+  }
+  const index =
+    hashExceptionTypeName(shortName) % EXCEPTION_TYPE_COLOR_PALETTE.length;
+  return EXCEPTION_TYPE_COLOR_PALETTE[index] ?? 'default';
+}

@@ -1,11 +1,15 @@
 <script lang="ts" setup>
 import type { ExceptionLogRow } from '#/api/monitor';
 
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
-import { Alert, Descriptions, Drawer } from 'ant-design-vue';
+import { Alert, Descriptions, Drawer, Tag } from 'ant-design-vue';
 
 import { fetchExceptionLog } from '#/api/monitor';
+import {
+  formatExceptionClassLabel,
+  getExceptionTypeColor,
+} from '#/constants/monitor-permissions';
 import { $t } from '#/locales';
 import { formatDateTime } from '@vben/utils';
 
@@ -23,6 +27,18 @@ const descriptionsContentStyle = {
 const open = ref(false);
 const loading = ref(false);
 const detail = ref<ExceptionLogRow | null>(null);
+
+const exceptionTypeTag = computed(() => {
+  const exceptionClass = detail.value?.exception_class;
+  if (!exceptionClass) {
+    return null;
+  }
+
+  return {
+    color: getExceptionTypeColor(exceptionClass),
+    label: formatExceptionClassLabel(exceptionClass),
+  };
+});
 
 async function show(id: number) {
   open.value = true;
@@ -61,7 +77,12 @@ defineExpose({ open: show });
       size="small"
     >
       <Descriptions.Item label="Trace ID">{{ detail.trace_id }}</Descriptions.Item>
-      <Descriptions.Item :label="$t('monitor.exceptionLog.columnExceptionClass')">{{ detail.exception_class }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('monitor.exceptionLog.columnExceptionClass')">
+        <Tag v-if="exceptionTypeTag" :color="exceptionTypeTag.color">
+          {{ exceptionTypeTag.label }}
+        </Tag>
+        <span v-else>—</span>
+      </Descriptions.Item>
       <Descriptions.Item :label="$t('monitor.exceptionLog.columnMessage')">{{ detail.message }}</Descriptions.Item>
       <Descriptions.Item :label="$t('monitor.exceptionLog.columnFile')">{{ detail.file || '—' }}</Descriptions.Item>
       <Descriptions.Item :label="$t('monitor.exceptionLog.columnLine')">{{ detail.line ?? '—' }}</Descriptions.Item>
