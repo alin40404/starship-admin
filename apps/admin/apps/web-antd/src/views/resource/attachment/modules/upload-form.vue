@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { UploadFile } from 'ant-design-vue';
 
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 import { useVbenDrawer, useVbenModal } from '@vben/common-ui';
 import { IconifyIcon } from '@vben/icons';
@@ -12,6 +12,7 @@ import { message, Progress, Upload } from 'ant-design-vue';
 
 import type { AttachmentRow } from '#/api/system/attachment';
 import { uploadAttachment } from '#/api/system/attachment';
+import { resolveUploadAcceptAttr, validateUploadFile } from '#/utils/upload-policy';
 
 const props = withDefaults(
   defineProps<{
@@ -31,8 +32,22 @@ const hasUploaded = ref(false);
 const uploadedRows = ref<AttachmentRow[]>([]);
 const fileList = ref<UploadFile[]>([]);
 const focusingUid = ref<null | string>(null);
+const uploadAccept = computed(() => resolveUploadAcceptAttr('all', props.accept));
 
 async function onUpload(options: any) {
+  const file = options?.file as File | undefined;
+  if (!file) {
+    options?.onError?.(new Error('missing file'));
+    return;
+  }
+
+  const validationError = validateUploadFile(file, 'all');
+  if (validationError) {
+    message.error(validationError);
+    options?.onError?.(new Error(validationError));
+    return;
+  }
+
   uploadingCount.value += 1;
   try {
     const row = await uploadAttachment(options?.file);
@@ -133,7 +148,7 @@ defineExpose({ open });
       <Upload.Dragger
         v-model:file-list="fileList"
         class="attachment-upload-dragger"
-        :accept="props.accept"
+        :accept="uploadAccept"
         :custom-request="onUpload"
         :disabled="uploadingCount > 0"
         :multiple="true"
@@ -218,7 +233,7 @@ defineExpose({ open });
       <Upload.Dragger
         v-model:file-list="fileList"
         class="attachment-upload-dragger"
-        :accept="props.accept"
+        :accept="uploadAccept"
         :custom-request="onUpload"
         :disabled="uploadingCount > 0"
         :multiple="true"

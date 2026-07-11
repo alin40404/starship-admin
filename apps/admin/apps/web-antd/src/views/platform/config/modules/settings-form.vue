@@ -35,6 +35,7 @@ import {
   type HomePathCascaderOption,
 } from '../data';
 import { applySiteBranding } from '#/utils/site-branding';
+import { initAdminRuntimeConfig } from '#/utils/admin-runtime-config';
 import { fetchMenuTree } from '#/api/system/menu';
 import HomePathCascader from './home-path-cascader.vue';
 
@@ -132,6 +133,9 @@ async function onSave() {
           homePath: preferences.app.defaultHomePath,
         });
       }
+    }
+    if (props.groupName === 'storage') {
+      await initAdminRuntimeConfig(true);
     }
   } finally {
     saving.value = false;

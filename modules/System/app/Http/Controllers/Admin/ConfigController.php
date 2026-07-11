@@ -23,7 +23,10 @@ class ConfigController extends Controller
 
     public function runtime(): JsonResponse
     {
-        return ApiResponse::success(AdminRuntimeConfig::publicSnapshot());
+        return ApiResponse::success(array_merge(
+            AdminRuntimeConfig::publicSnapshot(),
+            StorageConfigRegistrar::publicUploadSnapshot(),
+        ));
     }
 
     public function index(Request $request): JsonResponse

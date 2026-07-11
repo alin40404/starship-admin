@@ -9,6 +9,7 @@ import { message } from 'ant-design-vue';
 
 import { getMyProfileApi, updateMyProfileApi } from '#/api';
 import { uploadAttachment } from '#/api/system/attachment';
+import { resolveUploadAcceptAttr, validateUploadFile } from '#/utils/upload-policy';
 import { useAuthStore } from '#/store';
 
 const profileBaseSettingRef = ref<any>();
@@ -31,8 +32,21 @@ function normalizeAvatarToFileList(avatar?: null | string) {
 function onAvatarChange(_event: any) {}
 
 async function onAvatarUpload(options: any) {
+  const file = options?.file as File | undefined;
+  if (!file) {
+    options?.onError?.(new Error('missing file'));
+    return;
+  }
+
+  const validationError = validateUploadFile(file, 'image');
+  if (validationError) {
+    message.error(validationError);
+    options?.onError?.(new Error(validationError));
+    return;
+  }
+
   try {
-    const row = await uploadAttachment(options?.file);
+    const row = await uploadAttachment(file);
     options?.onSuccess?.(row);
   } catch (error) {
     options?.onError?.(error);
@@ -63,7 +77,7 @@ const formSchema = computed((): VbenFormSchema[] => {
     {
       component: 'Upload',
       componentProps: {
-        accept: 'image/*',
+        accept: resolveUploadAcceptAttr('image'),
         customRequest: onAvatarUpload,
         handleChange: onAvatarChange,
         listType: 'picture-card',

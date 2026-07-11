@@ -284,7 +284,7 @@ class ConfigSeeder extends Seeder
             [
                 'key' => 'app.upload.max_size',
                 'name' => '上传大小上限',
-                'value' => '20',
+                'value' => '200',
                 'group_name' => 'storage',
                 'type' => 'number',
                 'sort' => 20,

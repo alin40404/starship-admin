@@ -24,6 +24,7 @@ import AttachmentFlowView from '#/views/resource/attachment/modules/flow-view.vu
 import { usePickerColumns } from './picker-data';
 import type { AttachmentAcceptMode } from './types';
 import { isAttachmentAcceptable, resolveMimeFilter, resolveUploadAccept } from './utils';
+import { validateUploadFile } from '#/utils/upload-policy';
 
 const ATTACHMENT_PICKER_VIEW_MODE_KEY = 'attachment-picker-view-mode';
 
@@ -276,6 +277,11 @@ async function uploadPickerFiles(files: File[]) {
   const uploadedRows: AttachmentRow[] = [];
   try {
     for (const file of files) {
+      const validationError = validateUploadFile(file, props.accept);
+      if (validationError) {
+        message.error(validationError);
+        continue;
+      }
       uploadedRows.push(await uploadAttachment(file));
     }
     if (uploadedRows.length === 0) {

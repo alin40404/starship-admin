@@ -47,7 +47,9 @@
       "singleModeWarning": "Single selection only; uploading the first file",
       "uploadNoUrl": "Upload failed: no file URL returned",
       "uploadSuccess": "Uploaded successfully",
-      "uploadFailed": "Upload failed"
+      "uploadFailed": "Upload failed",
+      "fileTypeNotAllowed": "This file type is not allowed",
+      "imageTypeRequired": "Please upload an image file"
     },
     "picker": {
       "title": "Select attachment",

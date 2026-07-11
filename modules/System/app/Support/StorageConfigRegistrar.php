@@ -18,6 +18,8 @@ final class StorageConfigRegistrar
     /** @var list<string> */
     public const ALL_DISKS = ['public', 'local', 'oss', 'cos', 's3'];
 
+    public const DEFAULT_MAX_UPLOAD_MB = 200;
+
     public static function reset(): void
     {
         self::$registered = false;
@@ -52,11 +54,28 @@ final class StorageConfigRegistrar
         return in_array($driver, self::ALL_DISKS, true) ? $driver : 'public';
     }
 
+    public static function maxUploadSizeMb(): int
+    {
+        return max(1, (int) SettingStore::get(
+            'app.upload.max_size',
+            (string) self::DEFAULT_MAX_UPLOAD_MB,
+        ));
+    }
+
     public static function maxUploadSizeKb(): int
     {
-        $mb = (int) SettingStore::get('app.upload.max_size', '20');
+        return self::maxUploadSizeMb() * 1024;
+    }
 
-        return max(1, $mb) * 1024;
+    /**
+     * @return array{uploadMaxSizeMb: int, uploadAllowedExtensions: list<string>}
+     */
+    public static function publicUploadSnapshot(): array
+    {
+        return [
+            'uploadMaxSizeMb' => self::maxUploadSizeMb(),
+            'uploadAllowedExtensions' => self::allowedExtensions(),
+        ];
     }
 
     /**

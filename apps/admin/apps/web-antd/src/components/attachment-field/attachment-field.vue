@@ -16,9 +16,9 @@ import {
   isImageUrl,
   normalizeFieldValue,
   parseInputText,
-  resolveUploadAccept,
   valueToInputText,
 } from './utils';
+import { resolveUploadAcceptAttr, validateUploadFile } from '#/utils/upload-policy';
 
 const props = withDefaults(
   defineProps<{
@@ -117,6 +117,11 @@ async function onFileInputChange(event: Event) {
   try {
     const uploadedUrls: string[] = [];
     for (const file of uploadFiles) {
+      const validationError = validateUploadFile(file, props.accept);
+      if (validationError) {
+        message.error(validationError);
+        continue;
+      }
       const row = await uploadAttachment(file);
       if (row.file_url) {
         uploadedUrls.push(row.file_url);
@@ -278,7 +283,7 @@ function onPreviewVisibleChange(visible: boolean) {
       ref="fileInputRef"
       class="attachment-field__file-input"
       type="file"
-      :accept="resolveUploadAccept(accept)"
+      :accept="resolveUploadAcceptAttr(accept)"
       :disabled="disabled"
       :multiple="multiple"
       @change="onFileInputChange"

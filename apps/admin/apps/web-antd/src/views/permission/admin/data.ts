@@ -19,6 +19,7 @@ import { fetchDepartmentTree } from '#/api/system/department';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { ADMIN_PERMISSIONS } from '#/constants/admin-permissions';
 import { $t } from '#/locales';
+import { resolveUploadAcceptAttr } from '#/utils/upload-policy';
 
 export function mapDeptForTreeSelect(
   nodes: DeptNode[],
@@ -386,7 +387,7 @@ export function buildAdminFormSchema(params: {
     {
       component: 'Upload',
       componentProps: {
-        accept: 'image/*',
+        accept: resolveUploadAcceptAttr('image'),
         class: 'w-full',
         customRequest: onAvatarUpload,
         handleChange: onAvatarChange,

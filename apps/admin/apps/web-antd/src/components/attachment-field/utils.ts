@@ -3,6 +3,8 @@ import { isImageAttachment } from '#/views/resource/attachment/data';
 
 import type { AttachmentAcceptMode } from './types';
 
+import { resolveUploadAcceptAttr } from '#/utils/upload-policy';
+
 const IMAGE_EXTENSIONS = new Set([
   'bmp',
   'gif',
@@ -31,7 +33,7 @@ export function isImageUrl(url: string): boolean {
 }
 
 export function resolveUploadAccept(accept: AttachmentAcceptMode = 'all') {
-  return accept === 'image' ? 'image/*' : undefined;
+  return resolveUploadAcceptAttr(accept);
 }
 
 export function resolveMimeFilter(accept: AttachmentAcceptMode = 'all') {

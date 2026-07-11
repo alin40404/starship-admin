@@ -17,6 +17,7 @@ import { message } from 'ant-design-vue';
 import { useVbenForm } from '#/adapter/form';
 import { createAdmin, updateAdmin } from '#/api/system/admin';
 import { uploadAttachment } from '#/api/system/attachment';
+import { validateUploadFile } from '#/utils/upload-policy';
 import { fetchDepartmentTree } from '#/api/system/department';
 import { fetchPostPage } from '#/api/system/post';
 import { fetchRolePage } from '#/api/system/role';
@@ -54,8 +55,21 @@ function normalizeAvatarToFileList(avatar: string | null | undefined) {
 function onAvatarChange(_event: any) {}
 
 async function onAvatarUpload(options: any) {
+  const file = options?.file as File | undefined;
+  if (!file) {
+    options?.onError?.(new Error('missing file'));
+    return;
+  }
+
+  const validationError = validateUploadFile(file, 'image');
+  if (validationError) {
+    message.error(validationError);
+    options?.onError?.(new Error(validationError));
+    return;
+  }
+
   try {
-    const row = await uploadAttachment(options?.file);
+    const row = await uploadAttachment(file);
     options?.onSuccess?.(row);
   } catch (error) {
     options?.onError?.(error);

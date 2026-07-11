@@ -47,7 +47,9 @@
       "singleModeWarning": "当前为单选模式，仅上传第一个文件",
       "uploadNoUrl": "上传失败，未获取到文件链接",
       "uploadSuccess": "上传成功",
-      "uploadFailed": "上传失败"
+      "uploadFailed": "上传失败",
+      "fileTypeNotAllowed": "不允许上传该文件类型",
+      "imageTypeRequired": "请上传图片文件"
     },
     "picker": {
       "title": "选择附件",

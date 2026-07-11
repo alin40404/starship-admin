@@ -2,6 +2,22 @@ import type { RequestClient } from '@vben/request';
 
 import { useAppConfig } from '@vben/hooks';
 
+export const ADMIN_UPLOAD_MAX_SIZE_MB_DEFAULT = 200;
+
+export const ADMIN_UPLOAD_ALLOWED_EXTENSIONS_DEFAULT = [
+  'jpg',
+  'jpeg',
+  'png',
+  'gif',
+  'webp',
+  'pdf',
+  'doc',
+  'docx',
+  'xls',
+  'xlsx',
+  'zip',
+];
+
 export const ADMIN_PAGE_SIZE_DEFAULT = 20;
 export const ADMIN_ATTACHMENT_FLOW_PAGE_SIZE_DEFAULT = 50;
 export const ADMIN_API_TIMEOUT_SECONDS_DEFAULT = 30;
@@ -17,6 +33,8 @@ export interface AdminRuntimeSnapshot {
   loginThirdParty: boolean;
   maintenance: boolean;
   pageSize: number;
+  uploadAllowedExtensions: string[];
+  uploadMaxSizeMb: number;
 }
 
 const DEFAULT_SNAPSHOT: AdminRuntimeSnapshot = {
@@ -30,6 +48,8 @@ const DEFAULT_SNAPSHOT: AdminRuntimeSnapshot = {
   loginThirdParty: false,
   maintenance: false,
   pageSize: ADMIN_PAGE_SIZE_DEFAULT,
+  uploadAllowedExtensions: [...ADMIN_UPLOAD_ALLOWED_EXTENSIONS_DEFAULT],
+  uploadMaxSizeMb: ADMIN_UPLOAD_MAX_SIZE_MB_DEFAULT,
 };
 
 let snapshot: AdminRuntimeSnapshot = { ...DEFAULT_SNAPSHOT };
@@ -59,6 +79,29 @@ function parseBool(value: unknown, fallback = false): boolean {
   return fallback;
 }
 
+function parseStringArray(value: unknown, fallback: string[]): string[] {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => String(item ?? '').trim().toLowerCase())
+      .filter(Boolean);
+  }
+
+  if (typeof value === 'string') {
+    try {
+      const decoded = JSON.parse(value) as unknown;
+      if (Array.isArray(decoded)) {
+        return decoded
+          .map((item) => String(item ?? '').trim().toLowerCase())
+          .filter(Boolean);
+      }
+    } catch {
+      return fallback;
+    }
+  }
+
+  return fallback;
+}
+
 function normalizeSnapshot(data: Record<string, unknown>): AdminRuntimeSnapshot {
   return {
     pageSize: parsePositiveInt(data.pageSize, ADMIN_PAGE_SIZE_DEFAULT),
@@ -77,6 +120,14 @@ function normalizeSnapshot(data: Record<string, unknown>): AdminRuntimeSnapshot 
     loginRegister: parseBool(data.loginRegister, false),
     loginThirdParty: parseBool(data.loginThirdParty, false),
     maintenance: parseBool(data.maintenance, false),
+    uploadAllowedExtensions: parseStringArray(
+      data.uploadAllowedExtensions,
+      ADMIN_UPLOAD_ALLOWED_EXTENSIONS_DEFAULT,
+    ),
+    uploadMaxSizeMb: parsePositiveInt(
+      data.uploadMaxSizeMb,
+      ADMIN_UPLOAD_MAX_SIZE_MB_DEFAULT,
+    ),
   };
 }
 
