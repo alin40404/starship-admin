@@ -11,9 +11,9 @@
       name="viewport"
       content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=0"
     />
-    <!-- 由 vite 注入 VITE_APP_TITLE 变量，在 .env 文件内配置 -->
+    <!-- favicon 固定走上传目录，由后台保存 Logo 时生成 uploads/favicon.ico -->
     <title>%VITE_APP_TITLE%</title>
-    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" href="/storage/uploads/favicon.ico" />
     <script>
       // 生产环境下注入百度统计
       if (window._VBEN_ADMIN_PRO_APP_CONF_) {

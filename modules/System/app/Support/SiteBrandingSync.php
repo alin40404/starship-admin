@@ -19,6 +19,37 @@ final class SiteBrandingSync
 
         $itemsByKey = collect($items)->keyBy('key');
 
+        self::restoreFaviconWhenCleared($itemsByKey, $previousValues);
+        self::regenerateFaviconWhenLogoChanged($itemsByKey, $previousValues);
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection<string, array<string, mixed>>  $itemsByKey
+     * @param  array<string, mixed>  $previousValues
+     */
+    private static function restoreFaviconWhenCleared($itemsByKey, array $previousValues): void
+    {
+        if (! $itemsByKey->has(SiteConfig::KEY_FAVICON)) {
+            return;
+        }
+
+        $favicon = trim((string) ($itemsByKey->get(SiteConfig::KEY_FAVICON)['value'] ?? ''));
+        if ($favicon !== '') {
+            return;
+        }
+
+        $previousFavicon = trim((string) ($previousValues[SiteConfig::KEY_FAVICON] ?? ''));
+
+        SiteFaviconGenerator::deleteCustomFaviconIfNotDefault($previousFavicon);
+        SiteFaviconGenerator::restoreDefaultFaviconToUploads();
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection<string, array<string, mixed>>  $itemsByKey
+     * @param  array<string, mixed>  $previousValues
+     */
+    private static function regenerateFaviconWhenLogoChanged($itemsByKey, array $previousValues): void
+    {
         if (! $itemsByKey->has(SiteConfig::KEY_LOGO)) {
             return;
         }

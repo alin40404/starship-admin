@@ -67,6 +67,80 @@ final class SiteFaviconGenerator
         return Storage::disk($disk)->url(self::UPLOAD_RELATIVE_PATH);
     }
 
+    /**
+     * 站点图标配置为空时，将默认 /favicon.ico 复制到 uploads/favicon.ico。
+     */
+    public static function restoreDefaultFaviconToUploads(): bool
+    {
+        $source = self::resolveDefaultFaviconLocalPath();
+        if ($source === null) {
+            return false;
+        }
+
+        $contents = @file_get_contents($source);
+        if (! is_string($contents) || $contents === '') {
+            return false;
+        }
+
+        StorageConfigRegistrar::apply();
+        $disk = StorageConfigRegistrar::defaultDisk();
+
+        return Storage::disk($disk)->put(self::UPLOAD_RELATIVE_PATH, $contents);
+    }
+
+    /**
+     * 清空站点图标时，删除先前手动配置的其它 storage 文件（保留固定路径由 restore 覆盖）。
+     */
+    public static function deleteCustomFaviconIfNotDefault(?string $faviconUrl = null): void
+    {
+        $relative = self::resolveStorageRelativePath($faviconUrl);
+        if ($relative === null || $relative === self::UPLOAD_RELATIVE_PATH) {
+            return;
+        }
+
+        StorageConfigRegistrar::apply();
+        $disk = StorageConfigRegistrar::defaultDisk();
+
+        if (Storage::disk($disk)->exists($relative)) {
+            Storage::disk($disk)->delete($relative);
+        }
+    }
+
+    private static function resolveDefaultFaviconLocalPath(): ?string
+    {
+        foreach ([self::moduleResourcePath('assets/favicon.ico'), public_path('favicon.ico')] as $path) {
+            if (is_string($path) && is_file($path) && filesize($path) > 0) {
+                return $path;
+            }
+        }
+
+        return null;
+    }
+
+    private static function moduleResourcePath(string $relativePath): ?string
+    {
+        $full = dirname(__DIR__, 2)
+            .DIRECTORY_SEPARATOR.'resources'
+            .DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
+
+        return is_file($full) ? $full : null;
+    }
+
+    private static function resolveStorageRelativePath(?string $url): ?string
+    {
+        $url = trim((string) $url);
+        if ($url === '') {
+            return null;
+        }
+
+        $path = parse_url($url, PHP_URL_PATH);
+        if (! is_string($path) || ! str_starts_with($path, '/storage/')) {
+            return null;
+        }
+
+        return ltrim(substr($path, strlen('/storage/')), '/');
+    }
+
     private static function loadImageBinary(string $logoUrl): ?string
     {
         $localPath = self::resolveLogoLocalPath($logoUrl);
