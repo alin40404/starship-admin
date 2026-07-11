@@ -446,9 +446,7 @@ class ConfigSeeder extends Seeder
         ];
 
         foreach ($siteConfigs as $config) {
-            $key = $config['key'];
-            unset($config['key']);
-            Setting::query()->updateOrCreate(['key' => $key], $config);
+            $this->seedSetting($config);
         }
 
         Setting::query()->where('key', 'site.name')->update(['group_name' => 'basic']);
@@ -511,9 +509,27 @@ class ConfigSeeder extends Seeder
         ];
 
         foreach ($runtimeParams as $config) {
-            $key = $config['key'];
-            unset($config['key']);
-            Setting::query()->updateOrCreate(['key' => $key], $config);
+            $this->seedSetting($config);
         }
+    }
+
+    /**
+     * 初始化配置项：不存在时写入默认值；已存在时仅同步元数据，不覆盖用户已保存的 value。
+     *
+     * @param  array{key: string, name: string, value: string, group_name: string, type: string, sort: int, remark: string}  $definition
+     */
+    private function seedSetting(array $definition): void
+    {
+        $key = $definition['key'];
+        unset($definition['key']);
+
+        $existing = Setting::query()->where('key', $key)->first();
+        if ($existing === null) {
+            Setting::query()->create(array_merge(['key' => $key], $definition));
+
+            return;
+        }
+
+        $existing->update(collect($definition)->except('value')->all());
     }
 }
