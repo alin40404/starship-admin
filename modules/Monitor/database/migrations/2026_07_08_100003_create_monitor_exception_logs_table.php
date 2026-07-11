@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('admin_name', 100)->nullable()->comment('管理员账号');
             $table->string('ip', 45)->nullable()->comment('IP');
             $table->string('user_agent', 500)->nullable()->comment('User-Agent');
+            $table->string('log_path', 255)->nullable()->comment('记录异常时的应用日志文件路径');
             $table->timestamp('created_at')->nullable()->comment('创建时间');
 
             $table->unique('trace_id');

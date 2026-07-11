@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Modules\Monitor\App\Models\ExceptionLog;
+use Modules\Monitor\App\Support\ApplicationLogPath;
 use Modules\System\App\Models\Admin;
 use Throwable;
 
@@ -60,6 +61,7 @@ class ExceptionLogWriter
             'admin_name' => $adminName ? Str::limit((string) $adminName, 100, '') : null,
             'ip' => $request?->ip(),
             'user_agent' => $request?->userAgent() ? Str::limit((string) $request->userAgent(), 500, '') : null,
+            'log_path' => Str::limit(ApplicationLogPath::displayHint(), 255, ''),
             'created_at' => now(),
         ]);
     }

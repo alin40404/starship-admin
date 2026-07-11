@@ -28,8 +28,6 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
         Route::post('login-logs/batch-destroy', [LoginLogController::class, 'batchDestroy'])
             ->middleware('admin.permission:'.LoginLogPermissions::BATCH_DELETE);
 
-        Route::get('exception-logs/hint', [ExceptionLogController::class, 'hint'])
-            ->middleware('admin.permission:'.ExceptionLogPermissions::QUERY);
         Route::get('exception-logs', [ExceptionLogController::class, 'index'])
             ->middleware('admin.permission:'.ExceptionLogPermissions::QUERY);
         Route::get('exception-logs/{id}', [ExceptionLogController::class, 'show'])

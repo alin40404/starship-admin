@@ -54,6 +54,7 @@ export interface ExceptionLogRow {
   ip: string | null;
   user_agent: string | null;
   created_at: string;
+  log_path?: string | null;
   log_hint?: string;
 }
 
@@ -114,12 +115,6 @@ export function fetchExceptionLogPage(
   return requestClient.get<LaravelPaginate<ExceptionLogRow>>(
     '/monitor/exception-logs',
     { params },
-  );
-}
-
-export function fetchExceptionLogHint() {
-  return requestClient.get<{ list_hint: string; log_path: string }>(
-    '/monitor/exception-logs/hint',
   );
 }
 

@@ -45,7 +45,7 @@
   },
   "exceptionLog": {
     "entity": "Exception Log",
-    "hint": "The list shows summaries only. Search server log files by trace_id for full stack traces.",
+    "hint": "The list shows summaries only. Open a record detail for the log path at the time of the exception, then search by trace_id.",
     "searchPlaceholder": "Search message/class/trace_id",
     "keywordPlaceholder": "Message / class / trace_id",
     "exceptionClassPlaceholder": "Exception class name",

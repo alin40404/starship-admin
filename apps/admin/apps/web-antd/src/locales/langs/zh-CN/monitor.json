@@ -45,7 +45,7 @@
   },
   "exceptionLog": {
     "entity": "异常日志",
-    "hint": "列表仅展示异常摘要；完整堆栈请按 trace_id 在服务器日志文件中检索。",
+    "hint": "列表仅展示异常摘要；完整堆栈请打开详情查看记录当时的日志路径，并按 trace_id 检索。",
     "searchPlaceholder": "搜索消息/异常类/trace_id",
     "keywordPlaceholder": "消息 / 异常类 / trace_id",
     "exceptionClassPlaceholder": "Exception 类名",

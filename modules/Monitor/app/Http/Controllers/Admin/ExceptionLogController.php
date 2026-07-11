@@ -48,25 +48,14 @@ class ExceptionLogController extends Controller
         return ApiResponse::success($query->paginate(AdminRuntimeConfig::perPage($request->get('per_page'))));
     }
 
-    public function hint(): JsonResponse
-    {
-        $logPath = ApplicationLogPath::displayHint();
-
-        return ApiResponse::success([
-            'log_path' => $logPath,
-            'list_hint' => __('monitor::messages.list_log_hint', ['log_path' => $logPath]),
-        ]);
-    }
-
     public function show(int $id): JsonResponse
     {
         $log = ExceptionLog::query()->findOrFail($id);
-        $logPath = ApplicationLogPath::displayHint();
 
         return ApiResponse::success([
             ...$log->toArray(),
             'log_hint' => __('monitor::messages.log_hint', [
-                'log_path' => $logPath,
+                'log_path' => $this->resolveLogPath($log),
                 'trace_id' => $log->trace_id,
             ]),
         ]);
@@ -89,5 +78,15 @@ class ExceptionLogController extends Controller
         $deleted = ExceptionLog::query()->whereIn('id', $ids)->delete();
 
         return ApiResponse::success(['deleted' => $deleted], __('monitor::messages.batch_deleted'));
+    }
+
+    private function resolveLogPath(ExceptionLog $log): string
+    {
+        $stored = trim((string) ($log->log_path ?? ''));
+        if ($stored !== '') {
+            return $stored;
+        }
+
+        return ApplicationLogPath::displayHint();
     }
 }
