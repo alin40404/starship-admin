@@ -5,6 +5,8 @@ export namespace AuthApi {
   export interface LoginParams {
     password?: string;
     username?: string;
+    /** 滑块验证码通过后为 true，后端在开启 admin.login.captcha 时校验 */
+    captcha?: boolean;
   }
 
   /**
@@ -29,12 +31,12 @@ interface LaravelLoginData {
 
 /**
  * 登录（Starship：`POST /admin-api/auth/login`）
- * 仅提交账号密码，忽略表单中的滑块等前端校验字段。
  */
 export async function loginApi(data: AuthApi.LoginParams) {
   const result = await requestClient.post<LaravelLoginData>('/auth/login', {
     username: data.username,
     password: data.password,
+    ...(data.captcha ? { captcha: true } : {}),
   });
   return { accessToken: result.token } as AuthApi.LoginResult;
 }
