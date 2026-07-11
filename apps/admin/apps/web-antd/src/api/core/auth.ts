@@ -21,6 +21,21 @@ export namespace AuthApi {
     data: string;
     status: number;
   }
+
+  export interface ForgotPasswordParams {
+    email: string;
+  }
+
+  export interface ResetPasswordParams {
+    email: string;
+    password: string;
+    token: string;
+  }
+
+  export interface VerifyResetPasswordParams {
+    email: string;
+    token: string;
+  }
 }
 
 /** Laravel 登录响应 data 段 */
@@ -65,4 +80,29 @@ export async function getAccessCodesApi() {
     '/auth/permissions',
   );
   return data.permissions;
+}
+
+/**
+ * 忘记密码：发送重置邮件
+ */
+export async function forgotPasswordApi(data: AuthApi.ForgotPasswordParams) {
+  return baseRequestClient.post<null>('/auth/forgot-password', data);
+}
+
+/**
+ * 校验重置密码链接是否有效
+ */
+export async function verifyResetPasswordTokenApi(
+  params: AuthApi.VerifyResetPasswordParams,
+) {
+  return baseRequestClient.get<{ valid: boolean }>('/auth/reset-password/verify', {
+    params,
+  });
+}
+
+/**
+ * 重置密码（邮件链接携带 token）
+ */
+export async function resetPasswordApi(data: AuthApi.ResetPasswordParams) {
+  return baseRequestClient.post<null>('/auth/reset-password', data);
 }

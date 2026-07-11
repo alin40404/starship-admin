@@ -106,8 +106,40 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
   return client;
 }
 
+function createBaseRequestClient(baseURL: string) {
+  const client = new RequestClient({
+    baseURL,
+    responseReturn: 'data',
+  });
+
+  client.addRequestInterceptor({
+    fulfilled: async (config) => {
+      config.headers['Accept-Language'] = preferences.app.locale;
+      return config;
+    },
+  });
+
+  client.addResponseInterceptor(
+    defaultResponseInterceptor({
+      codeField: 'code',
+      dataField: 'data',
+      successCode: 0,
+    }),
+  );
+
+  client.addResponseInterceptor(
+    errorMessageResponseInterceptor((msg: string, error) => {
+      const responseData = error?.response?.data ?? {};
+      const errorMessage = responseData?.error ?? responseData?.message ?? '';
+      message.error(errorMessage || msg);
+    }),
+  );
+
+  return client;
+}
+
 export const requestClient = createRequestClient(apiURL, {
   responseReturn: 'data',
 });
 
-export const baseRequestClient = new RequestClient({ baseURL: apiURL });
+export const baseRequestClient = createBaseRequestClient(apiURL);

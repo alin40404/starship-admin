@@ -36,6 +36,9 @@ Route::middleware(['api', 'admin.maintenance'])->prefix('admin-api')->group(func
 
     Route::prefix('auth')->group(function () {
         Route::post('login', [AuthController::class, 'login']);
+        Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+        Route::get('reset-password/verify', [AuthController::class, 'verifyResetPassword']);
+        Route::post('reset-password', [AuthController::class, 'resetPassword']);
         Route::middleware('auth:sanctum')->group(function () {
             Route::post('logout', [AuthController::class, 'logout']);
             Route::get('me', [AuthController::class, 'me']);

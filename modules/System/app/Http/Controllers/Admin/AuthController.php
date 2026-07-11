@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Modules\System\App\Models\Admin;
+use Modules\System\App\Services\AdminPasswordResetService;
 use Modules\System\App\Services\AdminPermissionService;
 use Modules\System\App\Support\AdminRuntimeConfig;
 
@@ -187,6 +188,64 @@ class AuthController extends Controller
         $admin->save();
 
         return ApiResponse::success(null, __('system::messages.password_changed'));
+    }
+
+    public function forgotPassword(Request $request, AdminPasswordResetService $resetService): JsonResponse
+    {
+        if (! AdminRuntimeConfig::loginForgetPasswordEnabled()) {
+            return ApiResponse::error(__('system::messages.password_reset_disabled'), 403);
+        }
+
+        $validated = $request->validate([
+            'email' => ['required', 'email', 'max:100'],
+        ]);
+
+        try {
+            $resetService->sendResetLink($validated['email']);
+        } catch (\RuntimeException $exception) {
+            return ApiResponse::error($exception->getMessage(), 422);
+        } catch (\Throwable) {
+            return ApiResponse::error(__('system::messages.password_reset_mail_failed'), 500);
+        }
+
+        return ApiResponse::success(null, __('system::messages.password_reset_mail_sent'));
+    }
+
+    public function verifyResetPassword(Request $request, AdminPasswordResetService $resetService): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => ['required', 'email', 'max:100'],
+            'token' => ['required', 'string', 'max:255'],
+        ]);
+
+        try {
+            $resetService->verifyResetToken($validated['email'], $validated['token']);
+        } catch (\RuntimeException $exception) {
+            return ApiResponse::error($exception->getMessage(), 422);
+        }
+
+        return ApiResponse::success(['valid' => true]);
+    }
+
+    public function resetPassword(Request $request, AdminPasswordResetService $resetService): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => ['required', 'email', 'max:100'],
+            'token' => ['required', 'string', 'max:255'],
+            'password' => ['required', 'string', Password::defaults()],
+        ]);
+
+        try {
+            $resetService->resetPassword(
+                $validated['email'],
+                $validated['token'],
+                $validated['password'],
+            );
+        } catch (\RuntimeException $exception) {
+            return ApiResponse::error($exception->getMessage(), 422);
+        }
+
+        return ApiResponse::success(null, __('system::messages.password_reset_success'));
     }
 
     /**

@@ -10,6 +10,7 @@ use Modules\System\App\Http\Middleware\EnsureAdminDepartmentStorePermission;
 use Modules\System\App\Http\Middleware\EnsureAdminMaintenanceMode;
 use Modules\System\App\Http\Middleware\EnsureAdminMenuStorePermission;
 use Modules\System\App\Http\Middleware\EnsureAdminPermission;
+use Modules\System\App\Support\MailConfigRegistrar;
 use Modules\System\App\Support\StorageConfigRegistrar;
 
 class SystemServiceProvider extends ServiceProvider
@@ -38,6 +39,7 @@ class SystemServiceProvider extends ServiceProvider
         $this->app->booted(static function (): void {
             try {
                 StorageConfigRegistrar::apply();
+                MailConfigRegistrar::apply();
             } catch (\Throwable) {
                 // 数据库未就绪时（如 migrate）忽略
             }

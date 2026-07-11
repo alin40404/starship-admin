@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Modules\System\App\Models\Setting;
 use Modules\System\App\Support\AdminRuntimeConfig;
 use Modules\System\App\Support\SettingStore;
+use Modules\System\App\Support\MailConfigRegistrar;
 use Modules\System\App\Support\SiteBrandingSync;
 use Modules\System\App\Support\SiteConfig;
 use Modules\System\App\Support\StorageConfigRegistrar;
@@ -92,6 +93,8 @@ class ConfigController extends Controller
 
         StorageConfigRegistrar::reset();
         StorageConfigRegistrar::apply();
+        MailConfigRegistrar::reset();
+        MailConfigRegistrar::apply();
         SettingStore::forget();
 
         SiteBrandingSync::afterConfigBatchUpsert($data['items'], $previousValues);

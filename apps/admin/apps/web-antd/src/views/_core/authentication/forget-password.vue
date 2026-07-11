@@ -7,6 +7,10 @@ import { computed, ref } from 'vue';
 import { AuthenticationForgetPassword, z } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
+import { message } from 'ant-design-vue';
+
+import { forgotPasswordApi } from '#/api';
+
 defineOptions({ name: 'ForgetPassword' });
 
 const loading = ref(false);
@@ -28,8 +32,16 @@ const formSchema = computed((): VbenFormSchema[] => {
   ];
 });
 
-function handleSubmit(value: Recordable<any>) {
-  void value;
+async function handleSubmit(values: Recordable<any>) {
+  loading.value = true;
+  try {
+    await forgotPasswordApi({ email: String(values.email ?? '').trim() });
+    message.success($t('authentication.sendResetLinkSuccess'));
+  } catch {
+    // 错误提示由请求拦截器统一处理
+  } finally {
+    loading.value = false;
+  }
 }
 </script>
 
