@@ -10,6 +10,7 @@ use Illuminate\Validation\Rule;
 use Modules\System\App\Models\DictItem;
 use Modules\System\App\Models\DictType;
 use Modules\System\App\Support\AdminRuntimeConfig;
+use Modules\System\App\Support\DictStore;
 
 class DictItemController extends Controller
 {
@@ -41,6 +42,8 @@ class DictItemController extends Controller
 
         $item = DictItem::query()->create($data);
 
+        DictStore::forgetByTypeId((int) $data['dict_type_id']);
+
         return ApiResponse::success($item, __('system::messages.created'));
     }
 
@@ -57,14 +60,19 @@ class DictItemController extends Controller
             'remark' => ['nullable', 'string', 'max:255'],
         ]);
 
+        $previousTypeId = (int) $item->dict_type_id;
         $item->update($data);
+        DictStore::forgetByTypeId($previousTypeId);
+        DictStore::forgetByTypeId((int) $item->fresh()->dict_type_id);
 
         return ApiResponse::success($item->fresh(), __('system::messages.updated'));
     }
 
     public function destroy(int $id): JsonResponse
     {
-        DictItem::query()->whereKey($id)->firstOrFail()->delete();
+        $item = DictItem::query()->whereKey($id)->firstOrFail();
+        DictStore::forgetByTypeId((int) $item->dict_type_id);
+        $item->delete();
 
         return ApiResponse::success(null, __('system::messages.deleted'));
     }

@@ -2,8 +2,6 @@
 
 namespace Modules\System\App\Support;
 
-use Modules\System\App\Models\Setting;
-
 /**
  * 站点对外展示配置（名称、Logo、备案号等）。
  */
@@ -19,30 +17,17 @@ final class SiteConfig
 
     public const KEY_FIXED_PAGE = 'site.fixed_page';
 
-    /** @var list<string> */
-    private const PUBLIC_KEYS = [
-        self::KEY_NAME,
-        self::KEY_LOGO,
-        self::KEY_FAVICON,
-        self::KEY_BEIAN,
-        self::KEY_FIXED_PAGE,
-    ];
-
     /**
      * @return array{name: string, logo: string, favicon: string, beian: string, defaultHomePath: string}
      */
     public static function branding(): array
     {
-        $values = Setting::query()
-            ->whereIn('key', self::PUBLIC_KEYS)
-            ->pluck('value', 'key');
-
         return [
-            'name' => trim((string) ($values[self::KEY_NAME] ?? '')),
-            'logo' => trim((string) ($values[self::KEY_LOGO] ?? '')),
-            'favicon' => trim((string) ($values[self::KEY_FAVICON] ?? SiteFaviconGenerator::DEFAULT_PUBLIC_PATH)),
-            'beian' => trim((string) ($values[self::KEY_BEIAN] ?? '')),
-            'defaultHomePath' => self::normalizeHomePath((string) ($values[self::KEY_FIXED_PAGE] ?? '')),
+            'name' => trim((string) SettingStore::get(self::KEY_NAME, '')),
+            'logo' => trim((string) SettingStore::get(self::KEY_LOGO, '')),
+            'favicon' => trim((string) (SettingStore::get(self::KEY_FAVICON, '') ?: SiteFaviconGenerator::DEFAULT_PUBLIC_PATH)),
+            'beian' => trim((string) SettingStore::get(self::KEY_BEIAN, '')),
+            'defaultHomePath' => self::normalizeHomePath((string) SettingStore::get(self::KEY_FIXED_PAGE, '')),
         ];
     }
 

@@ -108,6 +108,8 @@ class ConfigController extends Controller
 
         $config->delete();
 
+        SettingStore::forget();
+
         return ApiResponse::success(null, __('system::messages.deleted'));
     }
 
@@ -126,6 +128,8 @@ class ConfigController extends Controller
         if ($deleted === 0) {
             return ApiResponse::error(__('system::messages.runtime_param_not_found'), 422);
         }
+
+        SettingStore::forget();
 
         return ApiResponse::success(['deleted' => $deleted], __('system::messages.batch_deleted'));
     }

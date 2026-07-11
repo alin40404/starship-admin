@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Modules\System\App\Models\DictType;
 use Modules\System\App\Support\AdminRuntimeConfig;
+use Modules\System\App\Support\DictStore;
 
 class DictTypeController extends Controller
 {
@@ -63,6 +64,8 @@ class DictTypeController extends Controller
 
         $type = DictType::query()->create($data);
 
+        DictStore::forget($type->code);
+
         return ApiResponse::success($type, __('system::messages.created'));
     }
 
@@ -76,14 +79,19 @@ class DictTypeController extends Controller
             'remark' => ['nullable', 'string', 'max:255'],
         ]);
 
+        $previousCode = $type->code;
         $type->update($data);
+        DictStore::forget($previousCode);
+        DictStore::forget($type->fresh()->code);
 
         return ApiResponse::success($type->fresh(), __('system::messages.updated'));
     }
 
     public function destroy(int $id): JsonResponse
     {
-        DictType::query()->whereKey($id)->firstOrFail()->delete();
+        $type = DictType::query()->whereKey($id)->firstOrFail();
+        DictStore::forget($type->code);
+        $type->delete();
 
         return ApiResponse::success(null, __('system::messages.deleted'));
     }

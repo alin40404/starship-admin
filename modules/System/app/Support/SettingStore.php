@@ -2,13 +2,16 @@
 
 namespace Modules\System\App\Support;
 
+use Illuminate\Support\Facades\Cache;
 use Modules\System\App\Models\Setting;
 
 /**
- * 系统配置键值读取（请求内缓存）。
+ * 系统配置键值读取（Laravel 缓存 + 请求内缓存）。
  */
 final class SettingStore
 {
+    private const CACHE_KEY = 'system:settings:all';
+
     /** @var array<string, string|null>|null */
     private static ?array $cache = null;
 
@@ -24,6 +27,7 @@ final class SettingStore
     public static function forget(): void
     {
         self::$cache = null;
+        Cache::forget(self::CACHE_KEY);
     }
 
     private static function load(): void
@@ -32,6 +36,8 @@ final class SettingStore
             return;
         }
 
-        self::$cache = Setting::query()->pluck('value', 'key')->all();
+        self::$cache = Cache::rememberForever(self::CACHE_KEY, static function (): array {
+            return Setting::query()->pluck('value', 'key')->all();
+        });
     }
 }
