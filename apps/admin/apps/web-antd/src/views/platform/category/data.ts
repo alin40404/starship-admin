@@ -19,10 +19,10 @@ export type CategoryAccessChecker = {
 
 export function getCategoryFlagOptions() {
   return [
-    { label: $t('system.platform.category.flagOptions.hot'), value: 'hot' },
-    { label: $t('system.platform.category.flagOptions.index'), value: 'index' },
+    { label: $t('platform.category.flagOptions.hot'), value: 'hot' },
+    { label: $t('platform.category.flagOptions.index'), value: 'index' },
     {
-      label: $t('system.platform.category.flagOptions.recommend'),
+      label: $t('platform.category.flagOptions.recommend'),
       value: 'recommend',
     },
   ];
@@ -34,10 +34,10 @@ export function useGridFormSchema(): VbenFormSchema[] {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('system.platform.category.searchPlaceholder'),
+        placeholder: $t('platform.category.searchPlaceholder'),
       },
       fieldName: 'search',
-      label: $t('system.platform.category.keyword'),
+      label: $t('platform.category.keyword'),
     },
   ];
 }
@@ -59,10 +59,10 @@ export function buildFormSchema(params: {
           label: item.label,
           value: item.value,
         })),
-        placeholder: $t('system.platform.category.typePlaceholder'),
+        placeholder: $t('platform.category.typePlaceholder'),
       },
       fieldName: 'type',
-      label: $t('system.platform.category.columnType'),
+      label: $t('platform.category.columnType'),
       rules: 'required',
     },
     {
@@ -80,7 +80,7 @@ export function buildFormSchema(params: {
           excludeId,
           typeKey: '',
         },
-        placeholder: $t('system.platform.category.parentPlaceholder'),
+        placeholder: $t('platform.category.parentPlaceholder'),
         shouldFetch: (queryParams?: { typeKey?: string }) =>
           Boolean(queryParams?.typeKey),
         showSearch: true,
@@ -98,34 +98,34 @@ export function buildFormSchema(params: {
               typeKey: type ?? '',
             },
             placeholder: type
-              ? $t('system.platform.category.parentPlaceholder')
-              : $t('system.platform.category.selectTypeFirst'),
+              ? $t('platform.category.parentPlaceholder')
+              : $t('platform.category.selectTypeFirst'),
           };
         },
         triggerFields: ['type'],
       },
       defaultValue: 0,
       fieldName: 'parent_id',
-      label: $t('system.platform.category.parent'),
+      label: $t('platform.category.parent'),
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('system.platform.category.namePlaceholder'),
+        placeholder: $t('platform.category.namePlaceholder'),
       },
       fieldName: 'name',
-      label: $t('system.platform.category.name'),
+      label: $t('platform.category.name'),
       rules: 'required',
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('system.platform.category.nicknamePlaceholder'),
+        placeholder: $t('platform.category.nicknamePlaceholder'),
       },
       fieldName: 'nickname',
-      label: $t('system.platform.category.nickname'),
+      label: $t('platform.category.nickname'),
       rules: 'required',
     },
     {
@@ -135,50 +135,50 @@ export function buildFormSchema(params: {
         class: 'w-full',
         mode: 'multiple',
         options: getCategoryFlagOptions(),
-        placeholder: $t('system.platform.category.flagPlaceholder'),
+        placeholder: $t('platform.category.flagPlaceholder'),
       },
       fieldName: 'flag',
-      label: $t('system.platform.category.flag'),
+      label: $t('platform.category.flag'),
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'keywords',
-      label: $t('system.platform.category.keywords'),
+      label: $t('platform.category.keywords'),
     },
     {
       component: 'AttachmentField',
       componentProps: {
         accept: 'image',
         multiple: false,
-        placeholder: $t('system.platform.category.imagePlaceholder'),
+        placeholder: $t('platform.category.imagePlaceholder'),
       },
       fieldName: 'image',
       formItemClass: 'items-start',
-      label: $t('system.platform.category.image'),
+      label: $t('platform.category.image'),
     },
     {
       component: 'Textarea',
       componentProps: { rows: 2 },
       fieldName: 'description',
       formItemClass: 'items-start',
-      label: $t('system.platform.category.description'),
+      label: $t('platform.category.description'),
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('system.platform.category.diynamePlaceholder'),
+        placeholder: $t('platform.category.diynamePlaceholder'),
       },
       fieldName: 'diyname',
-      label: $t('system.platform.category.diyname'),
+      label: $t('platform.category.diyname'),
     },
     {
       component: 'InputNumber',
       componentProps: { class: 'w-full', min: 0 },
       defaultValue: 0,
       fieldName: 'sort',
-      label: $t('system.platform.category.sort'),
+      label: $t('platform.category.sort'),
     },
     {
       component: 'RadioGroup',
@@ -193,7 +193,7 @@ export function buildFormSchema(params: {
       },
       defaultValue: 'normal',
       fieldName: 'status',
-      label: $t('system.platform.category.status'),
+      label: $t('platform.category.status'),
     },
   ];
 }
@@ -232,7 +232,7 @@ export function useColumns(
         options: typeTagOptions,
       },
       field: 'type',
-      title: $t('system.platform.category.type'),
+      title: $t('platform.category.type'),
       width: 100,
     });
   }
@@ -242,14 +242,14 @@ export function useColumns(
       align: 'left',
       field: 'name',
       minWidth: 180,
-      title: $t('system.platform.category.name'),
+      title: $t('platform.category.name'),
       treeNode: true,
     },
     {
       align: 'left',
       field: 'nickname',
       minWidth: 120,
-      title: $t('system.platform.category.alias'),
+      title: $t('platform.category.alias'),
     },
     {
       align: 'center',
@@ -259,7 +259,7 @@ export function useColumns(
           ? cellValue.join('、')
           : TABLE_CELL_EMPTY,
       minWidth: 120,
-      title: $t('system.platform.category.flags'),
+      title: $t('platform.category.flags'),
     },
     {
       align: 'center',
@@ -271,7 +271,7 @@ export function useColumns(
         props: { height: 40, width: 40 },
       },
       field: 'image',
-      title: $t('system.platform.category.image'),
+      title: $t('platform.category.image'),
       width: 80,
     },
     {
@@ -297,12 +297,12 @@ export function useColumns(
           }
         : undefined,
       field: 'sort',
-      title: $t('system.platform.category.sort'),
+      title: $t('platform.category.sort'),
       width: 100,
     },
     {
       field: 'status',
-      title: $t('system.platform.category.status'),
+      title: $t('platform.category.status'),
       width: 100,
       cellRender: {
         attrs: {
@@ -328,7 +328,7 @@ export function useColumns(
       cellRender: {
         attrs: {
           nameField: 'name',
-          nameTitle: $t('system.platform.category.entity'),
+          nameTitle: $t('platform.category.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',

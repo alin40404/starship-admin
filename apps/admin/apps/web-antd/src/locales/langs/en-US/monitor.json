@@ -1,0 +1,61 @@
+{
+  "shared": {
+    "keyword": "Keyword",
+    "module": "Module",
+    "method": "Method",
+    "action": "Action",
+    "status": "Result",
+    "message": "Message",
+    "operator": "Operator",
+    "time": "Time",
+    "exceptionClass": "Exception Class",
+    "detail": "Detail",
+    "actionLogin": "Login",
+    "actionLogout": "Logout",
+    "statusSuccess": "Success",
+    "statusFailed": "Failed"
+  },
+  "operationLog": {
+    "entity": "Operation Log",
+    "hint": "Records admin write operations (create, update, delete, etc.). Sensitive fields are masked.",
+    "searchPlaceholder": "Search title/operator/URL",
+    "keywordPlaceholder": "Title / operator / URL",
+    "modulePlaceholder": "Select module",
+    "methodPlaceholder": "POST / PUT",
+    "columnTitle": "Title",
+    "columnModule": "Module",
+    "columnMethod": "Method",
+    "columnStatusCode": "Status Code",
+    "columnTime": "Operated At",
+    "columnAction": "Action",
+    "requestUrl": "Request URL",
+    "requestSummary": "Request Summary",
+    "detailTitle": "Operation Log Detail",
+    "batchDeleteConfirm": "Delete {0} selected operation log(s)?"
+  },
+  "loginLog": {
+    "entity": "Login Log",
+    "searchPlaceholder": "Search account/IP",
+    "keywordPlaceholder": "Account / IP",
+    "actionPlaceholder": "Action",
+    "statusPlaceholder": "Result",
+    "columnUsername": "Account",
+    "detailTitle": "Login Log Detail",
+    "batchDeleteConfirm": "Delete {0} selected login log(s)?"
+  },
+  "exceptionLog": {
+    "entity": "Exception Log",
+    "hint": "The list shows summaries only. Search storage/logs/laravel.log on the server by trace_id for full stack traces.",
+    "searchPlaceholder": "Search message/class/trace_id",
+    "keywordPlaceholder": "Message / class / trace_id",
+    "exceptionClassPlaceholder": "Exception class name",
+    "columnMessage": "Message",
+    "columnExceptionType": "Exception Type",
+    "columnExceptionClass": "Exception Class",
+    "columnFile": "File",
+    "columnLine": "Line",
+    "columnOccurredAt": "Occurred At",
+    "detailTitle": "Exception Log Detail",
+    "batchDeleteConfirm": "Delete {0} selected exception log(s)?"
+  }
+}

@@ -113,7 +113,7 @@ function onBatchDelete() {
   const ids = selectedRows.value.map((row) => row.id);
   if (ids.length === 0) return;
   Modal.confirm({
-    content: $t('system.platform.region.batchDeleteConfirm', [ids.length]),
+    content: $t('platform.region.batchDeleteConfirm', [ids.length]),
     okText: $t('common.delete'),
     okType: 'danger',
     cancelText: $t('common.cancel'),
@@ -122,7 +122,7 @@ function onBatchDelete() {
       const result = await batchDeleteAreas(ids);
       if (result.skipped > 0) {
         message.warning(
-          $t('system.platform.region.batchDeletePartial', [
+          $t('platform.region.batchDeletePartial', [
             result.deleted,
             result.skipped,
           ]),
@@ -210,7 +210,7 @@ const [Grid, gridApi] = useVbenVxeGrid<AreaTreeNode>({
           @click="onCreate"
         >
           <Plus class="size-4" />
-          {{ $t('system.platform.region.createRegion') }}
+          {{ $t('platform.region.createRegion') }}
         </Button>
       </template>
     </Grid>

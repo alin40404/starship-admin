@@ -41,12 +41,12 @@ function moduleTooltip(
   module: NonNullable<MenuTreeNode['module']>,
 ): string {
   if (module.enabled) {
-    return $t('system.permission.menu.moduleBelong', [
+    return $t('permission.menu.moduleBelong', [
       module.title,
       module.name,
     ]);
   }
-  return $t('system.permission.menu.moduleDisabled', [module.title]);
+  return $t('permission.menu.moduleDisabled', [module.title]);
 }
 
 const [MenuFormDrawer, menuFormDrawerApi] = useVbenDrawer({
@@ -118,7 +118,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
 
       const sort = Number(row.sort);
       if (!Number.isFinite(sort) || sort < 0 || !Number.isInteger(sort)) {
-        message.warning($t('system.permission.menu.sortInvalid'));
+        message.warning($t('permission.menu.sortInvalid'));
         await gridApi.reload();
         return;
       }
@@ -126,7 +126,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       gridApi.setLoading(true);
       try {
         await updateMenuSort(row.id, sort);
-        message.success($t('system.permission.menu.sortUpdated'));
+        message.success($t('permission.menu.sortUpdated'));
         onRefresh();
       } catch {
         await gridApi.reload();
@@ -231,7 +231,7 @@ function onBatchDelete() {
     return;
   }
   Modal.confirm({
-    content: $t('system.permission.menu.batchDeleteConfirm', [ids.length]),
+    content: $t('permission.menu.batchDeleteConfirm', [ids.length]),
     okText: $t('common.delete'),
     okType: 'danger',
     cancelText: $t('common.cancel'),
@@ -255,7 +255,7 @@ function onBatchUpdateStatus(status: 0 | 1) {
       ? $t('system.shared.status.enable')
       : $t('system.shared.status.disable');
   Modal.confirm({
-    content: $t('system.permission.menu.batchStatusConfirm', [
+    content: $t('permission.menu.batchStatusConfirm', [
       ids.length,
       label,
     ]),
@@ -312,7 +312,7 @@ function onBatchUpdateStatus(status: 0 | 1) {
           @click="onCreate"
         >
           <Plus class="size-4" />
-          {{ $t('system.permission.menu.createMenu') }}
+          {{ $t('permission.menu.createMenu') }}
         </Button>
       </template>
       <template #title="{ row }">
@@ -348,7 +348,7 @@ function onBatchUpdateStatus(status: 0 | 1) {
           <Tag :color="row.module.enabled ? 'processing' : 'warning'">
             {{ row.module.title }}
             <template v-if="!row.module.enabled">
-              {{ $t('system.permission.menu.moduleDisabledTag') }}
+              {{ $t('permission.menu.moduleDisabledTag') }}
             </template>
           </Tag>
         </Tooltip>

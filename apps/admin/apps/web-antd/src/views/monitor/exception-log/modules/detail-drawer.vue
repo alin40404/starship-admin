@@ -42,7 +42,7 @@ defineExpose({ open: show });
   <Drawer
     v-model:open="open"
     :loading="loading"
-    :title="$t('system.monitor.exceptionLog.detailTitle')"
+    :title="$t('monitor.exceptionLog.detailTitle')"
     width="min(92vw, 880px)"
   >
     <Alert
@@ -61,16 +61,16 @@ defineExpose({ open: show });
       size="small"
     >
       <Descriptions.Item label="Trace ID">{{ detail.trace_id }}</Descriptions.Item>
-      <Descriptions.Item :label="$t('system.monitor.exceptionLog.columnExceptionClass')">{{ detail.exception_class }}</Descriptions.Item>
-      <Descriptions.Item :label="$t('system.monitor.exceptionLog.columnMessage')">{{ detail.message }}</Descriptions.Item>
-      <Descriptions.Item :label="$t('system.monitor.exceptionLog.columnFile')">{{ detail.file || '—' }}</Descriptions.Item>
-      <Descriptions.Item :label="$t('system.monitor.exceptionLog.columnLine')">{{ detail.line ?? '—' }}</Descriptions.Item>
-      <Descriptions.Item :label="$t('system.monitor.shared.method')">{{ detail.request_method || '—' }}</Descriptions.Item>
-      <Descriptions.Item :label="$t('system.monitor.operationLog.requestUrl')">{{ detail.request_url || '—' }}</Descriptions.Item>
-      <Descriptions.Item :label="$t('system.monitor.shared.operator')">{{ detail.admin_name || '—' }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('monitor.exceptionLog.columnExceptionClass')">{{ detail.exception_class }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('monitor.exceptionLog.columnMessage')">{{ detail.message }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('monitor.exceptionLog.columnFile')">{{ detail.file || '—' }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('monitor.exceptionLog.columnLine')">{{ detail.line ?? '—' }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('monitor.shared.method')">{{ detail.request_method || '—' }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('monitor.operationLog.requestUrl')">{{ detail.request_url || '—' }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('monitor.shared.operator')">{{ detail.admin_name || '—' }}</Descriptions.Item>
       <Descriptions.Item label="IP">{{ detail.ip || '—' }}</Descriptions.Item>
       <Descriptions.Item label="User-Agent">{{ detail.user_agent || '—' }}</Descriptions.Item>
-      <Descriptions.Item :label="$t('system.monitor.exceptionLog.columnOccurredAt')">
+      <Descriptions.Item :label="$t('monitor.exceptionLog.columnOccurredAt')">
         {{ detail.created_at ? formatDateTime(detail.created_at) : '—' }}
       </Descriptions.Item>
     </Descriptions>

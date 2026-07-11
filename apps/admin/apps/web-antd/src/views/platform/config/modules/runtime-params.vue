@@ -82,7 +82,7 @@ function onBatchDelete() {
   const ids = selectedRows.value.map((row) => row.id);
   if (ids.length === 0) return;
   Modal.confirm({
-    content: $t('system.platform.config.param.batchDeleteConfirm', [ids.length]),
+    content: $t('platform.config.param.batchDeleteConfirm', [ids.length]),
     okText: $t('common.delete'),
     okType: 'danger',
     cancelText: $t('common.cancel'),
@@ -90,7 +90,7 @@ function onBatchDelete() {
     async onOk() {
       const result = await batchDeleteConfigs(ids);
       message.success(
-        $t('system.platform.config.param.batchDeleted', [result.deleted]),
+        $t('platform.config.param.batchDeleted', [result.deleted]),
       );
       clearSelection();
       onRefresh();
@@ -114,38 +114,38 @@ const [Grid, gridApi] = useVbenVxeGrid<ConfigRow>({
         type: 'checkbox',
         width: 48,
       },
-      { align: 'left', field: 'name', minWidth: 140, title: $t('system.platform.config.param.name') },
-      { align: 'left', field: 'key', minWidth: 160, title: $t('system.platform.config.param.key') },
+      { align: 'left', field: 'name', minWidth: 140, title: $t('platform.config.param.name') },
+      { align: 'left', field: 'key', minWidth: 160, title: $t('platform.config.param.key') },
       {
         align: 'left',
         field: 'value',
         formatter: ({ cellValue }: { cellValue: ConfigRow['value'] }) =>
           cellValue ?? TABLE_CELL_EMPTY,
         minWidth: 180,
-        title: $t('system.platform.config.param.value'),
+        title: $t('platform.config.param.value'),
       },
       {
         align: 'center',
         cellRender: { name: 'CellTag', options: [...getParamTypeTagOptions()] },
         field: 'type',
-        title: $t('system.platform.config.param.valueType'),
+        title: $t('platform.config.param.valueType'),
         width: 96,
       },
-      { field: 'sort', title: $t('system.platform.config.param.sort'), width: 80 },
+      { field: 'sort', title: $t('platform.config.param.sort'), width: 80 },
       {
         align: 'left',
         field: 'remark',
         formatter: ({ cellValue }: { cellValue: ConfigRow['remark'] }) =>
           cellValue ?? TABLE_CELL_EMPTY,
         minWidth: 160,
-        title: $t('system.platform.config.param.remark'),
+        title: $t('platform.config.param.remark'),
       },
       {
         align: 'center',
         cellRender: {
           attrs: {
             nameField: 'name',
-            nameTitle: $t('system.platform.config.param.entity'),
+            nameTitle: $t('platform.config.param.entity'),
             onClick: onActionClick,
           },
           name: 'CellOperation',
@@ -221,7 +221,7 @@ watch(
             @click="onCreate"
           >
             <Plus class="size-4" />
-            {{ $t('system.platform.config.param.createParam') }}
+            {{ $t('platform.config.param.createParam') }}
           </Button>
         </template>
       </Grid>

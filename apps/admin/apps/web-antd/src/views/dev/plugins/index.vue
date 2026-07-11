@@ -20,6 +20,7 @@ import {
   uninstallPlugin,
 } from '#/api/dev-plugin';
 import { PLUGIN_PERMISSIONS } from '#/constants/plugin-permissions';
+import { $t } from '#/locales';
 
 import { useColumns } from './data';
 import ConfigDrawer from './modules/config-drawer.vue';
@@ -54,8 +55,8 @@ function confirmAction(
   Modal.confirm({
     title,
     content,
-    okText: '确定',
-    cancelText: '取消',
+    okText: $t('common.confirm'),
+    cancelText: $t('common.cancel'),
     onOk,
   });
 }
@@ -72,7 +73,11 @@ function onActionClick({ code, row }: OnActionClickParams<PluginRow>) {
   }
 
   if (code === 'install') {
-    void runAction(row.slug, () => installPlugin(row.slug), '安装成功');
+    void runAction(
+      row.slug,
+      () => installPlugin(row.slug),
+      $t('dev.shared.installSuccess'),
+    );
     return;
   }
 
@@ -80,26 +85,38 @@ function onActionClick({ code, row }: OnActionClickParams<PluginRow>) {
     void runAction(
       row.slug,
       () => enablePlugin(row.slug),
-      '已启用，请重启后端服务后生效',
+      $t('dev.shared.restartBackendHint'),
     );
     return;
   }
 
   if (code === 'disable') {
-    confirmAction('禁用插件', `确定禁用插件【${row.name}】吗？禁用后需重启后端服务。`, async () => {
-      await runAction(
-        row.slug,
-        () => disablePlugin(row.slug),
-        '已禁用，请重启后端服务后生效',
-      );
-    });
+    confirmAction(
+      $t('dev.shared.disablePluginTitle'),
+      $t('dev.shared.disablePluginConfirm', [row.name]),
+      async () => {
+        await runAction(
+          row.slug,
+          () => disablePlugin(row.slug),
+          $t('dev.shared.restartBackendHint'),
+        );
+      },
+    );
     return;
   }
 
   if (code === 'uninstall') {
-    confirmAction('卸载插件', `确定卸载插件【${row.name}】吗？卸载后保留配置数据。`, async () => {
-      await runAction(row.slug, () => uninstallPlugin(row.slug), '卸载成功');
-    });
+    confirmAction(
+      $t('dev.shared.uninstallPluginTitle'),
+      $t('dev.shared.uninstallPluginConfirm', [row.name]),
+      async () => {
+        await runAction(
+          row.slug,
+          () => uninstallPlugin(row.slug),
+          $t('dev.shared.uninstallSuccess'),
+        );
+      },
+    );
   }
 }
 
@@ -108,7 +125,11 @@ async function onDiscover() {
   try {
     const result = await discoverPlugins();
     message.success(
-      `发现 ${result.discovered} 个插件，新建 ${result.created} 个，更新 ${result.updated} 个`,
+      $t('dev.shared.discoverResult', [
+        result.discovered,
+        result.created,
+        result.updated,
+      ]),
     );
     await gridApi.reload();
   } finally {
@@ -139,7 +160,7 @@ const [Grid, gridApi] = useVbenVxeGrid<PluginRow>({
     <div class="flex h-full min-h-0 flex-col">
       <Alert
         class="mb-4 shrink-0"
-        message="扫描 plugins/ 目录下的 plugin.json，在此统一管理插件的安装、启用、禁用与配置。启用/禁用后需重启后端服务。"
+        :message="$t('dev.plugins.hint')"
         show-icon
         type="info"
       />
@@ -161,7 +182,7 @@ const [Grid, gridApi] = useVbenVxeGrid<PluginRow>({
               @click="onDiscover"
             >
               <IconifyIcon class="size-4" icon="ep:search" />
-              发现插件
+              {{ $t('dev.shared.discoverPlugins') }}
             </Button>
           </template>
         </Grid>

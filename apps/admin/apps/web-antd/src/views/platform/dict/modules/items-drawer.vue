@@ -35,8 +35,8 @@ const { height: gridWrapHeight } = useElementSize(gridWrapRef);
 const drawerTitle = computed(() => {
   const name = activeType.value?.name ?? '';
   return name
-    ? $t('system.platform.dict.itemsTitle', [name])
-    : $t('system.platform.dict.itemEntity');
+    ? $t('platform.dict.itemsTitle', [name])
+    : $t('platform.dict.itemEntity');
 });
 
 function onRefresh() {
@@ -151,7 +151,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
             @click="onCreateItem"
           >
             <Plus class="size-4" />
-            {{ $t('system.platform.dict.createItem') }}
+            {{ $t('platform.dict.createItem') }}
           </Button>
         </template>
       </CrudView>

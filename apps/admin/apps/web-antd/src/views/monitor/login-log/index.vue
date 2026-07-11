@@ -113,7 +113,7 @@ function onBatchDelete() {
     return;
   }
   Modal.confirm({
-    content: $t('system.monitor.loginLog.batchDeleteConfirm', [ids.length]),
+    content: $t('monitor.loginLog.batchDeleteConfirm', [ids.length]),
     okText: $t('common.delete'),
     okType: 'danger',
     cancelText: $t('common.cancel'),

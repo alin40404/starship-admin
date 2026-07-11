@@ -141,7 +141,7 @@ function onRefresh() {
           @click="onCreate"
         >
           <Plus class="size-4" />
-          {{ $t('system.platform.dict.createDict') }}
+          {{ $t('platform.dict.createDict') }}
         </Button>
       </template>
     </CrudView>

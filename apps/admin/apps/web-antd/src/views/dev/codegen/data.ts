@@ -7,23 +7,33 @@ import { formatDateTime } from '@vben/utils';
 
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { GENERATOR_PERMISSIONS } from '#/constants/generator-permissions';
+import { $t } from '#/locales';
 
 export type GeneratorAccessChecker = {
   can: (code: string) => boolean;
 };
 
-export const GENERATOR_STATUS_TAG_OPTIONS = [
-  { color: 'default', label: '草稿', value: 'draft' },
-  { color: 'success', label: '已生成', value: 'generated' },
-] as const;
+export function getGeneratorStatusTagOptions() {
+  return [
+    { color: 'default', label: $t('dev.codegen.statusDraft'), value: 'draft' },
+    {
+      color: 'success',
+      label: $t('dev.codegen.statusGenerated'),
+      value: 'generated',
+    },
+  ] as const;
+}
 
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
-      componentProps: { class: 'w-full', placeholder: '表名 / 业务名' },
+      componentProps: {
+        class: 'w-full',
+        placeholder: $t('dev.codegen.keywordPlaceholder'),
+      },
       fieldName: 'keyword',
-      label: '关键词',
+      label: $t('dev.shared.keyword'),
     },
   ];
 }
@@ -37,41 +47,41 @@ export function useColumns(
       align: 'left',
       field: 'table_name',
       minWidth: 200,
-      title: '数据表',
+      title: $t('dev.codegen.columnTable'),
     },
     {
       align: 'left',
       field: 'business_name',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 120,
-      title: '业务名称',
+      title: $t('dev.codegen.columnBusinessName'),
     },
     {
       align: 'left',
       field: 'module_slug',
       minWidth: 100,
-      title: '模块',
+      title: $t('dev.codegen.columnModule'),
     },
     {
       align: 'left',
       field: 'class_name',
       minWidth: 120,
-      title: '类名',
+      title: $t('dev.codegen.columnClassName'),
     },
     {
       align: 'center',
       field: 'columns_count',
-      title: '字段数',
+      title: $t('dev.codegen.columnCount'),
       width: 80,
     },
     {
       align: 'center',
       cellRender: {
         name: 'CellTag',
-        options: [...GENERATOR_STATUS_TAG_OPTIONS],
+        options: [...getGeneratorStatusTagOptions()],
       },
       field: 'status',
-      title: '状态',
+      title: $t('dev.shared.status'),
       width: 90,
     },
     {
@@ -80,14 +90,14 @@ export function useColumns(
       formatter: ({ cellValue }) =>
         cellValue ? formatDateTime(cellValue as string) : TABLE_CELL_EMPTY,
       minWidth: 160,
-      title: '最后生成',
+      title: $t('dev.codegen.columnGeneratedAt'),
     },
     {
       align: 'center',
       cellRender: {
         attrs: {
           nameField: 'business_name',
-          nameTitle: '代码生成配置',
+          nameTitle: $t('dev.codegen.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -95,26 +105,26 @@ export function useColumns(
           {
             code: 'preview',
             show: () => access.can(GENERATOR_PERMISSIONS.PREVIEW),
-            text: '预览',
+            text: $t('dev.shared.preview'),
             type: 'link',
           },
           {
             code: 'generate',
             show: () => access.can(GENERATOR_PERMISSIONS.GENERATE),
-            text: '生成',
+            text: $t('dev.shared.generate'),
             type: 'link',
           },
           {
             code: 'delete',
             danger: true,
             show: () => access.can(GENERATOR_PERMISSIONS.DELETE),
-            text: '删除',
+            text: $t('common.delete'),
             type: 'link',
           },
         ],
       },
       fixed: 'right',
-      title: '操作',
+      title: $t('crud.columnActions'),
       width: 180,
     },
   ];

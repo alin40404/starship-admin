@@ -93,7 +93,7 @@ async function onSave() {
   saving.value = true;
   try {
     await batchUpsertConfigs(items);
-    message.success($t('system.platform.config.saved'));
+    message.success($t('platform.config.saved'));
     await loadConfigs();
   } finally {
     saving.value = false;
@@ -173,7 +173,7 @@ defineExpose({
                 accept="image"
                 :disabled="!props.canManage"
                 :multiple="false"
-                :placeholder="$t('system.platform.config.logoPlaceholder')"
+                :placeholder="$t('platform.config.logoPlaceholder')"
                 :value="draftValues[row.key]"
                 @update:value="(val) => (draftValues[row.key] = String(val ?? ''))"
               />

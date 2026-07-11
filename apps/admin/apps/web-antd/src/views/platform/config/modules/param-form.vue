@@ -24,14 +24,14 @@ function getParamFormSchema(): VbenFormSchema[] {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'key',
-      label: $t('system.platform.config.param.keyLabel'),
+      label: $t('platform.config.param.keyLabel'),
       rules: 'required',
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'name',
-      label: $t('system.platform.config.param.nameLabel'),
+      label: $t('platform.config.param.nameLabel'),
       rules: 'required',
     },
     {
@@ -40,46 +40,46 @@ function getParamFormSchema(): VbenFormSchema[] {
         class: 'w-full',
         options: [
           {
-            label: $t('system.platform.config.paramType.string'),
+            label: $t('platform.config.paramType.string'),
             value: 'string',
           },
           {
-            label: $t('system.platform.config.paramType.number'),
+            label: $t('platform.config.paramType.number'),
             value: 'number',
           },
           {
-            label: $t('system.platform.config.paramType.bool'),
+            label: $t('platform.config.paramType.bool'),
             value: 'bool',
           },
           {
-            label: $t('system.platform.config.paramType.json'),
+            label: $t('platform.config.paramType.json'),
             value: 'json',
           },
         ],
       },
       defaultValue: 'string',
       fieldName: 'type',
-      label: $t('system.platform.config.param.valueType'),
+      label: $t('platform.config.param.valueType'),
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'value',
-      label: $t('system.platform.config.param.value'),
+      label: $t('platform.config.param.value'),
     },
     {
       component: 'InputNumber',
       componentProps: { class: 'w-full', min: 0 },
       defaultValue: 0,
       fieldName: 'sort',
-      label: $t('system.platform.config.param.sort'),
+      label: $t('platform.config.param.sort'),
     },
     {
       component: 'Textarea',
       componentProps: { class: 'w-full', rows: 2 },
       fieldName: 'remark',
       formItemClass: 'col-span-full w-full items-start',
-      label: $t('system.platform.config.param.remark'),
+      label: $t('platform.config.param.remark'),
     },
   ];
 }
@@ -90,19 +90,19 @@ function buildValueFieldSchema(type: string): VbenFormSchema {
       component: 'Textarea',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('system.platform.config.param.jsonPlaceholder'),
+        placeholder: $t('platform.config.param.jsonPlaceholder'),
         rows: 4,
       },
       fieldName: 'value',
       formItemClass: 'col-span-full w-full items-start',
-      label: $t('system.platform.config.param.value'),
+      label: $t('platform.config.param.value'),
     };
   }
 
   const placeholderMap: Record<string, string> = {
-    bool: $t('system.platform.config.param.boolPlaceholder'),
-    number: $t('system.platform.config.param.numberPlaceholder'),
-    string: $t('system.platform.config.param.stringPlaceholder'),
+    bool: $t('platform.config.param.boolPlaceholder'),
+    number: $t('platform.config.param.numberPlaceholder'),
+    string: $t('platform.config.param.stringPlaceholder'),
   };
 
   return {
@@ -110,10 +110,10 @@ function buildValueFieldSchema(type: string): VbenFormSchema {
     componentProps: {
       class: 'w-full',
       placeholder:
-        placeholderMap[type] ?? $t('system.platform.config.param.stringPlaceholder'),
+        placeholderMap[type] ?? $t('platform.config.param.stringPlaceholder'),
     },
     fieldName: 'value',
-    label: $t('system.platform.config.param.value'),
+    label: $t('platform.config.param.value'),
   };
 }
 
@@ -145,8 +145,8 @@ function syncValueFieldByType(type: string) {
 
 const modalTitle = computed(() =>
   editingKey.value
-    ? $t('system.platform.config.param.editParam')
-    : $t('system.platform.config.param.createParam'),
+    ? $t('platform.config.param.editParam')
+    : $t('platform.config.param.createParam'),
 );
 
 function syncKeyFieldDisabled(isEdit: boolean) {

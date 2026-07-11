@@ -36,12 +36,12 @@ const [Form, formApi] = useVbenForm({
 
 const modalTitle = computed(() =>
   editingItemId.value
-    ? $t('system.platform.dict.editItem')
-    : $t('system.platform.dict.createItemTitle'),
+    ? $t('platform.dict.editItem')
+    : $t('platform.dict.createItemTitle'),
 );
 
 const [Modal, modalApi] = useVbenModal({
-  confirmText: $t('system.platform.dict.save'),
+  confirmText: $t('platform.dict.save'),
   destroyOnClose: true,
   fullscreenButton: false,
   async onConfirm() {

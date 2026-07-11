@@ -18,11 +18,11 @@ import { $t } from '#/locales';
 /** 1目录 2菜单 3按钮 4内嵌 5外链 */
 export function getMenuTypeOptions() {
   return [
-    { label: $t('system.permission.menu.typeOptions.catalog'), value: 1 },
-    { label: $t('system.permission.menu.typeOptions.menu'), value: 2 },
-    { label: $t('system.permission.menu.typeOptions.button'), value: 3 },
-    { label: $t('system.permission.menu.typeOptions.embedded'), value: 4 },
-    { label: $t('system.permission.menu.typeOptions.link'), value: 5 },
+    { label: $t('permission.menu.typeOptions.catalog'), value: 1 },
+    { label: $t('permission.menu.typeOptions.menu'), value: 2 },
+    { label: $t('permission.menu.typeOptions.button'), value: 3 },
+    { label: $t('permission.menu.typeOptions.embedded'), value: 4 },
+    { label: $t('permission.menu.typeOptions.link'), value: 5 },
   ];
 }
 
@@ -30,27 +30,27 @@ export function getMenuTypeTagOptions() {
   return [
     {
       color: 'processing',
-      label: $t('system.permission.menu.typeOptions.catalog'),
+      label: $t('permission.menu.typeOptions.catalog'),
       value: 1,
     },
     {
       color: 'default',
-      label: $t('system.permission.menu.typeOptions.menu'),
+      label: $t('permission.menu.typeOptions.menu'),
       value: 2,
     },
     {
       color: 'error',
-      label: $t('system.permission.menu.typeOptions.button'),
+      label: $t('permission.menu.typeOptions.button'),
       value: 3,
     },
     {
       color: 'warning',
-      label: $t('system.permission.menu.typeOptions.embedded'),
+      label: $t('permission.menu.typeOptions.embedded'),
       value: 4,
     },
     {
       color: 'success',
-      label: $t('system.permission.menu.typeOptions.link'),
+      label: $t('permission.menu.typeOptions.link'),
       value: 5,
     },
   ];
@@ -61,12 +61,12 @@ export function getMenuVisibleTagOptions() {
   return [
     {
       color: 'success',
-      label: $t('system.permission.menu.visible.show'),
+      label: $t('permission.menu.visible.show'),
       value: 1,
     },
     {
       color: 'default',
-      label: $t('system.permission.menu.visible.hide'),
+      label: $t('permission.menu.visible.hide'),
       value: 0,
     },
   ];
@@ -206,7 +206,7 @@ export function useColumns(
       field: 'title',
       fixed: 'left',
       slots: { default: 'title' },
-      title: $t('system.permission.menu.title'),
+      title: $t('permission.menu.title'),
       treeNode: true,
       width: 240,
     },
@@ -214,27 +214,27 @@ export function useColumns(
       align: 'center',
       cellRender: { name: 'CellTag', options: getMenuTypeTagOptions() },
       field: 'type',
-      title: $t('system.permission.menu.type'),
+      title: $t('permission.menu.type'),
       width: 96,
     },
     {
       field: 'name',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 140,
-      title: $t('system.permission.menu.internalName'),
+      title: $t('permission.menu.internalName'),
     },
     {
       align: 'left',
       field: 'permission',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 160,
-      title: $t('system.permission.menu.permission'),
+      title: $t('permission.menu.permission'),
     },
     {
       align: 'center',
       field: 'module',
       slots: { default: 'module' },
-      title: $t('system.permission.menu.module'),
+      title: $t('permission.menu.module'),
       width: 140,
     },
     {
@@ -242,13 +242,13 @@ export function useColumns(
       field: 'path',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 160,
-      title: $t('system.permission.menu.path'),
+      title: $t('permission.menu.path'),
     },
     {
       field: 'component',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 180,
-      title: $t('system.permission.menu.component'),
+      title: $t('permission.menu.component'),
       visible: false,
     },
     {
@@ -274,7 +274,7 @@ export function useColumns(
           }
         : undefined,
       field: 'sort',
-      title: $t('system.permission.menu.sort'),
+      title: $t('permission.menu.sort'),
       width: 100,
     },
     {
@@ -284,7 +284,7 @@ export function useColumns(
         options: getMenuVisibleTagOptions(),
       },
       field: 'visible',
-      title: $t('system.permission.menu.sidebarVisible'),
+      title: $t('permission.menu.sidebarVisible'),
       width: 96,
     },
     {
@@ -301,7 +301,7 @@ export function useColumns(
         name: 'CellSwitch',
       },
       field: 'status',
-      title: $t('system.permission.menu.status'),
+      title: $t('permission.menu.status'),
       width: 100,
     },
     {
@@ -309,7 +309,7 @@ export function useColumns(
       cellRender: {
         attrs: {
           nameField: 'name',
-          nameTitle: $t('system.permission.menu.entity'),
+          nameTitle: $t('permission.menu.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -368,7 +368,7 @@ export function buildMenuFormSchema(params: {
       defaultValue: 2,
       fieldName: 'type',
       formItemClass: 'col-span-2 md:col-span-2',
-      label: $t('system.permission.menu.type'),
+      label: $t('permission.menu.type'),
       rules: 'selectRequired',
     },
     {
@@ -378,7 +378,7 @@ export function buildMenuFormSchema(params: {
         placeholder: $t('ui.placeholder.input'),
       },
       fieldName: 'name',
-      label: $t('system.permission.menu.menuName'),
+      label: $t('permission.menu.menuName'),
       rules: 'required',
     },
     {
@@ -413,7 +413,7 @@ export function buildMenuFormSchema(params: {
         valueField: 'id',
       },
       fieldName: 'parent_id',
-      label: $t('system.permission.menu.parent'),
+      label: $t('permission.menu.parent'),
       renderComponentContent() {
         return {
           title({ label, meta }: { label: string; meta: Recordable<any> }) {
@@ -429,7 +429,7 @@ export function buildMenuFormSchema(params: {
         placeholder: $t('ui.placeholder.input'),
       },
       fieldName: 'title',
-      label: $t('system.permission.menu.title'),
+      label: $t('permission.menu.title'),
       rules: 'required',
     },
     {
@@ -445,21 +445,21 @@ export function buildMenuFormSchema(params: {
         triggerFields: ['type'],
       },
       fieldName: 'path',
-      label: $t('system.permission.menu.routePath'),
+      label: $t('permission.menu.routePath'),
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('system.permission.menu.activePathPlaceholder'),
+        placeholder: $t('permission.menu.activePathPlaceholder'),
       },
       dependencies: {
         show: (values) => typeIn(values, [2, 4]),
         triggerFields: ['type'],
       },
       fieldName: 'active_path',
-      help: $t('system.permission.menu.activePathHelp'),
-      label: $t('system.permission.menu.activePath'),
+      help: $t('permission.menu.activePathHelp'),
+      label: $t('permission.menu.activePath'),
     },
     {
       component: 'AutoComplete',
@@ -470,7 +470,7 @@ export function buildMenuFormSchema(params: {
           return option.value.toLowerCase().includes(input.toLowerCase());
         },
         options: componentKeys.map((v) => ({ value: v })),
-        placeholder: $t('system.permission.menu.componentPlaceholder'),
+        placeholder: $t('permission.menu.componentPlaceholder'),
       },
       dependencies: {
         rules: (values) => (Number(values.type) === 2 ? 'required' : null),
@@ -478,7 +478,7 @@ export function buildMenuFormSchema(params: {
         triggerFields: ['type'],
       },
       fieldName: 'component',
-      label: $t('system.permission.menu.component'),
+      label: $t('permission.menu.component'),
     },
     {
       component: 'Input',
@@ -491,14 +491,14 @@ export function buildMenuFormSchema(params: {
           Number(values.type) === 5
             ? z
                 .string()
-                .min(1, $t('system.permission.menu.linkUrlRequired'))
-                .url($t('system.permission.menu.invalidUrl'))
+                .min(1, $t('permission.menu.linkUrlRequired'))
+                .url($t('permission.menu.invalidUrl'))
             : null,
         show: (values) => typeIn(values, [5]),
         triggerFields: ['type'],
       },
       fieldName: 'link_url',
-      label: $t('system.permission.menu.linkUrl'),
+      label: $t('permission.menu.linkUrl'),
     },
     {
       component: 'Input',
@@ -511,14 +511,14 @@ export function buildMenuFormSchema(params: {
           Number(values.type) === 4
             ? z
                 .string()
-                .min(1, $t('system.permission.menu.iframeSrcRequired'))
-                .url($t('system.permission.menu.invalidUrl'))
+                .min(1, $t('permission.menu.iframeSrcRequired'))
+                .url($t('permission.menu.invalidUrl'))
             : null,
         show: (values) => typeIn(values, [4]),
         triggerFields: ['type'],
       },
       fieldName: 'iframe_src',
-      label: $t('system.permission.menu.iframeSrc'),
+      label: $t('permission.menu.iframeSrc'),
     },
     {
       component: 'IconPicker',
@@ -531,7 +531,7 @@ export function buildMenuFormSchema(params: {
         triggerFields: ['type'],
       },
       fieldName: 'icon',
-      label: $t('system.permission.menu.icon'),
+      label: $t('permission.menu.icon'),
     },
     {
       component: 'IconPicker',
@@ -544,7 +544,7 @@ export function buildMenuFormSchema(params: {
         triggerFields: ['type'],
       },
       fieldName: 'active_icon',
-      label: $t('system.permission.menu.activeIcon'),
+      label: $t('permission.menu.activeIcon'),
     },
     {
       component: 'Input',
@@ -558,7 +558,7 @@ export function buildMenuFormSchema(params: {
         triggerFields: ['type'],
       },
       fieldName: 'permission',
-      label: $t('system.permission.menu.permission'),
+      label: $t('permission.menu.permission'),
     },
     {
       component: 'RadioGroup',
@@ -573,7 +573,7 @@ export function buildMenuFormSchema(params: {
       },
       defaultValue: 1,
       fieldName: 'status',
-      label: $t('system.permission.menu.status'),
+      label: $t('permission.menu.status'),
     },
     {
       component: 'Select',
@@ -581,8 +581,8 @@ export function buildMenuFormSchema(params: {
         allowClear: true,
         class: 'w-full',
         options: [
-          { label: $t('system.permission.menu.badgeDot'), value: 'dot' },
-          { label: $t('system.permission.menu.badgeText'), value: 'normal' },
+          { label: $t('permission.menu.badgeDot'), value: 'dot' },
+          { label: $t('permission.menu.badgeText'), value: 'normal' },
         ],
         placeholder: $t('ui.placeholder.select'),
       },
@@ -591,7 +591,7 @@ export function buildMenuFormSchema(params: {
         triggerFields: ['type'],
       },
       fieldName: 'badge_type',
-      label: $t('system.permission.menu.badgeType'),
+      label: $t('permission.menu.badgeType'),
     },
     {
       component: 'Input',
@@ -608,7 +608,7 @@ export function buildMenuFormSchema(params: {
         triggerFields: ['type', 'badge_type'],
       },
       fieldName: 'badge',
-      label: $t('system.permission.menu.badge'),
+      label: $t('permission.menu.badge'),
     },
     {
       component: 'Select',
@@ -638,7 +638,7 @@ export function buildMenuFormSchema(params: {
         triggerFields: ['type', 'badge_variants'],
       },
       fieldName: 'badge_variants',
-      label: $t('system.permission.menu.badgeVariants'),
+      label: $t('permission.menu.badgeVariants'),
       renderComponentContent() {
         return {
           option: (slotProps: Record<string, unknown>) => {
@@ -656,7 +656,7 @@ export function buildMenuFormSchema(params: {
       },
       defaultValue: 0,
       fieldName: 'sort',
-      label: $t('system.permission.menu.sort'),
+      label: $t('permission.menu.sort'),
     },
     {
       component: 'Textarea',
@@ -666,7 +666,7 @@ export function buildMenuFormSchema(params: {
       },
       fieldName: 'remark',
       formItemClass: 'col-span-2 md:col-span-2 items-start',
-      label: $t('system.permission.menu.remark'),
+      label: $t('permission.menu.remark'),
     },
     {
       component: 'Divider',
@@ -683,7 +683,7 @@ export function buildMenuFormSchema(params: {
       hideLabel: true,
       renderComponentContent() {
         return {
-          default: () => $t('system.permission.menu.otherSettings'),
+          default: () => $t('permission.menu.otherSettings'),
         };
       },
     },
@@ -700,7 +700,7 @@ export function buildMenuFormSchema(params: {
       formItemClass: 'col-span-2 md:col-span-1',
       renderComponentContent() {
         return {
-          default: () => $t('system.permission.menu.keepAlive'),
+          default: () => $t('permission.menu.keepAlive'),
         };
       },
     },
@@ -716,7 +716,7 @@ export function buildMenuFormSchema(params: {
       formItemClass: 'col-span-2 md:col-span-1',
       renderComponentContent() {
         return {
-          default: () => $t('system.permission.menu.affixTab'),
+          default: () => $t('permission.menu.affixTab'),
         };
       },
     },
@@ -732,7 +732,7 @@ export function buildMenuFormSchema(params: {
       formItemClass: 'col-span-2 md:col-span-1',
       renderComponentContent() {
         return {
-          default: () => $t('system.permission.menu.hideMenu'),
+          default: () => $t('permission.menu.hideMenu'),
         };
       },
     },
@@ -748,7 +748,7 @@ export function buildMenuFormSchema(params: {
       formItemClass: 'col-span-2 md:col-span-1',
       renderComponentContent() {
         return {
-          default: () => $t('system.permission.menu.hideSubmenu'),
+          default: () => $t('permission.menu.hideSubmenu'),
         };
       },
     },
@@ -764,7 +764,7 @@ export function buildMenuFormSchema(params: {
       formItemClass: 'col-span-2 md:col-span-1',
       renderComponentContent() {
         return {
-          default: () => $t('system.permission.menu.hideInBreadcrumb'),
+          default: () => $t('permission.menu.hideInBreadcrumb'),
         };
       },
     },
@@ -780,7 +780,7 @@ export function buildMenuFormSchema(params: {
       formItemClass: 'col-span-2 md:col-span-1',
       renderComponentContent() {
         return {
-          default: () => $t('system.permission.menu.hideInTab'),
+          default: () => $t('permission.menu.hideInTab'),
         };
       },
     },

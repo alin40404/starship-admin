@@ -118,8 +118,8 @@ watch(
 
 const drawerTitle = computed(() =>
   editingId.value
-    ? $t('ui.actionTitle.edit', [$t('system.permission.admin.entity')])
-    : $t('ui.actionTitle.create', [$t('system.permission.admin.entity')]),
+    ? $t('ui.actionTitle.edit', [$t('permission.admin.entity')])
+    : $t('ui.actionTitle.create', [$t('permission.admin.entity')]),
 );
 
 const canWriteAdmin = computed(() => {
@@ -141,7 +141,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
     }
     const values = (await formApi.getValues()) as AdminSavePayload;
     if (!editingId.value && !String(values.password ?? '').trim()) {
-      message.warning($t('system.permission.admin.passwordRequired'));
+      message.warning($t('permission.admin.passwordRequired'));
       return;
     }
     drawerApi.lock();

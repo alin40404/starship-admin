@@ -196,7 +196,7 @@ function onBatchDelete() {
     return;
   }
   Modal.confirm({
-    content: $t('system.permission.admin.batchDeleteConfirm', [ids.length]),
+    content: $t('permission.admin.batchDeleteConfirm', [ids.length]),
     okText: $t('common.delete'),
     okType: 'danger',
     cancelText: $t('common.cancel'),
@@ -220,7 +220,7 @@ function onBatchUpdateStatus(status: 0 | 1) {
       ? $t('system.shared.status.enable')
       : $t('system.shared.status.disable');
   Modal.confirm({
-    content: $t('system.permission.admin.batchStatusConfirm', [
+    content: $t('permission.admin.batchStatusConfirm', [
       ids.length,
       label,
     ]),
@@ -280,7 +280,7 @@ function onBatchUpdateStatus(status: 0 | 1) {
           @click="onCreate"
         >
           <Plus class="size-4" />
-          {{ $t('system.permission.admin.createAdmin') }}
+          {{ $t('permission.admin.createAdmin') }}
         </Button>
       </template>
     </CrudView>

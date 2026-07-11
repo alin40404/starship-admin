@@ -29,19 +29,19 @@ export function useDictTypeGridFormSchema(): VbenFormSchema[] {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('system.platform.dict.searchName'),
+        placeholder: $t('platform.dict.searchName'),
       },
       fieldName: 'name',
-      label: $t('system.platform.dict.name'),
+      label: $t('platform.dict.name'),
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('system.platform.dict.searchCode'),
+        placeholder: $t('platform.dict.searchCode'),
       },
       fieldName: 'code',
-      label: $t('system.platform.dict.code'),
+      label: $t('platform.dict.code'),
     },
     {
       component: 'Select',
@@ -49,10 +49,10 @@ export function useDictTypeGridFormSchema(): VbenFormSchema[] {
         allowClear: true,
         class: 'w-full',
         options: getStatusOptions(),
-        placeholder: $t('system.platform.dict.status'),
+        placeholder: $t('platform.dict.status'),
       },
       fieldName: 'status',
-      label: $t('system.platform.dict.status'),
+      label: $t('platform.dict.status'),
     },
   ];
 }
@@ -69,7 +69,7 @@ export function buildDictTypeMobileCrudConfig(params: {
     search: {
       filterSchema: useDictTypeGridFormSchema(),
       keywordFields: ['name', 'code'],
-      placeholder: $t('system.platform.dict.searchKeyword'),
+      placeholder: $t('platform.dict.searchKeyword'),
     },
   });
 }
@@ -85,14 +85,14 @@ export function useDictTypeColumns(
       field: 'name',
       minWidth: 140,
       sortable: true,
-      title: $t('system.platform.dict.name'),
+      title: $t('platform.dict.name'),
     },
     {
       align: 'left',
       field: 'code',
       minWidth: 140,
       sortable: true,
-      title: $t('system.platform.dict.code'),
+      title: $t('platform.dict.code'),
     },
     {
       field: 'items_count',
@@ -100,7 +100,7 @@ export function useDictTypeColumns(
         cellValue === undefined || cellValue === null
           ? TABLE_CELL_EMPTY
           : String(cellValue),
-      title: $t('system.platform.dict.itemsCount'),
+      title: $t('platform.dict.itemsCount'),
       width: 100,
     },
     {
@@ -114,7 +114,7 @@ export function useDictTypeColumns(
             : $t('system.shared.status.disable'),
       },
       sortable: true,
-      title: $t('system.platform.dict.status'),
+      title: $t('platform.dict.status'),
       width: 100,
     },
     {
@@ -122,7 +122,7 @@ export function useDictTypeColumns(
       formatter: ({ cellValue }: { cellValue: DictTypeRow['remark'] }) =>
         cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 160,
-      title: $t('system.platform.dict.remark'),
+      title: $t('platform.dict.remark'),
     },
     {
       field: 'updated_at',
@@ -133,14 +133,14 @@ export function useDictTypeColumns(
           row.updated_at ? formatDateTime(row.updated_at) : TABLE_CELL_EMPTY,
       },
       sortable: true,
-      title: $t('system.platform.dict.updatedAt'),
+      title: $t('platform.dict.updatedAt'),
     },
     {
       align: 'center',
       cellRender: {
         attrs: {
           nameField: 'name',
-          nameTitle: $t('system.platform.dict.entity'),
+          nameTitle: $t('platform.dict.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -148,7 +148,7 @@ export function useDictTypeColumns(
           {
             code: 'items',
             show: () => access.can(DICT_PERMISSIONS.QUERY),
-            text: $t('system.platform.dict.dictItems'),
+            text: $t('platform.dict.dictItems'),
             type: 'link',
           },
           {
@@ -179,14 +179,14 @@ export function buildDictTypeFormSchema(isEdit = false): VbenFormSchema[] {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'name',
-      label: $t('system.platform.dict.name'),
+      label: $t('platform.dict.name'),
       rules: 'required',
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full', disabled: isEdit },
       fieldName: 'code',
-      label: $t('system.platform.dict.code'),
+      label: $t('platform.dict.code'),
       rules: 'required',
     },
     {
@@ -200,7 +200,7 @@ export function buildDictTypeFormSchema(isEdit = false): VbenFormSchema[] {
       defaultValue: 1,
       fieldName: 'status',
       formItemClass: 'col-span-full w-full',
-      label: $t('system.platform.dict.status'),
+      label: $t('platform.dict.status'),
     },
     {
       component: 'Textarea',
@@ -210,7 +210,7 @@ export function buildDictTypeFormSchema(isEdit = false): VbenFormSchema[] {
       },
       fieldName: 'remark',
       formItemClass: 'col-span-full w-full items-start',
-      label: $t('system.platform.dict.remark'),
+      label: $t('platform.dict.remark'),
     },
   ];
 }
@@ -237,15 +237,15 @@ export function useDictItemColumns(
       align: 'left',
       field: 'label',
       minWidth: 120,
-      title: $t('system.platform.dict.label'),
+      title: $t('platform.dict.label'),
     },
     {
       align: 'left',
       field: 'value',
       minWidth: 120,
-      title: $t('system.platform.dict.value'),
+      title: $t('platform.dict.value'),
     },
-    { field: 'sort', title: $t('system.platform.dict.sort'), width: 80 },
+    { field: 'sort', title: $t('platform.dict.sort'), width: 80 },
     {
       align: 'center',
       cellRender: { name: 'CellTag' },
@@ -256,7 +256,7 @@ export function useDictItemColumns(
             ? $t('system.shared.status.enable')
             : $t('system.shared.status.disable'),
       },
-      title: $t('system.platform.dict.status'),
+      title: $t('platform.dict.status'),
       width: 100,
     },
     {
@@ -264,14 +264,14 @@ export function useDictItemColumns(
       formatter: ({ cellValue }: { cellValue: DictItemRow['remark'] }) =>
         cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 120,
-      title: $t('system.platform.dict.remark'),
+      title: $t('platform.dict.remark'),
     },
     {
       align: 'center',
       cellRender: {
         attrs: {
           nameField: 'label',
-          nameTitle: $t('system.platform.dict.itemEntity'),
+          nameTitle: $t('platform.dict.itemEntity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -304,14 +304,14 @@ export function buildDictItemFormSchema(isEdit = false): VbenFormSchema[] {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'label',
-      label: $t('system.platform.dict.label'),
+      label: $t('platform.dict.label'),
       rules: 'required',
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full', disabled: isEdit },
       fieldName: 'value',
-      label: $t('system.platform.dict.value'),
+      label: $t('platform.dict.value'),
       rules: 'required',
     },
     {
@@ -319,7 +319,7 @@ export function buildDictItemFormSchema(isEdit = false): VbenFormSchema[] {
       componentProps: { class: 'w-full', min: 0 },
       defaultValue: 0,
       fieldName: 'sort',
-      label: $t('system.platform.dict.sort'),
+      label: $t('platform.dict.sort'),
     },
     {
       component: 'RadioGroup',
@@ -331,14 +331,14 @@ export function buildDictItemFormSchema(isEdit = false): VbenFormSchema[] {
       },
       defaultValue: 1,
       fieldName: 'status',
-      label: $t('system.platform.dict.status'),
+      label: $t('platform.dict.status'),
     },
     {
       component: 'Textarea',
       componentProps: { class: 'w-full', rows: 2 },
       fieldName: 'remark',
       formItemClass: 'col-span-full w-full items-start',
-      label: $t('system.platform.dict.remark'),
+      label: $t('platform.dict.remark'),
     },
   ];
 }

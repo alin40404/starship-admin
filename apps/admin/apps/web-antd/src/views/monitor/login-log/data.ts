@@ -28,10 +28,10 @@ export function useGridFormSchema(): VbenFormSchema[] {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('system.monitor.loginLog.keywordPlaceholder'),
+        placeholder: $t('monitor.loginLog.keywordPlaceholder'),
       },
       fieldName: 'keyword',
-      label: $t('system.monitor.shared.keyword'),
+      label: $t('monitor.shared.keyword'),
     },
     {
       component: 'Select',
@@ -39,10 +39,10 @@ export function useGridFormSchema(): VbenFormSchema[] {
         allowClear: true,
         class: 'w-full',
         options: [...getMonitorLoginActionTagOptions()],
-        placeholder: $t('system.monitor.loginLog.actionPlaceholder'),
+        placeholder: $t('monitor.loginLog.actionPlaceholder'),
       },
       fieldName: 'action',
-      label: $t('system.monitor.shared.action'),
+      label: $t('monitor.shared.action'),
     },
     {
       component: 'Select',
@@ -50,10 +50,10 @@ export function useGridFormSchema(): VbenFormSchema[] {
         allowClear: true,
         class: 'w-full',
         options: [...getMonitorLoginStatusTagOptions()],
-        placeholder: $t('system.monitor.loginLog.statusPlaceholder'),
+        placeholder: $t('monitor.loginLog.statusPlaceholder'),
       },
       fieldName: 'status',
-      label: $t('system.monitor.shared.status'),
+      label: $t('monitor.shared.status'),
     },
   ];
 }
@@ -70,7 +70,7 @@ export function buildLoginLogMobileCrudConfig(params: {
     search: {
       filterSchema: useGridFormSchema(),
       keywordFields: ['username', 'message', 'ip'],
-      placeholder: $t('system.monitor.loginLog.searchPlaceholder'),
+      placeholder: $t('monitor.loginLog.searchPlaceholder'),
     },
     selection: {
       enabled: true,
@@ -93,7 +93,7 @@ export function useColumns(
       align: 'left',
       field: 'username',
       minWidth: 120,
-      title: $t('system.monitor.loginLog.columnUsername'),
+      title: $t('monitor.loginLog.columnUsername'),
     },
     {
       align: 'center',
@@ -105,10 +105,10 @@ export function useColumns(
       mobile: {
         format: (row) =>
           row.action === 'logout'
-            ? $t('system.monitor.shared.actionLogout')
-            : $t('system.monitor.shared.actionLogin'),
+            ? $t('monitor.shared.actionLogout')
+            : $t('monitor.shared.actionLogin'),
       },
-      title: $t('system.monitor.shared.action'),
+      title: $t('monitor.shared.action'),
       width: 90,
     },
     {
@@ -121,10 +121,10 @@ export function useColumns(
       mobile: {
         format: (row) =>
           row.status === 1
-            ? $t('system.monitor.shared.statusSuccess')
-            : $t('system.monitor.shared.statusFailed'),
+            ? $t('monitor.shared.statusSuccess')
+            : $t('monitor.shared.statusFailed'),
       },
-      title: $t('system.monitor.shared.status'),
+      title: $t('monitor.shared.status'),
       width: 90,
     },
     {
@@ -132,7 +132,7 @@ export function useColumns(
       field: 'message',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 140,
-      title: $t('system.monitor.shared.message'),
+      title: $t('monitor.shared.message'),
     },
     {
       align: 'left',
@@ -147,14 +147,14 @@ export function useColumns(
       formatter: ({ cellValue }) =>
         cellValue ? formatDateTime(cellValue as string) : TABLE_CELL_EMPTY,
       minWidth: 160,
-      title: $t('system.monitor.shared.time'),
+      title: $t('monitor.shared.time'),
     },
     {
       align: 'center',
       cellRender: {
         attrs: {
           nameField: 'username',
-          nameTitle: $t('system.monitor.loginLog.entity'),
+          nameTitle: $t('monitor.loginLog.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -162,7 +162,7 @@ export function useColumns(
           {
             code: 'detail',
             show: () => access.can(MONITOR_LOGIN_LOG_PERMISSIONS.QUERY),
-            text: $t('system.monitor.shared.detail'),
+            text: $t('monitor.shared.detail'),
             type: 'link',
           },
           {

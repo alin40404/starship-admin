@@ -38,19 +38,19 @@ export function useAdminMobileFilterSchema(): VbenFormSchema[] {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('system.permission.admin.searchEmail'),
+        placeholder: $t('permission.admin.searchEmail'),
       },
       fieldName: 'email',
-      label: $t('system.permission.admin.email'),
+      label: $t('permission.admin.email'),
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('system.permission.admin.searchMobile'),
+        placeholder: $t('permission.admin.searchMobile'),
       },
       fieldName: 'mobile',
-      label: $t('system.permission.admin.mobile'),
+      label: $t('permission.admin.mobile'),
     },
     {
       component: 'ApiTreeSelect',
@@ -59,12 +59,12 @@ export function useAdminMobileFilterSchema(): VbenFormSchema[] {
         api: async () => mapDeptForTreeSelect(await fetchDepartmentTree()),
         class: 'w-full',
         fieldNames: { children: 'children', label: 'label', value: 'value' },
-        placeholder: $t('system.permission.admin.searchDept'),
+        placeholder: $t('permission.admin.searchDept'),
         treeIcon: false,
         treeLine: false,
       },
       fieldName: 'dept_id',
-      label: $t('system.permission.admin.dept'),
+      label: $t('permission.admin.dept'),
     },
     {
       component: 'RangePicker',
@@ -73,7 +73,7 @@ export function useAdminMobileFilterSchema(): VbenFormSchema[] {
         class: 'w-full',
       },
       fieldName: 'updatedTime',
-      label: $t('system.permission.admin.updatedAt'),
+      label: $t('permission.admin.updatedAt'),
     },
   ];
 }
@@ -102,7 +102,7 @@ export function buildAdminMobileCrudConfig(params: {
       ],
       filterSchema: useAdminMobileFilterSchema(),
       keywordFields: ['username', 'name'],
-      placeholder: $t('system.permission.admin.searchKeyword'),
+      placeholder: $t('permission.admin.searchKeyword'),
     },
     selection: {
       checkable: (row) => row.is_super !== 1,
@@ -117,37 +117,37 @@ export function useGridFormSchema(): VbenFormSchema[] {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('system.permission.admin.searchUsername'),
+        placeholder: $t('permission.admin.searchUsername'),
       },
       fieldName: 'username',
-      label: $t('system.permission.admin.username'),
+      label: $t('permission.admin.username'),
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('system.permission.admin.searchName'),
+        placeholder: $t('permission.admin.searchName'),
       },
       fieldName: 'name',
-      label: $t('system.permission.admin.name'),
+      label: $t('permission.admin.name'),
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('system.permission.admin.searchEmail'),
+        placeholder: $t('permission.admin.searchEmail'),
       },
       fieldName: 'email',
-      label: $t('system.permission.admin.email'),
+      label: $t('permission.admin.email'),
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('system.permission.admin.searchMobile'),
+        placeholder: $t('permission.admin.searchMobile'),
       },
       fieldName: 'mobile',
-      label: $t('system.permission.admin.mobile'),
+      label: $t('permission.admin.mobile'),
     },
     {
       component: 'ApiTreeSelect',
@@ -156,13 +156,13 @@ export function useGridFormSchema(): VbenFormSchema[] {
         api: async () => mapDeptForTreeSelect(await fetchDepartmentTree()),
         class: 'w-full',
         fieldNames: { children: 'children', label: 'label', value: 'value' },
-        placeholder: $t('system.permission.admin.searchDept'),
+        placeholder: $t('permission.admin.searchDept'),
         /** 关闭树连接线/叶节点装饰，避免下拉项左侧出现圆点等图标感样式 */
         treeIcon: false,
         treeLine: false,
       },
       fieldName: 'dept_id',
-      label: $t('system.permission.admin.dept'),
+      label: $t('permission.admin.dept'),
     },
     {
       component: 'RangePicker',
@@ -171,7 +171,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
         class: 'w-full',
       },
       fieldName: 'updatedTime',
-      label: $t('system.permission.admin.updatedAt'),
+      label: $t('permission.admin.updatedAt'),
     },
   ];
 }
@@ -199,24 +199,24 @@ export function useColumns(
       field: 'username',
       minWidth: 120,
       sortable: true,
-      title: $t('system.permission.admin.username'),
+      title: $t('permission.admin.username'),
     },
     {
       field: 'real_name',
       minWidth: 120,
       sortable: true,
-      title: $t('system.permission.admin.realName'),
+      title: $t('permission.admin.realName'),
       visible: false,
     },
     {
       field: 'nickname',
       minWidth: 100,
       sortable: true,
-      title: $t('system.permission.admin.nickname'),
+      title: $t('permission.admin.nickname'),
     },
     {
       field: 'avatar',
-      title: $t('system.permission.admin.avatar'),
+      title: $t('permission.admin.avatar'),
       width: 90,
       cellRender: {
         attrs: {
@@ -231,12 +231,12 @@ export function useColumns(
         },
       },
     },
-    { field: 'mobile', minWidth: 130, sortable: true, title: $t('system.permission.admin.mobile') },
+    { field: 'mobile', minWidth: 130, sortable: true, title: $t('permission.admin.mobile') },
     {
       field: 'email',
       minWidth: 180,
       sortable: true,
-      title: $t('system.permission.admin.email'),
+      title: $t('permission.admin.email'),
       visible: false,
     },
     {
@@ -245,14 +245,14 @@ export function useColumns(
         row.department?.name ?? TABLE_CELL_EMPTY,
       minWidth: 120,
       sortable: true,
-      title: $t('system.permission.admin.dept'),
+      title: $t('permission.admin.dept'),
     },
     {
       field: 'roles',
       formatter: ({ row }: { row: AdminRow }) => formatAdminRoles(row),
       minWidth: 160,
       sortable: false,
-      title: $t('system.permission.admin.roles'),
+      title: $t('permission.admin.roles'),
     },
     {
       field: 'updated_at',
@@ -260,7 +260,7 @@ export function useColumns(
         row.updated_at ? formatDateTime(row.updated_at) : TABLE_CELL_EMPTY,
       minWidth: 170,
       sortable: true,
-      title: $t('system.permission.admin.updatedAt'),
+      title: $t('permission.admin.updatedAt'),
     },
     {
       field: 'created_at',
@@ -268,13 +268,13 @@ export function useColumns(
         row.created_at ? formatDateTime(row.created_at) : TABLE_CELL_EMPTY,
       minWidth: 170,
       sortable: true,
-      title: $t('system.permission.admin.createdAt'),
+      title: $t('permission.admin.createdAt'),
       visible: false,
     },
     {
       field: 'status',
       sortable: true,
-      title: $t('system.permission.admin.status'),
+      title: $t('permission.admin.status'),
       width: 100,
       cellRender: {
         attrs: {
@@ -293,7 +293,7 @@ export function useColumns(
       cellRender: {
         attrs: {
           nameField: 'username',
-          nameTitle: $t('system.permission.admin.entity'),
+          nameTitle: $t('permission.admin.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -350,7 +350,7 @@ export function buildAdminFormSchema(params: {
         disabled: isEdit,
       },
       fieldName: 'username',
-      label: $t('system.permission.admin.username'),
+      label: $t('permission.admin.username'),
       rules: 'required',
     },
     {
@@ -358,13 +358,13 @@ export function buildAdminFormSchema(params: {
       componentProps: {
         class: 'w-full',
         placeholder: isEdit
-          ? $t('system.permission.admin.passwordKeepEmpty')
+          ? $t('permission.admin.passwordKeepEmpty')
           : undefined,
       },
       fieldName: 'password',
       label: isEdit
-        ? $t('system.permission.admin.newPassword')
-        : $t('system.permission.admin.password'),
+        ? $t('permission.admin.newPassword')
+        : $t('permission.admin.password'),
       rules: isEdit ? undefined : 'required',
     },
     {
@@ -373,7 +373,7 @@ export function buildAdminFormSchema(params: {
         class: 'w-full',
       },
       fieldName: 'nickname',
-      label: $t('system.permission.admin.nickname'),
+      label: $t('permission.admin.nickname'),
     },
     {
       component: 'Input',
@@ -381,7 +381,7 @@ export function buildAdminFormSchema(params: {
         class: 'w-full',
       },
       fieldName: 'real_name',
-      label: $t('system.permission.admin.realName'),
+      label: $t('permission.admin.realName'),
     },
     {
       component: 'Upload',
@@ -394,7 +394,7 @@ export function buildAdminFormSchema(params: {
         maxCount: 1,
       },
       fieldName: 'avatar',
-      label: $t('system.permission.admin.avatar'),
+      label: $t('permission.admin.avatar'),
     },
     {
       component: 'Input',
@@ -402,11 +402,11 @@ export function buildAdminFormSchema(params: {
         class: 'w-full',
       },
       fieldName: 'email',
-      label: $t('system.permission.admin.email'),
+      label: $t('permission.admin.email'),
       rules: z
-        .string({ required_error: $t('system.permission.admin.emailRequired') })
-        .min(1, { message: $t('system.permission.admin.emailRequired') })
-        .email($t('system.permission.admin.emailInvalid')),
+        .string({ required_error: $t('permission.admin.emailRequired') })
+        .min(1, { message: $t('permission.admin.emailRequired') })
+        .email($t('permission.admin.emailInvalid')),
     },
     {
       component: 'Input',
@@ -414,10 +414,10 @@ export function buildAdminFormSchema(params: {
         class: 'w-full',
       },
       fieldName: 'mobile',
-      label: $t('system.permission.admin.mobile'),
+      label: $t('permission.admin.mobile'),
       rules: z
-        .string({ required_error: $t('system.permission.admin.mobileRequired') })
-        .regex(/^1[3-9]\d{9}$/, $t('system.permission.admin.mobileInvalid')),
+        .string({ required_error: $t('permission.admin.mobileRequired') })
+        .regex(/^1[3-9]\d{9}$/, $t('permission.admin.mobileInvalid')),
     },
     {
       component: 'TreeSelect',
@@ -425,7 +425,7 @@ export function buildAdminFormSchema(params: {
         allowClear: true,
         class: 'w-full',
         fieldNames: { children: 'children', label: 'label', value: 'value' },
-        placeholder: $t('system.permission.admin.selectDept'),
+        placeholder: $t('permission.admin.selectDept'),
         showSearch: true,
         treeData: deptTreeData,
         treeDefaultExpandAll: true,
@@ -434,7 +434,7 @@ export function buildAdminFormSchema(params: {
         treeLine: false,
       },
       fieldName: 'dept_id',
-      label: $t('system.permission.admin.dept'),
+      label: $t('permission.admin.dept'),
     },
     {
       component: 'Select',
@@ -444,10 +444,10 @@ export function buildAdminFormSchema(params: {
         disabled: lockRoles,
         mode: 'multiple',
         options: roleOptions,
-        placeholder: $t('system.permission.admin.selectRole'),
+        placeholder: $t('permission.admin.selectRole'),
       },
       fieldName: 'role_ids',
-      label: $t('system.permission.admin.roles'),
+      label: $t('permission.admin.roles'),
       rules: lockRoles ? undefined : 'selectRequired',
     },
     {
@@ -460,7 +460,7 @@ export function buildAdminFormSchema(params: {
         placeholder: $t('system.shared.optional'),
       },
       fieldName: 'post_ids',
-      label: $t('system.permission.admin.post'),
+      label: $t('permission.admin.post'),
     },
     {
       component: 'RadioGroup',
@@ -476,7 +476,7 @@ export function buildAdminFormSchema(params: {
       },
       defaultValue: 1,
       fieldName: 'status',
-      label: $t('system.permission.admin.status'),
+      label: $t('permission.admin.status'),
     },
     {
       component: 'Textarea',
@@ -485,7 +485,7 @@ export function buildAdminFormSchema(params: {
         rows: 2,
       },
       fieldName: 'remark',
-      label: $t('system.permission.admin.remark'),
+      label: $t('permission.admin.remark'),
     },
   ];
 }

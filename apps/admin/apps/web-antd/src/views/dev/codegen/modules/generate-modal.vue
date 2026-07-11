@@ -8,6 +8,7 @@ import { useVbenModal } from '@vben/common-ui';
 import { Checkbox, message } from 'ant-design-vue';
 
 import { generateCodegen } from '#/api/generator';
+import { $t } from '#/locales';
 
 const emit = defineEmits<{
   success: [];
@@ -19,12 +20,14 @@ const generateSyncMenu = ref(true);
 
 const modalTitle = computed(() =>
   generateTarget.value
-    ? `生成 · ${generateTarget.value.business_name}`
-    : '执行生成',
+    ? $t('dev.codegen.generateTitleWithName', [
+        generateTarget.value.business_name,
+      ])
+    : $t('dev.codegen.generateTitle'),
 );
 
 const [Modal, modalApi] = useVbenModal({
-  confirmText: '开始生成',
+  confirmText: $t('dev.codegen.generateStart'),
   fullscreenButton: false,
   async onConfirm() {
     if (!generateTarget.value) {
@@ -39,11 +42,9 @@ const [Modal, modalApi] = useVbenModal({
       const conflictCount = result.conflicts?.length ?? 0;
       const writtenCount = result.written?.length ?? 0;
       if (conflictCount > 0 && !generateForce.value) {
-        message.warning(
-          `有 ${conflictCount} 个文件已存在被跳过，可勾选强制覆盖后重试`,
-        );
+        message.warning($t('dev.codegen.conflictSkipped', [conflictCount]));
       } else {
-        message.success(`生成完成，写入 ${writtenCount} 个文件`);
+        message.success($t('dev.codegen.generateDone', [writtenCount]));
         modalApi.close();
       }
       emit('success');
@@ -73,12 +74,16 @@ defineExpose({
     class="w-full max-w-full md:w-[520px] md:max-w-[520px]"
   >
     <p class="mb-3 text-sm">
-      将写入后端/前端代码文件，效果与 CLI <code>generator:crud</code> 一致。
+      {{ $t('dev.codegen.generateHint') }}
     </p>
     <div class="space-y-2">
-      <Checkbox v-model:checked="generateSyncMenu">同步注册菜单</Checkbox>
+      <Checkbox v-model:checked="generateSyncMenu">
+        {{ $t('dev.codegen.syncMenu') }}
+      </Checkbox>
       <br />
-      <Checkbox v-model:checked="generateForce">强制覆盖已存在文件</Checkbox>
+      <Checkbox v-model:checked="generateForce">
+        {{ $t('dev.codegen.forceOverwrite') }}
+      </Checkbox>
     </div>
   </Modal>
 </template>

@@ -1,6 +1,8 @@
 /**
  * 插件管理权限，与 modules/System/app/Support/PluginPermissions.php 保持一致。
  */
+import { $t } from '#/locales';
+
 export const PLUGIN_PERMISSIONS = {
   MANAGE: 'system.plugins',
   QUERY: 'system.plugins.query',
@@ -22,9 +24,27 @@ export const PLUGIN_STATUS = {
   DISABLED: 3,
 } as const;
 
-export const PLUGIN_STATUS_TAG_OPTIONS = [
-  { color: 'default', label: '未安装', value: PLUGIN_STATUS.DISCOVERED },
-  { color: 'processing', label: '已安装', value: PLUGIN_STATUS.INSTALLED },
-  { color: 'success', label: '已启用', value: PLUGIN_STATUS.ENABLED },
-  { color: 'warning', label: '已禁用', value: PLUGIN_STATUS.DISABLED },
-] as const;
+export function getPluginStatusTagOptions() {
+  return [
+    {
+      color: 'default',
+      label: $t('dev.plugins.statusDiscovered'),
+      value: PLUGIN_STATUS.DISCOVERED,
+    },
+    {
+      color: 'processing',
+      label: $t('dev.plugins.statusInstalled'),
+      value: PLUGIN_STATUS.INSTALLED,
+    },
+    {
+      color: 'success',
+      label: $t('dev.plugins.statusEnabled'),
+      value: PLUGIN_STATUS.ENABLED,
+    },
+    {
+      color: 'warning',
+      label: $t('dev.plugins.statusDisabled'),
+      value: PLUGIN_STATUS.DISABLED,
+    },
+  ] as const;
+}

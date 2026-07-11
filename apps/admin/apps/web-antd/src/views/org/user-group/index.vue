@@ -131,7 +131,7 @@ function onBatchDelete() {
   const ids = selectedRows.value.map((row) => row.id);
   if (ids.length === 0) return;
   Modal.confirm({
-    content: $t('system.org.userGroup.batchDeleteConfirm', [ids.length]),
+    content: $t('org.userGroup.batchDeleteConfirm', [ids.length]),
     okText: $t('common.delete'),
     okType: 'danger',
     cancelText: $t('common.cancel'),
@@ -169,7 +169,7 @@ function onBatchDelete() {
           @click="onCreate"
         >
           <Plus class="size-4" />
-          {{ $t('system.org.userGroup.createGroup') }}
+          {{ $t('org.userGroup.createGroup') }}
         </Button>
       </template>
     </CrudView>

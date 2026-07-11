@@ -6,6 +6,7 @@ import { computed, ref } from 'vue';
 import { Descriptions, Drawer, message, Switch } from 'ant-design-vue';
 
 import { fetchDevModule, updateDevModuleStatus } from '#/api/dev-module';
+import { $t } from '#/locales';
 
 const descriptionsLabelStyle = {
   minWidth: '148px',
@@ -29,6 +30,13 @@ const open = ref(false);
 const loading = ref(false);
 const submitting = ref(false);
 const detail = ref<DevModuleDetail | null>(null);
+
+const drawerTitle = computed(() =>
+  detail.value
+    ? $t('dev.modules.detailTitle') +
+      $t('dev.shared.detailTitleSuffix', [detail.value.title])
+    : $t('dev.modules.detailTitle'),
+);
 
 const manifestText = computed(() =>
   detail.value?.manifest
@@ -70,7 +78,7 @@ async function onEnabledChange(checked: boolean | string | number) {
         enabled: updated.enabled,
       },
     };
-    message.success('已更新，请重启后端服务后生效');
+    message.success($t('dev.shared.updatedRestart'));
     emit('success');
   } finally {
     submitting.value = false;
@@ -85,7 +93,7 @@ defineExpose({ open: show });
 <template>
   <Drawer
     v-model:open="open"
-    :title="detail ? `模块详情 · ${detail.title}` : '模块详情'"
+    :title="drawerTitle"
     width="min(90vw, 720px)"
   >
     <Descriptions
@@ -96,11 +104,11 @@ defineExpose({ open: show });
       :label-style="descriptionsLabelStyle"
       size="small"
     >
-      <Descriptions.Item label="模块标识">{{ detail.name }}</Descriptions.Item>
-      <Descriptions.Item label="模块名称">{{ detail.title }}</Descriptions.Item>
-      <Descriptions.Item label="版本">{{ detail.version || '--' }}</Descriptions.Item>
-      <Descriptions.Item label="目录">{{ detail.directory }}</Descriptions.Item>
-      <Descriptions.Item label="manifest 路径">{{ detail.manifest_path }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('dev.modules.columnName')">{{ detail.name }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('dev.modules.columnTitle')">{{ detail.title }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('dev.shared.version')">{{ detail.version || '--' }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('dev.shared.directory')">{{ detail.directory }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('dev.shared.manifestPath')">{{ detail.manifest_path }}</Descriptions.Item>
       <Descriptions.Item label="ServiceProvider">
         <div v-if="detail.providers.length > 0" class="space-y-1">
           <div v-for="item in detail.providers" :key="item">{{ item }}</div>
@@ -113,16 +121,16 @@ defineExpose({ open: show });
         </div>
         <span v-else class="text-muted-foreground">--</span>
       </Descriptions.Item>
-      <Descriptions.Item label="启用状态">
+      <Descriptions.Item :label="$t('dev.shared.enableStatus')">
         <Switch
           v-if="canToggle"
           :checked="detail.enabled"
           :loading="submitting"
-          checked-children="启用"
-          un-checked-children="禁用"
+          :checked-children="$t('dev.shared.enable')"
+          :un-checked-children="$t('dev.shared.disable')"
           @change="onEnabledChange"
         />
-        <span v-else>始终启用（System 模块不可禁用）</span>
+        <span v-else>{{ $t('dev.shared.alwaysEnabledSystem') }}</span>
       </Descriptions.Item>
     </Descriptions>
 
@@ -132,7 +140,7 @@ defineExpose({ open: show });
         class="overflow-auto rounded border bg-muted/30 p-3 text-sm leading-6"
       >{{ manifestText }}</pre>
       <p class="text-muted-foreground mt-2 text-sm">
-        修改启用状态会写入 module.json，需重启 PHP 服务后生效。
+        {{ $t('dev.modules.toggleStatusHint') }}
       </p>
     </div>
   </Drawer>

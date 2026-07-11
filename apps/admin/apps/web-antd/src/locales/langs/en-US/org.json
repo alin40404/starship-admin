@@ -1,0 +1,54 @@
+{
+  "shared": {
+    "name": "Name",
+    "code": "Code",
+    "sort": "Sort",
+    "status": "Status",
+    "remark": "Remark",
+    "updatedAt": "Updated At",
+    "email": "Email",
+    "searchNameCode": "Search name/code",
+    "namePlaceholder": "Name",
+    "codePlaceholder": "Code",
+    "statusPlaceholder": "Status",
+    "sortInvalid": "Enter a valid integer",
+    "sortUpdated": "Sort order updated"
+  },
+  "department": {
+    "entity": "Department",
+    "columnName": "Department Name",
+    "leader": "Leader",
+    "phone": "Phone",
+    "parent": "Parent Department",
+    "parentPlaceholder": "Parent (leave empty for root)",
+    "leaderPlaceholder": "Select department leader",
+    "rootOption": "Root Department",
+    "createDept": "Create Department",
+    "createTitle": "Create Department",
+    "editTitle": "Edit Department",
+    "batchDeleteConfirm": "Delete {0} selected department(s)? Departments with children or assigned admins cannot be deleted.",
+    "batchDeletePartial": "Deleted {0}, skipped {1} with children or assigned admins",
+    "batchStatusConfirm": "Batch set {0} department(s) to [{1}]?"
+  },
+  "post": {
+    "entity": "Post",
+    "namePlaceholder": "Post name",
+    "createPost": "Create Post",
+    "createTitle": "Create Post",
+    "editTitle": "Edit Post",
+    "viewTitle": "View Post",
+    "batchDeleteConfirm": "Delete {0} selected post(s)?",
+    "batchStatusConfirm": "Batch set {0} post(s) to [{1}]?"
+  },
+  "userGroup": {
+    "entity": "User Group",
+    "namePlaceholder": "User group name",
+    "membersCount": "Members",
+    "members": "Members",
+    "membersPlaceholder": "Select group members",
+    "createGroup": "Create User Group",
+    "createTitle": "Create User Group",
+    "editTitle": "Edit User Group",
+    "batchDeleteConfirm": "Delete {0} selected user group(s)?"
+  }
+}

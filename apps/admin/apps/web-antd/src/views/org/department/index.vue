@@ -109,7 +109,7 @@ function onBatchDelete() {
   const ids = selectedRows.value.map((row) => row.id);
   if (ids.length === 0) return;
   Modal.confirm({
-    content: $t('system.org.department.batchDeleteConfirm', [ids.length]),
+    content: $t('org.department.batchDeleteConfirm', [ids.length]),
     okText: $t('common.delete'),
     okType: 'danger',
     cancelText: $t('common.cancel'),
@@ -118,7 +118,7 @@ function onBatchDelete() {
       const result = await batchDeleteDepartments(ids);
       if (result.skipped > 0) {
         message.warning(
-          $t('system.org.department.batchDeletePartial', [
+          $t('org.department.batchDeletePartial', [
             result.deleted,
             result.skipped,
           ]),
@@ -140,7 +140,7 @@ function onBatchUpdateStatus(status: 0 | 1) {
       ? $t('system.shared.status.enable')
       : $t('system.shared.status.disable');
   Modal.confirm({
-    content: $t('system.org.department.batchStatusConfirm', [ids.length, label]),
+    content: $t('org.department.batchStatusConfirm', [ids.length, label]),
     okText: $t('common.confirm'),
     cancelText: $t('common.cancel'),
     title: $t('system.shared.batchSet', [label]),
@@ -174,7 +174,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
 
       const sort = Number(row.sort);
       if (!Number.isFinite(sort) || sort < 0 || !Number.isInteger(sort)) {
-        message.warning($t('system.org.shared.sortInvalid'));
+        message.warning($t('org.shared.sortInvalid'));
         await gridApi.reload();
         return;
       }
@@ -182,7 +182,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       gridApi.setLoading(true);
       try {
         await updateDepartmentSort(row.id, sort);
-        message.success($t('system.org.shared.sortUpdated'));
+        message.success($t('org.shared.sortUpdated'));
         onRefresh();
       } catch {
         await gridApi.reload();
@@ -261,7 +261,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
           @click="onCreate"
         >
           <Plus class="size-4" />
-          {{ $t('system.org.department.createDept') }}
+          {{ $t('org.department.createDept') }}
         </Button>
       </template>
     </Grid>

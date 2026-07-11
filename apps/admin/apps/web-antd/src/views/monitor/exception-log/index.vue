@@ -105,7 +105,7 @@ function onBatchDelete() {
     return;
   }
   Modal.confirm({
-    content: $t('system.monitor.exceptionLog.batchDeleteConfirm', [ids.length]),
+    content: $t('monitor.exceptionLog.batchDeleteConfirm', [ids.length]),
     okText: $t('common.delete'),
     okType: 'danger',
     cancelText: $t('common.cancel'),
@@ -125,7 +125,7 @@ function onBatchDelete() {
     <div class="flex h-full min-h-0 flex-col">
       <Alert
         class="mb-4 shrink-0"
-        :message="$t('system.monitor.exceptionLog.hint')"
+        :message="$t('monitor.exceptionLog.hint')"
         show-icon
         type="warning"
       />

@@ -6,19 +6,20 @@ import { computed, ref } from 'vue';
 import { Drawer, Empty, Spin } from 'ant-design-vue';
 
 import { previewCodegen } from '#/api/generator';
+import { $t } from '#/locales';
 
 const open = ref(false);
 const files = ref<CodegenFileItem[]>([]);
 const activePath = ref('');
 const loading = ref(false);
-const title = ref('代码预览');
+const title = ref('');
 
 const activeFile = computed(() =>
   files.value.find((file) => file.path === activePath.value),
 );
 
 async function show(row: GeneratorTableRow) {
-  title.value = `代码预览 · ${row.business_name}`;
+  title.value = $t('dev.codegen.previewTitleWithName', [row.business_name]);
   open.value = true;
   loading.value = true;
   files.value = [];
@@ -55,7 +56,7 @@ defineExpose({ open: show });
           class="min-w-0 flex-1 overflow-auto rounded border bg-muted/30 p-3 text-xs leading-5"
         >{{ activeFile?.content }}</pre>
       </div>
-      <Empty v-else-if="!loading" description="暂无预览文件" />
+      <Empty v-else-if="!loading" :description="$t('dev.codegen.previewEmpty')" />
     </Spin>
   </Drawer>
 </template>

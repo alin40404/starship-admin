@@ -1,0 +1,61 @@
+{
+  "shared": {
+    "keyword": "关键词",
+    "module": "模块",
+    "method": "方法",
+    "action": "动作",
+    "status": "结果",
+    "message": "说明",
+    "operator": "操作人",
+    "time": "时间",
+    "exceptionClass": "异常类",
+    "detail": "详情",
+    "actionLogin": "登录",
+    "actionLogout": "退出",
+    "statusSuccess": "成功",
+    "statusFailed": "失败"
+  },
+  "operationLog": {
+    "entity": "操作日志",
+    "hint": "记录后台写操作（新增、更新、删除等），敏感字段已脱敏。",
+    "searchPlaceholder": "搜索标题/操作人/URL",
+    "keywordPlaceholder": "标题 / 操作人 / URL",
+    "modulePlaceholder": "请选择模块",
+    "methodPlaceholder": "POST / PUT",
+    "columnTitle": "操作标题",
+    "columnModule": "模块",
+    "columnMethod": "方法",
+    "columnStatusCode": "状态码",
+    "columnTime": "操作时间",
+    "columnAction": "动作",
+    "requestUrl": "请求 URL",
+    "requestSummary": "请求摘要",
+    "detailTitle": "操作日志详情",
+    "batchDeleteConfirm": "确定删除选中的 {0} 条操作日志吗？"
+  },
+  "loginLog": {
+    "entity": "登录日志",
+    "searchPlaceholder": "搜索账号/IP",
+    "keywordPlaceholder": "账号 / IP",
+    "actionPlaceholder": "动作",
+    "statusPlaceholder": "结果",
+    "columnUsername": "账号",
+    "detailTitle": "登录日志详情",
+    "batchDeleteConfirm": "确定删除选中的 {0} 条登录日志吗？"
+  },
+  "exceptionLog": {
+    "entity": "异常日志",
+    "hint": "列表仅展示异常摘要；完整堆栈请按 trace_id 在服务器 storage/logs/laravel.log 中检索。",
+    "searchPlaceholder": "搜索消息/异常类/trace_id",
+    "keywordPlaceholder": "消息 / 异常类 / trace_id",
+    "exceptionClassPlaceholder": "Exception 类名",
+    "columnMessage": "异常消息",
+    "columnExceptionType": "异常类型",
+    "columnExceptionClass": "异常类",
+    "columnFile": "文件",
+    "columnLine": "行号",
+    "columnOccurredAt": "发生时间",
+    "detailTitle": "异常日志详情",
+    "batchDeleteConfirm": "确定删除选中的 {0} 条异常日志吗？"
+  }
+}

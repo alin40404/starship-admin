@@ -63,14 +63,14 @@ export function cascaderPathsToDeptIds(paths: number[][]): number[] {
 
 export function getDataScopeOptions() {
   return [
-    { label: $t('system.permission.role.dataScopeOptions.all'), value: 1 },
-    { label: $t('system.permission.role.dataScopeOptions.dept'), value: 2 },
+    { label: $t('permission.role.dataScopeOptions.all'), value: 1 },
+    { label: $t('permission.role.dataScopeOptions.dept'), value: 2 },
     {
-      label: $t('system.permission.role.dataScopeOptions.deptAndChild'),
+      label: $t('permission.role.dataScopeOptions.deptAndChild'),
       value: 3,
     },
-    { label: $t('system.permission.role.dataScopeOptions.self'), value: 4 },
-    { label: $t('system.permission.role.dataScopeOptions.custom'), value: 5 },
+    { label: $t('permission.role.dataScopeOptions.self'), value: 4 },
+    { label: $t('permission.role.dataScopeOptions.custom'), value: 5 },
   ];
 }
 
@@ -80,19 +80,19 @@ export function useGridFormSchema(): VbenFormSchema[] {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('system.permission.role.searchName'),
+        placeholder: $t('permission.role.searchName'),
       },
       fieldName: 'name',
-      label: $t('system.permission.role.name'),
+      label: $t('permission.role.name'),
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('system.permission.role.code'),
+        placeholder: $t('permission.role.code'),
       },
       fieldName: 'code',
-      label: $t('system.permission.role.code'),
+      label: $t('permission.role.code'),
     },
     {
       component: 'Select',
@@ -103,10 +103,10 @@ export function useGridFormSchema(): VbenFormSchema[] {
           { label: $t('system.shared.status.enable'), value: 1 },
           { label: $t('system.shared.status.disable'), value: 0 },
         ],
-        placeholder: $t('system.permission.role.status'),
+        placeholder: $t('permission.role.status'),
       },
       fieldName: 'status',
-      label: $t('system.permission.role.status'),
+      label: $t('permission.role.status'),
     },
   ];
 }
@@ -128,7 +128,7 @@ export function buildRoleMobileCrudConfig(params: {
     search: {
       filterSchema: useGridFormSchema(),
       keywordFields: ['name', 'code'],
-      placeholder: $t('system.permission.role.searchKeyword'),
+      placeholder: $t('permission.role.searchKeyword'),
     },
     selection: {
       checkable: (row) => row.code !== 'super_admin',
@@ -157,13 +157,13 @@ export function useColumns(
       field: 'name',
       minWidth: 140,
       sortable: true,
-      title: $t('system.permission.role.name'),
+      title: $t('permission.role.name'),
     },
     {
       field: 'code',
       minWidth: 140,
       sortable: true,
-      title: $t('system.permission.role.code'),
+      title: $t('permission.role.code'),
     },
     {
       field: 'data_scope',
@@ -172,12 +172,12 @@ export function useColumns(
         String(cellValue ?? TABLE_CELL_EMPTY),
       minWidth: 120,
       sortable: true,
-      title: $t('system.permission.role.dataScope'),
+      title: $t('permission.role.dataScope'),
     },
     {
       field: 'status',
       sortable: true,
-      title: $t('system.permission.role.status'),
+      title: $t('permission.role.status'),
       width: 100,
       cellRender: {
         attrs: {
@@ -198,20 +198,20 @@ export function useColumns(
       field: 'remark',
       minWidth: 160,
       sortable: false,
-      title: $t('system.permission.role.remark'),
+      title: $t('permission.role.remark'),
     },
     {
       field: 'updated_at',
       minWidth: 170,
       sortable: true,
-      title: $t('system.permission.role.updatedAt'),
+      title: $t('permission.role.updatedAt'),
     },
     {
       align: 'center',
       cellRender: {
         attrs: {
           nameField: 'name',
-          nameTitle: $t('system.permission.role.entity'),
+          nameTitle: $t('permission.role.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -266,7 +266,7 @@ export function buildRoleFormSchema(params: {
         disabled,
       },
       fieldName: 'name',
-      label: $t('system.permission.role.name'),
+      label: $t('permission.role.name'),
       rules: readonly ? undefined : 'required',
     },
     {
@@ -276,7 +276,7 @@ export function buildRoleFormSchema(params: {
         disabled: disabled || isEdit,
       },
       fieldName: 'code',
-      label: $t('system.permission.role.code'),
+      label: $t('permission.role.code'),
       rules: readonly ? undefined : 'required',
     },
     {
@@ -286,11 +286,11 @@ export function buildRoleFormSchema(params: {
         class: 'w-full',
         disabled,
         options: getDataScopeOptions(),
-        placeholder: $t('system.permission.role.dataScope'),
+        placeholder: $t('permission.role.dataScope'),
       },
       defaultValue: 1,
       fieldName: 'data_scope',
-      label: $t('system.permission.role.dataScope'),
+      label: $t('permission.role.dataScope'),
       rules: readonly ? undefined : 'selectRequired',
     },
     {
@@ -306,7 +306,7 @@ export function buildRoleFormSchema(params: {
       /** 数据部门：由表单插槽渲染 Cascader，与数据范围同一行 */
       fieldName: 'dept_ids',
       formItemClass: 'role-dept-field w-full min-w-0 items-start',
-      label: $t('system.permission.role.dataDept'),
+      label: $t('permission.role.dataDept'),
       modelPropName: 'modelValue',
       wrapperClass: 'block w-full min-w-0',
     },
@@ -324,7 +324,7 @@ export function buildRoleFormSchema(params: {
       },
       defaultValue: 1,
       fieldName: 'status',
-      label: $t('system.permission.role.status'),
+      label: $t('permission.role.status'),
     },
     {
       component: 'Textarea',
@@ -335,7 +335,7 @@ export function buildRoleFormSchema(params: {
       },
       fieldName: 'remark',
       formItemClass: 'col-span-full sm:col-span-2 w-full items-start',
-      label: $t('system.permission.role.remark'),
+      label: $t('permission.role.remark'),
     },
     /** 角色权限：由表单插槽渲染 Vben Tree，值参与 getValues */
     {
@@ -344,7 +344,7 @@ export function buildRoleFormSchema(params: {
       defaultValue: [],
       fieldName: 'menu_ids',
       formItemClass: 'col-span-full sm:col-span-2 w-full min-w-0 items-start',
-      label: $t('system.permission.role.permissions'),
+      label: $t('permission.role.permissions'),
       modelPropName: 'modelValue',
     },
   ];

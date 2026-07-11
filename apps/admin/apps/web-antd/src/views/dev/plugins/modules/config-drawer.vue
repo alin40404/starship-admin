@@ -13,6 +13,7 @@ import {
   updatePluginConfig,
 } from '#/api/dev-plugin';
 import { PLUGIN_PERMISSIONS } from '#/constants/plugin-permissions';
+import { $t } from '#/locales';
 
 const props = defineProps<{
   access: PluginAccessChecker;
@@ -30,6 +31,13 @@ const canConfig = computed(() => props.access.can(PLUGIN_PERMISSIONS.CONFIG));
 const configFields = computed(() => detail.value?.config_schema ?? []);
 const showTestTab = computed(
   () => detail.value?.slug === 'sms-aliyun' && detail.value.enabled,
+);
+
+const drawerTitle = computed(() =>
+  detail.value
+    ? $t('dev.plugins.configTitle') +
+      $t('dev.shared.detailTitleSuffix', [detail.value.name])
+    : $t('dev.plugins.configTitle'),
 );
 
 async function loadDetail(slug: string) {
@@ -77,7 +85,7 @@ async function onSaveConfig() {
           : value;
     }
     await updatePluginConfig(detail.value.slug, payload);
-    message.success('配置已保存');
+    message.success($t('dev.shared.configSaved'));
     await loadDetail(detail.value.slug);
     emit('success');
   } finally {
@@ -87,13 +95,13 @@ async function onSaveConfig() {
 
 async function onTestSms() {
   if (!testMobile.value.trim()) {
-    message.warning('请输入测试手机号');
+    message.warning($t('dev.shared.testMobilePlaceholder'));
     return;
   }
   testing.value = true;
   try {
     const result = await testSmsAliyunPlugin({ mobile: testMobile.value.trim() });
-    message.success(result.message || '测试成功');
+    message.success(result.message || $t('dev.shared.testSuccess'));
   } finally {
     testing.value = false;
   }
@@ -115,11 +123,11 @@ defineExpose({ open: show });
 <template>
   <Drawer
     v-model:open="open"
-    :title="detail ? `插件配置 · ${detail.name}` : '插件配置'"
+    :title="drawerTitle"
     width="min(90vw, 640px)"
   >
     <Tabs v-if="detail">
-      <Tabs.TabPane key="config" tab="配置">
+      <Tabs.TabPane key="config" :tab="$t('dev.plugins.configTab')">
         <Form v-if="configFields.length > 0" layout="vertical">
           <Form.Item
             v-for="key in configFields"
@@ -131,8 +139,8 @@ defineExpose({ open: show });
               :disabled="!canConfig"
               :placeholder="
                 isSensitiveField(key) && detail.config[key] === '__configured__'
-                  ? '已配置，留空则不修改'
-                  : `请输入 ${fieldLabel(key)}`
+                  ? $t('dev.shared.configuredKeepEmpty')
+                  : $t('dev.shared.enterField', [fieldLabel(key)])
               "
               :type="isSensitiveField(key) ? 'password' : 'text'"
             />
@@ -143,23 +151,28 @@ defineExpose({ open: show });
             type="primary"
             @click="onSaveConfig"
           >
-            保存配置
+            {{ $t('dev.shared.saveConfig') }}
           </Button>
         </Form>
-        <p v-else class="text-muted-foreground text-sm">该插件暂无可编辑配置项。</p>
+        <p v-else class="text-muted-foreground text-sm">
+          {{ $t('dev.shared.noConfigFields') }}
+        </p>
       </Tabs.TabPane>
 
-      <Tabs.TabPane v-if="showTestTab" key="test" tab="测试">
+      <Tabs.TabPane v-if="showTestTab" key="test" :tab="$t('dev.plugins.testTab')">
         <Form layout="vertical">
-          <Form.Item label="测试手机号">
-            <Input v-model:value="testMobile" placeholder="请输入手机号" />
+          <Form.Item :label="$t('dev.shared.testMobile')">
+            <Input
+              v-model:value="testMobile"
+              :placeholder="$t('dev.shared.testMobilePlaceholder')"
+            />
           </Form.Item>
           <Button :loading="testing" type="primary" @click="onTestSms">
-            发送测试
+            {{ $t('dev.shared.sendTest') }}
           </Button>
         </Form>
         <p class="text-muted-foreground mt-2 text-xs">
-          第一版仅验证插件路由与配置，不调用真实阿里云 SDK。
+          {{ $t('dev.plugins.testHint') }}
         </p>
       </Tabs.TabPane>
     </Tabs>

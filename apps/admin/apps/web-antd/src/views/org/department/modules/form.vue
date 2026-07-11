@@ -53,8 +53,8 @@ watch(editingId, () => {
 
 const formTitle = computed(() =>
   editingId.value
-    ? $t('system.org.department.editTitle')
-    : $t('system.org.department.createTitle'),
+    ? $t('org.department.editTitle')
+    : $t('org.department.createTitle'),
 );
 
 type PopupApi = {

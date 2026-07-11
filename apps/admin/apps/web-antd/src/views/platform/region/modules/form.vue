@@ -104,8 +104,8 @@ const syncPinyinPreview = useDebounceFn(async (shortname: string) => {
 
 const formTitle = computed(() =>
   editingId.value
-    ? $t('system.platform.region.editRegion')
-    : $t('system.platform.region.createRegionTitle'),
+    ? $t('platform.region.editRegion')
+    : $t('platform.region.createRegionTitle'),
 );
 
 type PopupApi = {
@@ -239,7 +239,7 @@ defineExpose({ open });
             class="area-parent-cascader w-full"
             :load-data="loadCascaderData"
             :options="cascaderOptions"
-            :placeholder="$t('system.platform.region.selectParent')"
+            :placeholder="$t('platform.region.selectParent')"
             popup-class-name="area-parent-cascader-popup"
             style="width: 100%"
             @change="onCascaderChange"
@@ -264,7 +264,7 @@ defineExpose({ open });
             class="area-parent-cascader w-full"
             :load-data="loadCascaderData"
             :options="cascaderOptions"
-            :placeholder="$t('system.platform.region.selectParent')"
+            :placeholder="$t('platform.region.selectParent')"
             popup-class-name="area-parent-cascader-popup"
             style="width: 100%"
             @change="onCascaderChange"

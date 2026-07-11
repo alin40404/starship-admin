@@ -64,7 +64,7 @@ defineExpose({ open: show });
   <Drawer
     v-model:open="open"
     :loading="loading"
-    :title="$t('system.monitor.loginLog.detailTitle')"
+    :title="$t('monitor.loginLog.detailTitle')"
     width="min(92vw, 880px)"
   >
     <Descriptions
@@ -75,19 +75,19 @@ defineExpose({ open: show });
       :label-style="descriptionsLabelStyle"
       size="small"
     >
-      <Descriptions.Item :label="$t('system.monitor.loginLog.columnUsername')">{{ detail.username }}</Descriptions.Item>
-      <Descriptions.Item :label="$t('system.monitor.shared.action')">
+      <Descriptions.Item :label="$t('monitor.loginLog.columnUsername')">{{ detail.username }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('monitor.shared.action')">
         <Tag v-if="actionTag" :color="actionTag.color">{{ actionTag.label }}</Tag>
         <span v-else>—</span>
       </Descriptions.Item>
-      <Descriptions.Item :label="$t('system.monitor.shared.status')">
+      <Descriptions.Item :label="$t('monitor.shared.status')">
         <Tag v-if="statusTag" :color="statusTag.color">{{ statusTag.label }}</Tag>
         <span v-else>—</span>
       </Descriptions.Item>
-      <Descriptions.Item :label="$t('system.monitor.shared.message')">{{ detail.message || '—' }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('monitor.shared.message')">{{ detail.message || '—' }}</Descriptions.Item>
       <Descriptions.Item label="IP">{{ detail.ip || '—' }}</Descriptions.Item>
       <Descriptions.Item label="User-Agent">{{ detail.user_agent || '—' }}</Descriptions.Item>
-      <Descriptions.Item :label="$t('system.monitor.shared.time')">
+      <Descriptions.Item :label="$t('monitor.shared.time')">
         {{ detail.created_at ? formatDateTime(detail.created_at) : '—' }}
       </Descriptions.Item>
     </Descriptions>

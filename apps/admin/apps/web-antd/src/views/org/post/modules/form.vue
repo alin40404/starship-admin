@@ -33,10 +33,10 @@ const [Form, formApi] = useVbenForm({
 });
 
 const formTitle = computed(() => {
-  if (readonly.value) return $t('system.org.post.viewTitle');
+  if (readonly.value) return $t('org.post.viewTitle');
   return editingId.value
-    ? $t('system.org.post.editTitle')
-    : $t('system.org.post.createTitle');
+    ? $t('org.post.editTitle')
+    : $t('org.post.createTitle');
 });
 
 type PopupApi = {

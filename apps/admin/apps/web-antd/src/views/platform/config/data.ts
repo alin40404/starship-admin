@@ -3,21 +3,21 @@ import { $t } from '#/locales';
 
 export function getConfigGroupLabels(): Record<string, string> {
   return {
-    basic: $t('system.platform.config.groups.basic'),
-    sms: $t('system.platform.config.groups.sms'),
-    inbox: $t('system.platform.config.groups.inbox'),
-    email: $t('system.platform.config.groups.email'),
-    storage: $t('system.platform.config.groups.storage'),
+    basic: $t('platform.config.groups.basic'),
+    sms: $t('platform.config.groups.sms'),
+    inbox: $t('platform.config.groups.inbox'),
+    email: $t('platform.config.groups.email'),
+    storage: $t('platform.config.groups.storage'),
   };
 }
 
 export function getConfigGroupDescriptions(): Record<string, string> {
   return {
-    basic: $t('system.platform.config.groupDescriptions.basic'),
-    sms: $t('system.platform.config.groupDescriptions.sms'),
-    inbox: $t('system.platform.config.groupDescriptions.inbox'),
-    email: $t('system.platform.config.groupDescriptions.email'),
-    storage: $t('system.platform.config.groupDescriptions.storage'),
+    basic: $t('platform.config.groupDescriptions.basic'),
+    sms: $t('platform.config.groupDescriptions.sms'),
+    inbox: $t('platform.config.groupDescriptions.inbox'),
+    email: $t('platform.config.groupDescriptions.email'),
+    storage: $t('platform.config.groupDescriptions.storage'),
   };
 }
 
@@ -90,43 +90,43 @@ export function getConfigSelectOptions(): Record<
   return {
     'mail.type': [{ label: 'SMTP', value: '1' }],
     'mail.verify_type': [
-      { label: $t('system.platform.config.selectOptions.mailVerifyNone'), value: '0' },
+      { label: $t('platform.config.selectOptions.mailVerifyNone'), value: '0' },
       { label: 'TLS', value: '1' },
       { label: 'SSL', value: '2' },
     ],
     'sms.provider': [
       {
-        label: $t('system.platform.config.selectOptions.smsAliyun'),
+        label: $t('platform.config.selectOptions.smsAliyun'),
         value: 'aliyun',
       },
       {
-        label: $t('system.platform.config.selectOptions.smsTencent'),
+        label: $t('platform.config.selectOptions.smsTencent'),
         value: 'tencent',
       },
       {
-        label: $t('system.platform.config.selectOptions.smsHuawei'),
+        label: $t('platform.config.selectOptions.smsHuawei'),
         value: 'huawei',
       },
     ],
     [STORAGE_DRIVER_KEY]: [
       {
-        label: $t('system.platform.config.selectOptions.storagePublic'),
+        label: $t('platform.config.selectOptions.storagePublic'),
         value: 'public',
       },
       {
-        label: $t('system.platform.config.selectOptions.storageLocal'),
+        label: $t('platform.config.selectOptions.storageLocal'),
         value: 'local',
       },
       {
-        label: $t('system.platform.config.selectOptions.storageOss'),
+        label: $t('platform.config.selectOptions.storageOss'),
         value: 'oss',
       },
       {
-        label: $t('system.platform.config.selectOptions.storageCos'),
+        label: $t('platform.config.selectOptions.storageCos'),
         value: 'cos',
       },
       {
-        label: $t('system.platform.config.selectOptions.storageS3'),
+        label: $t('platform.config.selectOptions.storageS3'),
         value: 's3',
       },
     ],
@@ -137,22 +137,22 @@ export function getParamTypeTagOptions() {
   return [
     {
       color: 'default',
-      label: $t('system.platform.config.paramType.string'),
+      label: $t('platform.config.paramType.string'),
       value: 'string',
     },
     {
       color: 'processing',
-      label: $t('system.platform.config.paramType.number'),
+      label: $t('platform.config.paramType.number'),
       value: 'number',
     },
     {
       color: 'warning',
-      label: $t('system.platform.config.paramType.bool'),
+      label: $t('platform.config.paramType.bool'),
       value: 'bool',
     },
     {
       color: 'success',
-      label: $t('system.platform.config.paramType.json'),
+      label: $t('platform.config.paramType.json'),
       value: 'json',
     },
   ] as const;

@@ -4,10 +4,11 @@ import type { PluginRow } from '#/api/dev-plugin';
 
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 import {
+  getPluginStatusTagOptions,
   PLUGIN_PERMISSIONS,
   PLUGIN_STATUS,
-  PLUGIN_STATUS_TAG_OPTIONS,
 } from '#/constants/plugin-permissions';
+import { $t } from '#/locales';
 
 export type PluginAccessChecker = {
   can: (code: string) => boolean;
@@ -22,42 +23,42 @@ export function useColumns(
       align: 'left',
       field: 'slug',
       minWidth: 140,
-      title: '插件标识',
+      title: $t('dev.plugins.columnSlug'),
     },
     {
       align: 'left',
       field: 'name',
       minWidth: 120,
-      title: '插件名称',
+      title: $t('dev.plugins.columnName'),
     },
     {
       align: 'left',
       field: 'description',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 180,
-      title: '描述',
+      title: $t('dev.shared.description'),
     },
     {
       align: 'center',
       field: 'version',
-      title: '版本',
+      title: $t('dev.shared.version'),
       width: 100,
     },
     {
       align: 'left',
       field: 'type',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
-      title: '类型',
+      title: $t('dev.shared.type'),
       width: 100,
     },
     {
       align: 'center',
       cellRender: {
         name: 'CellTag',
-        options: [...PLUGIN_STATUS_TAG_OPTIONS],
+        options: [...getPluginStatusTagOptions()],
       },
       field: 'status',
-      title: '状态',
+      title: $t('dev.shared.status'),
       width: 100,
     },
     {
@@ -65,7 +66,7 @@ export function useColumns(
       cellRender: {
         attrs: {
           nameField: 'name',
-          nameTitle: '插件',
+          nameTitle: $t('dev.plugins.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -73,7 +74,7 @@ export function useColumns(
           {
             code: 'detail',
             show: () => access.can(PLUGIN_PERMISSIONS.QUERY),
-            text: '详情',
+            text: $t('dev.shared.detail'),
             type: 'link',
           },
           {
@@ -82,7 +83,7 @@ export function useColumns(
               access.can(PLUGIN_PERMISSIONS.CONFIG) &&
               row.has_config &&
               row.installed,
-            text: '配置',
+            text: $t('dev.shared.config'),
             type: 'link',
           },
           {
@@ -90,7 +91,7 @@ export function useColumns(
             show: (row: PluginRow) =>
               access.can(PLUGIN_PERMISSIONS.INSTALL) &&
               row.status === PLUGIN_STATUS.DISCOVERED,
-            text: '安装',
+            text: $t('dev.shared.install'),
             type: 'link',
           },
           {
@@ -101,7 +102,7 @@ export function useColumns(
               [PLUGIN_STATUS.INSTALLED, PLUGIN_STATUS.DISABLED].includes(
                 row.status,
               ),
-            text: '卸载',
+            text: $t('dev.shared.uninstall'),
             type: 'link',
           },
           {
@@ -111,7 +112,7 @@ export function useColumns(
               [PLUGIN_STATUS.INSTALLED, PLUGIN_STATUS.DISABLED].includes(
                 row.status,
               ),
-            text: '启用',
+            text: $t('dev.shared.enable'),
             type: 'link',
           },
           {
@@ -120,13 +121,13 @@ export function useColumns(
             show: (row: PluginRow) =>
               access.can(PLUGIN_PERMISSIONS.DISABLE) &&
               row.status === PLUGIN_STATUS.ENABLED,
-            text: '禁用',
+            text: $t('dev.shared.disable'),
             type: 'link',
           },
         ],
       },
       fixed: 'right',
-      title: '操作',
+      title: $t('crud.columnActions'),
       width: 260,
     },
   ];

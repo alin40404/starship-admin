@@ -141,8 +141,8 @@ watch(
 
 const drawerTitle = computed(() =>
   editingId.value
-    ? $t('system.permission.menu.editMenu')
-    : $t('system.permission.menu.createMenuTitle'),
+    ? $t('permission.menu.editMenu')
+    : $t('permission.menu.createMenuTitle'),
 );
 
 const [Drawer, drawerApi] = useVbenDrawer({
@@ -155,11 +155,11 @@ const [Drawer, drawerApi] = useVbenDrawer({
     const type = Number(raw.type);
     const needsPath = [1, 2, 4].includes(type);
     if (needsPath && !String(raw.path ?? '').trim()) {
-      message.warning($t('system.permission.menu.routeRequired'));
+      message.warning($t('permission.menu.routeRequired'));
       return;
     }
     if (type === 3 && !String(raw.permission ?? '').trim()) {
-      message.warning($t('system.permission.menu.permissionRequired'));
+      message.warning($t('permission.menu.permissionRequired'));
       return;
     }
     const pathTrim = String(raw.path ?? '').trim();
@@ -169,7 +169,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
         editingId.value ?? undefined,
       );
       if (duplicate) {
-        message.warning($t('system.permission.menu.routeExists'));
+        message.warning($t('permission.menu.routeExists'));
         return;
       }
     }

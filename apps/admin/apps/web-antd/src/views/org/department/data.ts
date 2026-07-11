@@ -44,7 +44,7 @@ export function useColumns(
       align: 'left',
       field: 'name',
       minWidth: 180,
-      title: $t('system.org.department.columnName'),
+      title: $t('org.department.columnName'),
       treeNode: true,
     },
     {
@@ -52,13 +52,13 @@ export function useColumns(
       field: 'leader_name',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 100,
-      title: $t('system.org.department.leader'),
+      title: $t('org.department.leader'),
     },
     {
       field: 'phone',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 120,
-      title: $t('system.org.department.phone'),
+      title: $t('org.department.phone'),
     },
     {
       align: 'center',
@@ -83,12 +83,12 @@ export function useColumns(
           }
         : undefined,
       field: 'sort',
-      title: $t('system.org.shared.sort'),
+      title: $t('org.shared.sort'),
       width: 100,
     },
     {
       field: 'status',
-      title: $t('system.org.shared.status'),
+      title: $t('org.shared.status'),
       width: 100,
       cellRender: {
         attrs: {
@@ -105,7 +105,7 @@ export function useColumns(
       cellRender: {
         attrs: {
           nameField: 'name',
-          nameTitle: $t('system.org.department.entity'),
+          nameTitle: $t('org.department.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -157,7 +157,7 @@ export function buildDepartmentFormSchema(params: {
         api: params.parentTreeLoader,
         class: 'w-full',
         fieldNames: { children: 'children', label: 'label', value: 'value' },
-        placeholder: $t('system.org.department.parentPlaceholder'),
+        placeholder: $t('org.department.parentPlaceholder'),
         showSearch: true,
         treeDefaultExpandAll: true,
         treeIcon: false,
@@ -165,13 +165,13 @@ export function buildDepartmentFormSchema(params: {
       },
       defaultValue: 0,
       fieldName: 'parent_id',
-      label: $t('system.org.department.parent'),
+      label: $t('org.department.parent'),
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'name',
-      label: $t('system.org.department.columnName'),
+      label: $t('org.department.columnName'),
       rules: 'required',
     },
     {
@@ -181,30 +181,30 @@ export function buildDepartmentFormSchema(params: {
         api: loadAdminOptions,
         class: 'w-full',
         optionFilterProp: 'label',
-        placeholder: $t('system.org.department.leaderPlaceholder'),
+        placeholder: $t('org.department.leaderPlaceholder'),
         showSearch: true,
       },
       fieldName: 'leader_id',
-      label: $t('system.org.department.leader'),
+      label: $t('org.department.leader'),
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'phone',
-      label: $t('system.org.department.phone'),
+      label: $t('org.department.phone'),
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'email',
-      label: $t('system.org.shared.email'),
+      label: $t('org.shared.email'),
     },
     {
       component: 'InputNumber',
       componentProps: { class: 'w-full', min: 0 },
       defaultValue: 0,
       fieldName: 'sort',
-      label: $t('system.org.shared.sort'),
+      label: $t('org.shared.sort'),
     },
     {
       component: 'RadioGroup',
@@ -216,14 +216,14 @@ export function buildDepartmentFormSchema(params: {
       },
       defaultValue: 1,
       fieldName: 'status',
-      label: $t('system.org.shared.status'),
+      label: $t('org.shared.status'),
     },
     {
       component: 'Textarea',
       componentProps: { class: 'w-full', rows: 2 },
       fieldName: 'remark',
       formItemClass: 'col-span-full w-full items-start',
-      label: $t('system.org.shared.remark'),
+      label: $t('org.shared.remark'),
     },
   ];
 }
@@ -233,7 +233,7 @@ export async function loadDepartmentTreeForParent(
 ): Promise<ReturnType<typeof mapDeptForTreeSelect>> {
   const tree = await fetchDepartmentTree(true);
   const rootOption = {
-    label: $t('system.org.department.rootOption'),
+    label: $t('org.department.rootOption'),
     value: 0,
   };
   if (!excludeId) {

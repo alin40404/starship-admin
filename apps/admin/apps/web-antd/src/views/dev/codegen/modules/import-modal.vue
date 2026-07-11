@@ -2,7 +2,7 @@
 import type { GeneratorImportPayload } from '#/api/generator';
 import type { MenuParentTreeOption } from '../menu-parent';
 
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
 
@@ -14,6 +14,7 @@ import {
   importGeneratorTable,
 } from '#/api/generator';
 import { fetchMenuTree } from '#/api/system/menu';
+import { $t } from '#/locales';
 
 import {
   defaultMenuParentPath,
@@ -38,6 +39,8 @@ const form = ref<GeneratorImportPayload>({
   business: '',
   menu_parent_path: undefined,
 });
+
+const importHint = computed(() => $t('dev.codegen.importHint'));
 
 function applyDefaultMenuParent(module: string) {
   const suggested = defaultMenuParentPath(module);
@@ -100,11 +103,11 @@ async function initForm() {
 }
 
 const [Modal, modalApi] = useVbenModal({
-  confirmText: '导入',
+  confirmText: $t('dev.codegen.importConfirm'),
   fullscreenButton: false,
   async onConfirm() {
     if (!form.value.table_name?.trim() || !form.value.module?.trim()) {
-      message.warning('请选择数据表和目标模块');
+      message.warning($t('dev.codegen.selectTableModule'));
       return;
     }
     modalApi.lock();
@@ -115,7 +118,7 @@ const [Modal, modalApi] = useVbenModal({
         business: form.value.business || undefined,
         menu_parent_path: form.value.menu_parent_path || undefined,
       });
-      message.success('导入成功');
+      message.success($t('dev.shared.importSuccess'));
       modalApi.close();
       emit('success');
     } finally {
@@ -145,53 +148,51 @@ defineExpose({ open: () => modalApi.open() });
 
 <template>
   <Modal
-    title="导入数据表"
+    :title="$t('dev.codegen.importTitle')"
     class="w-full max-w-full md:w-[560px] md:max-w-[560px]"
   >
     <Form layout="vertical">
-      <Form.Item label="物理表" required>
+      <Form.Item :label="$t('dev.codegen.physicalTable')" required>
         <Select
           v-model:value="form.table_name"
           allow-clear
           :loading="loadingTables"
           :options="tableOptions"
-          placeholder="搜索并选择数据表"
+          :placeholder="$t('dev.codegen.tableSearchPlaceholder')"
           show-search
           @search="searchTables"
         />
       </Form.Item>
-      <Form.Item label="目标模块" required>
+      <Form.Item :label="$t('dev.codegen.targetModule')" required>
         <Select
           v-model:value="form.module"
           :options="modules.map((item) => ({ label: item, value: item }))"
-          placeholder="选择模块"
+          :placeholder="$t('dev.codegen.selectModule')"
         />
       </Form.Item>
-      <Form.Item label="菜单父级">
+      <Form.Item :label="$t('dev.codegen.menuParent')">
         <TreeSelect
           v-model:value="form.menu_parent_path"
           allow-clear
           class="w-full"
           :field-names="{ label: 'label', value: 'value', children: 'children' }"
           :loading="loadingMenuParents"
-          placeholder="留空则按 route_group 自动推断"
+          :placeholder="$t('dev.codegen.menuParentPlaceholder')"
           show-search
           tree-default-expand-all
           :tree-data="menuParentOptions"
           tree-node-filter-prop="label"
         />
       </Form.Item>
-      <Form.Item label="业务名称">
+      <Form.Item :label="$t('dev.codegen.businessName')">
         <Input
           v-model:value="form.business"
           allow-clear
-          placeholder="留空则使用表注释或类名"
+          :placeholder="$t('dev.codegen.businessPlaceholder')"
         />
       </Form.Item>
       <p class="text-muted-foreground text-xs">
-        导入后将读取表结构并推断字段配置；菜单父级对应 CLI
-        <code>--menu-parent</code>，与
-        <code>generator:import</code> 效果一致。
+        {{ importHint }}
       </p>
     </Form>
   </Modal>

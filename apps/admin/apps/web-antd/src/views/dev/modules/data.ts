@@ -3,7 +3,11 @@ import type { OnActionClickFn } from '#/adapter/vxe-table';
 import type { DevModuleRow } from '#/api/dev-module';
 
 import { TABLE_CELL_EMPTY } from '#/constants/table';
-import { MODULE_PERMISSIONS, MODULE_STATUS_TAG_OPTIONS } from '#/constants/module-permissions';
+import {
+  getModuleStatusTagOptions,
+  MODULE_PERMISSIONS,
+} from '#/constants/module-permissions';
+import { $t } from '#/locales';
 
 export type ModuleAccessChecker = {
   can: (code: string) => boolean;
@@ -18,27 +22,27 @@ export function useColumns(
       align: 'left',
       field: 'name',
       minWidth: 120,
-      title: '模块标识',
+      title: $t('dev.modules.columnName'),
     },
     {
       align: 'left',
       field: 'title',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 120,
-      title: '模块名称',
+      title: $t('dev.modules.columnTitle'),
     },
     {
       align: 'center',
       field: 'version',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
-      title: '版本',
+      title: $t('dev.shared.version'),
       width: 100,
     },
     {
       align: 'left',
       field: 'directory',
       minWidth: 120,
-      title: '目录',
+      title: $t('dev.shared.directory'),
     },
     {
       align: 'center',
@@ -56,10 +60,10 @@ export function useColumns(
       align: 'center',
       cellRender: {
         name: 'CellTag',
-        options: [...MODULE_STATUS_TAG_OPTIONS],
+        options: [...getModuleStatusTagOptions()],
       },
       field: 'enabled',
-      title: '状态',
+      title: $t('dev.shared.status'),
       width: 90,
     },
     {
@@ -67,7 +71,7 @@ export function useColumns(
       cellRender: {
         attrs: {
           nameField: 'title',
-          nameTitle: '模块',
+          nameTitle: $t('dev.modules.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -75,13 +79,13 @@ export function useColumns(
           {
             code: 'detail',
             show: () => access.can(MODULE_PERMISSIONS.QUERY),
-            text: '详情',
+            text: $t('dev.shared.detail'),
             type: 'link',
           },
         ],
       },
       fixed: 'right',
-      title: '操作',
+      title: $t('crud.columnActions'),
       width: 90,
     },
   ];

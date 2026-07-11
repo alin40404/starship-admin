@@ -80,7 +80,7 @@ defineExpose({ open: show });
   <Drawer
     v-model:open="open"
     :loading="loading"
-    :title="$t('system.monitor.operationLog.detailTitle')"
+    :title="$t('monitor.operationLog.detailTitle')"
     width="min(92vw, 880px)"
   >
     <Descriptions
@@ -91,31 +91,31 @@ defineExpose({ open: show });
       :label-style="descriptionsLabelStyle"
       size="small"
     >
-      <Descriptions.Item :label="$t('system.monitor.operationLog.columnTitle')">{{ detail.title }}</Descriptions.Item>
-      <Descriptions.Item :label="$t('system.monitor.shared.operator')">{{ detail.admin_name || '—' }}</Descriptions.Item>
-      <Descriptions.Item :label="$t('system.monitor.operationLog.columnModule')">
+      <Descriptions.Item :label="$t('monitor.operationLog.columnTitle')">{{ detail.title }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('monitor.shared.operator')">{{ detail.admin_name || '—' }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('monitor.operationLog.columnModule')">
         <Tag v-if="detail.module" :color="moduleColor">{{ detail.module }}</Tag>
         <span v-else>—</span>
       </Descriptions.Item>
-      <Descriptions.Item :label="$t('system.monitor.operationLog.columnAction')">{{ detail.action }}</Descriptions.Item>
-      <Descriptions.Item :label="$t('system.monitor.shared.method')">
+      <Descriptions.Item :label="$t('monitor.operationLog.columnAction')">{{ detail.action }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('monitor.shared.method')">
         <Tag v-if="methodTag" :color="methodTag.color">{{ methodTag.label }}</Tag>
         <Tag v-else-if="detail.method" color="default">{{ detail.method }}</Tag>
         <span v-else>—</span>
       </Descriptions.Item>
-      <Descriptions.Item :label="$t('system.monitor.operationLog.columnStatusCode')">
+      <Descriptions.Item :label="$t('monitor.operationLog.columnStatusCode')">
         <Tag v-if="detail.status_code != null" :color="statusCodeColor">
           {{ detail.status_code }}
         </Tag>
         <span v-else>—</span>
       </Descriptions.Item>
-      <Descriptions.Item :label="$t('system.monitor.operationLog.requestUrl')">{{ detail.url || '—' }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('monitor.operationLog.requestUrl')">{{ detail.url || '—' }}</Descriptions.Item>
       <Descriptions.Item label="IP">{{ detail.ip || '—' }}</Descriptions.Item>
       <Descriptions.Item label="User-Agent">{{ detail.user_agent || '—' }}</Descriptions.Item>
-      <Descriptions.Item :label="$t('system.monitor.operationLog.columnTime')">
+      <Descriptions.Item :label="$t('monitor.operationLog.columnTime')">
         {{ detail.created_at ? formatDateTime(detail.created_at) : '—' }}
       </Descriptions.Item>
-      <Descriptions.Item :label="$t('system.monitor.operationLog.requestSummary')">
+      <Descriptions.Item :label="$t('monitor.operationLog.requestSummary')">
         <pre
           class="max-h-80 overflow-auto whitespace-pre-wrap break-all text-sm leading-6"
         >{{ contentText || '—' }}</pre>

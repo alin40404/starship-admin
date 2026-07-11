@@ -24,19 +24,19 @@ export function useGridFormSchema(): VbenFormSchema[] {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('system.monitor.exceptionLog.keywordPlaceholder'),
+        placeholder: $t('monitor.exceptionLog.keywordPlaceholder'),
       },
       fieldName: 'keyword',
-      label: $t('system.monitor.shared.keyword'),
+      label: $t('monitor.shared.keyword'),
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('system.monitor.exceptionLog.exceptionClassPlaceholder'),
+        placeholder: $t('monitor.exceptionLog.exceptionClassPlaceholder'),
       },
       fieldName: 'exception_class',
-      label: $t('system.monitor.shared.exceptionClass'),
+      label: $t('monitor.shared.exceptionClass'),
     },
   ];
 }
@@ -53,7 +53,7 @@ export function buildExceptionLogMobileCrudConfig(params: {
     search: {
       filterSchema: useGridFormSchema(),
       keywordFields: ['message', 'exception_class', 'trace_id', 'request_url'],
-      placeholder: $t('system.monitor.exceptionLog.searchPlaceholder'),
+      placeholder: $t('monitor.exceptionLog.searchPlaceholder'),
     },
     selection: {
       enabled: true,
@@ -76,7 +76,7 @@ export function useColumns(
       align: 'left',
       field: 'message',
       minWidth: 220,
-      title: $t('system.monitor.exceptionLog.columnMessage'),
+      title: $t('monitor.exceptionLog.columnMessage'),
     },
     {
       align: 'left',
@@ -90,21 +90,21 @@ export function useColumns(
         return parts[parts.length - 1] || text;
       },
       minWidth: 160,
-      title: $t('system.monitor.exceptionLog.columnExceptionType'),
+      title: $t('monitor.exceptionLog.columnExceptionType'),
     },
     {
       align: 'left',
       field: 'request_url',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 180,
-      title: $t('system.monitor.operationLog.requestUrl'),
+      title: $t('monitor.operationLog.requestUrl'),
     },
     {
       align: 'left',
       field: 'admin_name',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       width: 100,
-      title: $t('system.monitor.shared.operator'),
+      title: $t('monitor.shared.operator'),
     },
     {
       align: 'left',
@@ -119,14 +119,14 @@ export function useColumns(
       formatter: ({ cellValue }) =>
         cellValue ? formatDateTime(cellValue as string) : TABLE_CELL_EMPTY,
       minWidth: 160,
-      title: $t('system.monitor.exceptionLog.columnOccurredAt'),
+      title: $t('monitor.exceptionLog.columnOccurredAt'),
     },
     {
       align: 'center',
       cellRender: {
         attrs: {
           nameField: 'message',
-          nameTitle: $t('system.monitor.exceptionLog.entity'),
+          nameTitle: $t('monitor.exceptionLog.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -134,7 +134,7 @@ export function useColumns(
           {
             code: 'detail',
             show: () => access.can(MONITOR_EXCEPTION_LOG_PERMISSIONS.QUERY),
-            text: $t('system.monitor.shared.detail'),
+            text: $t('monitor.shared.detail'),
             type: 'link',
           },
           {

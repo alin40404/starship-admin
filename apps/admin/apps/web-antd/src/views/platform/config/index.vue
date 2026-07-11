@@ -69,8 +69,8 @@ const sections: ConfigSection[] = [
   },
   {
     key: 'param',
-    label: $t('system.platform.config.groups.runtime'),
-    description: $t('system.platform.config.groupDescriptions.runtime'),
+    label: $t('platform.config.groups.runtime'),
+    description: $t('platform.config.groupDescriptions.runtime'),
   },
   {
     key: 'sms',
@@ -145,7 +145,7 @@ const currentSection = computed(
             type="primary"
             @click="onSettingsSave"
           >
-            {{ $t('system.platform.config.saveConfig') }}
+            {{ $t('platform.config.saveConfig') }}
           </Button>
         </div>
 

@@ -26,15 +26,15 @@ export const MONITOR_EXCEPTION_LOG_PERMISSIONS = {
 
 export function getMonitorLoginStatusTagOptions() {
   return [
-    { color: 'error', label: $t('system.monitor.shared.statusFailed'), value: 0 },
-    { color: 'success', label: $t('system.monitor.shared.statusSuccess'), value: 1 },
+    { color: 'error', label: $t('monitor.shared.statusFailed'), value: 0 },
+    { color: 'success', label: $t('monitor.shared.statusSuccess'), value: 1 },
   ] as const;
 }
 
 export function getMonitorLoginActionTagOptions() {
   return [
-    { color: 'processing', label: $t('system.monitor.shared.actionLogin'), value: 'login' },
-    { color: 'default', label: $t('system.monitor.shared.actionLogout'), value: 'logout' },
+    { color: 'processing', label: $t('monitor.shared.actionLogin'), value: 'login' },
+    { color: 'default', label: $t('monitor.shared.actionLogout'), value: 'logout' },
   ] as const;
 }
 

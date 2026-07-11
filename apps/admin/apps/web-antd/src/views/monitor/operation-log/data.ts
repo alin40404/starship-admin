@@ -30,10 +30,10 @@ export function useGridFormSchema(): VbenFormSchema[] {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('system.monitor.operationLog.keywordPlaceholder'),
+        placeholder: $t('monitor.operationLog.keywordPlaceholder'),
       },
       fieldName: 'keyword',
-      label: $t('system.monitor.shared.keyword'),
+      label: $t('monitor.shared.keyword'),
     },
     {
       component: 'Select',
@@ -41,10 +41,10 @@ export function useGridFormSchema(): VbenFormSchema[] {
         allowClear: true,
         class: 'w-full',
         options: [...MONITOR_OPERATION_LOG_MODULE_OPTIONS],
-        placeholder: $t('system.monitor.operationLog.modulePlaceholder'),
+        placeholder: $t('monitor.operationLog.modulePlaceholder'),
       },
       fieldName: 'module',
-      label: $t('system.monitor.shared.module'),
+      label: $t('monitor.shared.module'),
     },
     {
       component: 'Select',
@@ -52,10 +52,10 @@ export function useGridFormSchema(): VbenFormSchema[] {
         allowClear: true,
         class: 'w-full',
         options: [...MONITOR_HTTP_METHOD_TAG_OPTIONS],
-        placeholder: $t('system.monitor.operationLog.methodPlaceholder'),
+        placeholder: $t('monitor.operationLog.methodPlaceholder'),
       },
       fieldName: 'method',
-      label: $t('system.monitor.shared.method'),
+      label: $t('monitor.shared.method'),
     },
   ];
 }
@@ -72,7 +72,7 @@ export function buildOperationLogMobileCrudConfig(params: {
     search: {
       filterSchema: useGridFormSchema(),
       keywordFields: ['title', 'admin_name', 'url', 'action'],
-      placeholder: $t('system.monitor.operationLog.searchPlaceholder'),
+      placeholder: $t('monitor.operationLog.searchPlaceholder'),
     },
     selection: {
       enabled: true,
@@ -95,14 +95,14 @@ export function useColumns(
       align: 'left',
       field: 'title',
       minWidth: 180,
-      title: $t('system.monitor.operationLog.columnTitle'),
+      title: $t('monitor.operationLog.columnTitle'),
     },
     {
       align: 'left',
       field: 'admin_name',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 100,
-      title: $t('system.monitor.shared.operator'),
+      title: $t('monitor.shared.operator'),
     },
     {
       align: 'center',
@@ -117,7 +117,7 @@ export function useColumns(
       mobile: {
         format: (row) => row.module ?? TABLE_CELL_EMPTY,
       },
-      title: $t('system.monitor.operationLog.columnModule'),
+      title: $t('monitor.operationLog.columnModule'),
       width: 100,
     },
     {
@@ -130,7 +130,7 @@ export function useColumns(
       mobile: {
         format: (row) => row.method ?? TABLE_CELL_EMPTY,
       },
-      title: $t('system.monitor.operationLog.columnMethod'),
+      title: $t('monitor.operationLog.columnMethod'),
       width: 80,
     },
     {
@@ -147,7 +147,7 @@ export function useColumns(
         format: (row) =>
           row.status_code == null ? TABLE_CELL_EMPTY : String(row.status_code),
       },
-      title: $t('system.monitor.operationLog.columnStatusCode'),
+      title: $t('monitor.operationLog.columnStatusCode'),
       width: 90,
     },
     {
@@ -163,14 +163,14 @@ export function useColumns(
       formatter: ({ cellValue }) =>
         cellValue ? formatDateTime(cellValue as string) : TABLE_CELL_EMPTY,
       minWidth: 160,
-      title: $t('system.monitor.operationLog.columnTime'),
+      title: $t('monitor.operationLog.columnTime'),
     },
     {
       align: 'center',
       cellRender: {
         attrs: {
           nameField: 'title',
-          nameTitle: $t('system.monitor.operationLog.entity'),
+          nameTitle: $t('monitor.operationLog.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -178,7 +178,7 @@ export function useColumns(
           {
             code: 'detail',
             show: () => access.can(MONITOR_OPERATION_LOG_PERMISSIONS.QUERY),
-            text: $t('system.monitor.shared.detail'),
+            text: $t('monitor.shared.detail'),
             type: 'link',
           },
           {

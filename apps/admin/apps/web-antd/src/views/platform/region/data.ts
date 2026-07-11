@@ -15,9 +15,9 @@ export type AreaAccessChecker = {
 
 export function getAreaLevelOptions() {
   return [
-    { label: $t('system.platform.region.levelOptions.province'), value: 1 },
-    { label: $t('system.platform.region.levelOptions.city'), value: 2 },
-    { label: $t('system.platform.region.levelOptions.district'), value: 3 },
+    { label: $t('platform.region.levelOptions.province'), value: 1 },
+    { label: $t('platform.region.levelOptions.city'), value: 2 },
+    { label: $t('platform.region.levelOptions.district'), value: 3 },
   ] as const;
 }
 
@@ -25,26 +25,26 @@ export function getAreaLevelTagOptions() {
   return [
     {
       color: 'processing',
-      label: $t('system.platform.region.levelOptions.province'),
+      label: $t('platform.region.levelOptions.province'),
       value: 1,
     },
     {
       color: 'success',
-      label: $t('system.platform.region.levelOptions.city'),
+      label: $t('platform.region.levelOptions.city'),
       value: 2,
     },
     {
       color: 'default',
-      label: $t('system.platform.region.levelOptions.district'),
+      label: $t('platform.region.levelOptions.district'),
       value: 3,
     },
   ];
 }
 
 export function formatAreaLevel(level: AreaTreeNode['level']) {
-  if (level === 1) return $t('system.platform.region.levelOptions.province');
-  if (level === 2) return $t('system.platform.region.levelOptions.city');
-  if (level === 3) return $t('system.platform.region.levelOptions.district');
+  if (level === 1) return $t('platform.region.levelOptions.province');
+  if (level === 2) return $t('platform.region.levelOptions.city');
+  if (level === 3) return $t('platform.region.levelOptions.district');
   return TABLE_CELL_EMPTY;
 }
 
@@ -54,10 +54,10 @@ export function useAreaGridFormSchema(): VbenFormSchema[] {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('system.platform.region.searchName'),
+        placeholder: $t('platform.region.searchName'),
       },
       fieldName: 'name',
-      label: $t('system.platform.region.name'),
+      label: $t('platform.region.name'),
     },
     {
       component: 'Select',
@@ -65,19 +65,19 @@ export function useAreaGridFormSchema(): VbenFormSchema[] {
         allowClear: true,
         class: 'w-full',
         options: [...getAreaLevelOptions()],
-        placeholder: $t('system.platform.region.searchLevel'),
+        placeholder: $t('platform.region.searchLevel'),
       },
       fieldName: 'level',
-      label: $t('system.platform.region.level'),
+      label: $t('platform.region.level'),
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('system.platform.region.searchPinyin'),
+        placeholder: $t('platform.region.searchPinyin'),
       },
       fieldName: 'pinyin',
-      label: $t('system.platform.region.pinyin'),
+      label: $t('platform.region.pinyin'),
     },
   ];
 }
@@ -97,7 +97,7 @@ export function useAreaColumns(
       align: 'left',
       field: 'name',
       minWidth: 180,
-      title: $t('system.platform.region.name'),
+      title: $t('platform.region.name'),
       treeNode: true,
     },
     {
@@ -105,13 +105,13 @@ export function useAreaColumns(
       field: 'shortname',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 100,
-      title: $t('system.platform.region.shortname'),
+      title: $t('platform.region.shortname'),
     },
     {
       align: 'center',
       cellRender: { name: 'CellTag', options: getAreaLevelTagOptions() },
       field: 'level',
-      title: $t('system.platform.region.level'),
+      title: $t('platform.region.level'),
       width: 88,
     },
     {
@@ -119,32 +119,32 @@ export function useAreaColumns(
       field: 'mergename',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 220,
-      title: $t('system.platform.region.mergename'),
+      title: $t('platform.region.mergename'),
     },
     {
       align: 'left',
       field: 'pinyin',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 120,
-      title: $t('system.platform.region.pinyin'),
+      title: $t('platform.region.pinyin'),
     },
     {
       field: 'code',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 90,
-      title: $t('system.platform.region.code'),
+      title: $t('platform.region.code'),
     },
     {
       field: 'zip',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 90,
-      title: $t('system.platform.region.zip'),
+      title: $t('platform.region.zip'),
     },
     {
       align: 'center',
       field: 'first',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
-      title: $t('system.platform.region.first'),
+      title: $t('platform.region.first'),
       width: 80,
     },
     {
@@ -152,7 +152,7 @@ export function useAreaColumns(
       cellRender: {
         attrs: {
           nameField: 'name',
-          nameTitle: $t('system.platform.region.entity'),
+          nameTitle: $t('platform.region.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -192,26 +192,26 @@ export function buildAreaFormSchema(): VbenFormSchema[] {
       controlClass: 'w-full min-w-0',
       fieldName: 'pid',
       formItemClass: 'col-span-full w-full items-start',
-      label: $t('system.platform.region.parent'),
+      label: $t('platform.region.parent'),
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'name',
-      label: $t('system.platform.region.name'),
+      label: $t('platform.region.name'),
       rules: 'required',
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'shortname',
-      label: $t('system.platform.region.shortname'),
+      label: $t('platform.region.shortname'),
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'mergename',
-      label: $t('system.platform.region.mergename'),
+      label: $t('platform.region.mergename'),
     },
     {
       component: 'Select',
@@ -219,56 +219,56 @@ export function buildAreaFormSchema(): VbenFormSchema[] {
         allowClear: true,
         class: 'w-full',
         options: [...getAreaLevelOptions()],
-        placeholder: $t('system.platform.region.levelAuto'),
+        placeholder: $t('platform.region.levelAuto'),
       },
       fieldName: 'level',
-      label: $t('system.platform.region.level'),
+      label: $t('platform.region.level'),
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
         disabled: true,
-        placeholder: $t('system.platform.region.pinyinAuto'),
+        placeholder: $t('platform.region.pinyinAuto'),
         readonly: true,
       },
       fieldName: 'pinyin',
-      label: $t('system.platform.region.pinyin'),
+      label: $t('platform.region.pinyin'),
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'code',
-      label: $t('system.platform.region.areaCode'),
+      label: $t('platform.region.areaCode'),
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'zip',
-      label: $t('system.platform.region.zip'),
+      label: $t('platform.region.zip'),
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
         disabled: true,
-        placeholder: $t('system.platform.region.firstAuto'),
+        placeholder: $t('platform.region.firstAuto'),
         readonly: true,
       },
       fieldName: 'first',
-      label: $t('system.platform.region.first'),
+      label: $t('platform.region.first'),
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'lng',
-      label: $t('system.platform.region.lng'),
+      label: $t('platform.region.lng'),
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'lat',
-      label: $t('system.platform.region.lat'),
+      label: $t('platform.region.lat'),
     },
   ];
 }

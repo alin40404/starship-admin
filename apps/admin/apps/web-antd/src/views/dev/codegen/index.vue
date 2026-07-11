@@ -16,6 +16,7 @@ import {
   fetchGeneratorTablePage,
 } from '#/api/generator';
 import { GENERATOR_PERMISSIONS } from '#/constants/generator-permissions';
+import { $t } from '#/locales';
 
 import { useColumns } from './data';
 import GenerateModal from './modules/generate-modal.vue';
@@ -49,7 +50,7 @@ function onActionClick({ code, row }: OnActionClickParams<GeneratorTableRow>) {
 
 async function onDelete(row: GeneratorTableRow) {
   await deleteGeneratorTable(row.id);
-  message.success('已删除');
+  message.success($t('crud.deleted'));
   await gridApi.reload();
 }
 
@@ -88,7 +89,7 @@ const [Grid, gridApi] = useVbenVxeGrid<GeneratorTableRow>({
           @click="onImport"
         >
           <Plus class="size-4" />
-          导入数据表
+          {{ $t('dev.codegen.importTable') }}
         </Button>
       </template>
     </Grid>

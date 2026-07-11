@@ -151,11 +151,11 @@ watch(
 
 const drawerTitle = computed(() => {
   if (openMode.value === 'view') {
-    return $t('system.permission.role.viewRole');
+    return $t('permission.role.viewRole');
   }
   return editingId.value
-    ? $t('system.permission.role.editRole')
-    : $t('system.permission.role.createRoleTitle');
+    ? $t('permission.role.editRole')
+    : $t('permission.role.createRoleTitle');
 });
 
 const allLabelCss = computed(() => `"${$t('system.shared.all')}"`);
@@ -342,7 +342,7 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
             max-tag-count="responsive"
             :multiple="true"
             :options="deptCascaderOptions"
-            :placeholder="$t('system.permission.role.selectDataDept')"
+            :placeholder="$t('permission.role.selectDataDept')"
             show-checked-strategy="SHOW_CHILD"
             style="width: 100%"
             :value="

@@ -33,8 +33,8 @@ const [Form, formApi] = useVbenForm({
 
 const formTitle = computed(() =>
   editingId.value
-    ? $t('system.platform.dict.editDict')
-    : $t('system.platform.dict.createDictTitle'),
+    ? $t('platform.dict.editDict')
+    : $t('platform.dict.createDictTitle'),
 );
 
 type PopupApi = {

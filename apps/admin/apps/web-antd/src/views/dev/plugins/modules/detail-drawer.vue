@@ -8,6 +8,7 @@ import { formatDateTime } from '@vben/utils';
 import { Descriptions, Drawer } from 'ant-design-vue';
 
 import { fetchPlugin } from '#/api/dev-plugin';
+import { $t } from '#/locales';
 
 const descriptionsLabelStyle = {
   minWidth: '148px',
@@ -23,6 +24,13 @@ const descriptionsContentStyle = {
 const open = ref(false);
 const loading = ref(false);
 const detail = ref<PluginDetail | null>(null);
+
+const drawerTitle = computed(() =>
+  detail.value
+    ? $t('dev.plugins.detailTitle') +
+      $t('dev.shared.detailTitleSuffix', [detail.value.name])
+    : $t('dev.plugins.detailTitle'),
+);
 
 const manifestText = computed(() =>
   detail.value?.manifest
@@ -56,7 +64,7 @@ defineExpose({ open: show });
   <Drawer
     v-model:open="open"
     :loading="loading"
-    :title="detail ? `插件详情 · ${detail.name}` : '插件详情'"
+    :title="drawerTitle"
     width="min(92vw, 880px)"
   >
     <Descriptions
@@ -67,19 +75,19 @@ defineExpose({ open: show });
       :label-style="descriptionsLabelStyle"
       size="small"
     >
-      <Descriptions.Item label="插件标识">{{ detail.slug }}</Descriptions.Item>
-      <Descriptions.Item label="插件名称">{{ detail.name }}</Descriptions.Item>
-      <Descriptions.Item label="版本">{{ detail.version }}</Descriptions.Item>
-      <Descriptions.Item label="类型">{{ detail.type || '—' }}</Descriptions.Item>
-      <Descriptions.Item label="描述">{{ detail.description || '—' }}</Descriptions.Item>
-      <Descriptions.Item label="作者">{{ detail.author || '—' }}</Descriptions.Item>
-      <Descriptions.Item label="目录">{{ detail.directory }}</Descriptions.Item>
-      <Descriptions.Item label="命名空间">{{ detail.namespace || '—' }}</Descriptions.Item>
-      <Descriptions.Item label="状态">{{ detail.status_label }}</Descriptions.Item>
-      <Descriptions.Item label="安装时间">
+      <Descriptions.Item :label="$t('dev.plugins.columnSlug')">{{ detail.slug }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('dev.plugins.columnName')">{{ detail.name }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('dev.shared.version')">{{ detail.version }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('dev.shared.type')">{{ detail.type || '—' }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('dev.shared.description')">{{ detail.description || '—' }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('dev.shared.author')">{{ detail.author || '—' }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('dev.shared.directory')">{{ detail.directory }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('dev.shared.namespace')">{{ detail.namespace || '—' }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('dev.shared.status')">{{ detail.status_label }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('dev.shared.installedAt')">
         {{ formatTime(detail.installed_at) }}
       </Descriptions.Item>
-      <Descriptions.Item label="启用时间">
+      <Descriptions.Item :label="$t('dev.shared.enabledAt')">
         {{ formatTime(detail.enabled_at) }}
       </Descriptions.Item>
       <Descriptions.Item label="ServiceProvider">

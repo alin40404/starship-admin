@@ -38,8 +38,8 @@ const [Form, formApi] = useVbenForm({
 
 const formTitle = computed(() =>
   editingId.value
-    ? $t('system.org.userGroup.editTitle')
-    : $t('system.org.userGroup.createTitle'),
+    ? $t('org.userGroup.editTitle')
+    : $t('org.userGroup.createTitle'),
 );
 
 type PopupApi = {

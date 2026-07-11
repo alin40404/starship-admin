@@ -66,8 +66,8 @@ watch([editingId, typeOptions], () => {
 
 const formTitle = computed(() =>
   editingId.value
-    ? $t('system.platform.category.editCategory')
-    : $t('system.platform.category.createCategoryTitle'),
+    ? $t('platform.category.editCategory')
+    : $t('platform.category.createCategoryTitle'),
 );
 
 type PopupApi = {
@@ -201,7 +201,7 @@ defineExpose({ open });
     <div
       class="mb-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800"
     >
-      {{ $t('system.platform.category.typeHint') }}
+      {{ $t('platform.category.typeHint') }}
     </div>
     <Form />
   </Modal>
@@ -209,7 +209,7 @@ defineExpose({ open });
     <div
       class="mb-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800"
     >
-      {{ $t('system.platform.category.typeHint') }}
+      {{ $t('platform.category.typeHint') }}
     </div>
     <Form />
   </Drawer>

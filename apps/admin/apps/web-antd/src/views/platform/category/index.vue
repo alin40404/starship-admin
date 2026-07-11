@@ -136,7 +136,7 @@ async function onCategoryStatusToggle(
         ? $t('system.shared.status.normal')
         : $t('system.shared.status.hidden');
     Modal.confirm({
-      content: $t('system.platform.category.toggleStatusConfirm', [
+      content: $t('platform.category.toggleStatusConfirm', [
         row.name,
         label,
       ]),
@@ -171,7 +171,7 @@ function onBatchDelete() {
   const ids = selectedRows.value.map((row) => row.id);
   if (ids.length === 0) return;
   Modal.confirm({
-    content: $t('system.platform.category.batchDeleteConfirm', [ids.length]),
+    content: $t('platform.category.batchDeleteConfirm', [ids.length]),
     okText: $t('common.delete'),
     okType: 'danger',
     cancelText: $t('common.cancel'),
@@ -180,7 +180,7 @@ function onBatchDelete() {
       const result = await batchDeleteCategories(ids);
       if (result.skipped > 0) {
         message.warning(
-          $t('system.platform.category.batchDeletePartial', [
+          $t('platform.category.batchDeletePartial', [
             result.deleted,
             result.skipped,
           ]),
@@ -202,7 +202,7 @@ function onBatchUpdateStatus(status: CategoryTreeNode['status']) {
       ? $t('system.shared.status.normal')
       : $t('system.shared.status.hidden');
   Modal.confirm({
-    content: $t('system.platform.category.batchStatusConfirmCategory', [
+    content: $t('platform.category.batchStatusConfirmCategory', [
       ids.length,
       label,
     ]),
@@ -254,7 +254,7 @@ const [Grid, gridApi] = useVbenVxeGrid<CategoryTreeNode>({
 
       const sort = Number(row.sort);
       if (!Number.isFinite(sort) || sort < 0 || !Number.isInteger(sort)) {
-        message.warning($t('system.platform.category.sortInvalid'));
+        message.warning($t('platform.category.sortInvalid'));
         await gridApi.reload();
         return;
       }
@@ -262,7 +262,7 @@ const [Grid, gridApi] = useVbenVxeGrid<CategoryTreeNode>({
       gridApi.setLoading(true);
       try {
         await updateCategorySort(row.id, sort);
-        message.success($t('system.platform.category.sortUpdated'));
+        message.success($t('platform.category.sortUpdated'));
         onRefresh();
       } catch {
         await gridApi.reload();
@@ -323,7 +323,7 @@ const [Grid, gridApi] = useVbenVxeGrid<CategoryTreeNode>({
         class="category-type-panel flex shrink-0 flex-col overflow-hidden border-b border-border md:w-[168px] md:border-b-0 md:border-r"
       >
         <div class="category-type-header">
-          {{ $t('system.platform.category.typeHeader') }}
+          {{ $t('platform.category.typeHeader') }}
         </div>
         <div class="category-type-tabs">
           <button
@@ -384,7 +384,7 @@ const [Grid, gridApi] = useVbenVxeGrid<CategoryTreeNode>({
                   @click="onCreate"
                 >
                   <Plus class="size-4" />
-                  {{ $t('system.platform.category.createCategory') }}
+                  {{ $t('platform.category.createCategory') }}
                 </Button>
               </div>
             </template>

@@ -12,6 +12,7 @@ import { Alert } from 'ant-design-vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchDevModules } from '#/api/dev-module';
 import { MODULE_PERMISSIONS } from '#/constants/module-permissions';
+import { $t } from '#/locales';
 
 import { useColumns } from './data';
 import DetailDrawer from './modules/detail-drawer.vue';
@@ -54,7 +55,7 @@ const [Grid, gridApi] = useVbenVxeGrid<DevModuleRow>({
     <div class="flex h-full min-h-0 flex-col">
       <Alert
         class="mb-4 shrink-0"
-        message="扫描 modules/ 目录下的 module.json，展示 Starship 底座模块。启用/禁用会写入配置文件，需重启后端服务后生效。"
+        :message="$t('dev.modules.hint')"
         show-icon
         type="info"
       />

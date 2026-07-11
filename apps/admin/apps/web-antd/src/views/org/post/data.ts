@@ -36,19 +36,19 @@ export function useGridFormSchema(): VbenFormSchema[] {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('system.org.post.namePlaceholder'),
+        placeholder: $t('org.post.namePlaceholder'),
       },
       fieldName: 'name',
-      label: $t('system.org.shared.name'),
+      label: $t('org.shared.name'),
     },
     {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('system.org.shared.codePlaceholder'),
+        placeholder: $t('org.shared.codePlaceholder'),
       },
       fieldName: 'code',
-      label: $t('system.org.shared.code'),
+      label: $t('org.shared.code'),
     },
     {
       component: 'Select',
@@ -56,10 +56,10 @@ export function useGridFormSchema(): VbenFormSchema[] {
         allowClear: true,
         class: 'w-full',
         options: getStatusSelectOptions(),
-        placeholder: $t('system.org.shared.statusPlaceholder'),
+        placeholder: $t('org.shared.statusPlaceholder'),
       },
       fieldName: 'status',
-      label: $t('system.org.shared.status'),
+      label: $t('org.shared.status'),
     },
   ];
 }
@@ -76,7 +76,7 @@ export function buildPostMobileCrudConfig(params: {
     search: {
       filterSchema: useGridFormSchema(),
       keywordFields: ['name', 'code'],
-      placeholder: $t('system.org.shared.searchNameCode'),
+      placeholder: $t('org.shared.searchNameCode'),
     },
     selection: {
       enabled: true,
@@ -104,25 +104,25 @@ export function useColumns(
       field: 'name',
       minWidth: 140,
       sortable: true,
-      title: $t('system.org.shared.name'),
+      title: $t('org.shared.name'),
     },
     {
       align: 'left',
       field: 'code',
       minWidth: 140,
       sortable: true,
-      title: $t('system.org.shared.code'),
+      title: $t('org.shared.code'),
     },
     {
       field: 'sort',
       sortable: true,
-      title: $t('system.org.shared.sort'),
+      title: $t('org.shared.sort'),
       width: 80,
     },
     {
       field: 'status',
       sortable: true,
-      title: $t('system.org.shared.status'),
+      title: $t('org.shared.status'),
       width: 100,
       cellRender: {
         attrs: {
@@ -140,7 +140,7 @@ export function useColumns(
       field: 'remark',
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 160,
-      title: $t('system.org.shared.remark'),
+      title: $t('org.shared.remark'),
     },
     {
       field: 'updated_at',
@@ -148,14 +148,14 @@ export function useColumns(
         row.updated_at ? formatDateTime(row.updated_at) : TABLE_CELL_EMPTY,
       minWidth: 170,
       sortable: true,
-      title: $t('system.org.shared.updatedAt'),
+      title: $t('org.shared.updatedAt'),
     },
     {
       align: 'center',
       cellRender: {
         attrs: {
           nameField: 'name',
-          nameTitle: $t('system.org.post.entity'),
+          nameTitle: $t('org.post.entity'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -189,14 +189,14 @@ export function buildPostFormSchema(readonly = false): VbenFormSchema[] {
       component: 'Input',
       componentProps: { class: 'w-full', disabled },
       fieldName: 'name',
-      label: $t('system.org.shared.name'),
+      label: $t('org.shared.name'),
       rules: readonly ? undefined : 'required',
     },
     {
       component: 'Input',
       componentProps: { class: 'w-full', disabled },
       fieldName: 'code',
-      label: $t('system.org.shared.code'),
+      label: $t('org.shared.code'),
       rules: readonly ? undefined : 'required',
     },
     {
@@ -204,7 +204,7 @@ export function buildPostFormSchema(readonly = false): VbenFormSchema[] {
       componentProps: { class: 'w-full', disabled, min: 0 },
       defaultValue: 0,
       fieldName: 'sort',
-      label: $t('system.org.shared.sort'),
+      label: $t('org.shared.sort'),
     },
     {
       component: 'RadioGroup',
@@ -217,14 +217,14 @@ export function buildPostFormSchema(readonly = false): VbenFormSchema[] {
       },
       defaultValue: 1,
       fieldName: 'status',
-      label: $t('system.org.shared.status'),
+      label: $t('org.shared.status'),
     },
     {
       component: 'Textarea',
       componentProps: { class: 'w-full', disabled, rows: 2 },
       fieldName: 'remark',
       formItemClass: 'col-span-full w-full items-start',
-      label: $t('system.org.shared.remark'),
+      label: $t('org.shared.remark'),
     },
   ];
 }
