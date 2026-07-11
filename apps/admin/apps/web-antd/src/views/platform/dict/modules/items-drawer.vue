@@ -17,6 +17,7 @@ import { useResponsiveCrud } from '#/adapter/mobile-list';
 import { deleteDictItem, fetchDictItemPage } from '#/api/system/dict';
 import { DICT_PERMISSIONS } from '#/constants/dict-permissions';
 
+import { dictTypeName } from '../i18n';
 import { buildDictItemMobileCrudConfig, useDictItemColumns } from '../data';
 import DictItemForm from './item-form.vue';
 
@@ -33,7 +34,7 @@ const gridWrapRef = useTemplateRef<HTMLElement>('gridWrapRef');
 const { height: gridWrapHeight } = useElementSize(gridWrapRef);
 
 const drawerTitle = computed(() => {
-  const name = activeType.value?.name ?? '';
+  const name = activeType.value ? dictTypeName(activeType.value) : '';
   return name
     ? $t('platform.dict.itemsTitle', [name])
     : $t('platform.dict.itemEntity');
@@ -65,7 +66,11 @@ function onItemActionClick({ code, row }: OnActionClickParams<DictItemRow>) {
   else if (code === 'delete') onDeleteItem(row);
 }
 
-const columns = useDictItemColumns(onItemActionClick, dictAccess);
+const columns = useDictItemColumns(
+  onItemActionClick,
+  dictAccess,
+  () => activeType.value?.code ?? '',
+);
 
 const [CrudView, crudApi] = useResponsiveCrud<DictItemRow>({
   gridOptions: {

@@ -1,0 +1,26 @@
+{
+  "types": {
+    "sys_status": { "name": "通用状态" },
+    "attachment_category": { "name": "附件分类" },
+    "category_type": { "name": "栏目类型" }
+  },
+  "items": {
+    "sys_status": {
+      "1": { "label": "启用" },
+      "0": { "label": "禁用" }
+    },
+    "attachment_category": {
+      "image": { "label": "图片" },
+      "video": { "label": "视频" },
+      "audio": { "label": "音频" },
+      "document": { "label": "文档" },
+      "resources": { "label": "资源" }
+    },
+    "category_type": {
+      "default": { "label": "默认" },
+      "page": { "label": "单页" },
+      "article": { "label": "文章" },
+      "test": { "label": "测试" }
+    }
+  }
+}

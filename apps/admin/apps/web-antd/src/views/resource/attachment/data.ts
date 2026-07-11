@@ -10,6 +10,12 @@ import { ATTACHMENT_PERMISSIONS } from '#/constants/attachment-permissions';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { $t } from '#/locales';
 
+import {
+  DICT_TYPE_CODE,
+  dictItemLabel,
+  mapDictItemOptions,
+} from '#/views/platform/dict/i18n';
+
 export type AttachmentAccessChecker = {
   can: (code: string) => boolean;
 };
@@ -56,11 +62,13 @@ export type AttachmentTagOption = {
 export function buildCategoryTagOptions(
   items: { label: string; value: string }[] = [],
 ): AttachmentTagOption[] {
-  return items.map((item, index) => ({
-    color: CATEGORY_TAG_COLORS[index % CATEGORY_TAG_COLORS.length]!,
-    label: item.label,
-    value: item.value,
-  }));
+  return mapDictItemOptions(DICT_TYPE_CODE.attachmentCategory, items).map(
+    (item, index) => ({
+      color: CATEGORY_TAG_COLORS[index % CATEGORY_TAG_COLORS.length]!,
+      label: item.label,
+      value: item.value,
+    }),
+  );
 }
 
 export function getFileExtTagColor(ext: string | null | undefined) {
@@ -273,7 +281,13 @@ export function formatUploader(row: AttachmentRow) {
 }
 
 export function formatCategoryLabel(row: AttachmentRow) {
-  return row.category_label ?? row.category ?? TABLE_CELL_EMPTY;
+  if (!row.category) {
+    return TABLE_CELL_EMPTY;
+  }
+  return dictItemLabel(DICT_TYPE_CODE.attachmentCategory, {
+    value: row.category,
+    label: row.category_label ?? row.category,
+  });
 }
 
 export const ALL_ATTACHMENT_CATEGORY_KEY = '__all__';

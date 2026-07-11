@@ -12,6 +12,8 @@ import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { DICT_PERMISSIONS } from '#/constants/dict-permissions';
 import { $t } from '#/locales';
 
+import { dictTypeName, resolveDictItemLabel } from './i18n';
+
 export type DictAccessChecker = {
   can: (code: string) => boolean;
 };
@@ -83,7 +85,11 @@ export function useDictTypeColumns(
     {
       align: 'left',
       field: 'name',
+      formatter: ({ row }: { row: DictTypeRow }) => dictTypeName(row),
       minWidth: 140,
+      mobile: {
+        format: (row) => dictTypeName(row),
+      },
       sortable: true,
       title: $t('platform.dict.name'),
     },
@@ -230,13 +236,19 @@ export function buildDictItemMobileCrudConfig(params: {
 export function useDictItemColumns(
   onActionClick: OnActionClickFn<DictItemRow>,
   access: DictAccessChecker,
+  typeCode: string | (() => string) = '',
 ): CrudGridColumn<DictItemRow>[] {
   return [
     { field: 'id', title: 'ID', width: 72 },
     {
       align: 'left',
       field: 'label',
+      formatter: ({ row }: { row: DictItemRow }) =>
+        resolveDictItemLabel(typeCode, row),
       minWidth: 120,
+      mobile: {
+        format: (row) => resolveDictItemLabel(typeCode, row),
+      },
       title: $t('platform.dict.label'),
     },
     {

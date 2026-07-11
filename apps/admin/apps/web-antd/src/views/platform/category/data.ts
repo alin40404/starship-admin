@@ -13,6 +13,11 @@ import { CATEGORY_PERMISSIONS } from '#/constants/category-permissions';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { $t } from '#/locales';
 
+import {
+  DICT_TYPE_CODE,
+  mapDictItemOptions,
+} from '#/views/platform/dict/i18n';
+
 export type CategoryAccessChecker = {
   can: (code: string) => boolean;
 };
@@ -55,10 +60,7 @@ export function buildFormSchema(params: {
       componentProps: {
         class: 'w-full',
         onChange: (value: string) => onTypeChange?.(value),
-        options: typeOptions.map((item) => ({
-          label: item.label,
-          value: item.value,
-        })),
+        options: mapDictItemOptions(DICT_TYPE_CODE.categoryType, typeOptions),
         placeholder: $t('platform.category.typePlaceholder'),
       },
       fieldName: 'type',

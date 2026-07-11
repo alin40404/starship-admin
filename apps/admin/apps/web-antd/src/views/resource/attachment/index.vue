@@ -21,6 +21,11 @@ import {
 } from '#/api/system/attachment';
 import { ATTACHMENT_PERMISSIONS } from '#/constants/attachment-permissions';
 
+import {
+  DICT_TYPE_CODE,
+  mapDictItemOptions,
+} from '#/views/platform/dict/i18n';
+
 import { buildCategoryTagOptions, useColumns, useGridFormSchema, ALL_ATTACHMENT_CATEGORY_KEY } from './data';
 import AttachmentFlowView from './modules/flow-view.vue';
 import AttachmentMobileBody from './modules/mobile-body.vue';
@@ -43,7 +48,13 @@ const attachmentAccess = {
 };
 
 const activeCategory = ref(ALL_CATEGORY_KEY);
-const categoryOptions = ref<{ label: string; value: string }[]>([]);
+const categoryOptionsRaw = ref<{ label: string; value: string }[]>([]);
+const categoryOptions = computed(() =>
+  mapDictItemOptions(
+    DICT_TYPE_CODE.attachmentCategory,
+    categoryOptionsRaw.value,
+  ),
+);
 const selectedRows = ref<AttachmentRow[]>([]);
 const flowRows = ref<AttachmentRow[]>([]);
 const flowTotal = ref(0);
@@ -274,11 +285,7 @@ function onBatchDelete() {
 }
 
 async function loadCategoryOptions() {
-  const rows = await fetchAttachmentCategories();
-  categoryOptions.value = rows.map((item) => ({
-    label: item.label,
-    value: item.value,
-  }));
+  categoryOptionsRaw.value = await fetchAttachmentCategories();
   syncGridColumns();
 }
 
@@ -289,7 +296,7 @@ onMounted(() => {
 
 const columns = computed(() =>
   useColumns(onActionClick, attachmentAccess, {
-    categoryTagOptions: buildCategoryTagOptions(categoryOptions.value),
+    categoryTagOptions: buildCategoryTagOptions(categoryOptionsRaw.value),
     showCategoryColumn: activeCategory.value === ALL_CATEGORY_KEY,
   }),
 );

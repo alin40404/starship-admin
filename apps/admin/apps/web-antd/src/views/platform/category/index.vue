@@ -24,6 +24,11 @@ import {
 } from '#/api/system/category';
 import { CATEGORY_PERMISSIONS } from '#/constants/category-permissions';
 
+import {
+  DICT_TYPE_CODE,
+  mapDictItemOptions,
+} from '#/views/platform/dict/i18n';
+
 import { useColumns, useGridFormSchema } from './data';
 import CategoryForm from './modules/form.vue';
 
@@ -46,10 +51,7 @@ const typeOptions = ref<CategoryTypeOption[]>([]);
 const selectedRows = ref<CategoryTreeNode[]>([]);
 
 const typeTagOptions = computed(() =>
-  typeOptions.value.map((item) => ({
-    label: item.label,
-    value: item.value,
-  })),
+  mapDictItemOptions(DICT_TYPE_CODE.categoryType, typeOptions.value),
 );
 
 const categoryFormRef = ref<CategoryFormExpose>();
@@ -335,7 +337,7 @@ const [Grid, gridApi] = useVbenVxeGrid<CategoryTreeNode>({
             {{ $t('system.shared.all') }}
           </button>
           <button
-            v-for="item in typeOptions"
+            v-for="item in typeTagOptions"
             :key="item.value"
             class="category-type-item"
             :class="{ 'is-active': activeType === item.value }"
