@@ -169,7 +169,7 @@
         },
         "favicon": {
           "label": "Site Icon",
-          "remark": "Browser tab icon; auto-generated to uploads/favicon.ico when Logo changes; defaults to /favicon.ico when empty"
+          "remark": "Browser tab icon; normalized to /storage/uploads/favicon.ico; auto-generated when Logo changes; defaults to /favicon.ico when empty"
         },
         "beian": {
           "label": "ICP Filing Number",

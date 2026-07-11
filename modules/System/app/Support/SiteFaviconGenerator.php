@@ -15,10 +15,56 @@ final class SiteFaviconGenerator
     /** 固定写入 public disk 的相对路径 */
     public const UPLOAD_RELATIVE_PATH = 'uploads/favicon.ico';
 
+    /** 本地 public 磁盘下的固定访问路径 */
+    public const FIXED_STORAGE_PUBLIC_PATH = '/storage/uploads/favicon.ico';
+
     private const FAVICON_SIZE = 32;
 
+    public static function isFixedUploadPath(string $url): bool
+    {
+        return self::resolveStorageRelativePath($url) === self::UPLOAD_RELATIVE_PATH;
+    }
+
     /**
-     * @return string|null 可访问 URL，失败返回 null
+     * 固定上传路径对应的可访问 URL（与附件上传 file_url 格式一致）。
+     */
+    public static function fixedUploadPublicUrl(): string
+    {
+        StorageConfigRegistrar::apply();
+        $disk = StorageConfigRegistrar::defaultDisk();
+
+        return Storage::disk($disk)->url(self::UPLOAD_RELATIVE_PATH);
+    }
+
+    /**
+     * 将任意站点图标归并到 uploads/favicon.ico，并返回固定路径 URL。
+     *
+     * @return string|null 已处于固定路径或归并成功时返回 URL，失败返回 null
+     */
+    public static function normalizeToFixedUploadPath(string $sourceUrl): ?string
+    {
+        $sourceUrl = trim($sourceUrl);
+        if ($sourceUrl === '') {
+            return null;
+        }
+
+        if (self::isFixedUploadPath($sourceUrl)) {
+            return self::fixedUploadPublicUrl();
+        }
+
+        if (extension_loaded('gd') && self::writeResizedImageToFixedPath($sourceUrl)) {
+            return self::fixedUploadPublicUrl();
+        }
+
+        if (self::copyRawBinaryToFixedPath($sourceUrl)) {
+            return self::fixedUploadPublicUrl();
+        }
+
+        return null;
+    }
+
+    /**
+     * @return string|null 固定路径，失败返回 null
      */
     public static function generateFromLogo(string $logoUrl): ?string
     {
@@ -28,43 +74,11 @@ final class SiteFaviconGenerator
             return null;
         }
 
-        $binary = self::loadImageBinary($logoUrl);
-        if ($binary === null) {
+        if (! self::writeResizedImageToFixedPath($logoUrl)) {
             return null;
         }
 
-        $image = @imagecreatefromstring($binary);
-        if ($image === false) {
-            return null;
-        }
-
-        $resized = imagescale($image, self::FAVICON_SIZE, self::FAVICON_SIZE, IMG_BILINEAR_FIXED);
-        imagedestroy($image);
-
-        if ($resized === false) {
-            return null;
-        }
-
-        imagealphablending($resized, false);
-        imagesavealpha($resized, true);
-
-        ob_start();
-        $written = @imagepng($resized);
-        $pngData = ob_get_clean();
-        imagedestroy($resized);
-
-        if (! $written || ! is_string($pngData) || $pngData === '') {
-            return null;
-        }
-
-        StorageConfigRegistrar::apply();
-        $disk = StorageConfigRegistrar::defaultDisk();
-
-        if (! Storage::disk($disk)->put(self::UPLOAD_RELATIVE_PATH, $pngData)) {
-            return null;
-        }
-
-        return Storage::disk($disk)->url(self::UPLOAD_RELATIVE_PATH);
+        return self::fixedUploadPublicUrl();
     }
 
     /**
@@ -88,22 +102,54 @@ final class SiteFaviconGenerator
         return Storage::disk($disk)->put(self::UPLOAD_RELATIVE_PATH, $contents);
     }
 
-    /**
-     * 清空站点图标时，删除先前手动配置的其它 storage 文件（保留固定路径由 restore 覆盖）。
-     */
-    public static function deleteCustomFaviconIfNotDefault(?string $faviconUrl = null): void
+    private static function writeResizedImageToFixedPath(string $sourceUrl): bool
     {
-        $relative = self::resolveStorageRelativePath($faviconUrl);
-        if ($relative === null || $relative === self::UPLOAD_RELATIVE_PATH) {
-            return;
+        $binary = self::loadImageBinary($sourceUrl);
+        if ($binary === null) {
+            return false;
+        }
+
+        $image = @imagecreatefromstring($binary);
+        if ($image === false) {
+            return false;
+        }
+
+        $resized = imagescale($image, self::FAVICON_SIZE, self::FAVICON_SIZE, IMG_BILINEAR_FIXED);
+        imagedestroy($image);
+
+        if ($resized === false) {
+            return false;
+        }
+
+        imagealphablending($resized, false);
+        imagesavealpha($resized, true);
+
+        ob_start();
+        $written = @imagepng($resized);
+        $pngData = ob_get_clean();
+        imagedestroy($resized);
+
+        if (! $written || ! is_string($pngData) || $pngData === '') {
+            return false;
         }
 
         StorageConfigRegistrar::apply();
         $disk = StorageConfigRegistrar::defaultDisk();
 
-        if (Storage::disk($disk)->exists($relative)) {
-            Storage::disk($disk)->delete($relative);
+        return Storage::disk($disk)->put(self::UPLOAD_RELATIVE_PATH, $pngData);
+    }
+
+    private static function copyRawBinaryToFixedPath(string $sourceUrl): bool
+    {
+        $binary = self::loadImageBinary($sourceUrl);
+        if ($binary === null) {
+            return false;
         }
+
+        StorageConfigRegistrar::apply();
+        $disk = StorageConfigRegistrar::defaultDisk();
+
+        return Storage::disk($disk)->put(self::UPLOAD_RELATIVE_PATH, $binary);
     }
 
     private static function resolveDefaultFaviconLocalPath(): ?string

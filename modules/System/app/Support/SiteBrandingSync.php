@@ -20,6 +20,7 @@ final class SiteBrandingSync
         $itemsByKey = collect($items)->keyBy('key');
 
         self::restoreFaviconWhenCleared($itemsByKey, $previousValues);
+        self::normalizeFaviconToFixedPath($itemsByKey, $previousValues);
         self::regenerateFaviconWhenLogoChanged($itemsByKey, $previousValues);
     }
 
@@ -38,10 +39,30 @@ final class SiteBrandingSync
             return;
         }
 
-        $previousFavicon = trim((string) ($previousValues[SiteConfig::KEY_FAVICON] ?? ''));
-
-        SiteFaviconGenerator::deleteCustomFaviconIfNotDefault($previousFavicon);
         SiteFaviconGenerator::restoreDefaultFaviconToUploads();
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection<string, array<string, mixed>>  $itemsByKey
+     * @param  array<string, mixed>  $previousValues
+     */
+    private static function normalizeFaviconToFixedPath($itemsByKey, array $previousValues): void
+    {
+        if (! $itemsByKey->has(SiteConfig::KEY_FAVICON)) {
+            return;
+        }
+
+        $favicon = trim((string) ($itemsByKey->get(SiteConfig::KEY_FAVICON)['value'] ?? ''));
+        if ($favicon === '' || SiteFaviconGenerator::isFixedUploadPath($favicon)) {
+            return;
+        }
+
+        $canonicalUrl = SiteFaviconGenerator::normalizeToFixedUploadPath($favicon);
+        if ($canonicalUrl === null) {
+            return;
+        }
+
+        self::upsertFaviconSetting($canonicalUrl);
     }
 
     /**
@@ -69,15 +90,20 @@ final class SiteBrandingSync
             return;
         }
 
+        self::upsertFaviconSetting($faviconUrl);
+    }
+
+    private static function upsertFaviconSetting(string $value): void
+    {
         Setting::query()->updateOrCreate(
             ['key' => SiteConfig::KEY_FAVICON],
             [
                 'name' => '站点图标',
-                'value' => $faviconUrl,
+                'value' => $value,
                 'group_name' => 'basic',
                 'type' => 'string',
                 'sort' => 25,
-                'remark' => '浏览器标签页图标，修改 Logo 时自动生成到 uploads/favicon.ico；也可手动填写',
+                'remark' => '浏览器标签页图标，统一写入 /storage/uploads/favicon.ico；修改 Logo 时自动生成；留空则恢复默认',
             ]
         );
     }

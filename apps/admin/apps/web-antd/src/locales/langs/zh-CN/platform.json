@@ -169,7 +169,7 @@
         },
         "favicon": {
           "label": "站点图标",
-          "remark": "浏览器标签页图标，修改 Logo 时自动生成到 uploads/favicon.ico；留空则使用默认 /favicon.ico"
+          "remark": "浏览器标签页图标，统一写入 /storage/uploads/favicon.ico；修改 Logo 时自动生成；留空则恢复默认 /favicon.ico"
         },
         "beian": {
           "label": "备案号",
