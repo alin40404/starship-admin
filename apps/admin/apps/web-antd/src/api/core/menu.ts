@@ -1,5 +1,7 @@
 import type { RouteRecordStringComponent } from '@vben/types';
 
+import { $te } from '@vben/locales';
+
 import { requestClient } from '#/api/request';
 
 /** Starship 菜单节点（与 AdminPermissionService::menuTreeForAdmin 一致） */
@@ -89,9 +91,19 @@ function resolveMenuPageComponent(node: StarshipMenuNode): string {
   return resolvePageComponent(node.path);
 }
 
+function menuI18nKey(node: StarshipMenuNode): string {
+  return `system.menu.${node.name}`;
+}
+
+/** 返回 i18n key（layout 侧栏/标签会 $t）；无翻译时 fallback 到 DB title */
 function menuDisplayTitle(node: StarshipMenuNode): string {
-  const t = node.title?.trim();
-  return t ? t : node.name;
+  const key = menuI18nKey(node);
+  if ($te(key)) {
+    return key;
+  }
+
+  const fallback = node.title?.trim();
+  return fallback || node.name;
 }
 
 function buildRouteMeta(
