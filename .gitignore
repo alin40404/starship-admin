@@ -12,7 +12,6 @@ out/
 .turbo/
 *.tsbuildinfo
 
-
 # Logs
 logs/
 *.log
@@ -35,9 +34,22 @@ Desktop.ini
 *.swp
 *.swo
 *~
+.fleet/
+.nova/
+.zed/
+.VSCodeCounter/
+.history/
 
-# Cursor / VS Code (optional: uncomment if you don't share workspace settings)
-# .vscode/
+# Cursor / VS Code
+/.vscode/
+.cursor/
+
+# AI (local)
+.agent/
+.agents/
+.claude/
+.codex/
+skills-lock.json
 
 # Misc
 *.local
