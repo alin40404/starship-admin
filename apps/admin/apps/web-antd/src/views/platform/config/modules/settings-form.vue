@@ -26,6 +26,7 @@ import {
   isStorageFieldVisible,
   STORAGE_DRIVER_KEY,
 } from '../data';
+import { applySiteBranding } from '#/utils/site-branding';
 
 const props = defineProps<{
   canManage: boolean;
@@ -97,6 +98,9 @@ async function onSave() {
     await batchUpsertConfigs(items);
     message.success($t('platform.config.saved'));
     await loadConfigs();
+    if (props.groupName === 'basic') {
+      await applySiteBranding();
+    }
   } finally {
     saving.value = false;
   }

@@ -7,10 +7,16 @@ use Starship\Core\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\System\App\Models\Setting;
+use Modules\System\App\Support\SiteConfig;
 use Modules\System\App\Support\StorageConfigRegistrar;
 
 class ConfigController extends Controller
 {
+    public function site(): JsonResponse
+    {
+        return ApiResponse::success(SiteConfig::branding());
+    }
+
     public function index(Request $request): JsonResponse
     {
         $group = $request->get('group_name');

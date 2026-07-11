@@ -55,6 +55,17 @@ textarea.ant-input,
   font-size: var(--text-sm, 0.875rem) !important;
 }
 
+/** Tooltip 提示文字：跟随 --text-sm，随 html 根字号缩放 */
+.ant-tooltip-inner {
+  font-size: var(--text-sm, 0.875rem) !important;
+}
+
+/** Notification / Message 提示文字：描述跟随 --text-sm，随 html 根字号缩放（标题保留 Ant Design 默认 fontSizeLG） */
+.ant-notification-notice-description,
+.ant-message-notice-content {
+  font-size: var(--text-sm, 0.875rem) !important;
+}
+
 /** Tree / TreeSelect 展开箭头：与节点图标 size-4 对齐，随根字号缩放 */
 .ant-select-tree-switcher-icon,
 .ant-tree-switcher-icon {

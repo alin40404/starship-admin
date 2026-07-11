@@ -31,6 +31,8 @@ use Modules\System\App\Support\RolePermissions;
 use Modules\System\App\Support\UserGroupPermissions;
 
 Route::middleware('api')->prefix('admin-api')->group(function () {
+    Route::get('system/site', [ConfigController::class, 'site']);
+
     Route::prefix('auth')->group(function () {
         Route::post('login', [AuthController::class, 'login']);
         Route::middleware('auth:sanctum')->group(function () {

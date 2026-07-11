@@ -1,8 +1,8 @@
-import { VBEN_LOGO_URL } from '@vben/constants';
 import { initPreferences, updatePreferences } from '@vben/preferences';
 import { unmountGlobalLoading } from '@vben/utils';
 
 import { overridesPreferences, preferencesExtension } from './preferences';
+import { applySiteBranding } from './utils/site-branding';
 
 /**
  * 应用初始化完成之后再进行页面加载渲染
@@ -28,15 +28,14 @@ async function initApplication() {
       accessMode: overridesPreferences.app?.accessMode ?? 'backend',
       defaultHomePath: overridesPreferences.app?.defaultHomePath ?? '/dashboard/console',
     },
-    logo: {
-      source: overridesPreferences.logo?.source ?? VBEN_LOGO_URL,
-    },
     theme: {
       fontSize: overridesPreferences.theme?.fontSize ?? 16,
       mode: overridesPreferences.theme?.mode ?? 'light',
       radius: overridesPreferences.theme?.radius ?? '0.5',
     },
   });
+
+  await applySiteBranding();
 
   // 启动应用并挂载
   // vue应用主要逻辑及视图

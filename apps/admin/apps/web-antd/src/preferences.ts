@@ -28,6 +28,14 @@ export const overridesPreferences = defineOverridesPreferences({
   logo: {
     source: VBEN_LOGO_URL,
   },
+  copyright: {
+    companyName: import.meta.env.VITE_APP_TITLE,
+    companySiteLink: '',
+    date: String(new Date().getFullYear()),
+    enable: true,
+    icp: '',
+    icpLink: '',
+  },
   theme: {
     mode: 'light',
     radius: '0.25',
