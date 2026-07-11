@@ -27,4 +27,14 @@ final class ColumnLabelFormatter
 
         return $fallback !== '' ? $fallback : '字段';
     }
+
+    public static function fromFieldName(?string $fieldName): string
+    {
+        $fieldName = trim((string) ($fieldName ?? ''));
+        if ($fieldName === '') {
+            return 'Field';
+        }
+
+        return ucwords(str_replace('_', ' ', $fieldName));
+    }
 }

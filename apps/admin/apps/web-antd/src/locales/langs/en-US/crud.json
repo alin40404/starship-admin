@@ -1,0 +1,11 @@
+{
+  "columnActions": "Actions",
+  "created": "Created successfully",
+  "saved": "Saved successfully",
+  "deleted": "Deleted successfully",
+  "statusUpdated": "Status updated",
+  "batchDeleted": "Batch deleted successfully",
+  "batchStatusUpdated": "Batch status updated",
+  "toggleStatusTitle": "Change status",
+  "toggleStatusConfirm": "Change status to [{0}]?"
+}

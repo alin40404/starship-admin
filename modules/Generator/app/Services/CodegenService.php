@@ -20,6 +20,8 @@ class CodegenService
         protected ModulePathResolver $modulePathResolver,
         protected TableConfigService $tableConfigService,
         protected SchemaReader $schemaReader,
+        protected LocaleJsonMerger $localeJsonMerger,
+        protected ModuleLangEnsurer $moduleLangEnsurer,
     ) {}
 
     /**
@@ -233,15 +235,18 @@ class CodegenService
         $this->fileWriter->assertAdminRouteLoaderRegistered($moduleDir.'/routes/admin.php');
 
         if ($dryRun) {
+            $localeFiles = $this->buildLocaleFiles($config, $viewData);
+            $allFiles = array_merge($files, $localeFiles);
+
             return [
                 'config' => $config,
-                'files' => collect($files)->map(fn (array $file): array => [
+                'files' => collect($allFiles)->map(fn (array $file): array => [
                     'path' => $file['path'],
                     'content' => $file['content'],
                 ])->values()->all(),
                 'written' => [],
                 'skipped' => [],
-                'conflicts' => collect($files)
+                'conflicts' => collect($allFiles)
                     ->filter(fn (array $file): bool => is_file($file['path']))
                     ->map(fn (array $file): array => ['path' => $file['path']])
                     ->values()
@@ -249,11 +254,14 @@ class CodegenService
             ];
         }
 
-        if (! $dryRun) {
-            $this->fileWriter->ensureAdminRouteLoader($moduleDir);
-        }
+        $this->fileWriter->ensureAdminRouteLoader($moduleDir);
+        $this->moduleLangEnsurer->ensure($config->module_slug);
 
         $writeResult = $this->fileWriter->writeMany($files, $force);
+        $localeFiles = $this->buildLocaleFiles($config, $viewData);
+        $localeWriteResult = $this->fileWriter->writeMany($localeFiles, true);
+        $writeResult['written'] = array_merge($writeResult['written'], $localeWriteResult['written']);
+        $writeResult['skipped'] = array_merge($writeResult['skipped'], $localeWriteResult['skipped']);
 
         return array_merge($writeResult, [
             'config' => $config,
@@ -271,6 +279,9 @@ class CodegenService
     {
         $naming = GeneratorNaming::fromTableName($config->table_name, $config->module_slug);
         $moduleNamespace = $this->modulePathResolver->moduleNamespace($config->module_slug);
+        $translationNs = strtolower($config->module_slug);
+        $entityKebab = $naming['entity_kebab'];
+        $i18nPrefix = $translationNs.'.'.$entityKebab;
         $columns = $config->columns;
         $formColumns = $columns->where('is_form', true)->values();
         $listColumns = $columns->where('is_list', true)->values();
@@ -303,10 +314,13 @@ class CodegenService
             'batch_delete_fn_name' => 'batchDelete'.Str::plural($config->class_name),
             'controller_fqcn' => $moduleNamespace.'\\Http\\Controllers\\Admin\\'.GeneratorNaming::controllerClassName($config->class_name),
             'route_group' => $config->route_group,
-            'entity_kebab' => $naming['entity_kebab'],
+            'entity_kebab' => $entityKebab,
             'route_path' => $config->route_path,
             'component_path' => $naming['component_path'],
             'variable_name' => $naming['variable_name'],
+            'translation_ns' => $translationNs,
+            'i18n_prefix' => $i18nPrefix,
+            'entity_title_en' => $config->class_name,
             'form_columns' => $formColumns,
             'list_columns' => $listColumns,
             'search_columns' => $searchColumns,
@@ -316,13 +330,13 @@ class CodegenService
             'form_rules_body' => $this->buildFormRulesBody($formColumns),
             'allowed_sorts_body' => $this->buildAllowedSortsBody($listColumns),
             'search_filters_body' => $this->buildSearchFiltersBody($filteredSearchColumns),
-            'grid_form_schema_body' => $this->buildGridFormSchemaBody($searchColumns),
-            'form_schema_body' => $this->buildFormSchemaBody($formColumns),
+            'grid_form_schema_body' => $this->buildGridFormSchemaBody($searchColumns, $i18nPrefix),
+            'form_schema_body' => $this->buildFormSchemaBody($formColumns, $i18nPrefix),
             'api_row_fields_body' => $this->buildApiRowFieldsBody($listColumns),
             'api_page_query_fields_body' => $this->buildApiPageQueryFieldsBody($searchColumns),
             'api_save_payload_fields_body' => $this->buildApiSavePayloadFieldsBody($formColumns),
             'index_query_fields_body' => $this->buildIndexQueryFieldsBody($searchColumns),
-            'list_columns_body' => $this->buildListColumnsBody($listColumns, $config->class_name, strtoupper(str_replace(['.', '-'], '_', $config->permission_prefix)).'_PERMISSIONS'),
+            'list_columns_body' => $this->buildListColumnsBody($listColumns, $config->class_name, strtoupper(str_replace(['.', '-'], '_', $config->permission_prefix)).'_PERMISSIONS', $i18nPrefix),
             'primary_label_field' => $listColumns->first()?->column_name ?? 'id',
             'has_status' => $hasStatus,
             'has_soft_delete' => $hasSoftDelete,
@@ -385,6 +399,83 @@ class CodegenService
         return $files;
     }
 
+    /**
+     * @param  array<string, mixed>  $viewData
+     * @return list<array{path: string, content: string}>
+     */
+    protected function buildLocaleFiles(GeneratorTable $config, array $viewData): array
+    {
+        $frontendRoot = $this->modulePathResolver->frontendRoot();
+        $moduleSlug = strtolower($config->module_slug);
+        $entityKey = (string) $viewData['entity_kebab'];
+        $entries = $this->buildLocaleEntityEntries($config, $viewData);
+
+        return [
+            [
+                'path' => $frontendRoot.'/locales/langs/zh-CN/'.$moduleSlug.'.json',
+                'content' => $this->localeJsonMerger->mergeEntity(
+                    $frontendRoot.'/locales/langs/zh-CN/'.$moduleSlug.'.json',
+                    $entityKey,
+                    $entries['zh-CN'],
+                ),
+            ],
+            [
+                'path' => $frontendRoot.'/locales/langs/en-US/'.$moduleSlug.'.json',
+                'content' => $this->localeJsonMerger->mergeEntity(
+                    $frontendRoot.'/locales/langs/en-US/'.$moduleSlug.'.json',
+                    $entityKey,
+                    $entries['en-US'],
+                ),
+            ],
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $viewData
+     * @return array{zh-CN: array<string, mixed>, en-US: array<string, mixed>}
+     */
+    protected function buildLocaleEntityEntries(GeneratorTable $config, array $viewData): array
+    {
+        $columns = $config->columns;
+        $columnLabelsZh = [];
+        $columnLabelsEn = [];
+
+        foreach ($columns as $column) {
+            if (! $column->is_list && ! $column->is_form && ! $column->is_search) {
+                continue;
+            }
+
+            $columnLabelsZh[$column->column_name] = $this->columnLabel($column);
+            $columnLabelsEn[$column->column_name] = ColumnLabelFormatter::fromFieldName($column->column_name);
+        }
+
+        $businessName = $config->business_name;
+        $businessNameEn = (string) ($viewData['entity_title_en'] ?? $config->class_name);
+
+        return [
+            'zh-CN' => [
+                'title' => $businessName,
+                'searchPlaceholder' => '搜索'.$businessName,
+                'columns' => $columnLabelsZh,
+                'form' => [
+                    'createTitle' => '新增'.$businessName,
+                    'editTitle' => '编辑'.$businessName,
+                    'viewTitle' => '查看'.$businessName,
+                ],
+            ],
+            'en-US' => [
+                'title' => $businessNameEn,
+                'searchPlaceholder' => 'Search '.$businessNameEn,
+                'columns' => $columnLabelsEn,
+                'form' => [
+                    'createTitle' => 'Create '.$businessNameEn,
+                    'editTitle' => 'Edit '.$businessNameEn,
+                    'viewTitle' => 'View '.$businessNameEn,
+                ],
+            ],
+        ];
+    }
+
     protected function normalizeGeneratedRouteContent(string $content): string
     {
         $content = str_replace("\r\n", "\n", $content);
@@ -434,33 +525,33 @@ class CodegenService
         return implode(PHP_EOL, $lines);
     }
 
-    protected function buildGridFormSchemaBody($searchColumns): string
+    protected function buildGridFormSchemaBody($searchColumns, string $i18nPrefix): string
     {
         $lines = [];
         foreach ($searchColumns as $column) {
             $component = $column->form_component === 'Switch' ? 'Select' : $column->form_component;
-            $label = $this->columnLabel($column);
+            $columnKey = $column->column_name;
             $lines[] = '    {';
             $lines[] = "      component: '{$component}',";
-            $lines[] = "      componentProps: { class: 'w-full', placeholder: '{$label}' },";
-            $lines[] = "      fieldName: '{$column->column_name}',";
-            $lines[] = "      label: '{$label}',";
+            $lines[] = "      componentProps: { class: 'w-full', placeholder: \$t('{$i18nPrefix}.columns.{$columnKey}') },";
+            $lines[] = "      fieldName: '{$columnKey}',";
+            $lines[] = "      label: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
             $lines[] = '    },';
         }
 
         return implode(PHP_EOL, $lines);
     }
 
-    protected function buildListColumnsBody($listColumns, string $modelClass, string $permissionsExportName): string
+    protected function buildListColumnsBody($listColumns, string $modelClass, string $permissionsExportName, string $i18nPrefix): string
     {
         $lines = [];
         foreach ($listColumns as $column) {
-            $label = $this->columnLabel($column);
+            $columnKey = $column->column_name;
             if ($column->column_name === 'status') {
                 $lines[] = "    {";
                 $lines[] = "      field: 'status',";
                 $lines[] = "      sortable: true,";
-                $lines[] = "      title: '{$label}',";
+                $lines[] = "      title: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
                 $lines[] = '      width: 100,';
                 $lines[] = '      cellRender: {';
                 $lines[] = '        attrs: {';
@@ -483,7 +574,7 @@ class CodegenService
                 $lines[] = "        row.{$column->column_name} ? formatDateTime(row.{$column->column_name}) : TABLE_CELL_EMPTY,";
                 $lines[] = '      minWidth: 170,';
                 $lines[] = '      sortable: true,';
-                $lines[] = "      title: '{$label}',";
+                $lines[] = "      title: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
                 $lines[] = '    },';
 
                 continue;
@@ -491,23 +582,23 @@ class CodegenService
 
             $lines[] = '    {';
             $lines[] = "      align: 'left',";
-            $lines[] = "      field: '{$column->column_name}',";
+            $lines[] = "      field: '{$columnKey}',";
             $lines[] = '      formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,';
             $lines[] = '      minWidth: 120,';
             $lines[] = '      sortable: true,';
-            $lines[] = "      title: '{$label}',";
+            $lines[] = "      title: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
             $lines[] = '    },';
         }
 
         return implode(PHP_EOL, $lines);
     }
 
-    protected function buildFormSchemaBody($formColumns): string
+    protected function buildFormSchemaBody($formColumns, string $i18nPrefix): string
     {
         $lines = [];
         foreach ($formColumns as $column) {
             $component = $column->form_component === 'Switch' ? 'RadioGroup' : $column->form_component;
-            $label = $this->columnLabel($column);
+            $columnKey = $column->column_name;
             $lines[] = '    {';
             $lines[] = "      component: '{$component}',";
             if ($component === 'RadioGroup') {
@@ -517,8 +608,8 @@ class CodegenService
                 $lines[] = '        disabled,';
                 $lines[] = "        optionType: 'button',";
                 $lines[] = '        options: [';
-                $lines[] = "          { label: '启用', value: 1 },";
-                $lines[] = "          { label: '禁用', value: 0 },";
+                $lines[] = "          { label: \$t('common.enabled'), value: 1 },";
+                $lines[] = "          { label: \$t('common.disabled'), value: 0 },";
                 $lines[] = '        ],';
                 $lines[] = '      },';
                 $lines[] = '      defaultValue: 1,';
@@ -531,8 +622,8 @@ class CodegenService
             } else {
                 $lines[] = "      componentProps: { class: 'w-full', disabled },";
             }
-            $lines[] = "      fieldName: '{$column->column_name}',";
-            $lines[] = "      label: '{$label}',";
+            $lines[] = "      fieldName: '{$columnKey}',";
+            $lines[] = "      label: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
             $required = in_array('required', $column->validation_rules ?? [], true);
             if ($required) {
                 $lines[] = "      rules: readonly ? undefined : 'required',";

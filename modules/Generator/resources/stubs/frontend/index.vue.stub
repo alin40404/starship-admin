@@ -7,6 +7,7 @@ import { ref } from 'vue';
 import { useAccess } from '@vben/access';
 import { Page } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
+import { $t } from '@vben/locales';
 
 import { Button, message, Modal } from 'ant-design-vue';
 
@@ -59,16 +60,16 @@ function onActionClick({ code, row }: OnActionClickParams<{{ $model_class }}Row>
 @if($has_status)
 async function on{{ $model_class }}StatusToggle(nextStatus: number, row: {{ $model_class }}Row) {
   return new Promise<boolean>((resolve) => {
-    const label = nextStatus === 1 ? '启用' : '禁用';
+    const label = nextStatus === 1 ? $t('common.enabled') : $t('common.disabled');
     Modal.confirm({
-      content: `确定切换状态为【${label}】吗？`,
-      okText: '确定',
-      cancelText: '取消',
-      title: '切换状态',
+      content: $t('crud.toggleStatusConfirm', [label]),
+      okText: $t('common.confirm'),
+      cancelText: $t('common.cancel'),
+      title: $t('crud.toggleStatusTitle'),
       async onOk() {
         try {
           await update{{ $model_class }}(row.id, { status: nextStatus });
-          message.success('状态已更新');
+          message.success($t('crud.statusUpdated'));
           resolve(true);
         } catch {
           resolve(false);
@@ -93,7 +94,7 @@ const [CrudView, crudApi] = useResponsiveCrud<{{ $model_class }}Row>({
     commonConfig: { componentProps: { class: 'w-full' } },
     schema: useGridFormSchema(),
     submitOnChange: true,
-    submitButtonOptions: { content: '查询' },
+    submitButtonOptions: { content: $t('common.query') },
   },
   gridOptions: {
     checkboxConfig: { highlight: true },
@@ -125,7 +126,7 @@ const [CrudView, crudApi] = useResponsiveCrud<{{ $model_class }}Row>({
 
 async function onDelete(row: {{ $model_class }}Row) {
   await delete{{ $model_class }}(row.id);
-  message.success('已删除');
+  message.success($t('crud.deleted'));
   await crudApi.reload();
 }
 
@@ -144,7 +145,7 @@ function onFormSuccess() {
           @click="onCreate"
         >
           <Plus class="size-4" />
-          新增{{ $business_name }}
+          {{ $t('{{ $i18n_prefix }}.form.createTitle') }}
         </Button>
       </template>
     </CrudView>

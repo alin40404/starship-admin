@@ -20,6 +20,7 @@ class MonitorServiceProvider extends ServiceProvider
     {
         $this->loadRoutesFrom(__DIR__.'/../../routes/admin.php');
         $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
+        $this->loadTranslationsFrom(__DIR__.'/../../resources/lang', 'monitor');
 
         Route::pushMiddlewareToGroup('api', LogAdminOperation::class);
 

@@ -103,3 +103,9 @@ require __DIR__.'/admin-generator/_loader.php';
 - `views/{group}/{entity}/index.vue`
 - `views/{group}/{entity}/data.ts`
 - `views/{group}/{entity}/modules/form.vue`
+- `locales/langs/zh-CN/{module}.json`（合并 entity 翻译 key）
+- `locales/langs/en-US/{module}.json`（合并 entity 翻译 key）
+
+**后端语言包（首次生成时自动 ensure）**
+- `resources/lang/zh_CN/messages.php`
+- `resources/lang/en/messages.php`

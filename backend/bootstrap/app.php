@@ -6,6 +6,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Starship\Core\Http\Middleware\SetLocale;
 use Starship\Core\Support\ApiResponse;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -19,6 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->appendToGroup('api', SetLocale::class);
+
         $middleware->redirectGuestsTo(function (Request $request) {
             // admin-api：纯 JSON 接口，未登录返回 401，不重定向
             if ($request->is('admin-api/*')) {
@@ -32,7 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (AuthenticationException $e, Request $request) {
             if ($request->is('admin-api/*')) {
-                return ApiResponse::error('未登录或会话已失效', 401);
+                return ApiResponse::error(__('core::api.session_expired'), 401);
             }
         });
     })->create();

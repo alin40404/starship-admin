@@ -1,0 +1,11 @@
+{
+  "columnActions": "操作",
+  "created": "创建成功",
+  "saved": "已保存",
+  "deleted": "已删除",
+  "statusUpdated": "状态已更新",
+  "batchDeleted": "已批量删除",
+  "batchStatusUpdated": "已批量更新状态",
+  "toggleStatusTitle": "切换状态",
+  "toggleStatusConfirm": "确定切换状态为【{0}】吗？"
+}

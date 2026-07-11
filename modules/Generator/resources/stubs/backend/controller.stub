@@ -3,7 +3,7 @@
 namespace {{ $module_namespace }}\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Support\ApiResponse;
+use Starship\Core\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use {{ $module_namespace }}\Models\{{ $model_class }};
@@ -46,7 +46,7 @@ class {{ $controller_class }} extends Controller
 
         ${{ $variable_name }} = {{ $model_class }}::query()->create($data);
 
-        return ApiResponse::success(${{ $variable_name }}, '创建成功');
+        return ApiResponse::success(${{ $variable_name }}, __('{{ $translation_ns }}::messages.created'));
     }
 
     public function update(Request $request, int $id): JsonResponse
@@ -56,14 +56,14 @@ class {{ $controller_class }} extends Controller
 
         ${{ $variable_name }}->update($data);
 
-        return ApiResponse::success(${{ $variable_name }}->fresh(), '更新成功');
+        return ApiResponse::success(${{ $variable_name }}->fresh(), __('{{ $translation_ns }}::messages.updated'));
     }
 
     public function destroy(int $id): JsonResponse
     {
         {{ $model_class }}::query()->whereKey($id)->firstOrFail()->delete();
 
-        return ApiResponse::success(null, '已删除');
+        return ApiResponse::success(null, __('{{ $translation_ns }}::messages.deleted'));
     }
 @if($has_batch_delete)
 
@@ -76,7 +76,7 @@ class {{ $controller_class }} extends Controller
 
         $deleted = {{ $model_class }}::query()->whereIn('id', $ids)->delete();
 
-        return ApiResponse::success(['deleted' => $deleted], '已批量删除');
+        return ApiResponse::success(['deleted' => $deleted], __('{{ $translation_ns }}::messages.batch_deleted'));
     }
 @endif
 @if($has_batch_status)
@@ -93,7 +93,7 @@ class {{ $controller_class }} extends Controller
             ->whereIn('id', $data['ids'])
             ->update(['status' => $data['status']]);
 
-        return ApiResponse::success(['updated' => $updated], '已批量更新状态');
+        return ApiResponse::success(['updated' => $updated], __('{{ $translation_ns }}::messages.batch_status_updated'));
     }
 @endif
 

@@ -8,6 +8,7 @@ import type { OnActionClickFn } from '#/adapter/vxe-table';
 
 import type { {{ $model_class }}Row } from '#/api/system/{{ $entity_kebab }}';
 
+import { $t } from '#/locales';
 import { formatDateTime } from '@vben/utils';
 
 import { TABLE_CELL_EMPTY } from '#/constants/table';
@@ -36,7 +37,7 @@ export function build{{ $model_class }}MobileCrudConfig(params: {
     search: {
       filterSchema: useGridFormSchema(),
       keywordFields: [{{ $keyword_fields_ts }}],
-      placeholder: '搜索{{ $business_name }}',
+      placeholder: $t('{{ $i18n_prefix }}.searchPlaceholder'),
     },
     selection: {
       enabled: true,
@@ -59,7 +60,7 @@ export function useColumns(
       cellRender: {
         attrs: {
           nameField: '{{ $primary_label_field }}',
-          nameTitle: '{{ $business_name }}',
+          nameTitle: $t('{{ $i18n_prefix }}.title'),
           onClick: onActionClick,
         },
         name: 'CellOperation',
@@ -67,20 +68,20 @@ export function useColumns(
           {
             code: 'edit',
             show: () => access.can({{ $permissions_export_name }}.UPDATE),
-            text: '编辑',
+            text: $t('common.edit'),
             type: 'link',
           },
           {
             code: 'delete',
             danger: true,
             show: () => access.can({{ $permissions_export_name }}.DELETE),
-            text: '删除',
+            text: $t('common.delete'),
             type: 'link',
           },
         ],
       },
       fixed: 'right',
-      title: '操作',
+      title: $t('crud.columnActions'),
       width: 140,
     },
   ] as CrudGridColumn<{{ $model_class }}Row>[];

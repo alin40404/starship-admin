@@ -23,6 +23,7 @@ class GeneratorServiceProvider extends ServiceProvider
     {
         $this->loadRoutesFrom(__DIR__.'/../../routes/admin.php');
         $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
+        $this->loadTranslationsFrom(__DIR__.'/../../resources/lang', 'generator');
 
         if ($this->app->runningInConsole()) {
             $this->commands([
