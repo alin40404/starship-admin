@@ -518,7 +518,7 @@ class ConfigSeeder extends Seeder
             [
                 'key' => 'admin.login.forget_password',
                 'name' => '忘记密码',
-                'value' => 'false',
+                'value' => 'true',
                 'group_name' => 'param',
                 'type' => 'bool',
                 'sort' => 43,

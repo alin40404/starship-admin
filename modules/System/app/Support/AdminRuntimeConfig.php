@@ -77,7 +77,7 @@ final class AdminRuntimeConfig
 
     public static function loginForgetPasswordEnabled(): bool
     {
-        return self::toBool(SettingStore::get(self::KEY_LOGIN_FORGET_PASSWORD, 'false'));
+        return self::toBool(SettingStore::get(self::KEY_LOGIN_FORGET_PASSWORD, 'true'));
     }
 
     public static function loginRegisterEnabled(): bool
