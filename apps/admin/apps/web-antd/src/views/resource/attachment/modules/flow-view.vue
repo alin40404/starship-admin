@@ -352,6 +352,7 @@ function onPreviewVisibleChange(visible: boolean) {
     <div v-else-if="rows.length === 0" class="attachment-flow-empty">
       <IconifyIcon class="mx-auto size-16 text-muted-foreground/40" icon="lucide:inbox" />
       <div class="mt-2 text-sm text-muted-foreground">{{ $t('resource.attachment.flow.empty') }}</div>
+      <slot name="empty-extra" />
     </div>
 
     <Image

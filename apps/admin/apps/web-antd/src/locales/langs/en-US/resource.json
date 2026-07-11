@@ -53,7 +53,8 @@
       "title": "Select attachment",
       "searchPlaceholder": "Search file name",
       "selectOne": "Please select an attachment",
-      "selectAtLeastOne": "Please select at least one attachment"
+      "selectAtLeastOne": "Please select at least one attachment",
+      "upload": "Upload attachment"
     },
     "upload": {
       "title": "Upload attachment",

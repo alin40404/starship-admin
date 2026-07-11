@@ -4,8 +4,9 @@ import type { AttachmentRow } from '#/api/system/attachment';
 
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 
+import { useAccess } from '@vben/access';
 import { useVbenDrawer, useVbenModal } from '@vben/common-ui';
-import { IconifyIcon } from '@vben/icons';
+import { IconifyIcon, Plus } from '@vben/icons';
 import { $t } from '@vben/locales';
 import { usePreferences } from '@vben/preferences';
 
@@ -14,15 +15,20 @@ import { Button, Input, message, Tooltip } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchAttachmentPickerPage } from '#/api/system/attachment';
+import { ATTACHMENT_PERMISSIONS } from '#/constants/attachment-permissions';
+import UploadForm from '#/views/resource/attachment/modules/upload-form.vue';
 import AttachmentFlowView from '#/views/resource/attachment/modules/flow-view.vue';
 
 import { usePickerColumns } from './picker-data';
 import type { AttachmentAcceptMode } from './types';
-import { isAttachmentAcceptable, resolveMimeFilter } from './utils';
+import { isAttachmentAcceptable, resolveMimeFilter, resolveUploadAccept } from './utils';
 
 const ATTACHMENT_PICKER_VIEW_MODE_KEY = 'attachment-picker-view-mode';
 
 type AttachmentViewMode = 'flow' | 'list';
+type UploadFormExpose = {
+  open: () => void;
+};
 
 const props = withDefaults(
   defineProps<{
@@ -45,6 +51,13 @@ const emit = defineEmits<{
 }>();
 
 const { isMobile } = usePreferences();
+const { hasAccessByCodes } = useAccess();
+
+const canUpload = computed(() =>
+  hasAccessByCodes([ATTACHMENT_PERMISSIONS.UPLOAD]),
+);
+const uploadAccept = computed(() => resolveUploadAccept(props.accept));
+const uploadFormRef = ref<UploadFormExpose>();
 
 const fileNameQuery = ref('');
 const selectedRows = ref<AttachmentRow[]>([]);
@@ -213,6 +226,53 @@ async function refreshGrid() {
   await nextTick();
   restoreInitialSelection();
   syncFlowTeleportTarget();
+}
+
+function selectUploadedRows(uploadedRows: AttachmentRow[]) {
+  const acceptableRows = filterPickerRows(uploadedRows);
+  if (acceptableRows.length === 0) {
+    return;
+  }
+
+  const uploadedIds = new Set(acceptableRows.map((row) => row.id));
+  const tableData = isFlowMode.value
+    ? flowRows.value
+    : ((gridApi?.grid?.getData?.() ?? []) as AttachmentRow[]);
+  const matched = tableData.filter((row) => uploadedIds.has(row.id));
+  const rowsToSelect = matched.length > 0 ? matched : acceptableRows;
+
+  if (props.multiple) {
+    const existing = selectedRows.value.filter((row) => !uploadedIds.has(row.id));
+    selectedRows.value = [...existing, ...rowsToSelect];
+    if (!isFlowMode.value) {
+      for (const row of matched) {
+        gridApi?.grid?.setCheckboxRow?.(row, true);
+      }
+    }
+    return;
+  }
+
+  const row = rowsToSelect[rowsToSelect.length - 1];
+  if (!row) {
+    return;
+  }
+  selectedRows.value = [row];
+  if (!isFlowMode.value && matched.length > 0) {
+    gridApi?.grid?.setRadioRow?.(row);
+  }
+}
+
+async function onUploadSuccess(uploadedRows: AttachmentRow[] = []) {
+  await refreshGrid();
+  selectUploadedRows(uploadedRows);
+}
+
+function onOpenUpload() {
+  if (!canUpload.value) {
+    message.warning($t('resource.attachment.field.noUploadPermission'));
+    return;
+  }
+  uploadFormRef.value?.open();
 }
 
 const debouncedRefreshGrid = useDebounceFn(() => {
@@ -487,13 +547,24 @@ watch(
         >
           <Grid>
             <template #toolbar-actions>
-              <div class="attachment-picker-search">
-                <Input
-                  v-model:value="fileNameQuery"
-                  allow-clear
-                  class="attachment-picker-search__input"
-                  :placeholder="$t('resource.attachment.picker.searchPlaceholder')"
-                />
+              <div class="attachment-picker-toolbar-actions">
+                <div class="attachment-picker-search">
+                  <Input
+                    v-model:value="fileNameQuery"
+                    allow-clear
+                    class="attachment-picker-search__input"
+                    :placeholder="$t('resource.attachment.picker.searchPlaceholder')"
+                  />
+                </div>
+                <Button
+                  v-if="canUpload"
+                  class="ml-2 shrink-0"
+                  type="primary"
+                  @click="onOpenUpload"
+                >
+                  <Plus class="size-4" />
+                  {{ $t('resource.attachment.picker.upload') }}
+                </Button>
               </div>
             </template>
             <template #toolbar-tools>
@@ -537,7 +608,19 @@ watch(
               :total="flowTotal"
               @load-more="loadMoreFlow"
               @open="onOpenAttachment"
-            />
+            >
+              <template #empty-extra>
+                <Button
+                  v-if="canUpload"
+                  class="mt-4"
+                  type="primary"
+                  @click="onOpenUpload"
+                >
+                  <Plus class="size-4" />
+                  {{ $t('resource.attachment.picker.upload') }}
+                </Button>
+              </template>
+            </AttachmentFlowView>
           </Teleport>
         </div>
       </div>
@@ -575,13 +658,24 @@ watch(
         >
           <Grid>
             <template #toolbar-actions>
-              <div class="attachment-picker-search">
-                <Input
-                  v-model:value="fileNameQuery"
-                  allow-clear
-                  class="attachment-picker-search__input"
-                  :placeholder="$t('resource.attachment.picker.searchPlaceholder')"
-                />
+              <div class="attachment-picker-toolbar-actions">
+                <div class="attachment-picker-search">
+                  <Input
+                    v-model:value="fileNameQuery"
+                    allow-clear
+                    class="attachment-picker-search__input"
+                    :placeholder="$t('resource.attachment.picker.searchPlaceholder')"
+                  />
+                </div>
+                <Button
+                  v-if="canUpload"
+                  class="ml-2 shrink-0"
+                  type="primary"
+                  @click="onOpenUpload"
+                >
+                  <Plus class="size-4" />
+                  {{ $t('resource.attachment.picker.upload') }}
+                </Button>
               </div>
             </template>
             <template #toolbar-tools>
@@ -625,7 +719,19 @@ watch(
               :total="flowTotal"
               @load-more="loadMoreFlow"
               @open="onOpenAttachment"
-            />
+            >
+              <template #empty-extra>
+                <Button
+                  v-if="canUpload"
+                  class="mt-4"
+                  type="primary"
+                  @click="onOpenUpload"
+                >
+                  <Plus class="size-4" />
+                  {{ $t('resource.attachment.picker.upload') }}
+                </Button>
+              </template>
+            </AttachmentFlowView>
           </Teleport>
         </div>
       </div>
@@ -643,6 +749,12 @@ watch(
       </Button>
     </template>
   </Drawer>
+
+  <UploadForm
+    ref="uploadFormRef"
+    :accept="uploadAccept"
+    @success="onUploadSuccess"
+  />
 </template>
 
 <style scoped>
@@ -722,6 +834,12 @@ watch(
   min-width: 0;
 }
 
+.attachment-picker-toolbar-actions {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
 .attachment-picker-search__input {
   width: 220px;
 }
@@ -793,6 +911,11 @@ watch(
   :deep(.h-full.rounded-md.bg-card) {
   flex: 1;
   min-height: 0;
+}
+
+.attachment-picker-layout--mobile .attachment-picker-toolbar-actions {
+  flex: 1;
+  min-width: 0;
 }
 
 .attachment-picker-layout--mobile .attachment-picker-search {

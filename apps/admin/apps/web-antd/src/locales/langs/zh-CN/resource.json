@@ -53,7 +53,8 @@
       "title": "选择附件",
       "searchPlaceholder": "搜索文件名",
       "selectOne": "请选择一个附件",
-      "selectAtLeastOne": "请至少选择一个附件"
+      "selectAtLeastOne": "请至少选择一个附件",
+      "upload": "上传附件"
     },
     "upload": {
       "title": "上传附件",

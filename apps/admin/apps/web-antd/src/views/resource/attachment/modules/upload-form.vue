@@ -10,21 +10,33 @@ import { usePreferences } from '@vben/preferences';
 
 import { message, Progress, Upload } from 'ant-design-vue';
 
+import type { AttachmentRow } from '#/api/system/attachment';
 import { uploadAttachment } from '#/api/system/attachment';
 
-const emits = defineEmits<{ success: [] }>();
+const props = withDefaults(
+  defineProps<{
+    accept?: string;
+  }>(),
+  {
+    accept: undefined,
+  },
+);
+
+const emits = defineEmits<{ success: [rows: AttachmentRow[]] }>();
 
 const { isMobile } = usePreferences();
 
 const uploadingCount = ref(0);
 const hasUploaded = ref(false);
+const uploadedRows = ref<AttachmentRow[]>([]);
 const fileList = ref<UploadFile[]>([]);
 const focusingUid = ref<null | string>(null);
 
 async function onUpload(options: any) {
   uploadingCount.value += 1;
   try {
-    await uploadAttachment(options?.file);
+    const row = await uploadAttachment(options?.file);
+    uploadedRows.value.push(row);
     hasUploaded.value = true;
     message.success($t('resource.attachment.field.uploadSuccess'));
     options?.onSuccess?.({});
@@ -71,7 +83,8 @@ function finishAndClose(popupApi: PopupApi) {
 function handleOpenChange(isOpen: boolean) {
   if (!isOpen) {
     if (hasUploaded.value) {
-      emits('success');
+      emits('success', [...uploadedRows.value]);
+      uploadedRows.value = [];
     }
     hasUploaded.value = false;
     fileList.value = [];
@@ -120,6 +133,7 @@ defineExpose({ open });
       <Upload.Dragger
         v-model:file-list="fileList"
         class="attachment-upload-dragger"
+        :accept="props.accept"
         :custom-request="onUpload"
         :disabled="uploadingCount > 0"
         :multiple="true"
@@ -204,6 +218,7 @@ defineExpose({ open });
       <Upload.Dragger
         v-model:file-list="fileList"
         class="attachment-upload-dragger"
+        :accept="props.accept"
         :custom-request="onUpload"
         :disabled="uploadingCount > 0"
         :multiple="true"
