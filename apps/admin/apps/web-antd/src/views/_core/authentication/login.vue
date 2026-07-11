@@ -7,7 +7,14 @@ import { AuthenticationLogin, SliderCaptcha, z } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
 import { useAuthStore } from '#/store';
-import { isAdminLoginCaptchaEnabled } from '#/utils/admin-runtime-config';
+import {
+  isAdminLoginCaptchaEnabled,
+  isAdminLoginCodeEnabled,
+  isAdminLoginForgetPasswordEnabled,
+  isAdminLoginQrcodeEnabled,
+  isAdminLoginRegisterEnabled,
+  isAdminLoginThirdPartyEnabled,
+} from '#/utils/admin-runtime-config';
 
 defineOptions({ name: 'Login' });
 
@@ -53,11 +60,11 @@ const formSchema = computed((): VbenFormSchema[] => {
   <AuthenticationLogin
     :form-schema="formSchema"
     :loading="authStore.loginLoading"
-    :show-code-login="false"
-    :show-forget-password="false"
-    :show-qrcode-login="false"
-    :show-register="false"
-    :show-third-party-login="false"
+    :show-code-login="isAdminLoginCodeEnabled()"
+    :show-forget-password="isAdminLoginForgetPasswordEnabled()"
+    :show-qrcode-login="isAdminLoginQrcodeEnabled()"
+    :show-register="isAdminLoginRegisterEnabled()"
+    :show-third-party-login="isAdminLoginThirdPartyEnabled()"
     @submit="authStore.authLogin"
   />
 </template>

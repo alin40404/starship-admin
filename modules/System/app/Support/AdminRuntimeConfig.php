@@ -17,6 +17,16 @@ final class AdminRuntimeConfig
 
     public const KEY_LOGIN_CAPTCHA = 'admin.login.captcha';
 
+    public const KEY_LOGIN_CODE = 'admin.login.code';
+
+    public const KEY_LOGIN_QRCODE = 'admin.login.qrcode';
+
+    public const KEY_LOGIN_FORGET_PASSWORD = 'admin.login.forget_password';
+
+    public const KEY_LOGIN_REGISTER = 'admin.login.register';
+
+    public const KEY_LOGIN_THIRD_PARTY = 'admin.login.third_party';
+
     public const KEY_MAINTENANCE = 'admin.maintenance';
 
     public const DEFAULT_PAGE_SIZE = 20;
@@ -55,6 +65,31 @@ final class AdminRuntimeConfig
         return self::toBool(SettingStore::get(self::KEY_LOGIN_CAPTCHA, 'false'));
     }
 
+    public static function loginCodeEnabled(): bool
+    {
+        return self::toBool(SettingStore::get(self::KEY_LOGIN_CODE, 'false'));
+    }
+
+    public static function loginQrcodeEnabled(): bool
+    {
+        return self::toBool(SettingStore::get(self::KEY_LOGIN_QRCODE, 'false'));
+    }
+
+    public static function loginForgetPasswordEnabled(): bool
+    {
+        return self::toBool(SettingStore::get(self::KEY_LOGIN_FORGET_PASSWORD, 'false'));
+    }
+
+    public static function loginRegisterEnabled(): bool
+    {
+        return self::toBool(SettingStore::get(self::KEY_LOGIN_REGISTER, 'false'));
+    }
+
+    public static function loginThirdPartyEnabled(): bool
+    {
+        return self::toBool(SettingStore::get(self::KEY_LOGIN_THIRD_PARTY, 'false'));
+    }
+
     public static function maintenanceEnabled(): bool
     {
         return self::toBool(SettingStore::get(self::KEY_MAINTENANCE, 'false'));
@@ -76,6 +111,11 @@ final class AdminRuntimeConfig
      *     attachmentFlowPageSize: int,
      *     apiTimeoutSeconds: int,
      *     loginCaptcha: bool,
+     *     loginCode: bool,
+     *     loginQrcode: bool,
+     *     loginForgetPassword: bool,
+     *     loginRegister: bool,
+     *     loginThirdParty: bool,
      *     maintenance: bool
      * }
      */
@@ -86,6 +126,11 @@ final class AdminRuntimeConfig
             'attachmentFlowPageSize' => self::attachmentFlowPageSize(),
             'apiTimeoutSeconds' => self::apiTimeoutSeconds(),
             'loginCaptcha' => self::loginCaptchaEnabled(),
+            'loginCode' => self::loginCodeEnabled(),
+            'loginQrcode' => self::loginQrcodeEnabled(),
+            'loginForgetPassword' => self::loginForgetPasswordEnabled(),
+            'loginRegister' => self::loginRegisterEnabled(),
+            'loginThirdParty' => self::loginThirdPartyEnabled(),
             'maintenance' => self::maintenanceEnabled(),
         ];
     }

@@ -57,7 +57,6 @@ class Admin extends Authenticatable
         return static::query()
             ->where('username', $identifier)
             ->orWhere('email', $identifier)
-            ->orWhere('mobile', $identifier)
             ->first();
     }
 

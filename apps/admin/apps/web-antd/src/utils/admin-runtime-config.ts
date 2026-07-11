@@ -10,6 +10,11 @@ export interface AdminRuntimeSnapshot {
   apiTimeoutSeconds: number;
   attachmentFlowPageSize: number;
   loginCaptcha: boolean;
+  loginCode: boolean;
+  loginForgetPassword: boolean;
+  loginQrcode: boolean;
+  loginRegister: boolean;
+  loginThirdParty: boolean;
   maintenance: boolean;
   pageSize: number;
 }
@@ -18,6 +23,11 @@ const DEFAULT_SNAPSHOT: AdminRuntimeSnapshot = {
   apiTimeoutSeconds: ADMIN_API_TIMEOUT_SECONDS_DEFAULT,
   attachmentFlowPageSize: ADMIN_ATTACHMENT_FLOW_PAGE_SIZE_DEFAULT,
   loginCaptcha: false,
+  loginCode: false,
+  loginForgetPassword: false,
+  loginQrcode: false,
+  loginRegister: false,
+  loginThirdParty: false,
   maintenance: false,
   pageSize: ADMIN_PAGE_SIZE_DEFAULT,
 };
@@ -61,6 +71,11 @@ function normalizeSnapshot(data: Record<string, unknown>): AdminRuntimeSnapshot 
       ADMIN_API_TIMEOUT_SECONDS_DEFAULT,
     ),
     loginCaptcha: parseBool(data.loginCaptcha, false),
+    loginCode: parseBool(data.loginCode, false),
+    loginForgetPassword: parseBool(data.loginForgetPassword, false),
+    loginQrcode: parseBool(data.loginQrcode, false),
+    loginRegister: parseBool(data.loginRegister, false),
+    loginThirdParty: parseBool(data.loginThirdParty, false),
     maintenance: parseBool(data.maintenance, false),
   };
 }
@@ -119,6 +134,26 @@ export function getAdminApiTimeoutSecondsSync(): number {
 
 export function isAdminLoginCaptchaEnabled(): boolean {
   return snapshot.loginCaptcha;
+}
+
+export function isAdminLoginCodeEnabled(): boolean {
+  return snapshot.loginCode;
+}
+
+export function isAdminLoginQrcodeEnabled(): boolean {
+  return snapshot.loginQrcode;
+}
+
+export function isAdminLoginForgetPasswordEnabled(): boolean {
+  return snapshot.loginForgetPassword;
+}
+
+export function isAdminLoginRegisterEnabled(): boolean {
+  return snapshot.loginRegister;
+}
+
+export function isAdminLoginThirdPartyEnabled(): boolean {
+  return snapshot.loginThirdParty;
 }
 
 export function isAdminMaintenanceEnabled(): boolean {
