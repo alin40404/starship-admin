@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { NotificationItem } from '@vben/layouts';
 
-import { computed, onMounted, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { storeToRefs } from 'pinia';
@@ -36,9 +36,12 @@ import {
 import { $t } from '#/locales';
 import { useAuthStore, useInboxStore } from '#/store';
 import LoginForm from '#/views/_core/authentication/login.vue';
+import DetailDrawer from '#/views/inbox/message/modules/detail-drawer.vue';
 
 const inboxStore = useInboxStore();
-const { recentMessages, unreadCount } = storeToRefs(inboxStore);
+const { hasMore, loadingMore, recentMessages, unreadCount } = storeToRefs(inboxStore);
+
+const detailDrawerRef = ref<InstanceType<typeof DetailDrawer>>();
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -206,8 +209,24 @@ async function handleMakeAll() {
   }
 }
 
+function handleViewNotification(item: NotificationItem) {
+  const row = recentMessages.value.find((entry) => entry.id === item.id);
+  if (!row) {
+    return;
+  }
+
+  void detailDrawerRef.value?.open(row.id, row);
+  if (row.is_read === 0) {
+    void markInboxMessageRead(row.id).then(() => inboxStore.refresh());
+  }
+}
+
 function handleViewAllNotifications() {
   router.push('/dashboard/inbox');
+}
+
+function handleLoadMoreNotifications() {
+  void inboxStore.loadMore();
 }
 watch(
   () => ({
@@ -247,15 +266,20 @@ watch(
       <Notification
         :count="unreadCount"
         :dot="showDot"
+        :has-more="hasMore"
+        :loading-more="loadingMore"
         :notifications="notifications"
         @clear="handleNoticeClear"
+        @load-more="handleLoadMoreNotifications"
         @read="(item) => item.id && markRead(item.id)"
         @remove="(item) => item.id && remove(item.id)"
         @make-all="handleMakeAll"
+        @view="handleViewNotification"
         @view-all="handleViewAllNotifications"
       />
     </template>
     <template #extra>
+      <DetailDrawer v-if="canUseInbox" ref="detailDrawerRef" />
       <AuthenticationLoginExpiredModal
         v-model:open="accessStore.loginExpired"
         :avatar

@@ -4,7 +4,7 @@ import type { NotificationItem } from './types';
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { Bell, CircleCheckBig, CircleX, MailCheck } from '@vben/icons';
+import { Bell, CircleX, MailCheck } from '@vben/icons';
 import { $t } from '@vben/locales';
 
 import {
@@ -12,6 +12,7 @@ import {
   VbenIconButton,
   VbenPopover,
   VbenScrollbar,
+  VbenTooltip,
 } from '@vben-core/shadcn-ui';
 
 import { Icon as IconifyIcon } from '@iconify/vue';
@@ -27,9 +28,17 @@ interface Props {
    */
   dot?: boolean;
   /**
+   * 是否还有更多消息可加载
+   */
+  hasMore?: boolean;
+  /**
    * 消息列表
    */
   notifications?: NotificationItem[];
+  /**
+   * 是否正在加载更多
+   */
+  loadingMore?: boolean;
 }
 
 defineOptions({ name: 'NotificationPopup' });
@@ -37,19 +46,68 @@ defineOptions({ name: 'NotificationPopup' });
 const props = withDefaults(defineProps<Props>(), {
   count: 0,
   dot: false,
+  hasMore: false,
   notifications: () => [],
+  loadingMore: false,
 });
 
 const emit = defineEmits<{
   clear: [];
+  loadMore: [];
   makeAll: [];
   read: [NotificationItem];
   remove: [NotificationItem];
+  view: [NotificationItem];
   viewAll: [];
 }>();
 
 const router = useRouter();
 const [open, toggle] = useToggle();
+let suppressOutsideDismissUntil = 0;
+
+function isDrawerInteraction(target: EventTarget | null) {
+  return (
+    target instanceof Element &&
+    Boolean(target.closest('.ant-drawer-root, .ant-drawer-mask, .ant-drawer'))
+  );
+}
+
+function isDrawerOpen() {
+  return Boolean(document.querySelector('.ant-drawer-open'));
+}
+
+function shouldSuppressDismiss(target: EventTarget | null) {
+  return (
+    Date.now() < suppressOutsideDismissUntil ||
+    isDrawerOpen() ||
+    isDrawerInteraction(target)
+  );
+}
+
+const popoverContentProps = {
+  onFocusOutside(event: { detail: { originalEvent: FocusEvent }; preventDefault: () => void }) {
+    if (shouldSuppressDismiss(event.detail.originalEvent.target)) {
+      event.preventDefault();
+    }
+  },
+  onPointerDownOutside(event: {
+    detail: { originalEvent: PointerEvent };
+    preventDefault: () => void;
+  }) {
+    if (shouldSuppressDismiss(event.detail.originalEvent.target)) {
+      event.preventDefault();
+    }
+  },
+};
+
+function handleView(item: NotificationItem) {
+  emit('view', item);
+  suppressOutsideDismissUntil = Date.now() + 500;
+  open.value = true;
+  requestAnimationFrame(() => {
+    open.value = true;
+  });
+}
 
 const showBadge = computed(() => props.count > 0 || props.dot);
 
@@ -112,6 +170,17 @@ function navigateTo(
   }
 }
 
+function handleScrollAt(state: {
+  bottom: boolean;
+  left: boolean;
+  right: boolean;
+  top: boolean;
+}) {
+  if (state.bottom && props.hasMore && !props.loadingMore) {
+    emit('loadMore');
+  }
+}
+
 function categoryClass(category?: NotificationItem['category']) {
   switch (category) {
     case 'approval':
@@ -132,7 +201,12 @@ function showCategoryIcon(item: NotificationItem) {
 }
 </script>
 <template>
-  <VbenPopover v-model:open="open" content-class="relative right-2 w-90 p-0">
+  <VbenPopover
+    v-model:open="open"
+    :content-props="popoverContentProps"
+    content-class="relative right-2 w-90 p-0"
+    :modal="false"
+  >
     <template #trigger>
       <div class="mr-2 flex-center h-full" @click.stop="toggle()">
         <VbenIconButton class="bell-button relative text-foreground">
@@ -163,7 +237,7 @@ function showCategoryIcon(item: NotificationItem) {
           <MailCheck class="size-4" />
         </VbenIconButton>
       </div>
-      <VbenScrollbar v-if="notifications.length > 0">
+      <VbenScrollbar v-if="notifications.length > 0" @scroll-at="handleScrollAt">
         <ul class="flex! max-h-90 w-full flex-col">
           <template v-for="item in notifications" :key="item.id ?? item.title">
             <li
@@ -215,16 +289,20 @@ function showCategoryIcon(item: NotificationItem) {
               <div
                 class="absolute top-1/2 right-3 flex -translate-y-1/2 flex-col gap-2"
               >
-                <VbenIconButton
-                  v-if="!item.isRead"
-                  size="xs"
-                  variant="ghost"
-                  class="h-6 px-2"
-                  :tooltip="$t('common.confirm')"
-                  @click.stop="emit('read', item)"
-                >
-                  <CircleCheckBig class="size-4" />
-                </VbenIconButton>
+                <VbenTooltip :delay-duration="200" side="bottom">
+                  <template #trigger>
+                    <VbenButton
+                      v-if="!item.isRead"
+                      size="xs"
+                      variant="ghost"
+                      class="h-6 shrink-0 px-2 text-xs"
+                      @click.stop="handleView(item)"
+                    >
+                      {{ $t('common.view') }}
+                    </VbenButton>
+                  </template>
+                  {{ $t('common.viewDetail') }}
+                </VbenTooltip>
                 <VbenIconButton
                   v-if="item.isRead"
                   size="xs"
@@ -238,6 +316,12 @@ function showCategoryIcon(item: NotificationItem) {
               </div>
             </li>
           </template>
+          <li
+            v-if="loadingMore"
+            class="flex-center border-t border-border py-3 text-xs text-muted-foreground"
+          >
+            {{ $t('common.loading') }}
+          </li>
         </ul>
       </VbenScrollbar>
 
