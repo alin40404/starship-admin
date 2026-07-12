@@ -120,6 +120,34 @@ setupVbenVxeTable({
       },
     });
 
+    vxeUI.renderer.add('CellActionText', {
+      renderTableDefault({ attrs, props }, { column, row }) {
+        const value = get(row, column.field);
+        if (value === null || value === undefined || value === '') {
+          return h('span', { class: 'text-muted-foreground' }, '--');
+        }
+        const label =
+          typeof attrs?.getLabel === 'function'
+            ? attrs.getLabel(row, column)
+            : String(value);
+        return h(
+          Button,
+          {
+            class: 'cell-action-text h-auto max-w-full p-0 text-left whitespace-normal',
+            size: 'small',
+            type: 'link',
+            ...props,
+            onClick: () =>
+              attrs?.onClick?.({
+                code: attrs?.code ?? 'detail',
+                row,
+              }),
+          },
+          { default: () => label },
+        );
+      },
+    });
+
     vxeUI.renderer.add('CellTag', {
       renderTableDefault({ options, props, attrs }, { column, row }) {
         const value = get(row, column.field);

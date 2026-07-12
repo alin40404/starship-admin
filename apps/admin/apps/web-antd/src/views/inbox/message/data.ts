@@ -116,6 +116,13 @@ export function useColumns(
     },
     {
       align: 'left',
+      cellRender: {
+        attrs: {
+          code: 'detail',
+          onClick: onActionClick,
+        },
+        name: 'CellActionText',
+      },
       field: 'title',
       minWidth: 220,
       title: $t('inbox.columns.title'),

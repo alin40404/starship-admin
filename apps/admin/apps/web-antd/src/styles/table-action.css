@@ -6,3 +6,19 @@
   display: inline-flex;
   align-items: center;
 }
+
+/**
+ * 表格可点击字段：保持链接色，hover 仅下划线、不变色。
+ */
+.vxe-grid .cell-action-text.ant-btn.ant-btn-link,
+.vxe-grid .cell-action-text.ant-btn.ant-btn-link:not(:disabled):hover,
+.vxe-grid .cell-action-text.ant-btn.ant-btn-link:not(:disabled):focus,
+.vxe-grid .cell-action-text.ant-btn.ant-btn-link:not(:disabled):active {
+  color: hsl(var(--primary)) !important;
+  opacity: 1 !important;
+  text-decoration: none;
+}
+
+.vxe-grid .cell-action-text.ant-btn.ant-btn-link:not(:disabled):hover {
+  text-decoration: underline;
+}
