@@ -19,7 +19,6 @@ import { fetchDepartmentTree } from '#/api/system/department';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { ADMIN_PERMISSIONS } from '#/constants/admin-permissions';
 import { $t } from '#/locales';
-import { resolveUploadAcceptAttr } from '#/utils/upload-policy';
 
 export function mapDeptForTreeSelect(
   nodes: DeptNode[],
@@ -385,16 +384,13 @@ export function buildAdminFormSchema(params: {
       label: $t('permission.admin.realName'),
     },
     {
-      component: 'Upload',
+      component: 'AvatarUploadField',
       componentProps: {
-        accept: resolveUploadAcceptAttr('image'),
-        class: 'avatar-picture-card-upload w-full',
         customRequest: onAvatarUpload,
         handleChange: onAvatarChange,
-        listType: 'picture-card',
-        maxCount: 1,
       },
       fieldName: 'avatar',
+      formItemClass: 'avatar-upload-form-item',
       label: $t('permission.admin.avatar'),
     },
     {

@@ -9,7 +9,7 @@ import { message } from 'ant-design-vue';
 
 import { getMyProfileApi, updateMyProfileApi } from '#/api';
 import { uploadAttachment } from '#/api/system/attachment';
-import { resolveUploadAcceptAttr, validateUploadFile } from '#/utils/upload-policy';
+import { validateUploadFile } from '#/utils/upload-policy';
 import { useAuthStore } from '#/store';
 
 const profileBaseSettingRef = ref<any>();
@@ -75,16 +75,13 @@ const formSchema = computed((): VbenFormSchema[] => {
       label: '真实姓名',
     },
     {
-      component: 'Upload',
+      fieldName: 'avatar',
+      component: 'AvatarUploadField',
       componentProps: {
-        accept: resolveUploadAcceptAttr('image'),
-        class: 'avatar-picture-card-upload w-full',
         customRequest: onAvatarUpload,
         handleChange: onAvatarChange,
-        listType: 'picture-card',
-        maxCount: 1,
       },
-      fieldName: 'avatar',
+      formItemClass: 'avatar-upload-form-item',
       label: '头像',
     },
     {

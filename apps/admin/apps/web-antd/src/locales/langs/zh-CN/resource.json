@@ -49,7 +49,8 @@
       "uploadSuccess": "上传成功",
       "uploadFailed": "上传失败",
       "fileTypeNotAllowed": "不允许上传该文件类型",
-      "imageTypeRequired": "请上传图片文件"
+      "imageTypeRequired": "请上传图片文件",
+      "selectImageHint": "从资源库选择已有图片"
     },
     "picker": {
       "title": "选择附件",

@@ -580,6 +580,7 @@ watch(
       api.close();
     }
   },
+  { immediate: true },
 );
 </script>
 

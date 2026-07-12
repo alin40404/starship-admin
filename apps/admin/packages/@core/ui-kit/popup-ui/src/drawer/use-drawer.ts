@@ -45,6 +45,7 @@ export function useVbenDrawer<
             // 不能用 Object.assign,会丢失 api 的原型函数
             Object.setPrototypeOf(extendedApi, api);
           },
+          consumed: false,
           options,
           async reCreateDrawer() {
             isDrawerReady.value = false;
@@ -74,7 +75,13 @@ export function useVbenDrawer<
     return [Drawer, extendedApi as ExtendedDrawerApi] as const;
   }
 
-  const injectData = inject<any>(USER_DRAWER_INJECT_KEY, {});
+  let injectData = inject<any>(USER_DRAWER_INJECT_KEY, {});
+  // 数据已被内层抽屉消费，说明是嵌套抽屉，不应再合并上层配置或覆盖 extendApi
+  if (injectData.consumed) {
+    injectData = {};
+  } else {
+    injectData.consumed = true;
+  }
 
   const mergedOptions = {
     ...DEFAULT_DRAWER_PROPS,
@@ -91,6 +98,7 @@ export function useVbenDrawer<
   mergedOptions.onClosed = () => {
     onClosed?.();
     if (mergedOptions.destroyOnClose) {
+      injectData.consumed = false;
       injectData.reCreateDrawer?.();
     }
   };
