@@ -27,7 +27,11 @@ final class AdminRuntimeConfig
 
     public const KEY_LOGIN_THIRD_PARTY = 'admin.login.third_party';
 
+    public const KEY_LOGIN_LOCKOUT_TIERS = 'admin.login.lockout_tiers';
+
     public const KEY_MAINTENANCE = 'admin.maintenance';
+
+    public const DEFAULT_LOGIN_LOCKOUT_TIERS_JSON = '[{"attempts":5,"minutes":15},{"attempts":10,"minutes":45},{"attempts":20,"minutes":1440}]';
 
     public const DEFAULT_PAGE_SIZE = 20;
 
@@ -93,6 +97,57 @@ final class AdminRuntimeConfig
     public static function maintenanceEnabled(): bool
     {
         return self::toBool(SettingStore::get(self::KEY_MAINTENANCE, 'false'));
+    }
+
+    /**
+     * @return list<array{attempts: int, minutes: int}>
+     */
+    public static function loginLockoutTiers(): array
+    {
+        $raw = trim((string) SettingStore::get(
+            self::KEY_LOGIN_LOCKOUT_TIERS,
+            self::DEFAULT_LOGIN_LOCKOUT_TIERS_JSON,
+        ));
+
+        if ($raw === '' || $raw === '[]') {
+            return [];
+        }
+
+        try {
+            $decoded = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException) {
+            $decoded = json_decode(self::DEFAULT_LOGIN_LOCKOUT_TIERS_JSON, true);
+        }
+
+        if (! is_array($decoded)) {
+            return [];
+        }
+
+        $tiers = [];
+        foreach ($decoded as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+
+            $attempts = (int) ($item['attempts'] ?? 0);
+            $minutes = (int) ($item['minutes'] ?? 0);
+            if ($attempts > 0 && $minutes > 0) {
+                $tiers[] = ['attempts' => $attempts, 'minutes' => $minutes];
+            }
+        }
+
+        usort($tiers, fn (array $left, array $right): int => $left['attempts'] <=> $right['attempts']);
+
+        $valid = [];
+        $previousAttempts = 0;
+        foreach ($tiers as $tier) {
+            if ($tier['attempts'] > $previousAttempts) {
+                $valid[] = $tier;
+                $previousAttempts = $tier['attempts'];
+            }
+        }
+
+        return $valid;
     }
 
     /**

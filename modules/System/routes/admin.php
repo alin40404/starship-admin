@@ -31,7 +31,7 @@ use Modules\System\App\Support\PostPermissions;
 use Modules\System\App\Support\RolePermissions;
 use Modules\System\App\Support\UserGroupPermissions;
 
-Route::middleware(['api', 'admin.maintenance'])->prefix('admin-api')->group(function () {
+Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('admin-api')->group(function () {
     Route::get('system/site', [ConfigController::class, 'site']);
     Route::get('system/runtime', [ConfigController::class, 'runtime']);
 

@@ -21,6 +21,8 @@ return [
     'login_success' => '登录成功',
     'logout_success' => '已退出',
     'invalid_credentials' => '账号或密码错误',
+    'login_locked' => '登录失败次数过多，请 :minutes 分钟后再试',
+    'forbidden_ip_blocked' => '当前 IP 已被禁止访问',
     'captcha_required' => '请完成验证码校验',
     'maintenance_mode' => '系统维护中，请稍后再试',
     'old_password_invalid' => '旧密码不正确',

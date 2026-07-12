@@ -21,6 +21,8 @@ return [
     'login_success' => 'Login successful',
     'logout_success' => 'Logged out',
     'invalid_credentials' => 'Invalid account or password',
+    'login_locked' => 'Too many failed login attempts. Please try again in :minutes minutes.',
+    'forbidden_ip_blocked' => 'Access from this IP address is blocked.',
     'captcha_required' => 'Please complete the captcha verification',
     'maintenance_mode' => 'System is under maintenance. Please try again later.',
     'old_password_invalid' => 'Incorrect old password',

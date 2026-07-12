@@ -11,6 +11,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Modules\System\App\Models\Admin;
 use Modules\System\App\Models\InboxMessage;
+use Modules\System\App\Services\AdminLoginLockout;
 use Modules\System\App\Services\AdminLoginSmsService;
 use Modules\System\App\Services\AdminPasswordResetService;
 use Modules\System\App\Services\AdminPermissionService;
@@ -27,6 +28,12 @@ class AuthController extends Controller
         ]);
 
         $identifier = trim($validated['username']);
+        $ip = (string) $request->ip();
+
+        if ($locked = AdminLoginLockout::lockedResponse($ip, $identifier)) {
+            return $locked;
+        }
+
         $admin = Admin::findByLoginIdentifier($identifier);
 
         if (! $admin || (int) $admin->status !== 1 || ! Hash::check($validated['password'], $admin->password)) {
@@ -38,8 +45,10 @@ class AuthController extends Controller
                 request: $request,
             );
 
-            return ApiResponse::error(__('system::messages.invalid_credentials'), 401);
+            return AdminLoginLockout::afterFailure($ip, $identifier);
         }
+
+        AdminLoginLockout::clear($ip, $identifier);
 
         if (AdminRuntimeConfig::maintenanceEnabled() && (int) $admin->is_super !== 1) {
             $this->writeLoginLog(

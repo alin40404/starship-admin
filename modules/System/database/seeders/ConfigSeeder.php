@@ -76,12 +76,12 @@ class ConfigSeeder extends Seeder
             ],
             [
                 'key' => 'site.forbidden_ip',
-                'name' => '禁止 IP',
+                'name' => '临时封禁 IP',
                 'value' => '',
                 'group_name' => 'basic',
                 'type' => 'text',
-                'sort' => 70,
-                'remark' => '一行一条，匹配后将拒绝访问',
+                'sort' => 85,
+                'remark' => '管理端临时应急封禁，一行一条精确匹配；长期封禁请在服务器或防火墙处理',
             ],
             [
                 'key' => 'site.fixed_page',
@@ -568,6 +568,15 @@ class ConfigSeeder extends Seeder
                 'type' => 'bool',
                 'sort' => 45,
                 'remark' => '登录页是否显示微信/GitHub 等第三方登录入口',
+            ],
+            [
+                'key' => 'admin.login.lockout_tiers',
+                'name' => '登录失败锁定阶梯',
+                'value' => '[{"attempts":5,"minutes":15},{"attempts":10,"minutes":45},{"attempts":20,"minutes":1440}]',
+                'group_name' => 'param',
+                'type' => 'json',
+                'sort' => 46,
+                'remark' => '密码登录失败阶梯锁定（IP+用户名）；attempts 为累计失败次数，minutes 为锁定时长（分钟），attempts 须递增；[] 表示关闭',
             ],
             [
                 'key' => 'admin.maintenance',

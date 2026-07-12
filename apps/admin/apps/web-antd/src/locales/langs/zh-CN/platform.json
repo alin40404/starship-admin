@@ -197,8 +197,8 @@
           "remark": "管理端默认展示时区；数据库存 UTC，由前端按此时区格式化；请在字典 site_timezone 中维护选项"
         },
         "forbidden_ip": {
-          "label": "禁止 IP",
-          "remark": "一行一条，匹配后将拒绝访问"
+          "label": "临时封禁 IP",
+          "remark": "管理端临时应急封禁，一行一条精确匹配；长期封禁请在服务器或防火墙处理"
         },
         "fixed_page": {
           "label": "默认主页",

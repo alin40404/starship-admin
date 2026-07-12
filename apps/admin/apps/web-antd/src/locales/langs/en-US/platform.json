@@ -197,8 +197,8 @@
           "remark": "Default display timezone for the admin UI; DB stores UTC, lists format times in this zone; maintain options in dict site_timezone"
         },
         "forbidden_ip": {
-          "label": "Blocked IPs",
-          "remark": "One IP per line; matching clients will be denied access"
+          "label": "Temporary IP Block",
+          "remark": "Emergency admin IP block; one exact IP per line. Use server or firewall rules for long-term blocks."
         },
         "fixed_page": {
           "label": "Default Home Page",
