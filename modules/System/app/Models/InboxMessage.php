@@ -2,7 +2,6 @@
 
 namespace Modules\System\App\Models;
 
-use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -32,11 +31,6 @@ class InboxMessage extends Model
             'is_read' => 'integer',
             'read_at' => 'datetime',
         ];
-    }
-
-    protected function serializeDate(DateTimeInterface $date): string
-    {
-        return $date->format('Y-m-d H:i:s');
     }
 
     public function admin(): BelongsTo

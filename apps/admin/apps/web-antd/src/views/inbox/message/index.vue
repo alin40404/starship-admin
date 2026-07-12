@@ -29,14 +29,14 @@ async function onActionClick({ code, row }: OnActionClickParams<InboxMessageRow>
     if (row.is_read === 0) {
       await markInboxMessageRead(row.id);
       message.success($t('inbox.markReadDone'));
-      reload();
+      onRefresh();
     }
     return;
   }
   if (code === 'markRead') {
     await markInboxMessageRead(row.id);
     message.success($t('inbox.markReadDone'));
-    reload();
+    onRefresh();
     return;
   }
   if (code === 'delete') {
@@ -79,54 +79,61 @@ const [CrudView, crudApi] = useResponsiveCrud<InboxMessageRow>({
 
 const { clearSelection, reload, selectedRows } = crudApi;
 
+function onRefresh() {
+  reload();
+}
+
 async function onDelete(row: InboxMessageRow) {
   await deleteInboxMessage(row.id);
   message.success($t('crud.deleted'));
   clearSelection();
-  reload();
-}
-
-async function onBatchDelete() {
-  const ids = selectedRows.value.map((row) => row.id);
-  if (ids.length === 0) {
-    return;
-  }
-  Modal.confirm({
-    content: $t('crud.batchDeleteConfirm', [ids.length, $t('inbox.entity')]),
-    onOk: async () => {
-      await batchDeleteInboxMessages(ids);
-      message.success($t('crud.batchDeleted', [ids.length]));
-      clearSelection();
-      reload();
-    },
-    title: $t('crud.batchDelete'),
-  });
+  onRefresh();
 }
 
 async function onMarkAllRead() {
   await markAllInboxMessagesRead();
   message.success($t('inbox.markAllReadDone'));
-  reload();
+  onRefresh();
+}
+
+function onBatchDelete() {
+  const ids = selectedRows.value.map((row) => row.id);
+  if (ids.length === 0) {
+    return;
+  }
+  Modal.confirm({
+    content: $t('inbox.batchDeleteConfirm', [ids.length]),
+    okText: $t('common.delete'),
+    okType: 'danger',
+    cancelText: $t('common.cancel'),
+    title: $t('system.shared.batchDelete'),
+    async onOk() {
+      await batchDeleteInboxMessages(ids);
+      message.success($t('crud.batchDeleted', [ids.length]));
+      clearSelection();
+      onRefresh();
+    },
+  });
 }
 </script>
 
 <template>
   <Page auto-content-height>
-    <CrudView :title="$t('inbox.entity')">
+    <DetailDrawer ref="detailDrawerRef" />
+    <CrudView>
       <template #toolbar-actions>
-        <Button @click="onMarkAllRead">
+        <div v-if="selectedRows.length > 0" class="vxe-grid-batch-toolbar">
+          <Button danger @click="onBatchDelete">
+            {{ $t('system.shared.batchDeleteWithCount', [selectedRows.length]) }}
+          </Button>
+          <Button class="ml-2" type="link" @click="clearSelection">
+            {{ $t('system.shared.clearSelection') }}
+          </Button>
+        </div>
+        <Button v-else @click="onMarkAllRead">
           {{ $t('inbox.markAllRead') }}
-        </Button>
-        <Button
-          v-if="selectedRows.length > 0"
-          danger
-          type="primary"
-          @click="onBatchDelete"
-        >
-          {{ $t('system.shared.batchDeleteWithCount', [selectedRows.length]) }}
         </Button>
       </template>
     </CrudView>
-    <DetailDrawer ref="detailDrawerRef" />
   </Page>
 </template>

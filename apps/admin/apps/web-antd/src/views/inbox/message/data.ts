@@ -130,7 +130,7 @@ export function useColumns(
           },
           {
             code: 'delete',
-            text: $t('crud.delete'),
+            text: $t('common.delete'),
           },
         ],
       },

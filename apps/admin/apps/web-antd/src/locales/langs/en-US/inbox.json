@@ -4,6 +4,7 @@
   "markAllRead": "Mark all as read",
   "markAllReadDone": "All marked as read",
   "markReadDone": "Marked as read",
+  "batchDeleteConfirm": "Delete {0} selected inbox message(s)?",
   "type": {
     "system": "System",
     "todo": "Todo",

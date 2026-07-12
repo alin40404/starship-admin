@@ -4,6 +4,7 @@
   "markAllRead": "全部标为已读",
   "markAllReadDone": "已全部标为已读",
   "markReadDone": "已标为已读",
+  "batchDeleteConfirm": "确定删除选中的 {0} 条站内信吗？",
   "type": {
     "system": "系统",
     "todo": "待办",
