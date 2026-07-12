@@ -576,7 +576,7 @@ class ConfigSeeder extends Seeder
                 'group_name' => 'param',
                 'type' => 'json',
                 'sort' => 46,
-                'remark' => '密码登录失败阶梯锁定（IP+用户名）；attempts 为累计失败次数，minutes 为锁定时长（分钟），attempts 须递增；[] 表示关闭',
+                'remark' => '密码登录失败阶梯锁定（IP+登录账号，支持用户名或邮箱，同一管理员按用户名统一计数）；attempts 为累计失败次数，minutes 为锁定时长（分钟），attempts 须递增；[] 表示关闭',
             ],
             [
                 'key' => 'admin.maintenance',

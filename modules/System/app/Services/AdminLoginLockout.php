@@ -8,7 +8,7 @@ use Modules\System\App\Support\AdminRuntimeConfig;
 use Starship\Core\Support\ApiResponse;
 
 /**
- * 管理端密码登录失败阶梯锁定（IP + 用户名）。
+ * 管理端密码登录失败阶梯锁定（IP + 登录账号；支持用户名或邮箱，同一管理员按用户名统一计数）。
  */
 final class AdminLoginLockout
 {
@@ -18,9 +18,21 @@ final class AdminLoginLockout
 
     private const CACHE_PREFIX_LOCK = 'admin:login:lock_until:';
 
-    public static function lockedResponse(string $ip, string $username): ?JsonResponse
+    /**
+     * 解析锁定主体：账号存在时统一用用户名，避免邮箱/用户名分开计数。
+     */
+    public static function resolveLockSubject(string $identifier, ?string $canonicalUsername = null): string
     {
-        $until = self::lockedUntil($ip, $username);
+        if ($canonicalUsername !== null && trim($canonicalUsername) !== '') {
+            return strtolower(trim($canonicalUsername));
+        }
+
+        return strtolower(trim($identifier));
+    }
+
+    public static function lockedResponse(string $ip, string $accountSubject): ?JsonResponse
+    {
+        $until = self::lockedUntil($ip, $accountSubject);
         if ($until === null) {
             return null;
         }
@@ -31,14 +43,14 @@ final class AdminLoginLockout
         );
     }
 
-    public static function afterFailure(string $ip, string $username): JsonResponse
+    public static function afterFailure(string $ip, string $accountSubject): JsonResponse
     {
         $tiers = AdminRuntimeConfig::loginLockoutTiers();
         if ($tiers === []) {
             return ApiResponse::error(__('system::messages.invalid_credentials'), 401);
         }
 
-        $failKey = self::failKey($ip, $username);
+        $failKey = self::failKey($ip, $accountSubject);
         $count = (int) Cache::get($failKey, 0) + 1;
         Cache::put($failKey, $count, now()->addHours(self::FAIL_WINDOW_HOURS));
 
@@ -48,7 +60,7 @@ final class AdminLoginLockout
         }
 
         $lockedUntil = time() + ($tier['minutes'] * 60);
-        $lockKey = self::lockKey($ip, $username);
+        $lockKey = self::lockKey($ip, $accountSubject);
         $existingUntil = Cache::get($lockKey);
         if (is_numeric($existingUntil)) {
             $lockedUntil = max((int) $existingUntil, $lockedUntil);
@@ -63,15 +75,15 @@ final class AdminLoginLockout
         );
     }
 
-    public static function clear(string $ip, string $username): void
+    public static function clear(string $ip, string $accountSubject): void
     {
-        Cache::forget(self::failKey($ip, $username));
-        Cache::forget(self::lockKey($ip, $username));
+        Cache::forget(self::failKey($ip, $accountSubject));
+        Cache::forget(self::lockKey($ip, $accountSubject));
     }
 
-    private static function lockedUntil(string $ip, string $username): ?int
+    private static function lockedUntil(string $ip, string $accountSubject): ?int
     {
-        $until = Cache::get(self::lockKey($ip, $username));
+        $until = Cache::get(self::lockKey($ip, $accountSubject));
         if (! is_int($until) && ! is_numeric($until)) {
             return null;
         }
@@ -102,18 +114,18 @@ final class AdminLoginLockout
         return $matched;
     }
 
-    private static function failKey(string $ip, string $username): string
+    private static function failKey(string $ip, string $accountSubject): string
     {
-        return self::CACHE_PREFIX_FAILS.self::subjectHash($ip, $username);
+        return self::CACHE_PREFIX_FAILS.self::subjectHash($ip, $accountSubject);
     }
 
-    private static function lockKey(string $ip, string $username): string
+    private static function lockKey(string $ip, string $accountSubject): string
     {
-        return self::CACHE_PREFIX_LOCK.self::subjectHash($ip, $username);
+        return self::CACHE_PREFIX_LOCK.self::subjectHash($ip, $accountSubject);
     }
 
-    private static function subjectHash(string $ip, string $username): string
+    private static function subjectHash(string $ip, string $accountSubject): string
     {
-        return hash('sha256', $ip.'|'.strtolower(trim($username)));
+        return hash('sha256', $ip.'|'.strtolower(trim($accountSubject)));
     }
 }

@@ -29,12 +29,12 @@ class AuthController extends Controller
 
         $identifier = trim($validated['username']);
         $ip = (string) $request->ip();
+        $admin = Admin::findByLoginIdentifier($identifier);
+        $lockSubject = AdminLoginLockout::resolveLockSubject($identifier, $admin?->username);
 
-        if ($locked = AdminLoginLockout::lockedResponse($ip, $identifier)) {
+        if ($locked = AdminLoginLockout::lockedResponse($ip, $lockSubject)) {
             return $locked;
         }
-
-        $admin = Admin::findByLoginIdentifier($identifier);
 
         if (! $admin || (int) $admin->status !== 1 || ! Hash::check($validated['password'], $admin->password)) {
             $this->writeLoginLog(
@@ -45,10 +45,10 @@ class AuthController extends Controller
                 request: $request,
             );
 
-            return AdminLoginLockout::afterFailure($ip, $identifier);
+            return AdminLoginLockout::afterFailure($ip, $lockSubject);
         }
 
-        AdminLoginLockout::clear($ip, $identifier);
+        AdminLoginLockout::clear($ip, $lockSubject);
 
         if (AdminRuntimeConfig::maintenanceEnabled() && (int) $admin->is_super !== 1) {
             $this->writeLoginLog(
