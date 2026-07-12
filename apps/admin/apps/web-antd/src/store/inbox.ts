@@ -48,10 +48,16 @@ export const useInboxStore = defineStore('inbox', () => {
     unreadCount.value = 0;
     categoryStats.value = createEmptyCategoryStats();
     recentMessages.value = [];
+    loading.value = false;
+    loadingMore.value = false;
     hasMore.value = true;
     page.value = 1;
     activeCategory.value = INBOX_ALL_CATEGORY_KEY;
     visibleCategories.value = [];
+  }
+
+  function $reset() {
+    reset();
   }
 
   async function refresh() {
@@ -120,6 +126,7 @@ export const useInboxStore = defineStore('inbox', () => {
   }
 
   return {
+    $reset,
     activeCategory,
     categoryStats,
     hasMore,
