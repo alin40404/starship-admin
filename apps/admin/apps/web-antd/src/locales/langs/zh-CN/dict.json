@@ -2,7 +2,8 @@
   "types": {
     "sys_status": { "name": "通用状态" },
     "attachment_category": { "name": "附件分类" },
-    "category_type": { "name": "栏目类型" }
+    "category_type": { "name": "栏目类型" },
+    "site_timezone": { "name": "站点时区" }
   },
   "items": {
     "sys_status": {

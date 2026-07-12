@@ -13,6 +13,15 @@ use Modules\System\App\Support\DictStore;
 
 class DictTypeController extends Controller
 {
+    /**
+     * 按字典类型 code 返回启用中的下拉选项（value / label / sort）。
+     * 新增字典类型时无需再单独加接口，前端调用 fetchDictOptions(code) 即可。
+     */
+    public function options(string $code): JsonResponse
+    {
+        return ApiResponse::success(DictStore::options($code));
+    }
+
     public function index(Request $request): JsonResponse
     {
         $query = DictType::query()->withCount('items');

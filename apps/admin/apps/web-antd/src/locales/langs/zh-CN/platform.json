@@ -194,7 +194,7 @@
         },
         "timezone": {
           "label": "时区",
-          "remark": "管理端默认展示时区；数据库存 UTC，列表与详情按此时区格式化"
+          "remark": "管理端默认展示时区；数据库存 UTC，由前端按此时区格式化；请在字典 site_timezone 中维护选项"
         },
         "forbidden_ip": {
           "label": "禁止 IP",

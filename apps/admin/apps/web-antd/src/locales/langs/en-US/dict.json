@@ -2,7 +2,8 @@
   "types": {
     "sys_status": { "name": "Common Status" },
     "attachment_category": { "name": "Attachment Categories" },
-    "category_type": { "name": "Column Types" }
+    "category_type": { "name": "Column Types" },
+    "site_timezone": { "name": "Site Timezones" }
   },
   "items": {
     "sys_status": {

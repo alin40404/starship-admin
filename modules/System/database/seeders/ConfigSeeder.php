@@ -72,7 +72,7 @@ class ConfigSeeder extends Seeder
                 'group_name' => 'basic',
                 'type' => 'select',
                 'sort' => 60,
-                'remark' => '管理端默认展示时区；数据库存 UTC，由前端按此时区格式化',
+                'remark' => '管理端默认展示时区；数据库存 UTC，由前端按此时区格式化；请在字典 site_timezone 中维护选项',
             ],
             [
                 'key' => 'site.forbidden_ip',

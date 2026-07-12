@@ -17,11 +17,19 @@ use Modules\System\App\Support\StorageConfigRegistrar;
 
 class ConfigController extends Controller
 {
+    /**
+     * 站点品牌公开快照（对应 GET system/site）。
+     * 供前端 applySiteBranding：侧栏/登录页名称与 Logo、备案、默认首页、展示时区。
+     */
     public function site(): JsonResponse
     {
         return ApiResponse::success(SiteConfig::branding());
     }
 
+    /**
+     * 运行时公开快照（对应 GET system/runtime）。
+     * 供前端 initAdminRuntimeConfig：分页、API 超时、登录页功能开关、维护模式、上传限制等。
+     */
     public function runtime(): JsonResponse
     {
         return ApiResponse::success(array_merge(

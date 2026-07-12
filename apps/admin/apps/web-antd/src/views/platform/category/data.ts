@@ -49,8 +49,10 @@ export function useGridFormSchema(): VbenFormSchema[] {
 
 export function buildFormSchema(params: {
   excludeId?: number;
-  typeOptions: CategoryTypeOption[];
+  onImageChange?: (event: unknown) => void;
+  onImageUpload?: (options: unknown) => Promise<void> | void;
   onTypeChange?: (value: string) => void;
+  typeOptions: CategoryTypeOption[];
 }): VbenFormSchema[] {
   const { excludeId, onTypeChange, typeOptions } = params;
 
@@ -149,14 +151,14 @@ export function buildFormSchema(params: {
       label: $t('platform.category.keywords'),
     },
     {
-      component: 'AttachmentField',
+      component: 'PictureUploadField',
       componentProps: {
-        accept: 'image',
-        multiple: false,
-        placeholder: $t('platform.category.imagePlaceholder'),
+        customRequest: params.onImageUpload,
+        handleChange: params.onImageChange,
+        maxCount: 1,
       },
       fieldName: 'image',
-      formItemClass: 'items-start',
+      formItemClass: 'picture-upload-form-item items-start',
       label: $t('platform.category.image'),
     },
     {

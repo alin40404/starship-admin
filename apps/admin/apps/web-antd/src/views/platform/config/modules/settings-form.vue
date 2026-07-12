@@ -18,6 +18,7 @@ import {
 import type { DefaultOptionType } from 'ant-design-vue/es/select';
 
 import { batchUpsertConfigs, fetchConfigs, testSmsConfig } from '#/api/system/config';
+import { fetchDictOptions } from '#/api/system/dict';
 import { AttachmentField } from '#/components/attachment-field';
 import { useUserStore } from '@vben/stores';
 import { preferences } from '@vben/preferences';
@@ -26,18 +27,19 @@ import {
   configFieldLabel,
   configFieldRemark,
   getConfigSelectOptions,
-  getSiteTimezoneSelectOptions,
   isAttachmentImageField,
   isHomePathSelectField,
   configAttachmentPlaceholder,
   isStorageFieldVisible,
   mapMenuTreeForHomePathCascader,
   mergeLegacyHomePathCascaderOption,
+  mergeSiteTimezoneSelectOptions,
   SITE_FIXED_PAGE_KEY,
   SITE_TIMEZONE_KEY,
   STORAGE_DRIVER_KEY,
   type HomePathCascaderOption,
 } from '../data';
+import { mapDictItemOptions, DICT_TYPE_CODE } from '#/views/platform/dict/i18n';
 import { applySiteBranding } from '#/utils/site-branding';
 import { initAdminRuntimeConfig } from '#/utils/admin-runtime-config';
 import { fetchMenuTree } from '#/api/system/menu';
@@ -56,6 +58,7 @@ const saving = ref(false);
 const rows = ref<ConfigRow[]>([]);
 const draftValues = ref<Record<string, string>>({});
 const homePathCascaderOptions = ref<HomePathCascaderOption[]>([]);
+const siteTimezoneOptions = ref<{ label: string; value: string }[]>([]);
 const smsTestMobile = ref('');
 const smsTesting = ref(false);
 
@@ -90,18 +93,35 @@ function syncDraftFromRows(list: ConfigRow[]) {
   draftValues.value = next;
 }
 
+async function loadSiteTimezoneOptions() {
+  const items = await fetchDictOptions(DICT_TYPE_CODE.siteTimezone);
+  siteTimezoneOptions.value = mapDictItemOptions(
+    DICT_TYPE_CODE.siteTimezone,
+    items.map((item) => ({
+      label: item.label,
+      value: item.value,
+    })),
+  );
+}
+
 async function loadConfigs() {
   loading.value = true;
   try {
-    const [result, menuTree] = await Promise.all([
-      fetchConfigs(props.groupName),
-      props.groupName === 'basic' ? fetchMenuTree() : Promise.resolve([]),
-    ]);
+    if (props.groupName === 'basic') {
+      const [result, menuTree] = await Promise.all([
+        fetchConfigs(props.groupName),
+        fetchMenuTree(),
+        loadSiteTimezoneOptions(),
+      ]);
+      rows.value = result.list ?? [];
+      syncDraftFromRows(rows.value);
+      refreshHomePathCascader(menuTree);
+      return;
+    }
+
+    const result = await fetchConfigs(props.groupName);
     rows.value = result.list ?? [];
     syncDraftFromRows(rows.value);
-    if (props.groupName === 'basic') {
-      refreshHomePathCascader(menuTree);
-    }
   } finally {
     loading.value = false;
   }
@@ -162,7 +182,10 @@ function filterTimezoneOption(input: string, option?: DefaultOptionType) {
 
 function selectOptions(row: ConfigRow) {
   if (row.key === SITE_TIMEZONE_KEY) {
-    return getSiteTimezoneSelectOptions(draftValues.value[row.key]);
+    return mergeSiteTimezoneSelectOptions(
+      siteTimezoneOptions.value,
+      draftValues.value[row.key],
+    );
   }
 
   return getConfigSelectOptions()[row.key] ?? [];

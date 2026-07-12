@@ -5,6 +5,8 @@ import type {
   CategoryTypeOption,
 } from '#/api/system/category';
 
+import type { UploadFile } from 'ant-design-vue/es/upload';
+
 import { computed, reactive, ref, watch } from 'vue';
 
 import { useVbenDrawer, useVbenModal } from '@vben/common-ui';
@@ -20,6 +22,8 @@ import {
   fetchCategoryTypes,
   updateCategory,
 } from '#/api/system/category';
+import { uploadAttachment } from '#/api/system/attachment';
+import { validateUploadFile } from '#/utils/upload-policy';
 
 import { buildFormSchema } from '../data';
 
@@ -30,10 +34,62 @@ const { isMobile } = usePreferences();
 const editingId = ref<number | null>(null);
 const typeOptions = ref<CategoryTypeOption[]>([]);
 
+function normalizeImageToFileList(image?: null | string): UploadFile[] {
+  if (!image) {
+    return [];
+  }
+  return [
+    {
+      name: 'image',
+      status: 'done',
+      uid: 'category-image-existing',
+      url: image,
+    },
+  ];
+}
+
+function resolveImageUrl(files: unknown): string {
+  const imageFiles = Array.isArray(files) ? files : [];
+  const imageFile = imageFiles[0] as
+    | { response?: { file_url?: string }; url?: string }
+    | undefined;
+  if (!imageFile) {
+    return '';
+  }
+  return imageFile.response?.file_url ?? imageFile.url ?? '';
+}
+
+function onImageChange(_event: unknown) {}
+
+async function onImageUpload(options: any) {
+  const file = options?.file as File | undefined;
+  if (!file) {
+    options?.onError?.(new Error('missing file'));
+    return;
+  }
+
+  const validationError = validateUploadFile(file, 'image');
+  if (validationError) {
+    message.error(validationError);
+    options?.onError?.(new Error(validationError));
+    return;
+  }
+
+  try {
+    const row = await uploadAttachment(file);
+    options?.onSuccess?.(row);
+  } catch (error) {
+    options?.onError?.(error);
+    throw error;
+  }
+}
+
 function refreshFormSchema() {
   formApi.setState({
     schema: buildFormSchema({
       excludeId: editingId.value ?? undefined,
+      onImageChange,
+      onImageUpload,
       onTypeChange: () => {
         formApi.setFieldValue('parent_id', 0);
       },
@@ -50,6 +106,8 @@ const [Form, formApi] = useVbenForm(
     },
     layout: 'vertical' as const,
     schema: buildFormSchema({
+      onImageChange,
+      onImageUpload,
       onTypeChange: () => {
         formApi.setFieldValue('parent_id', 0);
       },
@@ -85,6 +143,7 @@ async function handleConfirm(popupApi: PopupApi) {
 
   const values = (await formApi.getValues()) as CategorySavePayload;
   if (!values.parent_id) values.parent_id = 0;
+  values.image = resolveImageUrl((values as { image?: unknown }).image) || null;
 
   popupApi.lock();
   try {
@@ -129,7 +188,7 @@ async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
       description: detail.description ?? '',
       diyname: detail.diyname ?? '',
       flag: detail.flag ?? [],
-      image: detail.image ?? '',
+      image: normalizeImageToFileList(detail.image),
       keywords: detail.keywords ?? '',
       name: detail.name,
       nickname: detail.nickname,
@@ -144,7 +203,7 @@ async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
       description: '',
       diyname: '',
       flag: [],
-      image: '',
+      image: [],
       keywords: '',
       name: '',
       nickname: '',

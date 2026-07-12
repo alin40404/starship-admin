@@ -194,7 +194,7 @@
         },
         "timezone": {
           "label": "Timezone",
-          "remark": "Default display timezone for the admin UI; DB stores UTC, lists format times in this zone"
+          "remark": "Default display timezone for the admin UI; DB stores UTC, lists format times in this zone; maintain options in dict site_timezone"
         },
         "forbidden_ip": {
           "label": "Blocked IPs",

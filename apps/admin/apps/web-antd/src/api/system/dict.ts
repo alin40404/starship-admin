@@ -60,6 +60,16 @@ export interface DictItemSavePayload {
   remark?: string;
 }
 
+export interface DictOption {
+  label: string;
+  sort: number;
+  value: string;
+}
+
+export function fetchDictOptions(code: string) {
+  return requestClient.get<DictOption[]>(`/system/dict-options/${code}`);
+}
+
 export function fetchDictTypePage(params: DictTypePageQuery) {
   return requestClient.get<LaravelPaginate<DictTypeRow>>('/system/dict-types', {
     params,

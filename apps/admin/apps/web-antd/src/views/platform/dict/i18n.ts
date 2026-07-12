@@ -5,6 +5,7 @@ import { $t } from '#/locales';
 export const DICT_TYPE_CODE = {
   attachmentCategory: 'attachment_category',
   categoryType: 'category_type',
+  siteTimezone: 'site_timezone',
   sysStatus: 'sys_status',
 } as const;
 

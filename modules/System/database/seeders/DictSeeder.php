@@ -95,5 +95,42 @@ class DictSeeder extends Seeder
                 ],
             );
         }
+
+        $siteTimezone = DictType::query()->updateOrCreate(
+            ['code' => 'site_timezone'],
+            [
+                'name' => '站点时区',
+                'status' => 1,
+                'remark' => '平台配置-站点默认展示时区',
+            ]
+        );
+
+        $timezones = [
+            ['value' => 'UTC', 'label' => 'UTC (GMT+0)', 'sort' => 10],
+            ['value' => 'Asia/Shanghai', 'label' => 'Asia/Shanghai (GMT+8)', 'sort' => 20],
+            ['value' => 'Asia/Hong_Kong', 'label' => 'Asia/Hong_Kong (GMT+8)', 'sort' => 30],
+            ['value' => 'Asia/Taipei', 'label' => 'Asia/Taipei (GMT+8)', 'sort' => 40],
+            ['value' => 'Asia/Tokyo', 'label' => 'Asia/Tokyo (GMT+9)', 'sort' => 50],
+            ['value' => 'Asia/Seoul', 'label' => 'Asia/Seoul (GMT+9)', 'sort' => 60],
+            ['value' => 'Asia/Singapore', 'label' => 'Asia/Singapore (GMT+8)', 'sort' => 70],
+            ['value' => 'Europe/London', 'label' => 'Europe/London (GMT+0)', 'sort' => 80],
+            ['value' => 'Europe/Paris', 'label' => 'Europe/Paris (GMT+1)', 'sort' => 90],
+            ['value' => 'America/New_York', 'label' => 'America/New_York (GMT-5)', 'sort' => 100],
+            ['value' => 'America/Los_Angeles', 'label' => 'America/Los_Angeles (GMT-8)', 'sort' => 110],
+        ];
+
+        foreach ($timezones as $item) {
+            DictItem::query()->updateOrCreate(
+                [
+                    'dict_type_id' => $siteTimezone->id,
+                    'value' => $item['value'],
+                ],
+                [
+                    'label' => $item['label'],
+                    'sort' => $item['sort'],
+                    'status' => 1,
+                ],
+            );
+        }
     }
 }

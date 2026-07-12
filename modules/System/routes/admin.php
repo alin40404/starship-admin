@@ -173,6 +173,7 @@ Route::middleware(['api', 'admin.maintenance'])->prefix('admin-api')->group(func
         Route::delete('configs/{id}', [ConfigController::class, 'destroy'])
             ->middleware('admin.permission:'.ConfigPermissions::DELETE);
 
+        Route::get('dict-options/{code}', [DictTypeController::class, 'options']);
         Route::get('dict-types', [DictTypeController::class, 'index'])
             ->middleware('admin.permission:'.DictPermissions::QUERY);
         Route::post('dict-types', [DictTypeController::class, 'store'])
