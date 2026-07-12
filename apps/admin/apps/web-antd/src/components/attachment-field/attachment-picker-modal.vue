@@ -59,6 +59,7 @@ const canUpload = computed(() =>
 const uploadAccept = computed(() => resolveUploadAccept(props.accept));
 const uploading = ref(false);
 const showPickerContent = ref(false);
+const showFlowPanel = ref(false);
 
 const fileNameQuery = ref('');
 const selectedRows = ref<AttachmentRow[]>([]);
@@ -145,13 +146,16 @@ async function waitForFlowTeleportTarget(maxAttempts = 20) {
 }
 
 async function loadPickerGrid() {
+  showFlowPanel.value = false;
+  flowTeleportTarget.value = null;
   setPopupLoading(true);
   try {
     await refreshGrid();
     if (isFlowMode.value) {
       await waitForFlowTeleportTarget();
+      showFlowPanel.value = true;
+      await nextTick();
     }
-    await nextTick();
   } finally {
     setPopupLoading(false);
   }
@@ -249,14 +253,37 @@ async function waitForGridReady(maxAttempts = 20) {
   return false;
 }
 
+async function fetchFlowPickerData(
+  sort?: { field?: string; order?: null | string },
+) {
+  const result = await fetchAttachmentPickerPage(
+    buildPickerQueryParams(1, attachmentFlowPageSize.value, sort),
+  );
+  const data = filterPickerRows(result.data ?? []);
+  flowRows.value = data;
+  flowPage.value = 1;
+  flowTotal.value = result.total;
+  return props.accept === 'image' ? { ...result, data } : result;
+}
+
 async function refreshGrid() {
   if (!(await waitForGridReady())) {
     return;
   }
+
+  if (isFlowMode.value) {
+    const proxyInfo = gridApi?.grid?.getProxyInfo?.();
+    await fetchFlowPickerData(proxyInfo?.sort);
+    await nextTick();
+    restoreInitialSelection();
+    await syncFlowTeleportTarget();
+    return;
+  }
+
   await gridApi.query();
   await nextTick();
   restoreInitialSelection();
-  syncFlowTeleportTarget();
+  await syncFlowTeleportTarget();
 }
 
 function selectUploadedRows(uploadedRows: AttachmentRow[]) {
@@ -555,7 +582,7 @@ watch(
 );
 
 watch(flowRows, () => {
-  if (isFlowMode.value) {
+  if (isFlowMode.value && showFlowPanel.value) {
     syncFlowTeleportTarget();
   }
 });
@@ -564,6 +591,8 @@ function handlePopupOpenChange(isOpen: boolean) {
   emit('update:open', isOpen);
   if (!isOpen) {
     showPickerContent.value = false;
+    showFlowPanel.value = false;
+    flowTeleportTarget.value = null;
     setPopupLoading(false);
     fileNameQuery.value = '';
     clearSelection();
@@ -574,6 +603,8 @@ function handlePopupOpenChange(isOpen: boolean) {
   }
 
   showPickerContent.value = false;
+  showFlowPanel.value = false;
+  flowTeleportTarget.value = null;
   setPopupLoading(true);
 }
 
@@ -691,7 +722,7 @@ watch(
           </Grid>
 
           <Teleport
-            v-if="isFlowMode && flowTeleportTarget"
+            v-if="isFlowMode && flowTeleportTarget && showFlowPanel"
             :to="flowTeleportTarget"
           >
             <AttachmentFlowView
@@ -792,7 +823,7 @@ watch(
           </Grid>
 
           <Teleport
-            v-if="isFlowMode && flowTeleportTarget"
+            v-if="isFlowMode && flowTeleportTarget && showFlowPanel"
             :to="flowTeleportTarget"
           >
             <AttachmentFlowView
