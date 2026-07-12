@@ -21,6 +21,19 @@ import { refreshTokenApi } from './core';
 
 const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD);
 
+function resolveApiErrorMessage(error: any, fallback: string) {
+  const responseData =
+    error?.response?.data ??
+    error?.data ??
+    (typeof error === 'object' && error !== null && 'message' in error
+      ? error
+      : {});
+  const errorMessage = responseData?.error ?? responseData?.message ?? '';
+  return typeof errorMessage === 'string' && errorMessage.trim()
+    ? errorMessage.trim()
+    : fallback;
+}
+
 function createRequestClient(baseURL: string, options?: RequestClientOptions) {
   const client = new RequestClient({
     ...options,
@@ -80,7 +93,17 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
     }),
   );
 
-  // token过期的处理
+  // 通用的错误处理（须在 authenticate 之前注册，以便 401 时先跳转登录、少弹干扰 toast）
+  client.addResponseInterceptor(
+    errorMessageResponseInterceptor((msg: string, error) => {
+      if (error?.__skipErrorMessage) {
+        return;
+      }
+      message.error(resolveApiErrorMessage(error, msg));
+    }),
+  );
+
+  // token 过期的处理（后注册，响应 reject 时优先执行）
   client.addResponseInterceptor(
     authenticateResponseInterceptor({
       client,
@@ -88,18 +111,6 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
       doRefreshToken,
       enableRefreshToken: preferences.app.enableRefreshToken,
       formatToken,
-    }),
-  );
-
-  // 通用的错误处理,如果没有进入上面的错误处理逻辑，就会进入这里
-  client.addResponseInterceptor(
-    errorMessageResponseInterceptor((msg: string, error) => {
-      // 这里可以根据业务进行定制,你可以拿到 error 内的信息进行定制化处理，根据不同的 code 做不同的提示，而不是直接使用 message.error 提示 msg
-      // 当前mock接口返回的错误字段是 error 或者 message
-      const responseData = error?.response?.data ?? {};
-      const errorMessage = responseData?.error ?? responseData?.message ?? '';
-      // 如果没有错误信息，则会根据状态码进行提示
-      message.error(errorMessage || msg);
     }),
   );
 
@@ -129,9 +140,7 @@ function createBaseRequestClient(baseURL: string) {
 
   client.addResponseInterceptor(
     errorMessageResponseInterceptor((msg: string, error) => {
-      const responseData = error?.response?.data ?? {};
-      const errorMessage = responseData?.error ?? responseData?.message ?? '';
-      message.error(errorMessage || msg);
+      message.error(resolveApiErrorMessage(error, msg));
     }),
   );
 

@@ -6,6 +6,43 @@ import { isFunction } from '@vben/utils';
 
 import axios from 'axios';
 
+function getResponsePayload(error: any): Record<string, any> {
+  const responseData = error?.response?.data;
+  if (responseData && typeof responseData === 'object') {
+    return responseData;
+  }
+
+  if (error?.data && typeof error.data === 'object') {
+    return error.data;
+  }
+
+  if (
+    error &&
+    typeof error === 'object' &&
+    ('message' in error || 'code' in error)
+  ) {
+    return error;
+  }
+
+  return {};
+}
+
+function getHttpStatus(error: any): number | undefined {
+  const status = error?.response?.status ?? error?.status;
+  if (status === undefined || status === null || status === '') {
+    return undefined;
+  }
+
+  const numericStatus = Number(status);
+  return Number.isFinite(numericStatus) ? numericStatus : undefined;
+}
+
+function getResponseErrorMessage(error: any): string {
+  const payload = getResponsePayload(error);
+  const bodyMessage = payload?.error ?? payload?.message;
+  return typeof bodyMessage === 'string' ? bodyMessage.trim() : '';
+}
+
 export const defaultResponseInterceptor = ({
   codeField = 'code',
   dataField = 'data',
@@ -38,8 +75,32 @@ export const defaultResponseInterceptor = ({
             ? dataField(responseData)
             : responseData[dataField];
         }
+
+        const businessError = Object.assign(
+          new Error(
+            typeof responseData?.message === 'string'
+              ? responseData.message
+              : 'Request failed',
+          ),
+          {
+            config,
+            data: responseData,
+            response,
+            status,
+          },
+        );
+        throw businessError;
       }
-      throw Object.assign({}, response, { response });
+      const transportError = Object.assign(
+        new Error(`Request failed with status code ${status}`),
+        {
+          config,
+          data: responseData,
+          response,
+          status,
+        },
+      );
+      throw transportError;
     },
   };
 };
@@ -59,15 +120,17 @@ export const authenticateResponseInterceptor = ({
 }): ResponseInterceptorConfig => {
   return {
     rejected: async (error) => {
-      const { config, response } = error;
-      // 如果不是 401 错误，直接抛出异常
-      if (response?.status !== 401) {
+      const { config } = error;
+      const status = getHttpStatus(error);
+      // 401 或业务层返回的会话失效，统一走重新登录
+      if (status !== 401) {
         throw error;
       }
       // 判断是否启用了 refreshToken 功能
       // 如果没有启用或者已经是重试请求了，直接跳转到重新登录
       if (!enableRefreshToken || config.__isRetryRequest) {
         await doReAuthenticate();
+        error.__skipErrorMessage = true;
         throw error;
       }
       // 如果正在刷新 token，则将请求加入队列，等待刷新完成
@@ -101,6 +164,7 @@ export const authenticateResponseInterceptor = ({
         console.error('Refresh token failed, please login again.');
         await doReAuthenticate();
 
+        refreshError.__skipErrorMessage = true;
         throw refreshError;
       } finally {
         client.isRefreshing = false;
@@ -114,7 +178,7 @@ export const errorMessageResponseInterceptor = (
 ): ResponseInterceptorConfig => {
   return {
     rejected: (error: any) => {
-      if (axios.isCancel(error)) {
+      if (axios.isCancel(error) || error?.__skipErrorMessage) {
         return Promise.reject(error);
       }
 
@@ -130,8 +194,14 @@ export const errorMessageResponseInterceptor = (
         return Promise.reject(error);
       }
 
+      const bodyMessage = getResponseErrorMessage(error);
+      if (bodyMessage) {
+        makeErrorMessage?.(bodyMessage, error);
+        return Promise.reject(error);
+      }
+
       let errorMessage: string;
-      const status = error?.response?.status;
+      const status = getHttpStatus(error);
 
       switch (status) {
         case 400: {
