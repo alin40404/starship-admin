@@ -6,7 +6,7 @@ import type { DeptNode } from '#/api/system/department';
 import type { MenuTreeNode } from '#/api/system/menu';
 import type { RoleDetail, RoleRow, RoleSavePayload } from '#/api/system/role';
 
-import { computed, defineAsyncComponent, nextTick, reactive, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, nextTick, onMounted, reactive, ref, watch } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { Tree, useVbenDrawer } from '@vben/common-ui';
@@ -52,6 +52,8 @@ const MENU_TYPE_BUTTON = 3;
 
 const editingId = ref<number | null>(null);
 const openMode = ref<OpenMode>('create');
+const detailLoading = ref(false);
+const showFormContent = ref(false);
 const menuTree = ref<MenuTreeNode[]>([]);
 const menuReady = ref(false);
 const deptTree = ref<DeptNode[]>([]);
@@ -165,6 +167,102 @@ function stripRolePayload(values: Record<string, unknown>): RoleSavePayload {
   return rest as unknown as RoleSavePayload;
 }
 
+function applyRolePreview(row: RoleRow) {
+  formApi.setValues({
+    code: row.code,
+    data_scope: row.data_scope,
+    dept_ids: [],
+    menu_ids: [],
+    name: row.name,
+    remark: row.remark ?? '',
+    status: row.status,
+  });
+}
+
+function applyRoleDetail(detail: RoleDetail) {
+  formApi.setValues({
+    code: detail.code,
+    data_scope: detail.data_scope,
+    dept_ids: detail.dept_ids ?? [],
+    menu_ids: detail.menu_ids ?? [],
+    name: detail.name,
+    remark: detail.remark ?? '',
+    status: detail.status,
+  });
+}
+
+function applyCreateDefaults() {
+  formApi.setValues({
+    code: '',
+    data_scope: 1,
+    dept_ids: [],
+    menu_ids: [],
+    name: '',
+    remark: '',
+    status: 1,
+  });
+}
+
+function resolveOpenPayload() {
+  const data = drawerApi.getData<
+    (RoleRow & { _mode?: 'view' }) | Record<string, never>
+  >();
+  const id =
+    data && typeof (data as RoleRow).id === 'number'
+      ? (data as RoleRow).id
+      : null;
+  const isView = (data as RoleRow & { _mode?: 'view' })?._mode === 'view';
+
+  return {
+    data: data as RoleRow,
+    id,
+    isView,
+  };
+}
+
+function applyDrawerFooterState() {
+  if (openMode.value === 'view' || !canWriteRole.value) {
+    drawerApi.setState({
+      cancelText: $t('system.shared.close'),
+      showConfirmButton: false,
+    });
+  } else {
+    drawerApi.setState({
+      cancelText: undefined,
+      showConfirmButton: true,
+    });
+  }
+}
+
+async function mountDrawerForm() {
+  const { data, id } = resolveOpenPayload();
+
+  formApi.resetForm();
+  showFormContent.value = true;
+  await nextTick();
+
+  if (id) {
+    applyRolePreview(data);
+    void loadRoleDetail(id);
+    return;
+  }
+
+  applyCreateDefaults();
+}
+
+async function loadRoleDetail(id: number) {
+  detailLoading.value = true;
+  try {
+    await Promise.all([ensureMenuTree(), ensureDeptTree()]);
+    const detail = await fetchRole(id);
+    applyRoleDetail(detail);
+  } catch {
+    drawerApi.close();
+  } finally {
+    detailLoading.value = false;
+  }
+}
+
 const [Drawer, drawerApi] = useVbenDrawer({
   async onConfirm() {
     if (!canWriteRole.value) {
@@ -213,71 +311,28 @@ const [Drawer, drawerApi] = useVbenDrawer({
 
   async onOpenChange(isOpen: boolean) {
     if (!isOpen) {
+      showFormContent.value = false;
+      detailLoading.value = false;
       drawerApi.setState({
         cancelText: undefined,
+        loading: false,
         showConfirmButton: true,
       });
       return;
     }
 
-    await ensureMenuTree();
-    await ensureDeptTree();
-
-    const data = drawerApi.getData<
-      (RoleRow & { _mode?: 'view' }) | Record<string, never>
-    >();
-    formApi.resetForm();
-
-    const id =
-      data && typeof (data as RoleRow).id === 'number'
-        ? (data as RoleRow).id
-        : null;
-    const isView = (data as RoleRow & { _mode?: 'view' })?._mode === 'view';
-
+    const { id, isView } = resolveOpenPayload();
     editingId.value = id;
     openMode.value = isView ? 'view' : id ? 'edit' : 'create';
+    showFormContent.value = false;
+    drawerApi.setState({ loading: true });
+    applyDrawerFooterState();
+  },
 
-    if (openMode.value === 'view' || !canWriteRole.value) {
-      drawerApi.setState({
-        cancelText: $t('system.shared.close'),
-        showConfirmButton: false,
-      });
-    } else {
-      drawerApi.setState({
-        cancelText: undefined,
-        showConfirmButton: true,
-      });
-    }
-
-    await nextTick();
-
-    if (id) {
-      let detail: RoleDetail;
-      try {
-        detail = await fetchRole(id);
-      } catch {
-        return;
-      }
-      formApi.setValues({
-        code: detail.code,
-        data_scope: detail.data_scope,
-        dept_ids: detail.dept_ids ?? [],
-        menu_ids: detail.menu_ids ?? [],
-        name: detail.name,
-        remark: detail.remark ?? '',
-        status: detail.status,
-      });
-    } else {
-      formApi.setValues({
-        code: '',
-        data_scope: 1,
-        dept_ids: [],
-        menu_ids: [],
-        name: '',
-        remark: '',
-        status: 1,
-      });
-    }
+  onOpened() {
+    void mountDrawerForm().finally(() => {
+      drawerApi.setState({ loading: false });
+    });
   },
 });
 
@@ -303,6 +358,11 @@ async function ensureDeptTree() {
   }
 }
 
+onMounted(() => {
+  void loadMenuTree();
+  void loadDeptTree();
+});
+
 /** 点击「全部」文案时同步触发工具行全选 checkbox */
 function handlePermissionTreeCheckAllClick(event: MouseEvent) {
   if (!canWriteRole.value) return;
@@ -326,7 +386,7 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
 
 <template>
   <Drawer :title="drawerTitle" class="max-w-[720px] w-[92vw]">
-    <Form class="role-drawer-form">
+    <Form v-if="showFormContent" class="role-drawer-form">
       <template #dept_ids="slotProps">
         <div class="dept-cascader-field w-full min-w-0">
           <Cascader
@@ -365,7 +425,7 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
         </div>
       </template>
       <template #menu_ids="slotProps">
-        <Spin :spinning="!menuReady" wrapper-class-name="w-full">
+        <Spin :spinning="!menuReady || detailLoading" wrapper-class-name="w-full">
           <div
             :class="[
               'permission-tree w-full',

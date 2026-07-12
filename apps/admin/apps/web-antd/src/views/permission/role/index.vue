@@ -36,7 +36,6 @@ const roleAccess = {
 
 const [RoleFormDrawer, roleFormDrawerApi] = useVbenDrawer({
   connectedComponent: RoleForm,
-  destroyOnClose: true,
 });
 
 function onCreate() {
