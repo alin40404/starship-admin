@@ -30,11 +30,15 @@ class InboxMessageController extends Controller
         if ($request->filled('type')) {
             $query->where('type', (string) $request->get('type'));
         }
+        if ($request->filled('category')) {
+            $query->where('category', (string) $request->get('category'));
+        }
         if ($request->filled('is_read')) {
             $query->where('is_read', (int) $request->get('is_read') === 1 ? 1 : 0);
         }
 
-        $query->orderByDesc('id');
+        $query->with('sender:id,username,real_name,avatar');
+        $this->applyInboxOrdering($query);
 
         $perPage = (int) $request->get('per_page');
         if ($perPage <= 0) {
@@ -51,7 +55,8 @@ class InboxMessageController extends Controller
 
         $rows = InboxMessage::query()
             ->where('admin_id', $admin->id)
-            ->orderByDesc('id')
+            ->with('sender:id,username,real_name,avatar')
+            ->tap(fn ($query) => $this->applyInboxOrdering($query))
             ->limit($limit)
             ->get();
 
@@ -74,6 +79,7 @@ class InboxMessageController extends Controller
     {
         $admin = $this->currentAdmin($request);
         $message = $this->findOwnedMessage($admin, $id);
+        $message->load('sender:id,username,real_name,avatar');
 
         return ApiResponse::success($message);
     }
@@ -116,6 +122,18 @@ class InboxMessageController extends Controller
         return ApiResponse::success(null, __('system::inbox.deleted'));
     }
 
+    public function clearRead(Request $request): JsonResponse
+    {
+        $admin = $this->currentAdmin($request);
+
+        $deleted = InboxMessage::query()
+            ->where('admin_id', $admin->id)
+            ->where('is_read', 1)
+            ->delete();
+
+        return ApiResponse::success(['deleted' => $deleted], __('system::inbox.cleared_read'));
+    }
+
     public function batchDestroy(Request $request): JsonResponse
     {
         $admin = $this->currentAdmin($request);
@@ -148,5 +166,15 @@ class InboxMessageController extends Controller
             ->where('admin_id', $admin->id)
             ->whereKey($id)
             ->firstOrFail();
+    }
+
+    private function applyInboxOrdering($query): void
+    {
+        $query
+            ->orderBy('is_read')
+            ->orderByRaw(
+                "CASE priority WHEN 'urgent' THEN 1 WHEN 'high' THEN 2 WHEN 'normal' THEN 3 ELSE 4 END"
+            )
+            ->orderByDesc('id');
     }
 }

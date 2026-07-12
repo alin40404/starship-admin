@@ -5,6 +5,22 @@
   "markAllReadDone": "已全部标为已读",
   "markReadDone": "已标为已读",
   "batchDeleteConfirm": "确定删除选中的 {0} 条站内信吗？",
+  "category": {
+    "notice": "通知",
+    "approval": "审批",
+    "task": "待办",
+    "crm": "客户",
+    "alert": "安全"
+  },
+  "priority": {
+    "low": "低",
+    "normal": "普通",
+    "high": "高",
+    "urgent": "紧急"
+  },
+  "sender": {
+    "system": "系统"
+  },
   "type": {
     "system": "系统",
     "todo": "待办",
@@ -16,7 +32,10 @@
   },
   "columns": {
     "title": "标题",
+    "category": "分类",
     "type": "类型",
+    "sender": "来源",
+    "priority": "优先级",
     "status": "状态",
     "createdAt": "时间"
   },

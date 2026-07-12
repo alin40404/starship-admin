@@ -64,6 +64,7 @@ const [CrudView, crudApi] = useResponsiveCrud<InboxMessageRow>({
             page: page.currentPage,
             per_page: page.pageSize,
             keyword: formValues?.keyword || undefined,
+            category: formValues?.category || undefined,
             type: formValues?.type || undefined,
             is_read:
               formValues?.is_read === 0 || formValues?.is_read === 1

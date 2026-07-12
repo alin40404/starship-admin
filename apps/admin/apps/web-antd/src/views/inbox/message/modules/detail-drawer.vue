@@ -9,7 +9,12 @@ import { formatDateTime } from '@vben/utils';
 import { Descriptions, Tag } from 'ant-design-vue';
 
 import { fetchInboxMessage } from '#/api/inbox';
-import { INBOX_MESSAGE_TYPE_OPTIONS } from '#/constants/inbox-permissions';
+import {
+  INBOX_CATEGORY_OPTIONS,
+  INBOX_MESSAGE_TYPE_OPTIONS,
+  INBOX_PRIORITY_OPTIONS,
+  resolveInboxCategory,
+} from '#/constants/inbox-permissions';
 import { $t } from '#/locales';
 
 const loading = ref(false);
@@ -24,6 +29,24 @@ const [Drawer, drawerApi] = useVbenDrawer({
 function typeLabel(type: string) {
   const option = INBOX_MESSAGE_TYPE_OPTIONS.find((item) => item.value === type);
   return option ? $t(option.labelKey) : type;
+}
+
+function categoryLabel(message: InboxMessageRow) {
+  const category = resolveInboxCategory(message.category, message.type);
+  const option = INBOX_CATEGORY_OPTIONS.find((item) => item.value === category);
+  return option ? $t(option.labelKey) : category;
+}
+
+function priorityLabel(priority: string) {
+  const option = INBOX_PRIORITY_OPTIONS.find((item) => item.value === priority);
+  return option ? $t(option.labelKey) : priority;
+}
+
+function senderLabel(message: InboxMessageRow) {
+  if (message.sender?.real_name || message.sender?.username) {
+    return message.sender.real_name || message.sender.username;
+  }
+  return $t('inbox.sender.system');
 }
 
 async function open(id: number) {
@@ -45,8 +68,17 @@ defineExpose({ open });
       <Descriptions.Item :label="$t('inbox.columns.title')">
         {{ row.title }}
       </Descriptions.Item>
+      <Descriptions.Item :label="$t('inbox.columns.category')">
+        <Tag>{{ categoryLabel(row) }}</Tag>
+      </Descriptions.Item>
       <Descriptions.Item :label="$t('inbox.columns.type')">
         <Tag>{{ typeLabel(row.type) }}</Tag>
+      </Descriptions.Item>
+      <Descriptions.Item :label="$t('inbox.columns.sender')">
+        {{ senderLabel(row) }}
+      </Descriptions.Item>
+      <Descriptions.Item :label="$t('inbox.columns.priority')">
+        <Tag>{{ priorityLabel(row.priority) }}</Tag>
       </Descriptions.Item>
       <Descriptions.Item :label="$t('inbox.columns.status')">
         {{

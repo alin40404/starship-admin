@@ -1,10 +1,26 @@
 {
-  "entity": "Inbox Message",
+  "entity": "Inbox",
   "searchPlaceholder": "Search title or content",
   "markAllRead": "Mark all as read",
   "markAllReadDone": "All marked as read",
   "markReadDone": "Marked as read",
   "batchDeleteConfirm": "Delete {0} selected inbox message(s)?",
+  "category": {
+    "notice": "Notice",
+    "approval": "Approval",
+    "task": "Task",
+    "crm": "CRM",
+    "alert": "Security"
+  },
+  "priority": {
+    "low": "Low",
+    "normal": "Normal",
+    "high": "High",
+    "urgent": "Urgent"
+  },
+  "sender": {
+    "system": "System"
+  },
   "type": {
     "system": "System",
     "todo": "Todo",
@@ -16,7 +32,10 @@
   },
   "columns": {
     "title": "Title",
+    "category": "Category",
     "type": "Type",
+    "sender": "Source",
+    "priority": "Priority",
     "status": "Status",
     "createdAt": "Time"
   },

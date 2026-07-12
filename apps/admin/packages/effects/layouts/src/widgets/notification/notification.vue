@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import type { NotificationItem } from './types';
 
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { Bell, CircleCheckBig, CircleX, MailCheck } from '@vben/icons';
@@ -13,9 +14,14 @@ import {
   VbenScrollbar,
 } from '@vben-core/shadcn-ui';
 
+import { Icon as IconifyIcon } from '@iconify/vue';
 import { useToggle } from '@vueuse/core';
 
 interface Props {
+  /**
+   * 未读数量，优先于圆点展示
+   */
+  count?: number;
   /**
    * 显示圆点
    */
@@ -28,7 +34,8 @@ interface Props {
 
 defineOptions({ name: 'NotificationPopup' });
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
+  count: 0,
   dot: false,
   notifications: () => [],
 });
@@ -43,6 +50,8 @@ const emit = defineEmits<{
 
 const router = useRouter();
 const [open, toggle] = useToggle();
+
+const showBadge = computed(() => props.count > 0 || props.dot);
 
 function close() {
   open.value = false;
@@ -62,7 +71,6 @@ function handleClear() {
 }
 
 function handleClick(item: NotificationItem) {
-  // 如果通知项有链接，点击时跳转
   if (item.link) {
     navigateTo(item.link, item.query, item.state);
   }
@@ -74,16 +82,33 @@ function navigateTo(
   state?: Record<string, any>,
 ) {
   if (link.startsWith('http://') || link.startsWith('https://')) {
-    // 外部链接，在新标签页打开
     window.open(link, '_blank');
   } else {
-    // 内部路由链接，支持 query 参数和 state
     router.push({
       path: link,
       query: query || {},
       state,
     });
   }
+}
+
+function categoryClass(category?: NotificationItem['category']) {
+  switch (category) {
+    case 'approval':
+      return 'bg-orange-500/10 text-orange-600';
+    case 'task':
+      return 'bg-amber-500/10 text-amber-600';
+    case 'crm':
+      return 'bg-emerald-500/10 text-emerald-600';
+    case 'alert':
+      return 'bg-red-500/10 text-red-600';
+    default:
+      return 'bg-primary/10 text-primary';
+  }
+}
+
+function showCategoryIcon(item: NotificationItem) {
+  return Boolean(item.icon || item.category);
 }
 </script>
 <template>
@@ -92,9 +117,14 @@ function navigateTo(
       <div class="mr-2 flex-center h-full" @click.stop="toggle()">
         <VbenIconButton class="bell-button relative text-foreground">
           <span
-            v-if="dot"
-            class="absolute top-0.5 right-0.5 size-2 rounded-full bg-primary"
-          ></span>
+            v-if="showBadge"
+            class="absolute -top-0.5 -right-0.5 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] leading-4 text-white"
+            :class="count > 0 ? 'h-4' : 'size-2 p-0'"
+          >
+            <template v-if="count > 0">
+              {{ count > 99 ? '99+' : count }}
+            </template>
+          </span>
           <Bell class="size-4" />
         </VbenIconButton>
       </div>
@@ -102,7 +132,15 @@ function navigateTo(
 
     <div class="relative">
       <div class="flex items-center justify-between p-4 py-3">
-        <div class="text-foreground">{{ $t('ui.widgets.notifications') }}</div>
+        <div class="text-foreground">
+          {{ $t('ui.widgets.notifications') }}
+          <span
+            v-if="count > 0"
+            class="ml-1 text-xs text-muted-foreground"
+          >
+            ({{ count }})
+          </span>
+        </div>
         <VbenIconButton
           :disabled="notifications.length <= 0"
           :tooltip="$t('ui.widgets.markAllAsRead')"
@@ -115,7 +153,10 @@ function navigateTo(
         <ul class="flex! max-h-90 w-full flex-col">
           <template v-for="item in notifications" :key="item.id ?? item.title">
             <li
-              class="relative flex w-full cursor-pointer items-start gap-5 border-t border-border p-3 hover:bg-accent"
+              class="relative flex w-full cursor-pointer items-start gap-3 border-t border-border p-3 hover:bg-accent"
+              :class="{
+                'border-l-2 border-l-destructive pl-2.5': item.priority === 'urgent',
+              }"
               @click="handleClick(item)"
             >
               <span
@@ -124,6 +165,17 @@ function navigateTo(
               ></span>
 
               <span
+                v-if="showCategoryIcon(item)"
+                class="relative flex size-10 shrink-0 items-center justify-center rounded-full"
+                :class="categoryClass(item.category)"
+              >
+                <IconifyIcon
+                  class="size-5"
+                  :icon="item.icon || 'lucide:bell'"
+                />
+              </span>
+              <span
+                v-else
                 class="relative flex size-10 shrink-0 overflow-hidden rounded-full"
               >
                 <img
@@ -131,12 +183,18 @@ function navigateTo(
                   class="aspect-square size-full object-cover"
                 />
               </span>
-              <div class="flex flex-col gap-1 leading-none">
-                <p class="font-semibold">{{ item.title }}</p>
+              <div class="min-w-0 flex-1 flex-col gap-1 leading-none">
+                <p class="truncate font-semibold">{{ item.title }}</p>
+                <p
+                  v-if="item.senderName"
+                  class="truncate text-xs text-muted-foreground"
+                >
+                  {{ item.senderName }}
+                </p>
                 <p class="my-1 line-clamp-2 text-xs text-muted-foreground">
                   {{ item.message }}
                 </p>
-                <p class="line-clamp-2 text-xs text-muted-foreground">
+                <p class="text-xs text-muted-foreground">
                   {{ item.date }}
                 </p>
               </div>

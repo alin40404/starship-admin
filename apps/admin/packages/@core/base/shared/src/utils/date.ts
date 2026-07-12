@@ -1,9 +1,11 @@
 import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import timezone from 'dayjs/plugin/timezone.js';
 import utc from 'dayjs/plugin/utc.js';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
+dayjs.extend(relativeTime);
 
 type FormatDate = Date | dayjs.Dayjs | number | string;
 
@@ -34,6 +36,19 @@ export function formatDate(time?: FormatDate, format: Format = 'YYYY-MM-DD') {
 
 export function formatDateTime(time?: FormatDate) {
   return formatDate(time, 'YYYY-MM-DD HH:mm:ss');
+}
+
+export function formatRelativeTime(time?: FormatDate, locale = 'zh-cn') {
+  try {
+    const date = dayjs.isDayjs(time) ? time : dayjs(time);
+    if (!date.isValid()) {
+      throw new Error('Invalid date');
+    }
+    return date.locale(locale).fromNow();
+  } catch (error) {
+    console.error(`Error formatting relative time: ${error}`);
+    return formatDateTime(time);
+  }
 }
 
 export function isDate(value: any): value is Date {

@@ -1,25 +1,46 @@
 import type { LaravelPaginate } from '#/api/system/types';
 
+import type { InboxCategory } from '#/constants/inbox-permissions';
+
 import { requestClient } from '#/api/request';
 
-export interface InboxMessageRow {
+export interface InboxSender {
+  avatar: string | null;
   id: number;
+  real_name: string | null;
+  username: string;
+}
+
+export interface InboxMessageRow {
+  action_deadline: string | null;
   admin_id: number;
-  type: 'account' | 'system' | 'todo';
-  title: string;
+  biz_id: number | null;
+  biz_type: string | null;
+  category: InboxCategory;
   content: string | null;
-  link: string | null;
-  is_read: 0 | 1;
-  read_at: string | null;
   created_at: string;
+  group_key: string | null;
+  id: number;
+  is_read: 0 | 1;
+  link: string | null;
+  payload: Record<string, unknown> | null;
+  priority: 'high' | 'low' | 'normal' | 'urgent';
+  read_at: string | null;
+  sender?: InboxSender | null;
+  sender_id: number | null;
+  status: 'cancelled' | 'done' | 'expired' | 'pending' | null;
+  sub_type: string | null;
+  title: string;
+  type: 'account' | 'system' | 'todo';
 }
 
 export interface InboxMessagePageQuery {
+  category?: string;
+  is_read?: number;
+  keyword?: string;
   page: number;
   per_page?: number;
-  keyword?: string;
   type?: string;
-  is_read?: number;
 }
 
 export function fetchInboxMessagePage(params: InboxMessagePageQuery) {
@@ -48,6 +69,10 @@ export function markInboxMessageRead(id: number) {
 
 export function markAllInboxMessagesRead() {
   return requestClient.post<null>('/inbox/messages/read-all');
+}
+
+export function clearReadInboxMessages() {
+  return requestClient.post<{ deleted: number }>('/inbox/messages/clear-read');
 }
 
 export function deleteInboxMessage(id: number) {

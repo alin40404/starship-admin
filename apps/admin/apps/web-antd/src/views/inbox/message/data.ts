@@ -7,12 +7,39 @@ import type { InboxMessageRow } from '#/api/inbox';
 import { formatDateTime } from '@vben/utils';
 
 import { TABLE_CELL_EMPTY } from '#/constants/table';
-import { INBOX_MESSAGE_TYPE_OPTIONS } from '#/constants/inbox-permissions';
+import {
+  INBOX_CATEGORY_OPTIONS,
+  INBOX_MESSAGE_TYPE_OPTIONS,
+  INBOX_PRIORITY_OPTIONS,
+  resolveInboxCategory,
+} from '#/constants/inbox-permissions';
 import { $t } from '#/locales';
 
 function getTypeLabel(type: string) {
   const option = INBOX_MESSAGE_TYPE_OPTIONS.find((item) => item.value === type);
   return option ? $t(option.labelKey) : type;
+}
+
+function getCategoryLabel(row: InboxMessageRow) {
+  const category = resolveInboxCategory(row.category, row.type);
+  const option = INBOX_CATEGORY_OPTIONS.find((item) => item.value === category);
+  return option ? $t(option.labelKey) : category;
+}
+
+function getPriorityLabel(priority: string) {
+  const option = INBOX_PRIORITY_OPTIONS.find((item) => item.value === priority);
+  return option ? $t(option.labelKey) : priority;
+}
+
+function getSenderLabel(row: InboxMessageRow) {
+  if (row.sender?.real_name || row.sender?.username) {
+    return row.sender.real_name || row.sender.username;
+  }
+  const category = resolveInboxCategory(row.category, row.type);
+  if (category === 'alert' || category === 'notice') {
+    return $t('inbox.sender.system');
+  }
+  return TABLE_CELL_EMPTY;
 }
 
 export function useGridFormSchema(): VbenFormSchema[] {
@@ -25,6 +52,19 @@ export function useGridFormSchema(): VbenFormSchema[] {
       },
       fieldName: 'keyword',
       label: $t('monitor.shared.keyword'),
+    },
+    {
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        class: 'w-full',
+        options: INBOX_CATEGORY_OPTIONS.map((item) => ({
+          label: $t(item.labelKey),
+          value: item.value,
+        })),
+      },
+      fieldName: 'category',
+      label: $t('inbox.columns.category'),
     },
     {
       component: 'Select',
@@ -76,6 +116,22 @@ export function useColumns(
       cellRender: {
         attrs: {
           getColor: (row: InboxMessageRow) =>
+            INBOX_CATEGORY_OPTIONS.find(
+              (item) => item.value === resolveInboxCategory(row.category, row.type),
+            )?.color ?? 'default',
+          getLabel: (row: InboxMessageRow) => getCategoryLabel(row),
+        },
+        name: 'CellTag',
+      },
+      field: 'category',
+      title: $t('inbox.columns.category'),
+      width: 110,
+    },
+    {
+      align: 'center',
+      cellRender: {
+        attrs: {
+          getColor: (row: InboxMessageRow) =>
             INBOX_MESSAGE_TYPE_OPTIONS.find((item) => item.value === row.type)
               ?.color ?? 'default',
           getLabel: (row: InboxMessageRow) => getTypeLabel(row.type),
@@ -84,7 +140,29 @@ export function useColumns(
       },
       field: 'type',
       title: $t('inbox.columns.type'),
+      width: 110,
+    },
+    {
+      align: 'center',
+      formatter: ({ row }: { row: InboxMessageRow }) => getSenderLabel(row),
+      field: 'sender_id',
+      title: $t('inbox.columns.sender'),
       width: 120,
+    },
+    {
+      align: 'center',
+      cellRender: {
+        attrs: {
+          getColor: (row: InboxMessageRow) =>
+            INBOX_PRIORITY_OPTIONS.find((item) => item.value === row.priority)
+              ?.color ?? 'default',
+          getLabel: (row: InboxMessageRow) => getPriorityLabel(row.priority),
+        },
+        name: 'CellTag',
+      },
+      field: 'priority',
+      title: $t('inbox.columns.priority'),
+      width: 100,
     },
     {
       align: 'center',
@@ -106,7 +184,8 @@ export function useColumns(
     {
       align: 'center',
       field: 'created_at',
-      formatter: ({ cellValue }) => formatDateTime(cellValue) ?? TABLE_CELL_EMPTY,
+      formatter: ({ cellValue }: { cellValue: string }) =>
+        formatDateTime(cellValue) ?? TABLE_CELL_EMPTY,
       title: $t('inbox.columns.createdAt'),
       width: 170,
     },
