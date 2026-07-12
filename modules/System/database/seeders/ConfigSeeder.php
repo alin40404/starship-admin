@@ -324,7 +324,7 @@ class ConfigSeeder extends Seeder
                 'group_name' => 'storage',
                 'type' => 'string',
                 'sort' => 40,
-                'remark' => '附件对外访问根地址；使用 CDN 时填 CDN 域名。公共存储留空则使用 APP_URL/storage；云存储可填 CDN 或 Bucket 访问域名',
+                'remark' => '附件访问根地址；CDN 填加速域名，留空默认 APP_URL/storage',
             ],
             [
                 'key' => 'storage.oss.access_key',

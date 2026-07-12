@@ -131,7 +131,7 @@
       "smsTencent": "Tencent Cloud SMS",
       "smsHuawei": "Huawei Cloud SMS",
       "storagePublic": "Public Storage",
-      "storageLocal": "Local Storage",
+      "storageLocal": "Private Storage",
       "storageOss": "Alibaba Cloud OSS",
       "storageCos": "Tencent Cloud COS",
       "storageS3": "AWS S3",
@@ -354,7 +354,7 @@
       "storage": {
         "public_url": {
           "label": "Public Base URL",
-          "remark": "Root URL for attachment access; use your CDN domain when CDN is enabled. Leave blank for public storage to use APP_URL/storage; for cloud storage use CDN or bucket URL"
+          "remark": "Attachment URL base; CDN domain if enabled, blank defaults to APP_URL/storage"
         },
         "oss": {
           "access_key": {

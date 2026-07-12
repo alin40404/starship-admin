@@ -131,7 +131,7 @@
       "smsTencent": "腾讯云短信",
       "smsHuawei": "华为云短信",
       "storagePublic": "公共存储",
-      "storageLocal": "本地存储",
+      "storageLocal": "私有存储",
       "storageOss": "阿里云 OSS",
       "storageCos": "腾讯云 COS",
       "storageS3": "AWS S3",
@@ -354,7 +354,7 @@
       "storage": {
         "public_url": {
           "label": "公共访问地址",
-          "remark": "附件对外访问根地址；使用 CDN 时填 CDN 域名。公共存储留空则使用 APP_URL/storage；云存储可填 CDN 或 Bucket 访问域名"
+          "remark": "附件访问根地址；CDN 填加速域名，留空默认 APP_URL/storage"
         },
         "oss": {
           "access_key": {

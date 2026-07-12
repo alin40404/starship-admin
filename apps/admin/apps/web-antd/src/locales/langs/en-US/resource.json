@@ -31,7 +31,7 @@
     },
     "storage": {
       "public": "Public storage",
-      "local": "Local storage",
+      "local": "Private storage",
       "oss": "Alibaba Cloud OSS",
       "cos": "Tencent Cloud COS",
       "s3": "AWS S3"
