@@ -33,10 +33,6 @@ class InboxMessageWriter
             return null;
         }
 
-        if (! InboxConfigRegistrar::allowsType($type)) {
-            return null;
-        }
-
         $category = (string) ($extra['category'] ?? InboxMessage::categoryFromType($type));
         if (! InboxConfigRegistrar::isCategoryVisible($category)) {
             return null;

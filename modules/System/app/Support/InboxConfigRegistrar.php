@@ -32,16 +32,6 @@ final class InboxConfigRegistrar
         return max(0, $days);
     }
 
-    public static function allowsType(string $type): bool
-    {
-        return match ($type) {
-            InboxMessage::TYPE_SYSTEM => self::toBool(SettingStore::get('inbox.notify_system', '1')),
-            InboxMessage::TYPE_TODO => self::toBool(SettingStore::get('inbox.notify_todo', '1')),
-            InboxMessage::TYPE_ACCOUNT => self::toBool(SettingStore::get('inbox.notify_account', '1')),
-            default => false,
-        };
-    }
-
     /**
      * @return list<string>
      */

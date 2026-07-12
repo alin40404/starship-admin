@@ -252,36 +252,24 @@
           "label": "列表每页条数",
           "remark": "消息中心列表默认分页大小"
         },
-        "notify_system": {
-          "label": "系统消息通知",
-          "remark": "是否允许发送系统类站内消息"
-        },
-        "notify_todo": {
-          "label": "待办任务通知",
-          "remark": "是否允许发送待办类站内消息"
-        },
-        "notify_account": {
-          "label": "账户安全通知",
-          "remark": "是否允许发送账户安全类站内消息"
-        },
         "category_notice": {
-          "label": "通知分类展示",
+          "label": "通知",
           "remark": "是否在消息中心展示通知类消息"
         },
         "category_approval": {
-          "label": "审批分类展示",
+          "label": "审批",
           "remark": "是否在消息中心展示审批类消息"
         },
         "category_task": {
-          "label": "待办分类展示",
+          "label": "待办",
           "remark": "是否在消息中心展示待办类消息"
         },
         "category_crm": {
-          "label": "客户分类展示",
+          "label": "客户",
           "remark": "是否在消息中心展示客户类消息"
         },
         "category_alert": {
-          "label": "安全分类展示",
+          "label": "安全",
           "remark": "是否在消息中心展示安全类消息"
         }
       },
