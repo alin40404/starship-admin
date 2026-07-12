@@ -3,7 +3,7 @@ import type { OnActionClickFn } from '#/adapter/vxe-table';
 
 import type { GeneratorTableRow } from '#/api/generator';
 
-import { formatDateTime } from '@vben/utils';
+import { capitalizeFirstLetter, formatDateTime } from '@vben/utils';
 
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { GENERATOR_PERMISSIONS } from '#/constants/generator-permissions';
@@ -18,6 +18,20 @@ import {
 export type GeneratorAccessChecker = {
   can: (code: string) => boolean;
 };
+
+/** 与后端 Str::studly 一致，用于模块 slug 展示（如 system → System） */
+export function formatModuleSlug(slug: string): string {
+  return slug
+    .split(/[-_]+/)
+    .filter(Boolean)
+    .map((part) => capitalizeFirstLetter(part.toLowerCase()))
+    .join('');
+}
+
+export function toModuleSelectOption(slug: string) {
+  const value = formatModuleSlug(slug);
+  return { label: value, value };
+}
 
 export interface BuildImportFormSchemaParams {
   getMenuParentTree: () => MenuParentTreeOption[];
@@ -148,6 +162,8 @@ export function useColumns(
     {
       align: 'left',
       field: 'module_slug',
+      formatter: ({ cellValue }) =>
+        cellValue ? formatModuleSlug(String(cellValue)) : TABLE_CELL_EMPTY,
       minWidth: 100,
       title: $t('dev.codegen.columnModule'),
     },

@@ -19,6 +19,8 @@ import { $t } from '#/locales';
 
 import {
   buildImportFormSchema,
+  formatModuleSlug,
+  toModuleSelectOption,
   type BuildImportFormSchemaParams,
 } from '../data';
 import {
@@ -40,10 +42,7 @@ const loadingMenuParents = ref(false);
 function createSchemaParams(): BuildImportFormSchemaParams {
   return {
     tableOptions: tableOptions.value,
-    moduleOptions: modules.value.map((item) => ({
-      label: item,
-      value: item,
-    })),
+    moduleOptions: modules.value.map(toModuleSelectOption),
     loadingTables: loadingTables.value,
     loadingMenuParents: loadingMenuParents.value,
     getMenuParentTree: () => menuParentOptions.value,
@@ -125,7 +124,7 @@ async function initForm() {
   await Promise.all([searchTables(''), loadMenuParents()]);
   syncSchema();
 
-  const module = modules.value[0] ?? 'System';
+  const module = formatModuleSlug(modules.value[0] ?? 'System');
   formApi.setValues({
     table_name: undefined,
     module,
