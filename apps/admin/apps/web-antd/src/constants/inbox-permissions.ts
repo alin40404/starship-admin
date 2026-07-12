@@ -1,5 +1,13 @@
 export const INBOX_MENU_PERMISSION = 'dashboard.inbox';
 
+export const INBOX_ALL_CATEGORY_KEY = '__all__';
+
+export const INBOX_ALL_CATEGORY_OPTION = {
+  icon: 'lucide:inbox',
+  labelKey: 'system.shared.all',
+  value: INBOX_ALL_CATEGORY_KEY,
+} as const;
+
 export const INBOX_MESSAGE_TYPE_OPTIONS = [
   { color: 'processing', labelKey: 'inbox.type.system', value: 'system' },
   { color: 'warning', labelKey: 'inbox.type.todo', value: 'todo' },

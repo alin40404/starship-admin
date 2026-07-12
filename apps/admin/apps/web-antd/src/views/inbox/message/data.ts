@@ -1,5 +1,6 @@
 import type { VbenFormSchema } from '#/adapter/form';
-import type { CrudGridColumn } from '#/adapter/mobile-list';
+import type { CrudGridColumn, MobileCrudListConfig } from '#/adapter/mobile-list';
+import { buildMobileCrudFromColumns } from '#/adapter/mobile-list';
 import type { OnActionClickFn } from '#/adapter/vxe-table';
 
 import type { InboxMessageRow } from '#/api/inbox';
@@ -58,19 +59,6 @@ export function useGridFormSchema(): VbenFormSchema[] {
       componentProps: {
         allowClear: true,
         class: 'w-full',
-        options: INBOX_CATEGORY_OPTIONS.map((item) => ({
-          label: $t(item.labelKey),
-          value: item.value,
-        })),
-      },
-      fieldName: 'category',
-      label: $t('inbox.columns.category'),
-    },
-    {
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        class: 'w-full',
         options: INBOX_MESSAGE_TYPE_OPTIONS.map((item) => ({
           label: $t(item.labelKey),
           value: item.value,
@@ -95,10 +83,31 @@ export function useGridFormSchema(): VbenFormSchema[] {
   ];
 }
 
+export function buildInboxMessageMobileCrudConfig(params: {
+  columns: CrudGridColumn<InboxMessageRow>[];
+  query: MobileCrudListConfig<InboxMessageRow>['query'];
+}): MobileCrudListConfig<InboxMessageRow> {
+  return buildMobileCrudFromColumns({
+    columns: params.columns,
+    defaultPageSize: 20,
+    query: params.query,
+    rowKey: 'id',
+    search: {
+      filterSchema: useGridFormSchema(),
+      keywordFields: ['title', 'content'],
+      placeholder: $t('inbox.searchPlaceholder'),
+    },
+    selection: {
+      enabled: true,
+    },
+  });
+}
+
 export function useColumns(
   onActionClick: OnActionClickFn<InboxMessageRow>,
+  options?: { showCategoryColumn?: boolean },
 ): CrudGridColumn<InboxMessageRow>[] {
-  return [
+  const columns = [
     {
       align: 'center',
       fixed: 'left',
@@ -124,6 +133,9 @@ export function useColumns(
         name: 'CellTag',
       },
       field: 'category',
+      mobile: {
+        format: (row) => getCategoryLabel(row),
+      },
       title: $t('inbox.columns.category'),
       width: 110,
     },
@@ -139,6 +151,9 @@ export function useColumns(
         name: 'CellTag',
       },
       field: 'type',
+      mobile: {
+        format: (row) => getTypeLabel(row.type),
+      },
       title: $t('inbox.columns.type'),
       width: 110,
     },
@@ -146,6 +161,9 @@ export function useColumns(
       align: 'center',
       formatter: ({ row }: { row: InboxMessageRow }) => getSenderLabel(row),
       field: 'sender_id',
+      mobile: {
+        format: (row) => getSenderLabel(row),
+      },
       title: $t('inbox.columns.sender'),
       width: 120,
     },
@@ -161,6 +179,9 @@ export function useColumns(
         name: 'CellTag',
       },
       field: 'priority',
+      mobile: {
+        format: (row) => getPriorityLabel(row.priority),
+      },
       title: $t('inbox.columns.priority'),
       width: 100,
     },
@@ -178,6 +199,12 @@ export function useColumns(
         name: 'CellTag',
       },
       field: 'is_read',
+      mobile: {
+        format: (row) =>
+          row.is_read === 1
+            ? $t('inbox.readStatus.read')
+            : $t('inbox.readStatus.unread'),
+      },
       title: $t('inbox.columns.status'),
       width: 100,
     },
@@ -219,4 +246,10 @@ export function useColumns(
       width: 180,
     },
   ] as CrudGridColumn<InboxMessageRow>[];
+
+  if (options?.showCategoryColumn === false) {
+    return columns.filter((column) => column.field !== 'category');
+  }
+
+  return columns;
 }

@@ -63,6 +63,12 @@ export function fetchInboxUnreadCount() {
   return requestClient.get<{ count: number }>('/inbox/messages/unread-count');
 }
 
+export type InboxCategoryStats = Record<InboxCategory | 'all', number>;
+
+export function fetchInboxCategoryStats() {
+  return requestClient.get<InboxCategoryStats>('/inbox/messages/category-stats');
+}
+
 export function markInboxMessageRead(id: number) {
   return requestClient.post<null>(`/inbox/messages/${id}/read`);
 }

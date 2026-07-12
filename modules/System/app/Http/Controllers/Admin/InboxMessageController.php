@@ -75,6 +75,32 @@ class InboxMessageController extends Controller
         return ApiResponse::success(['count' => $count]);
     }
 
+    public function categoryStats(Request $request): JsonResponse
+    {
+        $admin = $this->currentAdmin($request);
+
+        $categories = [
+            InboxMessage::CATEGORY_NOTICE,
+            InboxMessage::CATEGORY_APPROVAL,
+            InboxMessage::CATEGORY_TASK,
+            InboxMessage::CATEGORY_CRM,
+            InboxMessage::CATEGORY_ALERT,
+        ];
+
+        $stats = [];
+        $total = 0;
+
+        foreach ($categories as $category) {
+            $count = $this->countCategoryBadge($admin->id, $category);
+            $stats[$category] = $count;
+            $total += $count;
+        }
+
+        $stats['all'] = $total;
+
+        return ApiResponse::success($stats);
+    }
+
     public function show(Request $request, int $id): JsonResponse
     {
         $admin = $this->currentAdmin($request);
@@ -176,5 +202,14 @@ class InboxMessageController extends Controller
                 "CASE priority WHEN 'urgent' THEN 1 WHEN 'high' THEN 2 WHEN 'normal' THEN 3 ELSE 4 END"
             )
             ->orderByDesc('id');
+    }
+
+    private function countCategoryBadge(int $adminId, string $category): int
+    {
+        return InboxMessage::query()
+            ->where('admin_id', $adminId)
+            ->where('category', $category)
+            ->where('is_read', 0)
+            ->count();
     }
 }

@@ -1,27 +1,61 @@
 <script lang="ts" setup>
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { InboxMessageRow } from '#/api/inbox';
+import type { InboxCategoryStats, InboxMessageRow } from '#/api/inbox';
 
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
+import { Icon as IconifyIcon } from '@iconify/vue';
 import { Button, message, Modal } from 'ant-design-vue';
 
 import { useResponsiveCrud } from '#/adapter/mobile-list';
 import {
   batchDeleteInboxMessages,
   deleteInboxMessage,
+  fetchInboxCategoryStats,
   fetchInboxMessagePage,
   markAllInboxMessagesRead,
   markInboxMessageRead,
 } from '#/api/inbox';
+import {
+  INBOX_ALL_CATEGORY_KEY,
+  INBOX_ALL_CATEGORY_OPTION,
+  INBOX_CATEGORY_OPTIONS,
+} from '#/constants/inbox-permissions';
 import { $t } from '#/locales';
 
-import { useColumns, useGridFormSchema } from './data';
+import { useColumns, useGridFormSchema, buildInboxMessageMobileCrudConfig } from './data';
 import DetailDrawer from './modules/detail-drawer.vue';
 
 const detailDrawerRef = ref<InstanceType<typeof DetailDrawer>>();
+const activeCategory = ref(INBOX_ALL_CATEGORY_KEY);
+const categoryStats = ref<InboxCategoryStats>({
+  alert: 0,
+  all: 0,
+  approval: 0,
+  crm: 0,
+  notice: 0,
+  task: 0,
+});
+
+function formatBadgeCount(count: number) {
+  return count > 99 ? '99+' : String(count);
+}
+
+function getCategoryCount(key: keyof InboxCategoryStats) {
+  return categoryStats.value[key] ?? 0;
+}
+
+async function loadCategoryStats() {
+  categoryStats.value = await fetchInboxCategoryStats();
+}
+
+function resolveCategoryFilter() {
+  return activeCategory.value === INBOX_ALL_CATEGORY_KEY
+    ? undefined
+    : activeCategory.value;
+}
 
 async function onActionClick({ code, row }: OnActionClickParams<InboxMessageRow>) {
   if (code === 'detail') {
@@ -44,7 +78,8 @@ async function onActionClick({ code, row }: OnActionClickParams<InboxMessageRow>
   }
 }
 
-const columns = useColumns(onActionClick);
+const columns = useColumns(onActionClick, { showCategoryColumn: true });
+const mobileColumns = useColumns(onActionClick, { showCategoryColumn: false });
 
 const [CrudView, crudApi] = useResponsiveCrud<InboxMessageRow>({
   formOptions: {
@@ -64,7 +99,7 @@ const [CrudView, crudApi] = useResponsiveCrud<InboxMessageRow>({
             page: page.currentPage,
             per_page: page.pageSize,
             keyword: formValues?.keyword || undefined,
-            category: formValues?.category || undefined,
+            category: resolveCategoryFilter(),
             type: formValues?.type || undefined,
             is_read:
               formValues?.is_read === 0 || formValues?.is_read === 1
@@ -76,13 +111,56 @@ const [CrudView, crudApi] = useResponsiveCrud<InboxMessageRow>({
     rowConfig: { keyField: 'id' },
     toolbarConfig: { custom: true, refresh: true, search: true, zoom: true },
   } as VxeTableGridOptions<InboxMessageRow>,
+  mobile: buildInboxMessageMobileCrudConfig({
+    columns: mobileColumns,
+    query: async ({ filters, keyword, page, pageSize }) => {
+      const result = await fetchInboxMessagePage({
+        page,
+        per_page: pageSize,
+        keyword: keyword || undefined,
+        category: resolveCategoryFilter(),
+        type: filters?.type || undefined,
+        is_read:
+          filters?.is_read === 0 || filters?.is_read === 1
+            ? filters.is_read
+            : undefined,
+      });
+      return {
+        data: result.data,
+        total: result.total,
+      };
+    },
+  }),
 });
 
-const { clearSelection, reload, selectedRows } = crudApi;
+const { clearSelection, gridApi, reload, selectedRows } = crudApi;
 
-function onRefresh() {
-  reload();
+function syncGridColumns() {
+  const nextColumns = useColumns(onActionClick, {
+    showCategoryColumn: activeCategory.value === INBOX_ALL_CATEGORY_KEY,
+  });
+  gridApi.setGridOptions({
+    columns: nextColumns as VxeTableGridOptions<InboxMessageRow>['columns'],
+  });
 }
+
+function onCategoryChange(value: string) {
+  if (activeCategory.value === value) {
+    return;
+  }
+  activeCategory.value = value;
+  clearSelection();
+  syncGridColumns();
+  onRefresh();
+}
+
+async function onRefresh() {
+  await Promise.all([reload(), loadCategoryStats()]);
+}
+
+onMounted(() => {
+  loadCategoryStats();
+});
 
 async function onDelete(row: InboxMessageRow) {
   await deleteInboxMessage(row.id);
@@ -121,20 +199,216 @@ function onBatchDelete() {
 <template>
   <Page auto-content-height>
     <DetailDrawer ref="detailDrawerRef" />
-    <CrudView>
-      <template #toolbar-actions>
-        <div v-if="selectedRows.length > 0" class="vxe-grid-batch-toolbar">
-          <Button danger @click="onBatchDelete">
-            {{ $t('system.shared.batchDeleteWithCount', [selectedRows.length]) }}
-          </Button>
-          <Button class="ml-2" type="link" @click="clearSelection">
-            {{ $t('system.shared.clearSelection') }}
-          </Button>
+    <div
+      class="bg-card flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-border md:min-h-[520px] md:flex-row"
+    >
+      <aside
+        class="inbox-category-panel flex shrink-0 flex-col overflow-hidden border-b border-border md:w-[200px] md:border-b-0 md:border-r"
+      >
+        <div class="inbox-category-header">
+          {{ $t('inbox.columns.category') }}
         </div>
-        <Button v-else @click="onMarkAllRead">
-          {{ $t('inbox.markAllRead') }}
-        </Button>
-      </template>
-    </CrudView>
+        <div class="inbox-category-tabs">
+          <button
+            class="inbox-category-item"
+            :class="{ 'is-active': activeCategory === INBOX_ALL_CATEGORY_KEY }"
+            type="button"
+            @click="onCategoryChange(INBOX_ALL_CATEGORY_KEY)"
+          >
+            <IconifyIcon
+              class="inbox-category-item__icon"
+              :icon="INBOX_ALL_CATEGORY_OPTION.icon"
+            />
+            <span class="inbox-category-item__label">
+              {{ $t(INBOX_ALL_CATEGORY_OPTION.labelKey) }}
+            </span>
+            <span
+              v-if="getCategoryCount('all') > 0"
+              class="inbox-category-item__badge"
+            >
+              {{ formatBadgeCount(getCategoryCount('all')) }}
+            </span>
+          </button>
+          <button
+            v-for="item in INBOX_CATEGORY_OPTIONS"
+            :key="item.value"
+            class="inbox-category-item"
+            :class="{ 'is-active': activeCategory === item.value }"
+            type="button"
+            @click="onCategoryChange(item.value)"
+          >
+            <IconifyIcon class="inbox-category-item__icon" :icon="item.icon" />
+            <span class="inbox-category-item__label">{{ $t(item.labelKey) }}</span>
+            <span
+              v-if="getCategoryCount(item.value) > 0"
+              class="inbox-category-item__badge"
+            >
+              {{ formatBadgeCount(getCategoryCount(item.value)) }}
+            </span>
+          </button>
+        </div>
+      </aside>
+
+      <main class="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div class="min-h-0 flex-1">
+          <CrudView>
+            <template #toolbar-actions>
+              <div v-if="selectedRows.length > 0" class="vxe-grid-batch-toolbar">
+                <Button danger @click="onBatchDelete">
+                  {{ $t('system.shared.batchDeleteWithCount', [selectedRows.length]) }}
+                </Button>
+                <Button class="ml-2" type="link" @click="clearSelection">
+                  {{ $t('system.shared.clearSelection') }}
+                </Button>
+              </div>
+              <Button v-else @click="onMarkAllRead">
+                {{ $t('inbox.markAllRead') }}
+              </Button>
+            </template>
+          </CrudView>
+        </div>
+      </main>
+    </div>
   </Page>
 </template>
+
+<style scoped>
+.inbox-category-header {
+  display: flex;
+  height: 44px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid hsl(var(--border));
+  background-color: hsl(var(--accent));
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+}
+
+.inbox-category-tabs {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  gap: 8px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding: 8px;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+}
+
+.inbox-category-tabs::-webkit-scrollbar {
+  height: 4px;
+}
+
+.inbox-category-tabs::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background-color: hsl(var(--border));
+}
+
+.inbox-category-item {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  scroll-snap-align: start;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: transparent;
+  padding: 6px 14px;
+  font-size: 14px;
+  line-height: 1.25;
+  color: hsl(var(--muted-foreground));
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.inbox-category-item__icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.inbox-category-item__label {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.inbox-category-item__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 27.5px;
+  height: 18px;
+  flex-shrink: 0;
+  padding: 0 4px;
+  border-radius: 9999px;
+  background-color: hsl(var(--destructive));
+  font-size: 11px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 18px;
+  text-align: center;
+  color: #fff;
+  box-sizing: border-box;
+}
+
+.inbox-category-item:hover {
+  border-color: hsl(var(--primary) / 0.35);
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+.inbox-category-item.is-active {
+  border-color: hsl(var(--primary) / 0.25);
+  background-color: hsl(var(--primary) / 0.08);
+  color: hsl(var(--primary));
+  font-weight: 500;
+}
+
+@media (min-width: 768px) {
+  .inbox-category-header {
+    justify-content: flex-start;
+  }
+
+  .inbox-category-tabs {
+    flex-direction: column;
+    gap: 0;
+    overflow-x: visible;
+    overflow-y: auto;
+    padding: 0;
+  }
+
+  .inbox-category-item {
+    width: 100%;
+    border: 0;
+    border-left: 2px solid transparent;
+    border-radius: 0;
+    padding: 10px 12px;
+    text-align: left;
+    color: hsl(var(--foreground));
+  }
+
+  .inbox-category-item:hover {
+    border-color: transparent;
+    border-left-color: hsl(var(--border));
+    background-color: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+  }
+
+  .inbox-category-item.is-active {
+    border-color: transparent;
+    border-left-color: hsl(var(--primary));
+    background-color: hsl(var(--primary) / 0.08);
+    color: hsl(var(--primary));
+  }
+}
+</style>
