@@ -6,6 +6,7 @@ import { onMounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
 
+import { storeToRefs } from 'pinia';
 import { Icon as IconifyIcon } from '@iconify/vue';
 import { Button, message, Modal } from 'ant-design-vue';
 
@@ -13,7 +14,6 @@ import { useResponsiveCrud } from '#/adapter/mobile-list';
 import {
   batchDeleteInboxMessages,
   deleteInboxMessage,
-  fetchInboxCategoryStats,
   fetchInboxMessagePage,
   markAllInboxMessagesRead,
   markInboxMessageRead,
@@ -24,20 +24,16 @@ import {
   INBOX_CATEGORY_OPTIONS,
 } from '#/constants/inbox-permissions';
 import { $t } from '#/locales';
+import { useInboxStore } from '#/store';
 
 import { useColumns, useGridFormSchema, buildInboxMessageMobileCrudConfig } from './data';
 import DetailDrawer from './modules/detail-drawer.vue';
 
+const inboxStore = useInboxStore();
+const { categoryStats } = storeToRefs(inboxStore);
+
 const detailDrawerRef = ref<InstanceType<typeof DetailDrawer>>();
 const activeCategory = ref(INBOX_ALL_CATEGORY_KEY);
-const categoryStats = ref<InboxCategoryStats>({
-  alert: 0,
-  all: 0,
-  approval: 0,
-  crm: 0,
-  notice: 0,
-  task: 0,
-});
 
 function formatBadgeCount(count: number) {
   return count > 99 ? '99+' : String(count);
@@ -45,10 +41,6 @@ function formatBadgeCount(count: number) {
 
 function getCategoryCount(key: keyof InboxCategoryStats) {
   return categoryStats.value[key] ?? 0;
-}
-
-async function loadCategoryStats() {
-  categoryStats.value = await fetchInboxCategoryStats();
 }
 
 function resolveCategoryFilter() {
@@ -155,11 +147,11 @@ function onCategoryChange(value: string) {
 }
 
 async function onRefresh() {
-  await Promise.all([reload(), loadCategoryStats()]);
+  await Promise.all([reload(), inboxStore.refresh()]);
 }
 
 onMounted(() => {
-  loadCategoryStats();
+  inboxStore.refresh();
 });
 
 async function onDelete(row: InboxMessageRow) {

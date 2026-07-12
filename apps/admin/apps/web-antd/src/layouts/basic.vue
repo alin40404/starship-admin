@@ -1,8 +1,10 @@
 <script lang="ts" setup>
 import type { NotificationItem } from '@vben/layouts';
 
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
+
+import { storeToRefs } from 'pinia';
 
 import { AuthenticationLoginExpiredModal } from '@vben/common-ui';
 import { VBEN_DOC_URL, VBEN_GITHUB_URL } from '@vben/constants';
@@ -23,8 +25,6 @@ import type { InboxMessageRow } from '#/api/inbox';
 import {
   clearReadInboxMessages,
   deleteInboxMessage,
-  fetchInboxRecentMessages,
-  fetchInboxUnreadCount,
   markAllInboxMessagesRead,
   markInboxMessageRead,
 } from '#/api/inbox';
@@ -34,11 +34,11 @@ import {
   resolveInboxCategory,
 } from '#/constants/inbox-permissions';
 import { $t } from '#/locales';
-import { useAuthStore } from '#/store';
+import { useAuthStore, useInboxStore } from '#/store';
 import LoginForm from '#/views/_core/authentication/login.vue';
 
-const notifications = ref<NotificationItem[]>([]);
-const unreadCount = ref(0);
+const inboxStore = useInboxStore();
+const { recentMessages, unreadCount } = storeToRefs(inboxStore);
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -48,6 +48,10 @@ const { hasAccessByCodes } = useAccess();
 const canUseInbox = computed(() => hasAccessByCodes([INBOX_MENU_PERMISSION]));
 const { destroyWatermark, updateWatermark } = useWatermark();
 const showDot = computed(() => unreadCount.value > 0);
+
+const notifications = computed(() =>
+  recentMessages.value.map(mapInboxToNotification),
+);
 
 const relativeLocale = computed(() =>
   preferences.app.locale.replace('_', '-').toLowerCase(),
@@ -85,21 +89,10 @@ function mapInboxToNotification(row: InboxMessageRow): NotificationItem {
 
 async function loadInboxNotifications() {
   if (!accessStore.accessToken || !canUseInbox.value) {
-    notifications.value = [];
-    unreadCount.value = 0;
+    inboxStore.reset();
     return;
   }
-  try {
-    const [rows, countResult] = await Promise.all([
-      fetchInboxRecentMessages(10),
-      fetchInboxUnreadCount(),
-    ]);
-    notifications.value = rows.map(mapInboxToNotification);
-    unreadCount.value = countResult.count;
-  } catch {
-    notifications.value = [];
-    unreadCount.value = 0;
-  }
+  await inboxStore.refresh();
 }
 
 onMounted(() => {
@@ -189,8 +182,7 @@ async function markRead(id: number | string) {
   }
   try {
     await markInboxMessageRead(Number(id));
-    item.isRead = true;
-    unreadCount.value = Math.max(0, unreadCount.value - 1);
+    await inboxStore.refresh();
   } catch {
     // ignore
   }
@@ -199,7 +191,7 @@ async function markRead(id: number | string) {
 async function remove(id: number | string) {
   try {
     await deleteInboxMessage(Number(id));
-    notifications.value = notifications.value.filter((item) => item.id !== id);
+    await inboxStore.refresh();
   } catch {
     // ignore
   }
@@ -208,10 +200,7 @@ async function remove(id: number | string) {
 async function handleMakeAll() {
   try {
     await markAllInboxMessagesRead();
-    notifications.value.forEach((item) => {
-      item.isRead = true;
-    });
-    unreadCount.value = 0;
+    await inboxStore.refresh();
   } catch {
     // ignore
   }
