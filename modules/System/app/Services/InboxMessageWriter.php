@@ -37,12 +37,16 @@ class InboxMessageWriter
             return null;
         }
 
+        $category = (string) ($extra['category'] ?? InboxMessage::categoryFromType($type));
+        if (! InboxConfigRegistrar::isCategoryVisible($category)) {
+            return null;
+        }
+
         $title = trim($title);
         if ($title === '') {
             return null;
         }
 
-        $category = (string) ($extra['category'] ?? InboxMessage::categoryFromType($type));
         $priority = (string) ($extra['priority'] ?? InboxMessage::PRIORITY_NORMAL);
 
         return InboxMessage::query()->create([

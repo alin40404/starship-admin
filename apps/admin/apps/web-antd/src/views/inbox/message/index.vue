@@ -2,7 +2,8 @@
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { InboxCategoryStats, InboxMessageRow } from '#/api/inbox';
 
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
 
@@ -21,7 +22,8 @@ import {
 import {
   INBOX_ALL_CATEGORY_KEY,
   INBOX_ALL_CATEGORY_OPTION,
-  INBOX_CATEGORY_OPTIONS,
+  getVisibleInboxCategoryOptions,
+  normalizeInboxCategoryFilter,
 } from '#/constants/inbox-permissions';
 import { $t } from '#/locales';
 import { useInboxStore } from '#/store';
@@ -30,10 +32,15 @@ import { useColumns, useGridFormSchema, buildInboxMessageMobileCrudConfig } from
 import DetailDrawer from './modules/detail-drawer.vue';
 
 const inboxStore = useInboxStore();
-const { categoryStats } = storeToRefs(inboxStore);
+const { activeCategory, categoryStats, visibleCategories } =
+  storeToRefs(inboxStore);
 
+const route = useRoute();
 const detailDrawerRef = ref<InstanceType<typeof DetailDrawer>>();
-const activeCategory = ref(INBOX_ALL_CATEGORY_KEY);
+
+const visibleCategoryOptions = computed(() =>
+  getVisibleInboxCategoryOptions(visibleCategories.value),
+);
 
 function formatBadgeCount(count: number) {
   return count > 99 ? '99+' : String(count);
@@ -141,13 +148,18 @@ function syncGridColumns() {
 }
 
 function onCategoryChange(value: string) {
-  if (activeCategory.value === value) {
+  const nextCategory = normalizeInboxCategoryFilter(
+    value,
+    visibleCategories.value,
+  );
+  if (activeCategory.value === nextCategory) {
     return;
   }
-  activeCategory.value = value;
-  clearSelection();
-  syncGridColumns();
-  onRefresh();
+  void inboxStore.setActiveCategory(nextCategory).then(() => {
+    clearSelection();
+    syncGridColumns();
+    reload();
+  });
 }
 
 async function onRefresh() {
@@ -155,7 +167,20 @@ async function onRefresh() {
 }
 
 onMounted(() => {
-  inboxStore.refresh();
+  const queryCategory =
+    typeof route.query.category === 'string' ? route.query.category : undefined;
+  if (queryCategory) {
+    void inboxStore.setActiveCategory(queryCategory).then(() => {
+      syncGridColumns();
+      reload();
+    });
+    return;
+  }
+
+  void inboxStore.refresh().then(() => {
+    syncGridColumns();
+    reload();
+  });
 });
 
 async function onDelete(row: InboxMessageRow) {
@@ -226,7 +251,7 @@ function onBatchDelete() {
             </span>
           </button>
           <button
-            v-for="item in INBOX_CATEGORY_OPTIONS"
+            v-for="item in visibleCategoryOptions"
             :key="item.value"
             class="inbox-category-item"
             :class="{ 'is-active': activeCategory === item.value }"

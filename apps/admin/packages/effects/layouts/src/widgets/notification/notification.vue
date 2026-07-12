@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { NotificationItem } from './types';
+import type { NotificationCategoryTab, NotificationItem } from './types';
 
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
@@ -11,7 +11,6 @@ import {
   VbenButton,
   VbenIconButton,
   VbenPopover,
-  VbenScrollbar,
   VbenTooltip,
 } from '@vben-core/shadcn-ui';
 
@@ -20,9 +19,17 @@ import { useToggle } from '@vueuse/core';
 
 interface Props {
   /**
+   * 当前分类
+   */
+  activeCategory?: string;
+  /**
    * 未读数量，优先于圆点展示
    */
   count?: number;
+  /**
+   * 分类筛选标签
+   */
+  categoryTabs?: NotificationCategoryTab[];
   /**
    * 显示圆点
    */
@@ -44,7 +51,9 @@ interface Props {
 defineOptions({ name: 'NotificationPopup' });
 
 const props = withDefaults(defineProps<Props>(), {
+  activeCategory: '',
   count: 0,
+  categoryTabs: () => [],
   dot: false,
   hasMore: false,
   notifications: () => [],
@@ -52,6 +61,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
+  categoryChange: [string];
   clear: [];
   loadMore: [];
   makeAll: [];
@@ -170,15 +180,26 @@ function navigateTo(
   }
 }
 
-function handleScrollAt(state: {
-  bottom: boolean;
-  left: boolean;
-  right: boolean;
-  top: boolean;
-}) {
-  if (state.bottom && props.hasMore && !props.loadingMore) {
+function handleListScroll(event: Event) {
+  const target = event.target as HTMLElement;
+  const scrollTop = target.scrollTop;
+  const clientHeight = target.clientHeight;
+  const scrollHeight = target.scrollHeight;
+  const atBottom =
+    Math.abs(scrollTop) + clientHeight >= scrollHeight - 1;
+
+  if (atBottom && props.hasMore && !props.loadingMore) {
     emit('loadMore');
   }
+}
+
+function handleCategoryWheel(event: WheelEvent) {
+  const target = event.currentTarget as HTMLElement;
+  if (target.scrollWidth <= target.clientWidth) {
+    return;
+  }
+  target.scrollLeft += event.deltaY;
+  event.preventDefault();
 }
 
 function categoryClass(category?: NotificationItem['category']) {
@@ -237,8 +258,39 @@ function showCategoryIcon(item: NotificationItem) {
           <MailCheck class="size-4" />
         </VbenIconButton>
       </div>
-      <VbenScrollbar v-if="notifications.length > 0" @scroll-at="handleScrollAt">
-        <ul class="flex! max-h-90 w-full flex-col">
+      <div
+        v-if="categoryTabs.length > 0"
+        class="notification-category-tabs notification-scrollbar border-b border-border px-3 pb-2"
+        @wheel="handleCategoryWheel"
+      >
+        <button
+          v-for="tab in categoryTabs"
+          :key="tab.value"
+          type="button"
+          class="notification-category-tab"
+          :class="{ 'notification-category-tab--active': activeCategory === tab.value }"
+          @click.stop="emit('categoryChange', tab.value)"
+        >
+          <IconifyIcon
+            v-if="tab.icon"
+            class="size-3.5 shrink-0"
+            :icon="tab.icon"
+          />
+          <span class="max-w-16 truncate">{{ tab.label }}</span>
+          <span
+            v-if="tab.badge"
+            class="notification-category-tab__badge"
+          >
+            {{ tab.badge }}
+          </span>
+        </button>
+      </div>
+      <div
+        v-if="notifications.length > 0"
+        class="notification-list-scroll notification-scrollbar max-h-90 overflow-y-auto"
+        @scroll="handleListScroll"
+      >
+        <ul class="flex! w-full flex-col">
           <template v-for="item in notifications" :key="item.id ?? item.title">
             <li
               class="relative flex w-full cursor-pointer items-start gap-3 border-t border-border p-3 hover:bg-accent"
@@ -271,20 +323,26 @@ function showCategoryIcon(item: NotificationItem) {
                   class="aspect-square size-full object-cover"
                 />
               </span>
-              <div class="min-w-0 flex-1 flex-col gap-1 leading-none">
-                <p class="truncate font-semibold">{{ item.title }}</p>
+              <div class="min-w-0 flex-1 flex-col gap-1 pr-12 leading-none">
                 <p
-                  v-if="item.senderName"
-                  class="truncate text-xs text-muted-foreground"
+                  class="cursor-pointer truncate font-semibold hover:text-primary hover:underline"
+                  @click.stop="handleView(item)"
                 >
-                  {{ item.senderName }}
+                  {{ item.title }}
                 </p>
-                <p class="my-1 line-clamp-2 text-xs text-muted-foreground">
+                <p class="line-clamp-2 text-xs text-muted-foreground">
                   {{ item.message }}
                 </p>
-                <p class="text-xs text-muted-foreground">
-                  {{ item.date }}
-                </p>
+                <div
+                  class="flex items-center gap-2 text-xs text-muted-foreground"
+                >
+                  <span class="w-24 shrink-0 truncate">
+                    {{ item.senderName || '' }}
+                  </span>
+                  <span class="ml-auto shrink-0 whitespace-nowrap tabular-nums">
+                    {{ item.date }}
+                  </span>
+                </div>
               </div>
               <div
                 class="absolute top-1/2 right-3 flex -translate-y-1/2 flex-col gap-2"
@@ -323,7 +381,7 @@ function showCategoryIcon(item: NotificationItem) {
             {{ $t('common.loading') }}
           </li>
         </ul>
-      </VbenScrollbar>
+      </div>
 
       <template v-else>
         <div class="flex-center min-h-37.5 w-full text-muted-foreground">
@@ -396,6 +454,84 @@ function showCategoryIcon(item: NotificationItem) {
   padding: 0 4px;
   font-size: 9px;
   letter-spacing: -0.02em;
+}
+
+.notification-category-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.notification-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) transparent;
+}
+
+.notification-scrollbar::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+
+.notification-scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 1.5px;
+  background-color: hsl(var(--border));
+}
+
+.notification-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.notification-scrollbar::-webkit-scrollbar-button {
+  display: none;
+}
+
+.notification-list-scroll {
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.notification-category-tab {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: transparent;
+  padding: 4px 10px;
+  font-size: 12px;
+  line-height: 1;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    border-color 0.2s,
+    background-color 0.2s;
+}
+
+.notification-category-tab:hover {
+  color: hsl(var(--foreground));
+  background-color: hsl(var(--accent));
+}
+
+.notification-category-tab--active {
+  border-color: hsl(var(--primary));
+  background-color: hsl(var(--primary) / 0.08);
+  color: hsl(var(--primary));
+}
+
+.notification-category-tab__badge {
+  min-width: 16px;
+  border-radius: 9999px;
+  background: hsl(var(--destructive));
+  padding: 0 5px;
+  font-size: 10px;
+  line-height: 16px;
+  color: #fff;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
 :deep(.bell-button) {

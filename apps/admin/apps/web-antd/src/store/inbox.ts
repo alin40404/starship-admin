@@ -7,8 +7,12 @@ import { defineStore } from 'pinia';
 import {
   fetchInboxCategoryStats,
   fetchInboxMessagePage,
+  fetchInboxSettings,
   fetchInboxUnreadCount,
 } from '#/api/inbox';
+import type { InboxCategory } from '#/constants/inbox-permissions';
+import { INBOX_ALL_CATEGORY_KEY } from '#/constants/inbox-permissions';
+import { normalizeInboxCategoryFilter } from '#/constants/inbox-permissions';
 
 const NOTIFICATION_PAGE_SIZE = 10;
 
@@ -31,6 +35,14 @@ export const useInboxStore = defineStore('inbox', () => {
   const loadingMore = ref(false);
   const hasMore = ref(true);
   const page = ref(1);
+  const activeCategory = ref(INBOX_ALL_CATEGORY_KEY);
+  const visibleCategories = ref<InboxCategory[]>([]);
+
+  function resolveCategoryParam() {
+    return activeCategory.value === INBOX_ALL_CATEGORY_KEY
+      ? undefined
+      : activeCategory.value;
+  }
 
   function reset() {
     unreadCount.value = 0;
@@ -38,18 +50,30 @@ export const useInboxStore = defineStore('inbox', () => {
     recentMessages.value = [];
     hasMore.value = true;
     page.value = 1;
+    activeCategory.value = INBOX_ALL_CATEGORY_KEY;
+    visibleCategories.value = [];
   }
 
   async function refresh() {
     loading.value = true;
     try {
-      const [countResult, stats, pageResult] = await Promise.all([
+      const [countResult, stats, settings, pageResult] = await Promise.all([
         fetchInboxUnreadCount(),
         fetchInboxCategoryStats(),
-        fetchInboxMessagePage({ page: 1, per_page: NOTIFICATION_PAGE_SIZE }),
+        fetchInboxSettings(),
+        fetchInboxMessagePage({
+          page: 1,
+          per_page: NOTIFICATION_PAGE_SIZE,
+          category: resolveCategoryParam(),
+        }),
       ]);
       unreadCount.value = countResult.count;
       categoryStats.value = stats;
+      visibleCategories.value = settings.visible_categories;
+      activeCategory.value = normalizeInboxCategoryFilter(
+        activeCategory.value,
+        visibleCategories.value,
+      );
       recentMessages.value = pageResult.data;
       hasMore.value = pageResult.current_page < pageResult.last_page;
       page.value = 1;
@@ -71,6 +95,7 @@ export const useInboxStore = defineStore('inbox', () => {
       const pageResult = await fetchInboxMessagePage({
         page: nextPage,
         per_page: NOTIFICATION_PAGE_SIZE,
+        category: resolveCategoryParam(),
       });
       recentMessages.value = [...recentMessages.value, ...pageResult.data];
       hasMore.value = pageResult.current_page < pageResult.last_page;
@@ -82,7 +107,20 @@ export const useInboxStore = defineStore('inbox', () => {
     }
   }
 
+  async function setActiveCategory(category: string) {
+    const nextCategory = normalizeInboxCategoryFilter(
+      category,
+      visibleCategories.value,
+    );
+    if (activeCategory.value === nextCategory) {
+      return;
+    }
+    activeCategory.value = nextCategory;
+    await refresh();
+  }
+
   return {
+    activeCategory,
     categoryStats,
     hasMore,
     loading,
@@ -91,6 +129,8 @@ export const useInboxStore = defineStore('inbox', () => {
     recentMessages,
     refresh,
     reset,
+    setActiveCategory,
     unreadCount,
+    visibleCategories,
   };
 });

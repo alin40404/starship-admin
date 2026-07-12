@@ -5,6 +5,7 @@
   "markAllReadDone": "All marked as read",
   "markReadDone": "Marked as read",
   "batchDeleteConfirm": "Delete {0} selected inbox message(s)?",
+  "clearReadConfirm": "Clear all read notifications?",
   "category": {
     "notice": "Notice",
     "approval": "Approval",

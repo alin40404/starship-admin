@@ -1,3 +1,10 @@
+interface NotificationCategoryTab {
+  badge?: number | string;
+  icon?: string;
+  label: string;
+  value: string;
+}
+
 interface NotificationItem {
   id: number | string;
   avatar: string;
@@ -30,4 +37,4 @@ interface NotificationItem {
   state?: Record<string, any>;
 }
 
-export type { NotificationItem };
+export type { NotificationCategoryTab, NotificationItem };

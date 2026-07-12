@@ -11,7 +11,7 @@ final class InboxConfigRegistrar
 {
     public const DEFAULT_PAGE_SIZE = 20;
 
-    public const DEFAULT_RETENTION_DAYS = 90;
+    public const DEFAULT_RETENTION_DAYS = 0;
 
     public static function isEnabled(): bool
     {
@@ -40,6 +40,41 @@ final class InboxConfigRegistrar
             InboxMessage::TYPE_ACCOUNT => self::toBool(SettingStore::get('inbox.notify_account', '1')),
             default => false,
         };
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function allCategories(): array
+    {
+        return [
+            InboxMessage::CATEGORY_NOTICE,
+            InboxMessage::CATEGORY_APPROVAL,
+            InboxMessage::CATEGORY_TASK,
+            InboxMessage::CATEGORY_CRM,
+            InboxMessage::CATEGORY_ALERT,
+        ];
+    }
+
+    public static function isCategoryVisible(string $category): bool
+    {
+        return self::toBool(SettingStore::get(self::categorySettingKey($category), '1'));
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function visibleCategories(): array
+    {
+        return array_values(array_filter(
+            self::allCategories(),
+            static fn (string $category): bool => self::isCategoryVisible($category),
+        ));
+    }
+
+    public static function categorySettingKey(string $category): string
+    {
+        return 'inbox.category_'.$category;
     }
 
     private static function toBool(?string $value): bool

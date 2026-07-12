@@ -31,6 +31,42 @@ export const INBOX_PRIORITY_OPTIONS = [
 
 export type InboxCategory = (typeof INBOX_CATEGORY_OPTIONS)[number]['value'];
 
+export function getVisibleInboxCategoryOptions(
+  visibleCategories?: readonly string[],
+) {
+  const visible =
+    visibleCategories && visibleCategories.length > 0
+      ? visibleCategories
+      : INBOX_CATEGORY_OPTIONS.map((item) => item.value);
+
+  return INBOX_CATEGORY_OPTIONS.filter((item) => visible.includes(item.value));
+}
+
+export function isInboxCategoryHidden(
+  category: string,
+  visibleCategories?: readonly string[],
+) {
+  if (!visibleCategories || visibleCategories.length === 0) {
+    return false;
+  }
+
+  return !visibleCategories.includes(category);
+}
+
+export function normalizeInboxCategoryFilter(
+  category: string,
+  visibleCategories?: readonly string[],
+) {
+  if (
+    category === INBOX_ALL_CATEGORY_KEY ||
+    isInboxCategoryHidden(category, visibleCategories)
+  ) {
+    return INBOX_ALL_CATEGORY_KEY;
+  }
+
+  return category;
+}
+
 export function resolveInboxCategory(
   category?: string | null,
   type?: string,

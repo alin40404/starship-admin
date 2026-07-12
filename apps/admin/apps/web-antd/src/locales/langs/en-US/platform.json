@@ -263,6 +263,26 @@
         "notify_account": {
           "label": "Account Security Notifications",
           "remark": "Whether account security inbox messages are allowed"
+        },
+        "category_notice": {
+          "label": "Show Notice Category",
+          "remark": "Whether notice messages appear in the inbox"
+        },
+        "category_approval": {
+          "label": "Show Approval Category",
+          "remark": "Whether approval messages appear in the inbox"
+        },
+        "category_task": {
+          "label": "Show Task Category",
+          "remark": "Whether task messages appear in the inbox"
+        },
+        "category_crm": {
+          "label": "Show CRM Category",
+          "remark": "Whether CRM messages appear in the inbox"
+        },
+        "category_alert": {
+          "label": "Show Security Category",
+          "remark": "Whether security messages appear in the inbox"
         }
       },
       "mail": {

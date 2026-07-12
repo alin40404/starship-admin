@@ -283,6 +283,7 @@ Route::middleware(['api', 'admin.maintenance'])->prefix('admin-api')->group(func
         Route::get('messages/recent', [InboxMessageController::class, 'recent']);
         Route::get('messages/unread-count', [InboxMessageController::class, 'unreadCount']);
         Route::get('messages/category-stats', [InboxMessageController::class, 'categoryStats']);
+        Route::get('messages/settings', [InboxMessageController::class, 'settings']);
         Route::post('messages/read-all', [InboxMessageController::class, 'markAllRead']);
         Route::post('messages/clear-read', [InboxMessageController::class, 'clearRead']);
         Route::get('messages/{id}', [InboxMessageController::class, 'show']);

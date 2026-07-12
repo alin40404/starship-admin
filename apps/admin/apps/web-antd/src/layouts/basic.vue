@@ -1,10 +1,12 @@
 <script lang="ts" setup>
-import type { NotificationItem } from '@vben/layouts';
+import type { NotificationCategoryTab, NotificationItem } from '@vben/layouts';
 
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { storeToRefs } from 'pinia';
+
+import { Modal } from 'ant-design-vue';
 
 import { AuthenticationLoginExpiredModal } from '@vben/common-ui';
 import { VBEN_DOC_URL, VBEN_GITHUB_URL } from '@vben/constants';
@@ -21,7 +23,7 @@ import { preferences } from '@vben/preferences';
 import { useAccessStore, useUserStore } from '@vben/stores';
 import { formatRelativeTime, openWindow } from '@vben/utils';
 
-import type { InboxMessageRow } from '#/api/inbox';
+import type { InboxCategoryStats, InboxMessageRow } from '#/api/inbox';
 import {
   clearReadInboxMessages,
   deleteInboxMessage,
@@ -30,6 +32,9 @@ import {
 } from '#/api/inbox';
 import {
   getInboxCategoryMeta,
+  getVisibleInboxCategoryOptions,
+  INBOX_ALL_CATEGORY_KEY,
+  INBOX_ALL_CATEGORY_OPTION,
   INBOX_MENU_PERMISSION,
   resolveInboxCategory,
 } from '#/constants/inbox-permissions';
@@ -39,7 +44,15 @@ import LoginForm from '#/views/_core/authentication/login.vue';
 import DetailDrawer from '#/views/inbox/message/modules/detail-drawer.vue';
 
 const inboxStore = useInboxStore();
-const { hasMore, loadingMore, recentMessages, unreadCount } = storeToRefs(inboxStore);
+const {
+  activeCategory,
+  categoryStats,
+  hasMore,
+  loadingMore,
+  recentMessages,
+  unreadCount,
+  visibleCategories,
+} = storeToRefs(inboxStore);
 
 const detailDrawerRef = ref<InstanceType<typeof DetailDrawer>>();
 
@@ -55,6 +68,32 @@ const showDot = computed(() => unreadCount.value > 0);
 const notifications = computed(() =>
   recentMessages.value.map(mapInboxToNotification),
 );
+
+function formatCategoryBadge(count: number) {
+  if (count <= 0) {
+    return undefined;
+  }
+  return count > 99 ? '99+' : count;
+}
+
+function getCategoryCount(key: keyof InboxCategoryStats) {
+  return categoryStats.value[key] ?? 0;
+}
+
+const notificationCategoryTabs = computed<NotificationCategoryTab[]>(() => [
+  {
+    badge: formatCategoryBadge(getCategoryCount('all')),
+    icon: INBOX_ALL_CATEGORY_OPTION.icon,
+    label: $t(INBOX_ALL_CATEGORY_OPTION.labelKey),
+    value: INBOX_ALL_CATEGORY_KEY,
+  },
+  ...getVisibleInboxCategoryOptions(visibleCategories.value).map((item) => ({
+    badge: formatCategoryBadge(getCategoryCount(item.value)),
+    icon: item.icon,
+    label: $t(item.labelKey),
+    value: item.value,
+  })),
+]);
 
 const relativeLocale = computed(() =>
   preferences.app.locale.replace('_', '-').toLowerCase(),
@@ -169,13 +208,21 @@ async function handleLogout() {
   await authStore.logout(false);
 }
 
-async function handleNoticeClear() {
-  try {
-    await clearReadInboxMessages();
-    await loadInboxNotifications();
-  } catch {
-    // ignore
-  }
+function handleNoticeClear() {
+  Modal.confirm({
+    cancelText: $t('common.cancel'),
+    content: $t('inbox.clearReadConfirm'),
+    okText: $t('ui.widgets.clearNotifications'),
+    title: $t('common.prompt'),
+    async onOk() {
+      try {
+        await clearReadInboxMessages();
+        await loadInboxNotifications();
+      } catch {
+        // ignore
+      }
+    },
+  });
 }
 
 async function markRead(id: number | string) {
@@ -222,11 +269,23 @@ function handleViewNotification(item: NotificationItem) {
 }
 
 function handleViewAllNotifications() {
-  router.push('/dashboard/inbox');
+  if (activeCategory.value === INBOX_ALL_CATEGORY_KEY) {
+    router.push('/dashboard/inbox');
+    return;
+  }
+
+  router.push({
+    path: '/dashboard/inbox',
+    query: { category: activeCategory.value },
+  });
 }
 
 function handleLoadMoreNotifications() {
   void inboxStore.loadMore();
+}
+
+function handleNotificationCategoryChange(category: string) {
+  void inboxStore.setActiveCategory(category);
 }
 watch(
   () => ({
@@ -264,11 +323,14 @@ watch(
     </template>
     <template v-if="canUseInbox" #notification>
       <Notification
+        :active-category="activeCategory"
+        :category-tabs="notificationCategoryTabs"
         :count="unreadCount"
         :dot="showDot"
         :has-more="hasMore"
         :loading-more="loadingMore"
         :notifications="notifications"
+        @category-change="handleNotificationCategoryChange"
         @clear="handleNoticeClear"
         @load-more="handleLoadMoreNotifications"
         @read="(item) => item.id && markRead(item.id)"

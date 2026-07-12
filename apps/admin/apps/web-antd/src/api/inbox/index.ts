@@ -69,6 +69,14 @@ export function fetchInboxCategoryStats() {
   return requestClient.get<InboxCategoryStats>('/inbox/messages/category-stats');
 }
 
+export interface InboxSettings {
+  visible_categories: InboxCategory[];
+}
+
+export function fetchInboxSettings() {
+  return requestClient.get<InboxSettings>('/inbox/messages/settings');
+}
+
 export function markInboxMessageRead(id: number) {
   return requestClient.post<null>(`/inbox/messages/${id}/read`);
 }

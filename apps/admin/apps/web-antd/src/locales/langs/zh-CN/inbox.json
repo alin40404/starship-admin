@@ -5,6 +5,7 @@
   "markAllReadDone": "已全部标为已读",
   "markReadDone": "已标为已读",
   "batchDeleteConfirm": "确定删除选中的 {0} 条站内信吗？",
+  "clearReadConfirm": "确定清空所有已读消息吗？",
   "category": {
     "notice": "通知",
     "approval": "审批",

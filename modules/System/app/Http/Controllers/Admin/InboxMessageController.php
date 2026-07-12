@@ -39,6 +39,7 @@ class InboxMessageController extends Controller
 
         $query->with('sender:id,username,real_name,avatar');
         $this->applyInboxOrdering($query);
+        $this->applyVisibleCategoryScope($query);
 
         $perPage = (int) $request->get('per_page');
         if ($perPage <= 0) {
@@ -55,6 +56,7 @@ class InboxMessageController extends Controller
 
         $rows = InboxMessage::query()
             ->where('admin_id', $admin->id)
+            ->tap(fn ($query) => $this->applyVisibleCategoryScope($query))
             ->with('sender:id,username,real_name,avatar')
             ->tap(fn ($query) => $this->applyInboxOrdering($query))
             ->limit($limit)
@@ -70,6 +72,7 @@ class InboxMessageController extends Controller
         $count = InboxMessage::query()
             ->where('admin_id', $admin->id)
             ->where('is_read', 0)
+            ->tap(fn ($query) => $this->applyVisibleCategoryScope($query))
             ->count();
 
         return ApiResponse::success(['count' => $count]);
@@ -79,18 +82,18 @@ class InboxMessageController extends Controller
     {
         $admin = $this->currentAdmin($request);
 
-        $categories = [
-            InboxMessage::CATEGORY_NOTICE,
-            InboxMessage::CATEGORY_APPROVAL,
-            InboxMessage::CATEGORY_TASK,
-            InboxMessage::CATEGORY_CRM,
-            InboxMessage::CATEGORY_ALERT,
-        ];
+        $categories = InboxConfigRegistrar::allCategories();
 
         $stats = [];
         $total = 0;
 
         foreach ($categories as $category) {
+            if (! InboxConfigRegistrar::isCategoryVisible($category)) {
+                $stats[$category] = 0;
+
+                continue;
+            }
+
             $count = $this->countCategoryBadge($admin->id, $category);
             $stats[$category] = $count;
             $total += $count;
@@ -99,6 +102,13 @@ class InboxMessageController extends Controller
         $stats['all'] = $total;
 
         return ApiResponse::success($stats);
+    }
+
+    public function settings(): JsonResponse
+    {
+        return ApiResponse::success([
+            'visible_categories' => InboxConfigRegistrar::visibleCategories(),
+        ]);
     }
 
     public function show(Request $request, int $id): JsonResponse
@@ -192,6 +202,18 @@ class InboxMessageController extends Controller
             ->where('admin_id', $admin->id)
             ->whereKey($id)
             ->firstOrFail();
+    }
+
+    private function applyVisibleCategoryScope($query): void
+    {
+        $visibleCategories = InboxConfigRegistrar::visibleCategories();
+        if ($visibleCategories === []) {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
+        $query->whereIn('category', $visibleCategories);
     }
 
     private function applyInboxOrdering($query): void
