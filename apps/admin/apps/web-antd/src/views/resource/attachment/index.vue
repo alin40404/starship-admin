@@ -16,7 +16,7 @@ import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
   batchDeleteAttachments,
   deleteAttachment,
-  fetchAttachmentCategories,
+  fetchAttachmentOptionsCategories,
   fetchAttachmentPage,
 } from '#/api/system/attachment';
 import { ATTACHMENT_PERMISSIONS } from '#/constants/attachment-permissions';
@@ -292,7 +292,7 @@ function onBatchDelete() {
 }
 
 async function loadCategoryOptions() {
-  categoryOptionsRaw.value = await fetchAttachmentCategories();
+  categoryOptionsRaw.value = await fetchAttachmentOptionsCategories();
   syncGridColumns();
 }
 

@@ -74,7 +74,7 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
         Route::get('category-options/types', [CategoryController::class, 'optionsTypes']);
         Route::get('category-options/tree', [CategoryController::class, 'optionsTree']);
 
-        Route::get('attachments/picker/categories', [AttachmentController::class, 'pickerCategories']);
+        Route::get('attachment-options/categories', [AttachmentController::class, 'optionsCategories']);
         Route::get('attachments/picker', [AttachmentController::class, 'pickerIndex']);
         // --- end: 需登录，无按钮权限 ---
 
@@ -235,8 +235,6 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
         Route::delete('areas/{id}', [AreaController::class, 'destroy'])
             ->middleware('admin.permission:'.AreaPermissions::DELETE);
 
-        Route::get('attachments/categories', [AttachmentController::class, 'categories'])
-            ->middleware('admin.permission:'.AttachmentPermissions::QUERY);
         Route::get('attachments', [AttachmentController::class, 'index'])
             ->middleware('admin.permission:'.AttachmentPermissions::QUERY);
         Route::post('attachments', [AttachmentController::class, 'store'])

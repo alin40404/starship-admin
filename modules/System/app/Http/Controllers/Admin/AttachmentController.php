@@ -15,15 +15,10 @@ use Modules\System\App\Support\StorageConfigRegistrar;
 
 class AttachmentController extends Controller
 {
-    public function categories(): JsonResponse
-    {
-        return ApiResponse::success(AttachmentCategory::options());
-    }
-
     /**
-     * 表单附件选择弹窗：分类列表，仅需登录。
+     * 附件分类选择器：需登录，无按钮权限。
      */
-    public function pickerCategories(): JsonResponse
+    public function optionsCategories(): JsonResponse
     {
         return ApiResponse::success(AttachmentCategory::options());
     }

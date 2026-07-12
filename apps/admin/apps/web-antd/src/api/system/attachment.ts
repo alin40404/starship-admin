@@ -45,9 +45,10 @@ export interface AttachmentPageQuery {
   sort_order?: 'asc' | 'desc';
 }
 
-export function fetchAttachmentCategories() {
+/** 附件分类选择器（需登录，无按钮权限） */
+export function fetchAttachmentOptionsCategories() {
   return requestClient.get<AttachmentCategoryOption[]>(
-    '/system/attachments/categories',
+    '/system/attachment-options/categories',
   );
 }
 
@@ -55,13 +56,6 @@ export function fetchAttachmentPage(params: AttachmentPageQuery) {
   return requestClient.get<LaravelPaginate<AttachmentRow>>(
     '/system/attachments',
     { params },
-  );
-}
-
-/** 表单附件选择弹窗：仅需登录，不要求附件管理查询权限 */
-export function fetchAttachmentPickerCategories() {
-  return requestClient.get<AttachmentCategoryOption[]>(
-    '/system/attachments/picker/categories',
   );
 }
 
