@@ -10,9 +10,11 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Modules\System\App\Models\Admin;
+use Modules\System\App\Models\InboxMessage;
 use Modules\System\App\Services\AdminLoginSmsService;
 use Modules\System\App\Services\AdminPasswordResetService;
 use Modules\System\App\Services\AdminPermissionService;
+use Modules\System\App\Services\InboxMessageWriter;
 use Modules\System\App\Support\AdminRuntimeConfig;
 
 class AuthController extends Controller
@@ -72,6 +74,13 @@ class AuthController extends Controller
             adminId: $admin->id,
             message: '登录成功',
             request: $request,
+        );
+
+        $this->sendAccountInbox(
+            $admin->id,
+            __('system::inbox.login_success_title'),
+            __('system::inbox.login_success_content'),
+            '/dashboard/inbox',
         );
 
         $permission = app(AdminPermissionService::class);
@@ -187,6 +196,13 @@ class AuthController extends Controller
 
         $admin->password = Hash::make($newPassword);
         $admin->save();
+
+        $this->sendAccountInbox(
+            $admin->id,
+            __('system::inbox.password_changed_title'),
+            __('system::inbox.password_changed_content'),
+            '/dashboard/inbox',
+        );
 
         return ApiResponse::success(null, __('system::messages.password_changed'));
     }
@@ -318,6 +334,13 @@ class AuthController extends Controller
             request: $request,
         );
 
+        $this->sendAccountInbox(
+            $admin->id,
+            __('system::inbox.login_success_title'),
+            __('system::inbox.login_success_content'),
+            '/dashboard/inbox',
+        );
+
         return ApiResponse::success([
             'token' => $token,
             'token_type' => 'Bearer',
@@ -347,6 +370,21 @@ class AuthController extends Controller
             'roles' => $admin->relationLoaded('roles') ? $admin->roles->map->only(['id', 'name', 'code']) : [],
             'posts' => $admin->relationLoaded('posts') ? $admin->posts->map->only(['id', 'name', 'code']) : [],
         ];
+    }
+
+    private function sendAccountInbox(
+        int $adminId,
+        string $title,
+        string $content,
+        ?string $link = null,
+    ): void {
+        app(InboxMessageWriter::class)->send(
+            $adminId,
+            InboxMessage::TYPE_ACCOUNT,
+            $title,
+            $content,
+            $link,
+        );
     }
 
     private function writeLoginLog(

@@ -55,6 +55,7 @@ class MenuSeeder extends Seeder
                 ['name' => 'TodoCenter', 'title' => '待办中心', 'path' => '/dashboard/todos', 'permission' => 'dashboard.todos', 'sort' => 13, 'icon' => 'ep:list', 'keep_alive' => 1],
                 ['name' => 'QuickEntry', 'title' => '快捷入口', 'path' => '/dashboard/quick-entry', 'permission' => 'dashboard.quick_entry', 'sort' => 14, 'icon' => 'ep:promotion', 'keep_alive' => 0],
                 ['name' => 'Favorites', 'title' => '我的收藏', 'path' => '/dashboard/favorites', 'permission' => 'dashboard.favorites', 'sort' => 15, 'icon' => 'ep:star-filled', 'keep_alive' => 1],
+                ['name' => 'InboxCenter', 'title' => '消息中心', 'path' => '/dashboard/inbox', 'permission' => 'dashboard.inbox', 'sort' => 16, 'icon' => 'ep:message', 'keep_alive' => 1],
             ] as $m
         ) {
             Menu::query()->create([

@@ -11,6 +11,7 @@ use Modules\System\App\Http\Controllers\Admin\DepartmentController;
 use Modules\System\App\Http\Controllers\Admin\DevModuleController;
 use Modules\System\App\Http\Controllers\Admin\DictItemController;
 use Modules\System\App\Http\Controllers\Admin\DictTypeController;
+use Modules\System\App\Http\Controllers\Admin\InboxMessageController;
 use Modules\System\App\Http\Controllers\Admin\MenuController;
 use Modules\System\App\Http\Controllers\Admin\PluginController;
 use Modules\System\App\Http\Controllers\Admin\PostController;
@@ -275,5 +276,16 @@ Route::middleware(['api', 'admin.maintenance'])->prefix('admin-api')->group(func
             ->middleware('admin.permission:'.PluginPermissions::CONFIG);
         Route::put('plugins/{slug}/config', [PluginController::class, 'updateConfig'])
             ->middleware('admin.permission:'.PluginPermissions::CONFIG);
+    });
+
+    Route::middleware(['auth:sanctum', 'admin.permission:dashboard.inbox'])->prefix('inbox')->group(function () {
+        Route::get('messages', [InboxMessageController::class, 'index']);
+        Route::get('messages/recent', [InboxMessageController::class, 'recent']);
+        Route::get('messages/unread-count', [InboxMessageController::class, 'unreadCount']);
+        Route::post('messages/read-all', [InboxMessageController::class, 'markAllRead']);
+        Route::get('messages/{id}', [InboxMessageController::class, 'show']);
+        Route::post('messages/{id}/read', [InboxMessageController::class, 'markRead']);
+        Route::delete('messages/{id}', [InboxMessageController::class, 'destroy']);
+        Route::post('messages/batch-destroy', [InboxMessageController::class, 'batchDestroy']);
     });
 });

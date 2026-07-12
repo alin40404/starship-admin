@@ -12,6 +12,16 @@ use Modules\System\App\Models\Role;
 class StarshipFoundationSeeder extends Seeder
 {
     /** @var list<string> */
+    private const NORMAL_ADMIN_WORKBENCH_MENUS = [
+        'Console',
+        'Overview',
+        'TodoCenter',
+        'QuickEntry',
+        'Favorites',
+        'InboxCenter',
+    ];
+
+    /** @var list<string> */
     private const NORMAL_ADMIN_PLATFORM_MENUS = [
         'AttachmentMgmt',
         'CategoryMgmt',
@@ -59,7 +69,18 @@ class StarshipFoundationSeeder extends Seeder
             ->where('status', 1)
             ->first();
         if ($workbench) {
-            $menuIds = array_merge($menuIds, $this->collectMenuSubtreeIds((int) $workbench->id));
+            $menuIds[] = (int) $workbench->id;
+
+            $children = Menu::query()
+                ->where('parent_id', $workbench->id)
+                ->whereIn('name', self::NORMAL_ADMIN_WORKBENCH_MENUS)
+                ->where('status', 1)
+                ->pluck('id')
+                ->all();
+
+            foreach ($children as $childId) {
+                $menuIds = array_merge($menuIds, $this->collectMenuSubtreeIds((int) $childId));
+            }
         }
 
         $platform = Menu::query()

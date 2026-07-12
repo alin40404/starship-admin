@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { NotificationItem } from '@vben/layouts';
 
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { AuthenticationLoginExpiredModal } from '@vben/common-ui';
@@ -14,74 +14,70 @@ import {
   Notification,
   UserDropdown,
 } from '@vben/layouts';
+import { useAccess } from '@vben/access';
 import { preferences } from '@vben/preferences';
 import { useAccessStore, useUserStore } from '@vben/stores';
-import { openWindow } from '@vben/utils';
+import { formatDateTime, openWindow } from '@vben/utils';
 
+import type { InboxMessageRow } from '#/api/inbox';
+import {
+  deleteInboxMessage,
+  fetchInboxRecentMessages,
+  markAllInboxMessagesRead,
+  markInboxMessageRead,
+} from '#/api/inbox';
+import { INBOX_MENU_PERMISSION } from '#/constants/inbox-permissions';
 import { $t } from '#/locales';
 import { useAuthStore } from '#/store';
 import LoginForm from '#/views/_core/authentication/login.vue';
 
-const notifications = ref<NotificationItem[]>([
-  {
-    id: 1,
-    avatar: 'https://avatar.vercel.sh/vercel.svg?text=VB',
-    date: '3小时前',
-    isRead: true,
-    message: '描述信息描述信息描述信息',
-    title: '收到了 14 份新周报',
-  },
-  {
-    id: 2,
-    avatar: 'https://avatar.vercel.sh/1',
-    date: '刚刚',
-    isRead: false,
-    message: '描述信息描述信息描述信息',
-    title: '朱偏右 回复了你',
-  },
-  {
-    id: 3,
-    avatar: 'https://avatar.vercel.sh/1',
-    date: '2024-01-01',
-    isRead: false,
-    message: '描述信息描述信息描述信息',
-    title: '曲丽丽 评论了你',
-  },
-  {
-    id: 4,
-    avatar: 'https://avatar.vercel.sh/satori',
-    date: '1天前',
-    isRead: false,
-    message: '描述信息描述信息描述信息',
-    title: '代办提醒',
-  },
-  {
-    id: 5,
-    avatar: 'https://avatar.vercel.sh/satori',
-    date: '1天前',
-    isRead: false,
-    message: '描述信息描述信息描述信息',
-    title: '跳转Workspace示例',
-    link: '/workspace',
-  },
-  {
-    id: 6,
-    avatar: 'https://avatar.vercel.sh/satori',
-    date: '1天前',
-    isRead: false,
-    message: '描述信息描述信息描述信息',
-    title: '跳转外部链接示例',
-    link: 'https://doc.vben.pro',
-  },
-]);
+const notifications = ref<NotificationItem[]>([]);
 
 const router = useRouter();
 const userStore = useUserStore();
 const authStore = useAuthStore();
 const accessStore = useAccessStore();
+const { hasAccessByCodes } = useAccess();
+const canUseInbox = computed(() => hasAccessByCodes([INBOX_MENU_PERMISSION]));
 const { destroyWatermark, updateWatermark } = useWatermark();
 const showDot = computed(() =>
   notifications.value.some((item) => !item.isRead),
+);
+
+function mapInboxToNotification(row: InboxMessageRow): NotificationItem {
+  return {
+    id: row.id,
+    avatar: userStore.userInfo?.avatar || preferences.app.defaultAvatar,
+    date: formatDateTime(row.created_at) ?? '',
+    isRead: row.is_read === 1,
+    message: row.content || row.title,
+    title: row.title,
+    link: row.link || '/dashboard/inbox',
+  };
+}
+
+async function loadInboxNotifications() {
+  if (!accessStore.accessToken || !canUseInbox.value) {
+    notifications.value = [];
+    return;
+  }
+  try {
+    const rows = await fetchInboxRecentMessages(10);
+    notifications.value = rows.map(mapInboxToNotification);
+  } catch {
+    notifications.value = [];
+  }
+}
+
+onMounted(() => {
+  loadInboxNotifications();
+});
+
+watch(
+  () => [accessStore.accessToken, canUseInbox.value] as const,
+  () => {
+    loadInboxNotifications();
+  },
 );
 
 const menus = computed(() => [
@@ -148,19 +144,41 @@ function handleNoticeClear() {
   notifications.value = [];
 }
 
-function markRead(id: number | string) {
-  const item = notifications.value.find((item) => item.id === id);
-  if (item) {
+async function markRead(id: number | string) {
+  const item = notifications.value.find((entry) => entry.id === id);
+  if (!item || item.isRead) {
+    return;
+  }
+  try {
+    await markInboxMessageRead(Number(id));
     item.isRead = true;
+  } catch {
+    // ignore
   }
 }
 
-function remove(id: number | string) {
-  notifications.value = notifications.value.filter((item) => item.id !== id);
+async function remove(id: number | string) {
+  try {
+    await deleteInboxMessage(Number(id));
+    notifications.value = notifications.value.filter((item) => item.id !== id);
+  } catch {
+    // ignore
+  }
 }
 
-function handleMakeAll() {
-  notifications.value.forEach((item) => (item.isRead = true));
+async function handleMakeAll() {
+  try {
+    await markAllInboxMessagesRead();
+    notifications.value.forEach((item) => {
+      item.isRead = true;
+    });
+  } catch {
+    // ignore
+  }
+}
+
+function handleViewAllNotifications() {
+  router.push('/dashboard/inbox');
 }
 watch(
   () => ({
@@ -196,7 +214,7 @@ watch(
         @logout="handleLogout"
       />
     </template>
-    <template #notification>
+    <template v-if="canUseInbox" #notification>
       <Notification
         :dot="showDot"
         :notifications="notifications"
@@ -204,6 +222,7 @@ watch(
         @read="(item) => item.id && markRead(item.id)"
         @remove="(item) => item.id && remove(item.id)"
         @make-all="handleMakeAll"
+        @view-all="handleViewAllNotifications"
       />
     </template>
     <template #extra>

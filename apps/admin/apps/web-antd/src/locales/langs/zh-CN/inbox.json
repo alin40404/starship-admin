@@ -1,0 +1,28 @@
+{
+  "entity": "站内信",
+  "searchPlaceholder": "搜索标题或内容",
+  "markAllRead": "全部标为已读",
+  "markAllReadDone": "已全部标为已读",
+  "markReadDone": "已标为已读",
+  "type": {
+    "system": "系统",
+    "todo": "待办",
+    "account": "账户安全"
+  },
+  "readStatus": {
+    "read": "已读",
+    "unread": "未读"
+  },
+  "columns": {
+    "title": "标题",
+    "type": "类型",
+    "status": "状态",
+    "createdAt": "时间"
+  },
+  "detail": {
+    "title": "消息详情",
+    "content": "内容",
+    "link": "相关链接",
+    "openLink": "打开链接"
+  }
+}

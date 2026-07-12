@@ -1,0 +1,28 @@
+{
+  "entity": "Inbox Message",
+  "searchPlaceholder": "Search title or content",
+  "markAllRead": "Mark all as read",
+  "markAllReadDone": "All marked as read",
+  "markReadDone": "Marked as read",
+  "type": {
+    "system": "System",
+    "todo": "Todo",
+    "account": "Account Security"
+  },
+  "readStatus": {
+    "read": "Read",
+    "unread": "Unread"
+  },
+  "columns": {
+    "title": "Title",
+    "type": "Type",
+    "status": "Status",
+    "createdAt": "Time"
+  },
+  "detail": {
+    "title": "Message Detail",
+    "content": "Content",
+    "link": "Related Link",
+    "openLink": "Open Link"
+  }
+}

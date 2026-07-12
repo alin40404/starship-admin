@@ -33,6 +33,7 @@ trait SeedsMenus
             return '/dashboard/analytics/index';
         }
         $permission = [
+            '/dashboard/inbox' => '/inbox/message/index',
             '/permission/admins' => '/permission/admin/index',
             '/permission/roles' => '/permission/role/index',
             '/permission/menus' => '/permission/menu/index',
