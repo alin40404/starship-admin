@@ -147,6 +147,15 @@ class ConfigSeeder extends Seeder
                 'remark' => '验证码等场景的默认短信模板编号',
             ],
             [
+                'key' => 'sms.app_id',
+                'name' => '应用/通道 ID',
+                'value' => '',
+                'group_name' => 'sms',
+                'type' => 'string',
+                'sort' => 65,
+                'remark' => '腾讯云填 SdkAppId，华为云填短信通道号 sender',
+            ],
+            [
                 'key' => 'sms.region',
                 'name' => '接入地域',
                 'value' => 'cn-hangzhou',

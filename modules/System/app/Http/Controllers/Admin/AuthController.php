@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Modules\System\App\Models\Admin;
+use Modules\System\App\Services\AdminLoginSmsService;
 use Modules\System\App\Services\AdminPasswordResetService;
 use Modules\System\App\Services\AdminPermissionService;
 use Modules\System\App\Support\AdminRuntimeConfig;
@@ -246,6 +247,84 @@ class AuthController extends Controller
         }
 
         return ApiResponse::success(null, __('system::messages.password_reset_success'));
+    }
+
+    public function sendSmsCode(Request $request, AdminLoginSmsService $smsService): JsonResponse
+    {
+        $validated = $request->validate([
+            'mobile' => ['required', 'regex:/^1[3-9]\d{9}$/'],
+        ]);
+
+        try {
+            $smsService->sendLoginCode($validated['mobile']);
+        } catch (\RuntimeException $exception) {
+            return ApiResponse::error($exception->getMessage(), 422);
+        } catch (\Throwable) {
+            return ApiResponse::error(__('system::messages.sms_send_failed'), 500);
+        }
+
+        return ApiResponse::success(null, __('system::messages.sms_code_sent'));
+    }
+
+    public function smsLogin(Request $request, AdminLoginSmsService $smsService, AdminPermissionService $permission): JsonResponse
+    {
+        $validated = $request->validate([
+            'mobile' => ['required', 'regex:/^1[3-9]\d{9}$/'],
+            'code' => ['required', 'string', 'size:6'],
+        ]);
+
+        try {
+            $admin = $smsService->verifyLoginCode($validated['mobile'], $validated['code']);
+        } catch (\RuntimeException $exception) {
+            $this->writeLoginLog(
+                username: $validated['mobile'],
+                success: false,
+                adminId: null,
+                message: $exception->getMessage(),
+                request: $request,
+            );
+
+            return ApiResponse::error($exception->getMessage(), 422);
+        }
+
+        if (AdminRuntimeConfig::maintenanceEnabled() && (int) $admin->is_super !== 1) {
+            $this->writeLoginLog(
+                username: $admin->username,
+                success: false,
+                adminId: $admin->id,
+                message: '系统维护中',
+                request: $request,
+            );
+
+            return ApiResponse::error(__('system::messages.maintenance_mode'), 503);
+        }
+
+        $admin->forceFill([
+            'last_login_at' => now(),
+            'last_login_ip' => $request->ip(),
+        ])->save();
+
+        $token = $admin->createToken(
+            'admin',
+            ['*'],
+            now()->addMinutes(AdminRuntimeConfig::jwtTtlMinutes()),
+        )->plainTextToken;
+
+        $this->writeLoginLog(
+            username: $admin->username,
+            success: true,
+            adminId: $admin->id,
+            message: '短信验证码登录成功',
+            request: $request,
+        );
+
+        return ApiResponse::success([
+            'token' => $token,
+            'token_type' => 'Bearer',
+            'admin' => $this->formatAdmin($admin),
+            'permissions' => $permission->permissionCodes($admin),
+            'menus' => $permission->menuTreeForAdmin($admin),
+        ], __('system::messages.login_success'));
     }
 
     /**

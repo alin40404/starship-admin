@@ -12,6 +12,7 @@ use Modules\System\App\Support\SettingStore;
 use Modules\System\App\Support\MailConfigRegistrar;
 use Modules\System\App\Support\SiteBrandingSync;
 use Modules\System\App\Support\SiteConfig;
+use Modules\System\App\Services\AdminLoginSmsService;
 use Modules\System\App\Support\StorageConfigRegistrar;
 
 class ConfigController extends Controller
@@ -138,5 +139,22 @@ class ConfigController extends Controller
         SettingStore::forget();
 
         return ApiResponse::success(['deleted' => $deleted], __('system::messages.batch_deleted'));
+    }
+
+    public function testSms(Request $request, AdminLoginSmsService $smsService): JsonResponse
+    {
+        $data = $request->validate([
+            'mobile' => ['required', 'regex:/^1[3-9]\d{9}$/'],
+        ]);
+
+        try {
+            $smsService->sendTestCode($data['mobile']);
+        } catch (\RuntimeException $exception) {
+            return ApiResponse::error($exception->getMessage(), 422);
+        } catch (\Throwable) {
+            return ApiResponse::error(__('system::messages.sms_send_failed'), 500);
+        }
+
+        return ApiResponse::success(null, __('system::messages.sms_test_sent'));
     }
 }

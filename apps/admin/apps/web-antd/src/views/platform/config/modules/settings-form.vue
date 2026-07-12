@@ -13,9 +13,10 @@ import {
   Select,
   Spin,
   Switch,
+  Button,
 } from 'ant-design-vue';
 
-import { batchUpsertConfigs, fetchConfigs } from '#/api/system/config';
+import { batchUpsertConfigs, fetchConfigs, testSmsConfig } from '#/api/system/config';
 import { AttachmentField } from '#/components/attachment-field';
 import { useUserStore } from '@vben/stores';
 import { preferences } from '@vben/preferences';
@@ -52,6 +53,8 @@ const saving = ref(false);
 const rows = ref<ConfigRow[]>([]);
 const draftValues = ref<Record<string, string>>({});
 const homePathCascaderOptions = ref<HomePathCascaderOption[]>([]);
+const smsTestMobile = ref('');
+const smsTesting = ref(false);
 
 const scrollStyle = computed(() => ({
   height: `${Math.max(Math.floor(scrollWrapHeight.value), 280)}px`,
@@ -150,6 +153,22 @@ function isSelectField(row: ConfigRow) {
   return row.type === 'select' || !!getConfigSelectOptions()[row.key];
 }
 
+async function onSmsTest() {
+  const mobile = smsTestMobile.value.trim();
+  if (!/^1[3-9]\d{9}$/.test(mobile)) {
+    message.warning($t('authentication.mobileErrortip'));
+    return;
+  }
+
+  smsTesting.value = true;
+  try {
+    await testSmsConfig(mobile);
+    message.success($t('platform.config.smsTest.sent'));
+  } finally {
+    smsTesting.value = false;
+  }
+}
+
 watch(
   () => props.groupName,
   () => {
@@ -246,6 +265,29 @@ defineExpose({
                 {{ row.key }}
               </div>
             </Form.Item>
+
+            <div v-if="props.groupName === 'sms'" class="config-sms-test mt-6">
+              <div class="config-sms-test__label mb-2 text-sm font-medium">
+                {{ $t('platform.config.smsTest.title') }}
+              </div>
+              <div class="config-sms-test__actions flex w-full items-center gap-2">
+                <Input
+                  v-model:value="smsTestMobile"
+                  class="config-sms-test__input config-field-control min-w-0 flex-1"
+                  :disabled="!props.canManage || smsTesting"
+                  :placeholder="$t('platform.config.smsTest.mobilePlaceholder')"
+                />
+                <Button
+                  class="config-sms-test__button shrink-0"
+                  :disabled="!props.canManage"
+                  :loading="smsTesting"
+                  type="primary"
+                  @click="onSmsTest"
+                >
+                  {{ $t('platform.config.smsTest.send') }}
+                </Button>
+              </div>
+            </div>
           </Form>
         </div>
       </Spin>
@@ -275,5 +317,15 @@ defineExpose({
 .config-settings-form :deep(.attachment-field) {
   width: 100%;
   max-width: 28rem;
+}
+
+.config-sms-test {
+  width: 100%;
+  max-width: 28rem;
+}
+
+.config-sms-test__actions :deep(.config-sms-test__input.config-field-control) {
+  width: auto;
+  max-width: none;
 }
 </style>

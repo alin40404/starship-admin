@@ -2,15 +2,23 @@
 import type { VbenFormSchema } from '@vben/common-ui';
 import type { Recordable } from '@vben/types';
 
-import { computed, ref } from 'vue';
+import { computed, ref, useTemplateRef } from 'vue';
 
 import { AuthenticationCodeLogin, z } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
+import { message } from 'ant-design-vue';
+
+import { sendSmsCodeApi } from '#/api/core/auth';
+import { useAuthStore } from '#/store';
+
 defineOptions({ name: 'CodeLogin' });
 
+const authStore = useAuthStore();
 const loading = ref(false);
 const CODE_LENGTH = 6;
+const loginRef =
+  useTemplateRef<InstanceType<typeof AuthenticationCodeLogin>>('loginRef');
 
 const formSchema = computed((): VbenFormSchema[] => {
   return [
@@ -39,6 +47,27 @@ const formSchema = computed((): VbenFormSchema[] => {
               : $t('authentication.sendCode');
           return text;
         },
+        handleSendCode: async () => {
+          loading.value = true;
+          const formApi = loginRef.value?.getFormApi();
+          if (!formApi) {
+            loading.value = false;
+            throw new Error('formApi is not ready');
+          }
+          await formApi.validateField('phoneNumber');
+          const isPhoneReady = await formApi.isFieldValid('phoneNumber');
+          if (!isPhoneReady) {
+            loading.value = false;
+            throw new Error('Phone number is not ready');
+          }
+          const { phoneNumber } = await formApi.getValues();
+          try {
+            await sendSmsCodeApi(phoneNumber);
+            message.success($t('authentication.codeSent'));
+          } finally {
+            loading.value = false;
+          }
+        },
         placeholder: $t('authentication.code'),
       },
       fieldName: 'code',
@@ -49,20 +78,20 @@ const formSchema = computed((): VbenFormSchema[] => {
     },
   ];
 });
-/**
- * 异步处理登录操作
- * Asynchronously handle the login process
- * @param values 登录表单数据
- */
+
 async function handleLogin(values: Recordable<any>) {
-  void values;
+  await authStore.authSmsLogin({
+    mobile: values.phoneNumber,
+    code: values.code,
+  });
 }
 </script>
 
 <template>
   <AuthenticationCodeLogin
+    ref="loginRef"
     :form-schema="formSchema"
-    :loading="loading"
+    :loading="loading || authStore.loginLoading"
     @submit="handleLogin"
   />
 </template>

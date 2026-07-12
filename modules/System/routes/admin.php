@@ -36,6 +36,8 @@ Route::middleware(['api', 'admin.maintenance'])->prefix('admin-api')->group(func
 
     Route::prefix('auth')->group(function () {
         Route::post('login', [AuthController::class, 'login']);
+        Route::post('sms-code', [AuthController::class, 'sendSmsCode']);
+        Route::post('sms-login', [AuthController::class, 'smsLogin']);
         Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
         Route::get('reset-password/verify', [AuthController::class, 'verifyResetPassword']);
         Route::post('reset-password', [AuthController::class, 'resetPassword']);
@@ -162,6 +164,8 @@ Route::middleware(['api', 'admin.maintenance'])->prefix('admin-api')->group(func
         Route::get('configs', [ConfigController::class, 'index'])
             ->middleware('admin.permission:'.ConfigPermissions::QUERY);
         Route::put('configs', [ConfigController::class, 'batchUpsert'])
+            ->middleware('admin.permission:'.ConfigPermissions::UPDATE);
+        Route::post('configs/sms-test', [ConfigController::class, 'testSms'])
             ->middleware('admin.permission:'.ConfigPermissions::UPDATE);
         Route::post('configs/batch-destroy', [ConfigController::class, 'batchDestroy'])
             ->middleware('admin.permission:'.ConfigPermissions::BATCH_DELETE);

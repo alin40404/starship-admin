@@ -106,3 +106,18 @@ export async function verifyResetPasswordTokenApi(
 export async function resetPasswordApi(data: AuthApi.ResetPasswordParams) {
   return baseRequestClient.post<null>('/auth/reset-password', data);
 }
+
+/**
+ * 发送短信验证码（手机号登录）
+ */
+export async function sendSmsCodeApi(mobile: string) {
+  return baseRequestClient.post<null>('/auth/sms-code', { mobile });
+}
+
+/**
+ * 短信验证码登录
+ */
+export async function smsLoginApi(data: { mobile: string; code: string }) {
+  const result = await requestClient.post<LaravelLoginData>('/auth/sms-login', data);
+  return { accessToken: result.token } as AuthApi.LoginResult;
+}

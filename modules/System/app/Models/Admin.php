@@ -60,6 +60,16 @@ class Admin extends Authenticatable
             ->first();
     }
 
+    public static function findByMobile(string $mobile): ?self
+    {
+        $mobile = trim($mobile);
+        if ($mobile === '') {
+            return null;
+        }
+
+        return static::query()->where('mobile', $mobile)->first();
+    }
+
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class, 'dept_id');

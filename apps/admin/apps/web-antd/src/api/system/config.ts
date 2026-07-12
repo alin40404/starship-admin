@@ -46,3 +46,7 @@ export function batchDeleteConfigs(ids: number[]) {
     { ids },
   );
 }
+
+export function testSmsConfig(mobile: string) {
+  return requestClient.post<null>('/system/configs/sms-test', { mobile });
+}
