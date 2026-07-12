@@ -9,9 +9,98 @@ import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { GENERATOR_PERMISSIONS } from '#/constants/generator-permissions';
 import { $t } from '#/locales';
 
+import {
+  defaultMenuParentPath,
+  menuParentPathExists,
+  type MenuParentTreeOption,
+} from './menu-parent';
+
 export type GeneratorAccessChecker = {
   can: (code: string) => boolean;
 };
+
+export interface BuildImportFormSchemaParams {
+  getMenuParentTree: () => MenuParentTreeOption[];
+  loadingMenuParents: boolean;
+  loadingTables: boolean;
+  moduleOptions: Array<{ label: string; value: string }>;
+  onTableSearch: (keyword: string) => void;
+  tableOptions: Array<{ label: string; value: string }>;
+}
+
+export function buildImportFormSchema(
+  params: BuildImportFormSchemaParams,
+): VbenFormSchema[] {
+  return [
+    {
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        class: 'w-full',
+        loading: params.loadingTables,
+        options: params.tableOptions,
+        placeholder: $t('dev.codegen.tableSearchPlaceholder'),
+        showSearch: true,
+        onSearch: params.onTableSearch,
+      },
+      fieldName: 'table_name',
+      label: $t('dev.codegen.physicalTable'),
+      rules: 'selectRequired',
+    },
+    {
+      component: 'Select',
+      componentProps: {
+        class: 'w-full',
+        options: params.moduleOptions,
+        placeholder: $t('dev.codegen.selectModule'),
+      },
+      fieldName: 'module',
+      label: $t('dev.codegen.targetModule'),
+      rules: 'selectRequired',
+    },
+    {
+      component: 'ApiTreeSelect',
+      componentProps: {
+        allowClear: true,
+        api: async () => params.getMenuParentTree(),
+        class: 'w-full',
+        loading: params.loadingMenuParents,
+        placeholder: $t('dev.codegen.menuParentPlaceholder'),
+        showSearch: true,
+        treeDefaultExpandAll: true,
+        treeNodeFilterProp: 'label',
+      },
+      dependencies: {
+        triggerFields: ['module'],
+        trigger(values, formApi) {
+          const module = values.module as string | undefined;
+          if (!module) {
+            return;
+          }
+          const suggested = defaultMenuParentPath(module);
+          const tree = params.getMenuParentTree();
+          if (suggested && menuParentPathExists(tree, suggested)) {
+            formApi.setFieldValue('menu_parent_path', suggested);
+          } else {
+            formApi.setFieldValue('menu_parent_path', undefined);
+          }
+        },
+      },
+      fieldName: 'menu_parent_path',
+      label: $t('dev.codegen.menuParent'),
+    },
+    {
+      component: 'Input',
+      componentProps: {
+        allowClear: true,
+        class: 'w-full',
+        placeholder: $t('dev.codegen.businessPlaceholder'),
+      },
+      fieldName: 'business',
+      label: $t('dev.codegen.businessName'),
+    },
+  ];
+}
 
 export function getGeneratorStatusTagOptions() {
   return [
