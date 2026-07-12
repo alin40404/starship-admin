@@ -6,7 +6,7 @@ import { computed, onBeforeUnmount, ref } from 'vue';
 import { IconifyIcon } from '@vben/icons';
 import { $t } from '@vben/locales';
 
-import { Upload } from 'ant-design-vue';
+import { Button, Upload } from 'ant-design-vue';
 
 import AttachmentPickerModal from '#/components/attachment-field/attachment-picker-modal.vue';
 import { resolveUploadAcceptAttr } from '#/utils/upload-policy';
@@ -118,20 +118,20 @@ function onPickerConfirm(urls: string[]) {
       </div>
     </Upload>
 
-    <button
+    <Button
       v-if="canAddMore && !disabled"
-      type="button"
-      class="picture-upload-field__select-card"
+      type="primary"
+      class="picture-upload-field__select-btn"
       @click="onSelectClick"
     >
       <IconifyIcon
-        class="picture-upload-field__select-card-icon"
+        class="picture-upload-field__select-btn-icon"
         icon="lucide:folder-open"
       />
-      <span class="picture-upload-field__select-card-text">
+      <span class="picture-upload-field__select-btn-text">
         {{ $t('resource.attachment.picker.title') }}
       </span>
-    </button>
+    </Button>
 
     <AttachmentPickerModal
       v-model:open="pickerOpen"
