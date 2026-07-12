@@ -388,7 +388,7 @@ export function buildAdminFormSchema(params: {
       component: 'Upload',
       componentProps: {
         accept: resolveUploadAcceptAttr('image'),
-        class: 'w-full',
+        class: 'avatar-picture-card-upload w-full',
         customRequest: onAvatarUpload,
         handleChange: onAvatarChange,
         listType: 'picture-card',

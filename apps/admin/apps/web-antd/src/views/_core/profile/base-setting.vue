@@ -78,6 +78,7 @@ const formSchema = computed((): VbenFormSchema[] => {
       component: 'Upload',
       componentProps: {
         accept: resolveUploadAcceptAttr('image'),
+        class: 'avatar-picture-card-upload w-full',
         customRequest: onAvatarUpload,
         handleChange: onAvatarChange,
         listType: 'picture-card',

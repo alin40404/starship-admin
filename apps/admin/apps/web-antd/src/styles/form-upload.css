@@ -1,0 +1,7 @@
+/**
+ * picture-card 头像上传：缩小占位文案（点击上传）。
+ */
+.avatar-picture-card-upload .ant-upload-select-picture-card {
+  font-size: 13px;
+  line-height: 1.25;
+}
