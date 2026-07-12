@@ -43,7 +43,7 @@ final class GeneratorNaming
         $entityKebab = str_replace('_', '-', $entitySnake);
         $permissionEntity = Str::plural($entitySnake);
         $apiPrefix = $permissionEntity;
-        $permissionPrefix = Str::lower($modulePart).'.'.$permissionEntity;
+        $permissionPrefix = Str::lower($resolvedModule).'.'.$permissionEntity;
         $routeGroup = self::defaultRouteGroup($resolvedModule);
         $routePath = '/'.$routeGroup.'/'.str_replace('_', '-', $apiPrefix);
         $componentPath = '/'.$routeGroup.'/'.$entityKebab.'/index';
@@ -70,6 +70,15 @@ final class GeneratorNaming
             'monitor' => 'monitor',
             default => Str::kebab($moduleSlug),
         };
+    }
+
+    /**
+     * 管理端 API 路由前缀，约定与 module.json 的 name 及 routes/admin.php 的 prefix 一致。
+     * 新增模块时保持 name 与 prefix 相同即可，无需改此处。
+     */
+    public static function defaultApiRoutePrefix(string $moduleSlug): string
+    {
+        return Str::kebab($moduleSlug);
     }
 
     public static function permissionsClassName(string $className): string

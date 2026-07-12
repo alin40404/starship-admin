@@ -124,6 +124,7 @@ class MenuPermissionSync
             'platform' => '/platform',
             'resource' => '/resource',
             'permission' => '/permission',
+            'monitor' => '/monitor',
             default => null,
         };
 

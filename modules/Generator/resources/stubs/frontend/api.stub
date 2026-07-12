@@ -1,4 +1,4 @@
-import type { LaravelPaginate } from './types';
+import type { LaravelPaginate } from '#/api/system/types';
 
 import { requestClient } from '#/api/request';
 
@@ -24,27 +24,27 @@ export interface {{ $model_class }}SavePayload {
 }
 
 export function fetch{{ $model_class }}Page(params: {{ $model_class }}PageQuery) {
-  return requestClient.get<LaravelPaginate<{{ $model_class }}Row>>('/system/{{ $api_prefix }}', {
+  return requestClient.get<LaravelPaginate<{{ $model_class }}Row>>('/{{ $api_route_prefix }}/{{ $api_prefix }}', {
     params,
   });
 }
 
 export function create{{ $model_class }}(data: {{ $model_class }}SavePayload) {
-  return requestClient.post<{{ $model_class }}Row>('/system/{{ $api_prefix }}', data);
+  return requestClient.post<{{ $model_class }}Row>('/{{ $api_route_prefix }}/{{ $api_prefix }}', data);
 }
 
 export function update{{ $model_class }}(id: number, data: Partial<{{ $model_class }}SavePayload>) {
-  return requestClient.put<{{ $model_class }}Row>(`/system/{{ $api_prefix }}/${id}`, data);
+  return requestClient.put<{{ $model_class }}Row>(`/{{ $api_route_prefix }}/{{ $api_prefix }}/${id}`, data);
 }
 
 export function delete{{ $model_class }}(id: number) {
-  return requestClient.delete(`/system/{{ $api_prefix }}/${id}`);
+  return requestClient.delete(`/{{ $api_route_prefix }}/{{ $api_prefix }}/${id}`);
 }
 @if($has_batch_delete)
 
 export function batchDelete{{ $model_class }}s(ids: number[]) {
   return requestClient.post<{ deleted: number }>(
-    '/system/{{ $api_prefix }}/batch-destroy',
+    '/{{ $api_route_prefix }}/{{ $api_prefix }}/batch-destroy',
     { ids },
   );
 }
@@ -52,7 +52,7 @@ export function batchDelete{{ $model_class }}s(ids: number[]) {
 @if($has_batch_status)
 
 export function batchUpdate{{ $model_class }}Status(ids: number[], status: 0 | 1) {
-  return requestClient.put<{ updated: number }>('/system/{{ $api_prefix }}/batch-status', {
+  return requestClient.put<{ updated: number }>('/{{ $api_route_prefix }}/{{ $api_prefix }}/batch-status', {
     ids,
     status,
   });

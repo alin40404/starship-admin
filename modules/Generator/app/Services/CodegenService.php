@@ -297,8 +297,11 @@ class CodegenService
             ->filter(fn ($column): bool => ! in_array($column->column_name, $keywordFields, true))
             ->values();
 
+        $apiRoutePrefix = GeneratorNaming::defaultApiRoutePrefix($config->module_slug);
+
         return [
             'config' => $config,
+            'api_route_prefix' => $apiRoutePrefix,
             'module_namespace' => $moduleNamespace,
             'model_class' => $config->class_name,
             'controller_class' => GeneratorNaming::controllerClassName($config->class_name),
@@ -375,7 +378,7 @@ class CodegenService
                 ),
             ],
             [
-                'path' => $frontendRoot.'/api/system/'.$viewData['entity_kebab'].'.ts',
+                'path' => $frontendRoot.'/api/'.$viewData['api_route_prefix'].'/'.$viewData['entity_kebab'].'.ts',
                 'content' => $this->renderer->render('frontend/api.stub', $viewData),
             ],
             [

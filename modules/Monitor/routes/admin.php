@@ -37,4 +37,10 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
         Route::post('exception-logs/batch-destroy', [ExceptionLogController::class, 'batchDestroy'])
             ->middleware('admin.permission:'.ExceptionLogPermissions::BATCH_DELETE);
     });
+
+    // --- start: 代码生成 CRUD（admin-generator/*） ---
+    Route::middleware('auth:sanctum')->prefix('monitor')->group(function () {
+        require __DIR__.'/admin-generator/_loader.php';
+    });
+    // --- end: 代码生成 CRUD（admin-generator/*） ---
 });

@@ -35,4 +35,10 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
         Route::get('records', [CodegenController::class, 'records'])
             ->middleware('admin.permission:'.GeneratorPermissions::RECORDS_QUERY);
     });
+
+    // --- start: 代码生成 CRUD（admin-generator/*） ---
+    Route::middleware('auth:sanctum')->prefix('generator')->group(function () {
+        require __DIR__.'/admin-generator/_loader.php';
+    });
+    // --- end: 代码生成 CRUD（admin-generator/*） ---
 });

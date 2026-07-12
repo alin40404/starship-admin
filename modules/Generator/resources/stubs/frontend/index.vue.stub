@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { {{ $model_class }}Row } from '#/api/system/{{ $entity_kebab }}';
+import type { {{ $model_class }}Row } from '#/api/{{ $api_route_prefix }}/{{ $entity_kebab }}';
 
 import { ref } from 'vue';
 
@@ -22,7 +22,7 @@ import {
   delete{{ $model_class }},
   fetch{{ $model_class }}Page,
   update{{ $model_class }},
-} from '#/api/system/{{ $entity_kebab }}';
+} from '#/api/{{ $api_route_prefix }}/{{ $entity_kebab }}';
 import { {{ $permissions_export_name }} } from '#/constants/{{ $entity_kebab }}-permissions';
 
 import {

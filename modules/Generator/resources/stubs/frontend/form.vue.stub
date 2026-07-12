@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { {{ $model_class }}Row, {{ $model_class }}SavePayload } from '#/api/system/{{ $entity_kebab }}';
+import type { {{ $model_class }}Row, {{ $model_class }}SavePayload } from '#/api/{{ $api_route_prefix }}/{{ $entity_kebab }}';
 
 import { computed, ref } from 'vue';
 
@@ -10,7 +10,7 @@ import { usePreferences } from '@vben/preferences';
 import { message } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
-import { create{{ $model_class }}, update{{ $model_class }} } from '#/api/system/{{ $entity_kebab }}';
+import { create{{ $model_class }}, update{{ $model_class }} } from '#/api/{{ $api_route_prefix }}/{{ $entity_kebab }}';
 
 import { build{{ $model_class }}FormSchema } from '../data';
 
