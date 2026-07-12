@@ -314,8 +314,8 @@
         },
         "jwt": {
           "ttl": {
-            "label": "Login Session TTL",
-            "remark": "Admin token lifetime in minutes"
+            "label": "Login Idle Timeout",
+            "remark": "Admin token idle timeout in minutes; renewed on API activity, re-login required after inactivity"
           }
         },
         "login": {

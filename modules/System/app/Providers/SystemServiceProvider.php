@@ -10,6 +10,7 @@ use Modules\System\App\Http\Middleware\EnsureAdminDepartmentStorePermission;
 use Modules\System\App\Http\Middleware\EnsureAdminMaintenanceMode;
 use Modules\System\App\Http\Middleware\EnsureAdminMenuStorePermission;
 use Modules\System\App\Http\Middleware\EnsureAdminPermission;
+use Modules\System\App\Http\Middleware\RenewAdminTokenExpiration;
 use Modules\System\App\Support\MailConfigRegistrar;
 use Modules\System\App\Support\StorageConfigRegistrar;
 
@@ -28,6 +29,8 @@ class SystemServiceProvider extends ServiceProvider
         Route::aliasMiddleware('admin.permission.department.store', EnsureAdminDepartmentStorePermission::class);
         Route::aliasMiddleware('admin.permission.area.store', EnsureAdminAreaStorePermission::class);
         Route::aliasMiddleware('admin.maintenance', EnsureAdminMaintenanceMode::class);
+
+        Route::pushMiddlewareToGroup('api', RenewAdminTokenExpiration::class);
 
         $this->loadRoutesFrom(__DIR__.'/../../routes/admin.php');
         $this->loadRoutesFrom(__DIR__.'/../../routes/web.php');

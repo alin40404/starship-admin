@@ -490,12 +490,12 @@ class ConfigSeeder extends Seeder
             ],
             [
                 'key' => 'admin.jwt.ttl',
-                'name' => '登录有效期',
+                'name' => '登录空闲超时',
                 'value' => '120',
                 'group_name' => 'param',
                 'type' => 'number',
                 'sort' => 30,
-                'remark' => '管理员 Token 有效时长（分钟）',
+                'remark' => '管理员 Token 空闲超时（分钟）；有 API 请求时自动续期，长时间无操作后需重新登录',
             ],
             [
                 'key' => 'admin.login.captcha',
