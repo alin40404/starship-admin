@@ -184,10 +184,6 @@
           "label": "备案号",
           "remark": "网站 ICP 备案号，如：粤ICP备15000000号-1"
         },
-        "cdn_url": {
-          "label": "CDN 地址",
-          "remark": "全站静态资源使用第三方 CDN 时填写"
-        },
         "version": {
           "label": "版本号",
           "remark": "静态资源变更时可递增，用于缓存刷新"
@@ -358,7 +354,7 @@
       "storage": {
         "public_url": {
           "label": "公共访问地址",
-          "remark": "云存储驱动时使用；公共存储留空则使用 APP_URL/storage"
+          "remark": "附件对外访问根地址；使用 CDN 时填 CDN 域名。公共存储留空则使用 APP_URL/storage；云存储可填 CDN 或 Bucket 访问域名"
         },
         "oss": {
           "access_key": {

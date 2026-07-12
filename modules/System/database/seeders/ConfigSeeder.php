@@ -48,15 +48,6 @@ class ConfigSeeder extends Seeder
                 'remark' => '网站 ICP 备案号，如：粤ICP备15000000号-1',
             ],
             [
-                'key' => 'site.cdn_url',
-                'name' => 'CDN 地址',
-                'value' => '',
-                'group_name' => 'basic',
-                'type' => 'string',
-                'sort' => 40,
-                'remark' => '全站静态资源使用第三方 CDN 时填写',
-            ],
-            [
                 'key' => 'site.version',
                 'name' => '版本号',
                 'value' => '1.0.1',
@@ -333,7 +324,7 @@ class ConfigSeeder extends Seeder
                 'group_name' => 'storage',
                 'type' => 'string',
                 'sort' => 40,
-                'remark' => '云存储驱动时使用；公共存储留空则使用 APP_URL/storage',
+                'remark' => '附件对外访问根地址；使用 CDN 时填 CDN 域名。公共存储留空则使用 APP_URL/storage；云存储可填 CDN 或 Bucket 访问域名',
             ],
             [
                 'key' => 'storage.oss.access_key',
@@ -592,6 +583,29 @@ class ConfigSeeder extends Seeder
         foreach ($runtimeParams as $config) {
             $this->seedSetting($config);
         }
+
+        $this->migrateLegacyCdnUrl();
+    }
+
+    /**
+     * 废弃 site.cdn_url：值迁移至 storage.public_url 后删除旧项。
+     */
+    private function migrateLegacyCdnUrl(): void
+    {
+        $legacy = Setting::query()->where('key', 'site.cdn_url')->first();
+        if ($legacy === null) {
+            return;
+        }
+
+        $cdnValue = trim((string) $legacy->value);
+        if ($cdnValue !== '') {
+            $publicUrl = Setting::query()->where('key', 'storage.public_url')->first();
+            if ($publicUrl !== null && trim((string) $publicUrl->value) === '') {
+                $publicUrl->update(['value' => $cdnValue]);
+            }
+        }
+
+        $legacy->delete();
     }
 
     /**

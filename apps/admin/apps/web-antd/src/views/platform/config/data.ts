@@ -70,10 +70,8 @@ export const STORAGE_COMMON_KEYS = [
   STORAGE_DRIVER_KEY,
   'app.upload.max_size',
   'app.upload.allowed_ext',
+  'storage.public_url',
 ] as const;
-
-/** 存储配置：云驱动共用的公共访问地址 */
-export const STORAGE_CLOUD_COMMON_KEYS = ['storage.public_url'] as const;
 
 /** 存储配置：云驱动标识 */
 export const STORAGE_CLOUD_DRIVERS = ['oss', 'cos', 's3'] as const;
@@ -84,10 +82,6 @@ export type StorageCloudDriver = (typeof STORAGE_CLOUD_DRIVERS)[number];
 export function isStorageFieldVisible(key: string, driver: string): boolean {
   if ((STORAGE_COMMON_KEYS as readonly string[]).includes(key)) {
     return true;
-  }
-
-  if ((STORAGE_CLOUD_COMMON_KEYS as readonly string[]).includes(key)) {
-    return (STORAGE_CLOUD_DRIVERS as readonly string[]).includes(driver);
   }
 
   if (key.startsWith('storage.oss.')) {

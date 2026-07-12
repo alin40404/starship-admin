@@ -184,10 +184,6 @@
           "label": "ICP Filing Number",
           "remark": "Website ICP filing number, e.g. Guangdong ICP 15000000-1"
         },
-        "cdn_url": {
-          "label": "CDN URL",
-          "remark": "Use when static assets are served from a third-party CDN"
-        },
         "version": {
           "label": "Version",
           "remark": "Increment when static assets change to bust cache"
@@ -358,7 +354,7 @@
       "storage": {
         "public_url": {
           "label": "Public Base URL",
-          "remark": "For cloud drivers; leave blank for public storage to use APP_URL/storage"
+          "remark": "Root URL for attachment access; use your CDN domain when CDN is enabled. Leave blank for public storage to use APP_URL/storage; for cloud storage use CDN or bucket URL"
         },
         "oss": {
           "access_key": {
