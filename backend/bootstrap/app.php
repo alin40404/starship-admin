@@ -20,7 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->appendToGroup('api', SetLocale::class);
+        $middleware->prependToGroup('api', SetLocale::class);
 
         $middleware->redirectGuestsTo(function (Request $request) {
             // admin-api：纯 JSON 接口，未登录返回 401，不重定向
