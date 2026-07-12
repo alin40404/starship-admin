@@ -148,7 +148,9 @@ async function waitForFlowTeleportTarget(maxAttempts = 20) {
 async function loadPickerGrid() {
   showFlowPanel.value = false;
   flowTeleportTarget.value = null;
-  setPopupLoading(true);
+  if (isFlowMode.value) {
+    setPopupLoading(true);
+  }
   try {
     await refreshGrid();
     if (isFlowMode.value) {
@@ -157,7 +159,9 @@ async function loadPickerGrid() {
       await nextTick();
     }
   } finally {
-    setPopupLoading(false);
+    if (isFlowMode.value) {
+      setPopupLoading(false);
+    }
   }
 }
 
@@ -605,7 +609,11 @@ function handlePopupOpenChange(isOpen: boolean) {
   showPickerContent.value = false;
   showFlowPanel.value = false;
   flowTeleportTarget.value = null;
-  setPopupLoading(true);
+  if (isFlowMode.value) {
+    setPopupLoading(true);
+  } else {
+    setPopupLoading(false);
+  }
 }
 
 async function handlePopupOpened() {
