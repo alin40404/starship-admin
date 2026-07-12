@@ -18,7 +18,7 @@ import {
   batchUpdateCategoryStatus,
   deleteCategory,
   fetchCategoryTree,
-  fetchCategoryTypes,
+  fetchCategoryOptionsTypes,
   updateCategorySort,
   updateCategoryStatus,
 } from '#/api/system/category';
@@ -221,7 +221,7 @@ function onBatchUpdateStatus(status: CategoryTreeNode['status']) {
 }
 
 async function loadTypeOptions() {
-  typeOptions.value = await fetchCategoryTypes();
+  typeOptions.value = await fetchCategoryOptionsTypes();
   syncGridColumns();
 }
 

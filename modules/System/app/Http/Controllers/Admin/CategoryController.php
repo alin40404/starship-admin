@@ -14,17 +14,12 @@ class CategoryController extends Controller
 {
     private const FLAG_OPTIONS = ['hot', 'index', 'recommend'];
 
-    public function types(): JsonResponse
-    {
-        return ApiResponse::success(CategoryType::options());
-    }
-
     /**
      * 分类类型选择器：需登录，无按钮权限。
      */
     public function optionsTypes(): JsonResponse
     {
-        return $this->types();
+        return ApiResponse::success(CategoryType::options());
     }
 
     /**

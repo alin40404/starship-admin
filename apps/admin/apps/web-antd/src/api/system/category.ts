@@ -47,10 +47,6 @@ export interface CategorySavePayload {
   status?: CategoryStatus;
 }
 
-export function fetchCategoryTypes() {
-  return requestClient.get<CategoryTypeOption[]>('/system/categories/types');
-}
-
 /** 分类类型选择器（需登录，无按钮权限） */
 export function fetchCategoryOptionsTypes() {
   return requestClient.get<CategoryTypeOption[]>(

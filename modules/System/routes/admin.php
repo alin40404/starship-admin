@@ -246,8 +246,6 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
         Route::delete('attachments/{id}', [AttachmentController::class, 'destroy'])
             ->middleware('admin.permission:'.AttachmentPermissions::DELETE);
 
-        Route::get('categories/types', [CategoryController::class, 'types'])
-            ->middleware('admin.permission:'.CategoryPermissions::QUERY);
         Route::get('categories/tree', [CategoryController::class, 'tree'])
             ->middleware('admin.permission:'.CategoryPermissions::QUERY);
         Route::get('categories/{id}', [CategoryController::class, 'show'])
