@@ -370,7 +370,23 @@ watch(
           <span v-else>{{ row.value }}</span>
         </template>
         <template #[PARAM_VALUE_EDIT_SLOT]="{ row, $table }">
-          <div class="param-value-edit-cell" @mousedown.stop>
+          <Teleport v-if="row.type === 'json'" to="body">
+            <div
+              class="param-value-json-edit-overlay"
+              @mousedown.self="finishParamValueEdit($table)"
+            >
+              <div class="param-value-json-edit-cell" @mousedown.stop>
+                <Textarea
+                  :value="row.value ?? ''"
+                  :auto-size="{ minRows: 8, maxRows: 16 }"
+                  class="w-full font-mono"
+                  :placeholder="$t('platform.config.param.jsonPlaceholder')"
+                  @update:value="(v) => (row.value = v)"
+                />
+              </div>
+            </div>
+          </Teleport>
+          <div v-else class="param-value-edit-cell" @mousedown.stop>
             <InputNumber
               v-if="row.type === 'number'"
               :value="getNumberEditValue(row.value)"
@@ -388,14 +404,6 @@ watch(
               :options="boolValueOptions"
               size="small"
               @update:value="(v) => { row.value = v; void handleBoolValueChange($table); }"
-            />
-            <Textarea
-              v-else-if="row.type === 'json'"
-              :value="row.value ?? ''"
-              :auto-size="{ minRows: 2, maxRows: 6 }"
-              class="w-full"
-              :placeholder="$t('platform.config.param.jsonPlaceholder')"
-              @update:value="(v) => (row.value = v)"
             />
             <Input
               v-else
@@ -449,5 +457,27 @@ watch(
     padding-inline: 0;
     text-align: center;
   }
+}
+
+.param-value-json-edit-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgb(0 0 0 / 45%);
+}
+
+.param-value-json-edit-cell {
+  width: min(560px, 100%);
+  max-height: 80vh;
+  overflow: auto;
+  padding: 16px;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 18%);
 }
 </style>
