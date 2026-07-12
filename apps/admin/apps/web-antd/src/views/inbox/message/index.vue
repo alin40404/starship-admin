@@ -49,13 +49,17 @@ function resolveCategoryFilter() {
     : activeCategory.value;
 }
 
+const DETAIL_MARK_READ_DEFER_MS = 320;
+
 async function onActionClick({ code, row }: OnActionClickParams<InboxMessageRow>) {
   if (code === 'detail') {
-    detailDrawerRef.value?.open(row.id);
+    void detailDrawerRef.value?.open(row.id, row);
     if (row.is_read === 0) {
-      await markInboxMessageRead(row.id);
-      message.success($t('inbox.markReadDone'));
-      onRefresh();
+      void markInboxMessageRead(row.id).then(async () => {
+        message.success($t('inbox.markReadDone'));
+        await inboxStore.refresh();
+        window.setTimeout(() => reload(), DETAIL_MARK_READ_DEFER_MS);
+      });
     }
     return;
   }

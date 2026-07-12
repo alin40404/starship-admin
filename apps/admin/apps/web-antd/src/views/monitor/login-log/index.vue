@@ -36,7 +36,7 @@ const access = {
 
 function onActionClick({ code, row }: OnActionClickParams<LoginLogRow>) {
   if (code === 'detail') {
-    detailDrawerRef.value?.open(row.id);
+    detailDrawerRef.value?.open(row.id, row);
   } else if (code === 'delete') {
     onDelete(row);
   }

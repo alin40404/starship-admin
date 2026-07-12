@@ -62,10 +62,10 @@ const contentText = computed(() => {
   return JSON.stringify(detail.value.content, null, 2);
 });
 
-async function show(id: number) {
+async function show(id: number, preview?: OperationLogRow) {
   open.value = true;
-  loading.value = true;
-  detail.value = null;
+  detail.value = preview?.id === id ? preview : null;
+  loading.value = !detail.value;
   try {
     detail.value = await fetchOperationLog(id);
   } finally {

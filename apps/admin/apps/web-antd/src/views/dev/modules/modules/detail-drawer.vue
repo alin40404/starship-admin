@@ -27,7 +27,6 @@ const props = withDefaults(
 );
 
 const open = ref(false);
-const loading = ref(false);
 const submitting = ref(false);
 const detail = ref<DevModuleDetail | null>(null);
 
@@ -50,12 +49,15 @@ const canToggle = computed(
 
 async function show(row: DevModuleRow) {
   open.value = true;
-  loading.value = true;
-  detail.value = null;
+  detail.value = {
+    ...row,
+    manifest: {},
+    manifest_path: '',
+  };
   try {
     detail.value = await fetchDevModule(row.name);
-  } finally {
-    loading.value = false;
+  } catch {
+    // 保留列表行预览数据
   }
 }
 

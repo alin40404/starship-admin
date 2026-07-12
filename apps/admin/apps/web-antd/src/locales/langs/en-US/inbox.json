@@ -42,7 +42,7 @@
   "detail": {
     "title": "Message Detail",
     "content": "Content",
-    "link": "Related Link",
-    "openLink": "Open Link"
+    "link": "Quick Action",
+    "openLink": "Go Now"
   }
 }

@@ -40,10 +40,10 @@ const exceptionTypeTag = computed(() => {
   };
 });
 
-async function show(id: number) {
+async function show(id: number, preview?: ExceptionLogRow) {
   open.value = true;
-  loading.value = true;
-  detail.value = null;
+  detail.value = preview?.id === id ? preview : null;
+  loading.value = !detail.value;
   try {
     detail.value = await fetchExceptionLog(id);
   } finally {

@@ -24,13 +24,14 @@ async function show(row: GeneratorTableRow) {
   loading.value = true;
   files.value = [];
   activePath.value = '';
-  try {
-    const result = await previewCodegen(row.id);
-    files.value = result.files ?? [];
-    activePath.value = files.value[0]?.path ?? '';
-  } finally {
-    loading.value = false;
-  }
+  void previewCodegen(row.id)
+    .then((result) => {
+      files.value = result.files ?? [];
+      activePath.value = files.value[0]?.path ?? '';
+    })
+    .finally(() => {
+      loading.value = false;
+    });
 }
 
 defineExpose({ open: show });

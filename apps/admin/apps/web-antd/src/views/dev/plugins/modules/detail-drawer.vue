@@ -42,9 +42,21 @@ function formatTime(value: string | null) {
   return value ? formatDateTime(value) : '—';
 }
 
-async function loadDetail(slug: string) {
-  loading.value = true;
-  detail.value = null;
+function buildPluginPreview(row: PluginRow): PluginDetail {
+  return {
+    ...row,
+    config: {},
+    config_schema: [],
+    manifest: {},
+    manifest_path: '',
+  };
+}
+
+async function loadDetail(slug: string, preview?: PluginRow) {
+  if (!preview) {
+    loading.value = true;
+    detail.value = null;
+  }
   try {
     detail.value = await fetchPlugin(slug);
   } finally {
@@ -54,7 +66,9 @@ async function loadDetail(slug: string) {
 
 async function show(row: PluginRow) {
   open.value = true;
-  await loadDetail(row.slug);
+  detail.value = buildPluginPreview(row);
+  loading.value = false;
+  await loadDetail(row.slug, row);
 }
 
 defineExpose({ open: show });

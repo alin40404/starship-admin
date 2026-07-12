@@ -3,10 +3,9 @@ import type { InboxMessageRow } from '#/api/inbox';
 
 import { ref } from 'vue';
 
-import { useVbenDrawer } from '@vben/common-ui';
 import { formatDateTime } from '@vben/utils';
 
-import { Descriptions, Tag } from 'ant-design-vue';
+import { Descriptions, Drawer, Tag } from 'ant-design-vue';
 
 import { fetchInboxMessage } from '#/api/inbox';
 import {
@@ -28,14 +27,9 @@ const descriptionsContentStyle = {
   fontSize: 'var(--text-sm, 0.875rem)',
 };
 
+const open = ref(false);
 const loading = ref(false);
 const row = ref<InboxMessageRow | null>(null);
-
-const [Drawer, drawerApi] = useVbenDrawer({
-  destroyOnClose: true,
-  showConfirmButton: false,
-  cancelText: $t('system.shared.close'),
-});
 
 function typeLabel(type: string) {
   const option = INBOX_MESSAGE_TYPE_OPTIONS.find((item) => item.value === type);
@@ -82,9 +76,11 @@ function senderLabel(message: InboxMessageRow) {
   return $t('inbox.sender.system');
 }
 
-async function open(id: number) {
-  loading.value = true;
-  drawerApi.open();
+async function show(id: number, preview?: InboxMessageRow) {
+  open.value = true;
+  row.value = preview?.id === id ? preview : null;
+  loading.value = !row.value;
+
   try {
     row.value = await fetchInboxMessage(id);
   } finally {
@@ -92,11 +88,16 @@ async function open(id: number) {
   }
 }
 
-defineExpose({ open });
+defineExpose({ open: show });
 </script>
 
 <template>
-  <Drawer :loading="loading" :title="$t('inbox.detail.title')" class="w-[min(92vw,560px)]">
+  <Drawer
+    v-model:open="open"
+    :loading="loading"
+    :title="$t('inbox.detail.title')"
+    width="min(92vw, 560px)"
+  >
     <Descriptions
       v-if="row"
       bordered

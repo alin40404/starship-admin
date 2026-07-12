@@ -40,9 +40,21 @@ const drawerTitle = computed(() =>
     : $t('dev.plugins.configTitle'),
 );
 
-async function loadDetail(slug: string) {
-  loading.value = true;
-  detail.value = null;
+function buildPluginPreview(row: PluginRow): PluginDetail {
+  return {
+    ...row,
+    config: {},
+    config_schema: [],
+    manifest: {},
+    manifest_path: '',
+  };
+}
+
+async function loadDetail(slug: string, preview?: PluginRow) {
+  if (!preview) {
+    loading.value = true;
+    detail.value = null;
+  }
   try {
     detail.value = await fetchPlugin(slug);
     syncConfigForm();
@@ -69,7 +81,9 @@ function syncConfigForm() {
 async function show(row: PluginRow) {
   open.value = true;
   testMobile.value = '';
-  await loadDetail(row.slug);
+  detail.value = buildPluginPreview(row);
+  loading.value = false;
+  await loadDetail(row.slug, row);
 }
 
 async function onSaveConfig() {
