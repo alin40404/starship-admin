@@ -14,6 +14,9 @@ import { $t } from '#/locales';
 /** 与后端 data_scope 1–5 一致：序号与选项顺序相同（1全部 2本部门 3本部门及下级 4仅本人 5自定义） */
 export const DATA_SCOPE_CUSTOM = 5;
 
+/** 角色权限树顶部「全部」行图标 */
+export const ROLE_PERMISSION_CHECK_ALL_ICON = 'lucide:layout-grid';
+
 type DeptCascaderOption = {
   children?: DeptCascaderOption[];
   label: string;

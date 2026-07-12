@@ -10,6 +10,10 @@ export interface TreeProps {
   autoCheckParent?: boolean;
   /** 显示边框 */
   bordered?: boolean;
+  /** 多选工具栏 checkbox 后的文案（如「全部」） */
+  checkAllLabel?: string;
+  /** 多选工具栏 checkbox 后的图标 */
+  checkAllIcon?: string;
   /** 取消父子关联选择 */
   checkStrictly?: boolean;
   /** 子级字段名 */

@@ -307,7 +307,7 @@ defineExpose({
       v-if="treeData.length > 0"
     >
       <div
-        class="flex size-5 flex-1 cursor-pointer items-center"
+        class="flex size-5 flex-1 cursor-pointer items-center gap-1.5"
         @click="() => (expanded?.length > 0 ? collapseAll() : expandAll())"
       >
         <ChevronRight
@@ -323,6 +323,17 @@ defineExpose({
               checked === true ? checkAll() : unCheckAll()
           "
         />
+        <IconifyIcon
+          v-if="multiple && props.checkAllIcon"
+          class="text-primary size-4 shrink-0"
+          :icon="props.checkAllIcon"
+        />
+        <span
+          v-if="multiple && props.checkAllLabel"
+          class="text-foreground text-sm font-medium leading-5 select-none"
+        >
+          {{ props.checkAllLabel }}
+        </span>
       </div>
     </div>
     <TransitionGroup :name="transition ? 'fade' : ''">

@@ -39,6 +39,7 @@ import {
   cascaderPathsToDeptIds,
   DATA_SCOPE_CUSTOM,
   deptIdsToCascaderPaths,
+  ROLE_PERMISSION_CHECK_ALL_ICON,
 } from '../data';
 
 const emits = defineEmits<{ success: [] }>();
@@ -159,8 +160,6 @@ const drawerTitle = computed(() => {
     ? $t('permission.role.editRole')
     : $t('permission.role.createRoleTitle');
 });
-
-const allLabelCss = computed(() => `"${$t('system.shared.all')}"`);
 
 function stripRolePayload(values: Record<string, unknown>): RoleSavePayload {
   const { menu_ids: _m, dept_ids: _d, ...rest } = values;
@@ -435,6 +434,8 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
           >
             <Tree
               :tree-data="vbenTreeData"
+              :check-all-icon="ROLE_PERMISSION_CHECK_ALL_ICON"
+              :check-all-label="$t('system.shared.all')"
               multiple
               bordered
               :default-expanded-level="10"
@@ -506,33 +507,21 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
   display: inline-flex;
   flex: none;
   width: auto;
+  height: auto;
+  min-height: 1.25rem;
   align-items: center;
   gap: 0.375rem;
   cursor: pointer;
 }
 
-.role-drawer-form
-  :deep(
-    .permission-tree
-      .container.list-none
-      > div:has(> .flex.size-5.flex-1.cursor-pointer)
-      > .flex.size-5.flex-1.cursor-pointer::after
-  ) {
-  content: v-bind(allLabelCss);
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.25rem;
-  color: hsl(var(--foreground));
-}
-
-/* 仅隐藏工具行展开箭头，不影响 checkbox 内勾选图标 */
+/* 仅隐藏工具行展开箭头（首个 svg），不影响「全部」图标与 checkbox 勾选图标 */
 .role-drawer-form
   :deep(
     .permission-tree
       .container.list-none
       > div:has(> .flex.size-5.flex-1.cursor-pointer)
       > .flex.size-5.flex-1.cursor-pointer
-      > svg
+      > svg:first-child
   ) {
   display: none;
 }
