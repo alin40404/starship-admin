@@ -1,8 +1,13 @@
 import { initPreferences, updatePreferences } from '@vben/preferences';
+import { setTimezoneHandler } from '@vben/stores';
 import { unmountGlobalLoading } from '@vben/utils';
 
 import { overridesPreferences, preferencesExtension } from './preferences';
-import { applySiteBranding } from './utils/site-branding';
+import {
+  applySiteBranding,
+  fetchSiteBranding,
+  resolveSiteDisplayTimezone,
+} from './utils/site-branding';
 import {
   applyAdminApiTimeout,
   initAdminRuntimeConfig,
@@ -43,6 +48,13 @@ async function initApplication() {
   });
 
   await applySiteBranding();
+
+  setTimezoneHandler({
+    async getTimezone() {
+      const branding = await fetchSiteBranding();
+      return resolveSiteDisplayTimezone(branding?.timezone);
+    },
+  });
 
   // 启动应用并挂载
   // vue应用主要逻辑及视图

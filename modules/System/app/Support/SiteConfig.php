@@ -17,8 +17,12 @@ final class SiteConfig
 
     public const KEY_FIXED_PAGE = 'site.fixed_page';
 
+    public const KEY_TIMEZONE = 'site.timezone';
+
+    public const DEFAULT_DISPLAY_TIMEZONE = 'Asia/Shanghai';
+
     /**
-     * @return array{name: string, logo: string, favicon: string, beian: string, defaultHomePath: string}
+     * @return array{name: string, logo: string, favicon: string, beian: string, defaultHomePath: string, timezone: string}
      */
     public static function branding(): array
     {
@@ -28,7 +32,18 @@ final class SiteConfig
             'favicon' => trim((string) (SettingStore::get(self::KEY_FAVICON, '') ?: SiteFaviconGenerator::DEFAULT_PUBLIC_PATH)),
             'beian' => trim((string) SettingStore::get(self::KEY_BEIAN, '')),
             'defaultHomePath' => self::normalizeHomePath((string) SettingStore::get(self::KEY_FIXED_PAGE, '')),
+            'timezone' => self::displayTimezone(),
         ];
+    }
+
+    public static function displayTimezone(): string
+    {
+        $configured = trim((string) SettingStore::get(self::KEY_TIMEZONE, ''));
+        if ($configured !== '' && in_array($configured, timezone_identifiers_list(), true)) {
+            return $configured;
+        }
+
+        return self::DEFAULT_DISPLAY_TIMEZONE;
     }
 
     private static function normalizeHomePath(string $path): string

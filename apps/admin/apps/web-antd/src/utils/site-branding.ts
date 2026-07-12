@@ -1,8 +1,11 @@
 import { VBEN_LOGO_URL } from '@vben/constants';
 import { useAppConfig } from '@vben/hooks';
 import { preferences, updatePreferences } from '@vben/preferences';
+import { setCurrentTimezone } from '@vben/utils';
 
 import { overridesPreferences } from '#/preferences';
+
+export const SITE_DISPLAY_TIMEZONE_DEFAULT = 'Asia/Shanghai';
 
 export interface SiteBranding {
   beian: string;
@@ -10,6 +13,27 @@ export interface SiteBranding {
   favicon: string;
   logo: string;
   name: string;
+  timezone: string;
+}
+
+export function resolveSiteDisplayTimezone(timezone?: string): string {
+  const value = timezone?.trim();
+  if (!value) {
+    return SITE_DISPLAY_TIMEZONE_DEFAULT;
+  }
+
+  try {
+    Intl.DateTimeFormat(undefined, { timeZone: value });
+    return value;
+  } catch {
+    return SITE_DISPLAY_TIMEZONE_DEFAULT;
+  }
+}
+
+export function applySiteDisplayTimezone(timezone?: string): string {
+  const resolved = resolveSiteDisplayTimezone(timezone);
+  setCurrentTimezone(resolved);
+  return resolved;
 }
 
 function normalizeHomePath(path: string, fallback: string): string {
@@ -87,6 +111,8 @@ export async function applySiteBranding(): Promise<void> {
     branding?.defaultHomePath ?? '',
     defaultHomePath,
   );
+
+  applySiteDisplayTimezone(branding?.timezone);
 
   updatePreferences({
     app: { name, defaultHomePath: homePath },

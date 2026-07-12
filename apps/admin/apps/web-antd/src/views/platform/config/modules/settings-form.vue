@@ -15,6 +15,7 @@ import {
   Switch,
   Button,
 } from 'ant-design-vue';
+import type { DefaultOptionType } from 'ant-design-vue/es/select';
 
 import { batchUpsertConfigs, fetchConfigs, testSmsConfig } from '#/api/system/config';
 import { AttachmentField } from '#/components/attachment-field';
@@ -25,6 +26,7 @@ import {
   configFieldLabel,
   configFieldRemark,
   getConfigSelectOptions,
+  getSiteTimezoneSelectOptions,
   isAttachmentImageField,
   isHomePathSelectField,
   configAttachmentPlaceholder,
@@ -32,6 +34,7 @@ import {
   mapMenuTreeForHomePathCascader,
   mergeLegacyHomePathCascaderOption,
   SITE_FIXED_PAGE_KEY,
+  SITE_TIMEZONE_KEY,
   STORAGE_DRIVER_KEY,
   type HomePathCascaderOption,
 } from '../data';
@@ -145,8 +148,24 @@ async function onSave() {
   }
 }
 
-function selectOptions(key: string) {
-  return getConfigSelectOptions()[key] ?? [];
+function filterTimezoneOption(input: string, option?: DefaultOptionType) {
+  const keyword = input.trim().toLowerCase();
+  if (!keyword) {
+    return true;
+  }
+
+  const label = String(option?.label ?? '').toLowerCase();
+  const value = String(option?.value ?? '').toLowerCase();
+
+  return label.includes(keyword) || value.includes(keyword);
+}
+
+function selectOptions(row: ConfigRow) {
+  if (row.key === SITE_TIMEZONE_KEY) {
+    return getSiteTimezoneSelectOptions(draftValues.value[row.key]);
+  }
+
+  return getConfigSelectOptions()[row.key] ?? [];
 }
 
 function isSelectField(row: ConfigRow) {
@@ -230,7 +249,12 @@ defineExpose({
                 v-else-if="isSelectField(row)"
                 :disabled="!props.canManage"
                 :class="fieldControlClass"
-                :options="selectOptions(row.key)"
+                :options="selectOptions(row)"
+                :show-search="row.key === SITE_TIMEZONE_KEY"
+                :filter-option="
+                  row.key === SITE_TIMEZONE_KEY ? filterTimezoneOption : undefined
+                "
+                option-filter-prop="label"
                 :value="draftValues[row.key] || undefined"
                 @update:value="
                   (val) => (draftValues[row.key] = String(val ?? ''))

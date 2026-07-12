@@ -194,7 +194,7 @@
         },
         "timezone": {
           "label": "Timezone",
-          "remark": "PHP timezone identifier, e.g. Asia/Shanghai"
+          "remark": "Default display timezone for the admin UI; DB stores UTC, lists format times in this zone"
         },
         "forbidden_ip": {
           "label": "Blocked IPs",

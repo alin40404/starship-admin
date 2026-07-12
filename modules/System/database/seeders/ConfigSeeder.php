@@ -70,9 +70,9 @@ class ConfigSeeder extends Seeder
                 'name' => '时区',
                 'value' => 'Asia/Shanghai',
                 'group_name' => 'basic',
-                'type' => 'string',
+                'type' => 'select',
                 'sort' => 60,
-                'remark' => 'PHP 时区标识，如 Asia/Shanghai',
+                'remark' => '管理端默认展示时区；数据库存 UTC，由前端按此时区格式化',
             ],
             [
                 'key' => 'site.forbidden_ip',

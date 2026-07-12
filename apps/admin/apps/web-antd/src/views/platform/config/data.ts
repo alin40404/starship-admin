@@ -301,6 +301,37 @@ export function formatHomePathDisplay(
   return normalized;
 }
 
+/** 站点默认展示时区 */
+export const SITE_TIMEZONE_KEY = 'site.timezone';
+
+const SITE_TIMEZONE_SELECT_OPTIONS: { label: string; value: string }[] = [
+  { label: 'UTC (GMT+0)', value: 'UTC' },
+  { label: 'Asia/Shanghai (GMT+8)', value: 'Asia/Shanghai' },
+  { label: 'Asia/Hong_Kong (GMT+8)', value: 'Asia/Hong_Kong' },
+  { label: 'Asia/Taipei (GMT+8)', value: 'Asia/Taipei' },
+  { label: 'Asia/Tokyo (GMT+9)', value: 'Asia/Tokyo' },
+  { label: 'Asia/Seoul (GMT+9)', value: 'Asia/Seoul' },
+  { label: 'Asia/Singapore (GMT+8)', value: 'Asia/Singapore' },
+  { label: 'Europe/London (GMT+0)', value: 'Europe/London' },
+  { label: 'Europe/Paris (GMT+1)', value: 'Europe/Paris' },
+  { label: 'America/New_York (GMT-5)', value: 'America/New_York' },
+  { label: 'America/Los_Angeles (GMT-8)', value: 'America/Los_Angeles' },
+];
+
+export function getSiteTimezoneSelectOptions(
+  currentValue?: string,
+): { label: string; value: string }[] {
+  const normalized = currentValue?.trim();
+  if (
+    normalized &&
+    !SITE_TIMEZONE_SELECT_OPTIONS.some((item) => item.value === normalized)
+  ) {
+    return [{ label: normalized, value: normalized }, ...SITE_TIMEZONE_SELECT_OPTIONS];
+  }
+
+  return SITE_TIMEZONE_SELECT_OPTIONS;
+}
+
 /** 下拉类配置项选项（mail_type / mail_verify_type） */
 export function getConfigSelectOptions(): Record<
   string,
@@ -349,6 +380,7 @@ export function getConfigSelectOptions(): Record<
         value: 's3',
       },
     ],
+    [SITE_TIMEZONE_KEY]: getSiteTimezoneSelectOptions(),
   };
 }
 
