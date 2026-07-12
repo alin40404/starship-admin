@@ -35,7 +35,6 @@ const adminAccess = {
 
 const [AdminFormDrawer, adminFormDrawerApi] = useVbenDrawer({
   connectedComponent: AdminForm,
-  destroyOnClose: true,
 });
 
 function onCreate() {

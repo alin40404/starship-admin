@@ -5,14 +5,14 @@ import type { DeptNode } from '#/api/system/department';
 import type { PostRow } from '#/api/system/post';
 import type { RoleRow } from '#/api/system/role';
 
-import { computed, nextTick, reactive, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { useVbenDrawer } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 import { usePreferences } from '@vben/preferences';
 
-import { message } from 'ant-design-vue';
+import { message, Spin } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
 import { createAdmin, updateAdmin } from '#/api/system/admin';
@@ -33,6 +33,8 @@ const { isMobile } = usePreferences();
 const editingId = ref<number | null>(null);
 const editingIsSuperAdmin = ref(false);
 const metaReady = ref(false);
+const showFormContent = ref(false);
+const detailLoading = ref(false);
 
 const deptTree = ref<DeptNode[]>([]);
 const roleOptions = ref<RoleRow[]>([]);
@@ -143,6 +145,89 @@ const canWriteAdmin = computed(() => {
   return hasAccessByCodes([ADMIN_PERMISSIONS.CREATE]);
 });
 
+function applyAdminPreview(row: AdminRow) {
+  formApi.setValues({
+    avatar: normalizeAvatarToFileList(row.avatar),
+    dept_id: row.dept_id ?? undefined,
+    email: row.email ?? '',
+    mobile: row.mobile ?? '',
+    nickname: row.nickname ?? '',
+    password: '',
+    post_ids: row.posts?.map((p) => p.id) ?? [],
+    real_name: row.real_name ?? '',
+    remark: row.remark ?? '',
+    role_ids: row.roles?.map((r) => r.id) ?? [],
+    status: row.status,
+    username: row.username,
+  });
+}
+
+function applyCreateDefaults() {
+  formApi.setValues({
+    avatar: [],
+    nickname: '',
+    password: '',
+    post_ids: [],
+    real_name: '',
+    remark: '',
+    role_ids: [],
+    status: 1,
+    username: '',
+  });
+}
+
+function resolveOpenPayload() {
+  const data = drawerApi.getData<AdminRow | Record<string, never>>();
+  const isEdit =
+    !!data &&
+    typeof (data as AdminRow).id === 'number' &&
+    (data as AdminRow).id > 0;
+
+  return {
+    data: data as AdminRow,
+    isEdit,
+  };
+}
+
+function applyDrawerFooterState() {
+  if (!canWriteAdmin.value) {
+    drawerApi.setState({
+      cancelText: $t('system.shared.close'),
+      showConfirmButton: false,
+    });
+  } else {
+    drawerApi.setState({
+      cancelText: undefined,
+      showConfirmButton: true,
+    });
+  }
+}
+
+async function mountDrawerForm() {
+  const { data, isEdit } = resolveOpenPayload();
+
+  formApi.resetForm();
+  showFormContent.value = true;
+  await nextTick();
+
+  if (isEdit) {
+    applyAdminPreview(data);
+  } else {
+    applyCreateDefaults();
+  }
+
+  if (!metaReady.value) {
+    detailLoading.value = true;
+    try {
+      await loadMeta();
+    } catch {
+      drawerApi.close();
+    } finally {
+      detailLoading.value = false;
+    }
+  }
+}
+
 const [Drawer, drawerApi] = useVbenDrawer({
   async onConfirm() {
     if (!canWriteAdmin.value) {
@@ -198,21 +283,19 @@ const [Drawer, drawerApi] = useVbenDrawer({
 
   async onOpenChange(isOpen: boolean) {
     if (!isOpen) {
+      showFormContent.value = false;
+      detailLoading.value = false;
+      editingId.value = null;
+      editingIsSuperAdmin.value = false;
       drawerApi.setState({
         cancelText: undefined,
+        loading: false,
         showConfirmButton: true,
       });
       return;
     }
-    await ensureMetaLoaded();
-    const data = drawerApi.getData<AdminRow | Record<string, never>>();
-    formApi.resetForm();
 
-    const isEdit =
-      data &&
-      typeof (data as AdminRow).id === 'number' &&
-      (data as AdminRow).id > 0;
-
+    const { data, isEdit } = resolveOpenPayload();
     if (isEdit) {
       const row = data as AdminRow;
       editingIsSuperAdmin.value = row.is_super === 1;
@@ -222,49 +305,15 @@ const [Drawer, drawerApi] = useVbenDrawer({
       editingId.value = null;
     }
 
-    if (!canWriteAdmin.value) {
-      drawerApi.setState({
-        cancelText: $t('system.shared.close'),
-        showConfirmButton: false,
-      });
-    } else {
-      drawerApi.setState({
-        cancelText: undefined,
-        showConfirmButton: true,
-      });
-    }
+    showFormContent.value = false;
+    drawerApi.setState({ loading: true });
+    applyDrawerFooterState();
+  },
 
-    await nextTick();
-
-    if (isEdit) {
-      const row = data as AdminRow;
-      formApi.setValues({
-        avatar: normalizeAvatarToFileList(row.avatar),
-        dept_id: row.dept_id ?? undefined,
-        email: row.email ?? '',
-        mobile: row.mobile ?? '',
-        nickname: row.nickname ?? '',
-        password: '',
-        post_ids: row.posts?.map((p) => p.id) ?? [],
-        real_name: row.real_name ?? '',
-        remark: row.remark ?? '',
-        role_ids: row.roles?.map((r) => r.id) ?? [],
-        status: row.status,
-        username: row.username,
-      });
-    } else {
-      formApi.setValues({
-        avatar: [],
-        nickname: '',
-        password: '',
-        post_ids: [],
-        real_name: '',
-        remark: '',
-        role_ids: [],
-        status: 1,
-        username: '',
-      });
-    }
+  onOpened() {
+    void mountDrawerForm().finally(() => {
+      drawerApi.setState({ loading: false });
+    });
   },
 });
 
@@ -280,15 +329,15 @@ async function loadMeta() {
   metaReady.value = true;
 }
 
-async function ensureMetaLoaded() {
-  if (!metaReady.value) {
-    await loadMeta();
-  }
-}
+onMounted(() => {
+  void loadMeta();
+});
 </script>
 
 <template>
   <Drawer :title="drawerTitle" class="w-[560px]">
-    <Form />
+    <Spin :spinning="detailLoading" wrapper-class-name="w-full">
+      <Form v-if="showFormContent" />
+    </Spin>
   </Drawer>
 </template>
