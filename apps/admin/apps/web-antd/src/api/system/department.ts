@@ -44,10 +44,27 @@ export interface DepartmentSavePayload {
   remark?: string;
 }
 
+export interface DepartmentOptionsTreeNode {
+  id: number;
+  parent_id: number;
+  name: string;
+  children?: DepartmentOptionsTreeNode[];
+}
+
 export function fetchDepartmentTree(unscoped = false) {
   return requestClient.get<DepartmentTreeNode[]>('/system/departments/tree', {
     params: unscoped ? { unscoped: 1 } : undefined,
   });
+}
+
+/** 部门选择器（需登录，无按钮权限） */
+export function fetchDepartmentOptionsTree(unscoped = false) {
+  return requestClient.get<DepartmentOptionsTreeNode[]>(
+    '/system/department-options/tree',
+    {
+      params: unscoped ? { unscoped: 1 } : undefined,
+    },
+  );
 }
 
 export function fetchDepartment(id: number) {
@@ -96,7 +113,7 @@ export function batchUpdateDepartmentStatus(ids: number[], status: 0 | 1) {
 }
 
 export function mapDeptForTreeSelect(
-  nodes: DeptNode[] | DepartmentTreeNode[],
+  nodes: DeptNode[] | DepartmentTreeNode[] | DepartmentOptionsTreeNode[],
 ): { label: string; value: number; children?: ReturnType<typeof mapDeptForTreeSelect> }[] {
   return nodes.map((n) => ({
     label: n.name,

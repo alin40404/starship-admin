@@ -6,7 +6,7 @@ import type {
 
 import type { CategoryTreeNode, CategoryTypeOption } from '#/api/system/category';
 import {
-  fetchCategoryTree,
+  fetchCategoryOptionsTree,
   mapCategoryForTreeSelect,
 } from '#/api/system/category';
 import { CATEGORY_PERMISSIONS } from '#/constants/category-permissions';
@@ -371,7 +371,7 @@ export async function loadCategoryTreeForParent(
   type?: string,
   excludeId?: number,
 ): Promise<ReturnType<typeof mapCategoryForTreeSelect>> {
-  const tree = await fetchCategoryTree(type ? { type } : undefined);
+  const tree = await fetchCategoryOptionsTree(type ? { type } : undefined);
 
   function filter(nodes: CategoryTreeNode[]): CategoryTreeNode[] {
     return nodes

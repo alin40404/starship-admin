@@ -59,8 +59,21 @@ export function fetchAreaTree(params?: AreaTreeQuery) {
   return requestClient.get<AreaTreeNode[]>('/system/areas/tree', { params });
 }
 
+/** 地区选择器（需登录，无按钮权限） */
+export function fetchAreaOptionsTree(params?: AreaTreeQuery) {
+  return requestClient.get<AreaTreeNode[]>('/system/area-options/tree', {
+    params,
+  });
+}
+
 export function fetchAreaChildren(pid = 0) {
   return requestClient.get<AreaTreeNode[]>('/system/areas/children', {
+    params: { pid },
+  });
+}
+
+export function fetchAreaOptionsChildren(pid = 0) {
+  return requestClient.get<AreaTreeNode[]>('/system/area-options/children', {
     params: { pid },
   });
 }
@@ -81,12 +94,32 @@ export function fetchAreaCascaderInit(params?: {
   );
 }
 
+export function fetchAreaOptionsCascaderInit(params?: {
+  exclude_id?: number;
+  pid?: number;
+}) {
+  return requestClient.get<AreaCascaderInitResult>(
+    '/system/area-options/cascader-init',
+    { params },
+  );
+}
+
 export function fetchAreaCascaderOptions(params?: {
   exclude_id?: number;
   pid?: number;
 }) {
   return requestClient.get<AreaCascaderOption[]>(
     '/system/areas/cascader-options',
+    { params },
+  );
+}
+
+export function fetchAreaOptionsCascaderOptions(params?: {
+  exclude_id?: number;
+  pid?: number;
+}) {
+  return requestClient.get<AreaCascaderOption[]>(
+    '/system/area-options/cascader-options',
     { params },
   );
 }

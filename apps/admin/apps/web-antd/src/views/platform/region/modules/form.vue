@@ -18,8 +18,8 @@ import { useVbenForm } from '#/adapter/form';
 import {
   createArea,
   fetchArea,
-  fetchAreaCascaderInit,
-  fetchAreaCascaderOptions,
+  fetchAreaOptionsCascaderInit,
+  fetchAreaOptionsCascaderOptions,
   fetchAreaPinyinPreview,
   updateArea,
 } from '#/api/system/region';
@@ -54,7 +54,7 @@ const [Form, formApi] = useVbenForm({
 async function initCascader(pid = 0) {
   cascaderReady.value = false;
   try {
-    const result = await fetchAreaCascaderInit({
+    const result = await fetchAreaOptionsCascaderInit({
       exclude_id: editingId.value ?? undefined,
       pid,
     });
@@ -73,7 +73,7 @@ async function loadCascaderData(selectedOptions: AreaCascaderOption[]) {
 
   target.loading = true;
   try {
-    target.children = await fetchAreaCascaderOptions({
+    target.children = await fetchAreaOptionsCascaderOptions({
       exclude_id: editingId.value ?? undefined,
       pid: target.value,
     });

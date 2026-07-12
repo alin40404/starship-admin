@@ -28,10 +28,10 @@ import {
   updateRole,
 } from '#/api/system/role';
 import {
-  fetchDepartmentTree,
+  fetchDepartmentOptionsTree,
   mapDeptForTreeSelect,
 } from '#/api/system/department';
-import { fetchMenuTree } from '#/api/system/menu';
+import { fetchMenuOptionsTree } from '#/api/system/menu';
 import { ROLE_PERMISSIONS } from '#/constants/role-permissions';
 
 import {
@@ -336,7 +336,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
 });
 
 async function loadMenuTree() {
-  menuTree.value = await fetchMenuTree();
+  menuTree.value = await fetchMenuOptionsTree();
   menuReady.value = true;
 }
 
@@ -347,7 +347,7 @@ async function ensureMenuTree() {
 }
 
 async function loadDeptTree() {
-  deptTree.value = await fetchDepartmentTree(true);
+  deptTree.value = await fetchDepartmentOptionsTree(true);
   deptReady.value = true;
 }
 

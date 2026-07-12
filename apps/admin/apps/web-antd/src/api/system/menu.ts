@@ -76,6 +76,11 @@ export function fetchMenuTree() {
   return requestClient.get<MenuTreeNode[]>('/system/menus/tree');
 }
 
+/** 菜单选择器（需登录，无按钮权限） */
+export function fetchMenuOptionsTree() {
+  return requestClient.get<MenuTreeNode[]>('/system/menu-options/tree');
+}
+
 /** @returns true 表示与其它菜单的路由地址重复（编辑时传 excludeId 排除当前菜单） */
 export async function isMenuPathDuplicate(
   path: string,

@@ -24,6 +24,7 @@ use Modules\System\App\Support\AttachmentPermissions;
 use Modules\System\App\Support\ConfigPermissions;
 use Modules\System\App\Support\DepartmentPermissions;
 use Modules\System\App\Support\DictPermissions;
+use Modules\System\App\Support\InboxPermissions;
 use Modules\System\App\Support\MenuPermissions;
 use Modules\System\App\Support\ModulePermissions;
 use Modules\System\App\Support\PluginPermissions;
@@ -32,9 +33,12 @@ use Modules\System\App\Support\RolePermissions;
 use Modules\System\App\Support\UserGroupPermissions;
 
 Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('admin-api')->group(function () {
+    // --- start: 无需登录 ---
     Route::get('system/site', [ConfigController::class, 'site']);
     Route::get('system/runtime', [ConfigController::class, 'runtime']);
+    // --- end: 无需登录 ---
 
+    // --- start: 认证与会话（auth/*） ---
     Route::prefix('auth')->group(function () {
         Route::post('login', [AuthController::class, 'login']);
         Route::post('sms-code', [AuthController::class, 'sendSmsCode']);
@@ -51,8 +55,29 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
             Route::get('permissions', [AuthController::class, 'permissions']);
         });
     });
+    // --- end: 认证与会话（auth/*） ---
 
     Route::middleware('auth:sanctum')->prefix('system')->group(function () {
+        // --- start: 需登录，无按钮权限（表单选择器 / 联动 / 字典与附件选择等） ---
+        Route::get('dict-options/{code}', [DictTypeController::class, 'options']);
+
+        Route::get('department-options/tree', [DepartmentController::class, 'optionsTree']);
+
+        Route::get('menu-options/tree', [MenuController::class, 'optionsTree']);
+        Route::get('menus/path-exists', [MenuController::class, 'pathExists']);
+
+        Route::get('area-options/tree', [AreaController::class, 'optionsTree']);
+        Route::get('area-options/children', [AreaController::class, 'optionsChildren']);
+        Route::get('area-options/cascader-init', [AreaController::class, 'optionsCascaderInit']);
+        Route::get('area-options/cascader-options', [AreaController::class, 'optionsCascaderOptions']);
+
+        Route::get('category-options/types', [CategoryController::class, 'optionsTypes']);
+        Route::get('category-options/tree', [CategoryController::class, 'optionsTree']);
+
+        Route::get('attachments/picker/categories', [AttachmentController::class, 'pickerCategories']);
+        Route::get('attachments/picker', [AttachmentController::class, 'pickerIndex']);
+        // --- end: 需登录，无按钮权限 ---
+
         Route::get('departments/tree', [DepartmentController::class, 'tree'])
             ->middleware('admin.permission:'.DepartmentPermissions::QUERY);
         Route::get('departments', [DepartmentController::class, 'index'])
@@ -128,8 +153,6 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
         // 菜单管理（/permission/menus）— 权限码见 MenuPermissions
         Route::get('menus/tree', [MenuController::class, 'tree'])
             ->middleware('admin.permission:'.MenuPermissions::QUERY);
-        // 校验路由路径是否已存在，表单联动用，不做按钮权限拦截
-        Route::get('menus/path-exists', [MenuController::class, 'pathExists']);
         Route::get('menus', [MenuController::class, 'index'])
             ->middleware('admin.permission:'.MenuPermissions::QUERY);
         Route::post('menus/batch-destroy', [MenuController::class, 'batchDestroy'])
@@ -173,7 +196,6 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
         Route::delete('configs/{id}', [ConfigController::class, 'destroy'])
             ->middleware('admin.permission:'.ConfigPermissions::DELETE);
 
-        Route::get('dict-options/{code}', [DictTypeController::class, 'options']);
         Route::get('dict-types', [DictTypeController::class, 'index'])
             ->middleware('admin.permission:'.DictPermissions::QUERY);
         Route::post('dict-types', [DictTypeController::class, 'store'])
@@ -213,8 +235,6 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
         Route::delete('areas/{id}', [AreaController::class, 'destroy'])
             ->middleware('admin.permission:'.AreaPermissions::DELETE);
 
-        Route::get('attachments/picker/categories', [AttachmentController::class, 'pickerCategories']);
-        Route::get('attachments/picker', [AttachmentController::class, 'pickerIndex']);
         Route::get('attachments/categories', [AttachmentController::class, 'categories'])
             ->middleware('admin.permission:'.AttachmentPermissions::QUERY);
         Route::get('attachments', [AttachmentController::class, 'index'])
@@ -246,9 +266,13 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
             ->middleware('admin.permission:'.CategoryPermissions::UPDATE);
         Route::delete('categories/{id}', [CategoryController::class, 'destroy'])
             ->middleware('admin.permission:'.CategoryPermissions::DELETE);
+    });
 
+    // --- start: 代码生成 CRUD（admin-generator/*） ---
+    Route::middleware('auth:sanctum')->prefix('system')->group(function () {
         require __DIR__.'/admin-generator/_loader.php';
     });
+    // --- end: 代码生成 CRUD（admin-generator/*） ---
 
     Route::middleware('auth:sanctum')->prefix('dev')->group(function () {
         // 模块管理（/dev/modules）— 扫描 modules/*/module.json
@@ -279,17 +303,30 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
             ->middleware('admin.permission:'.PluginPermissions::CONFIG);
     });
 
-    Route::middleware(['auth:sanctum', 'admin.permission:dashboard.inbox'])->prefix('inbox')->group(function () {
-        Route::get('messages', [InboxMessageController::class, 'index']);
-        Route::get('messages/recent', [InboxMessageController::class, 'recent']);
-        Route::get('messages/unread-count', [InboxMessageController::class, 'unreadCount']);
-        Route::get('messages/category-stats', [InboxMessageController::class, 'categoryStats']);
-        Route::get('messages/settings', [InboxMessageController::class, 'settings']);
-        Route::post('messages/read-all', [InboxMessageController::class, 'markAllRead']);
-        Route::post('messages/clear-read', [InboxMessageController::class, 'clearRead']);
-        Route::get('messages/{id}', [InboxMessageController::class, 'show']);
-        Route::post('messages/{id}/read', [InboxMessageController::class, 'markRead']);
-        Route::delete('messages/{id}', [InboxMessageController::class, 'destroy']);
-        Route::post('messages/batch-destroy', [InboxMessageController::class, 'batchDestroy']);
+    // --- start: 站内信（inbox/*） ---
+    Route::middleware('auth:sanctum')->prefix('inbox')->group(function () {
+        Route::get('messages', [InboxMessageController::class, 'index'])
+            ->middleware('admin.permission:'.InboxPermissions::QUERY);
+        Route::get('messages/recent', [InboxMessageController::class, 'recent'])
+            ->middleware('admin.permission:'.InboxPermissions::QUERY);
+        Route::get('messages/unread-count', [InboxMessageController::class, 'unreadCount'])
+            ->middleware('admin.permission:'.InboxPermissions::QUERY);
+        Route::get('messages/category-stats', [InboxMessageController::class, 'categoryStats'])
+            ->middleware('admin.permission:'.InboxPermissions::QUERY);
+        Route::get('messages/settings', [InboxMessageController::class, 'settings'])
+            ->middleware('admin.permission:'.InboxPermissions::QUERY);
+        Route::post('messages/read-all', [InboxMessageController::class, 'markAllRead'])
+            ->middleware('admin.permission:'.InboxPermissions::QUERY);
+        Route::post('messages/clear-read', [InboxMessageController::class, 'clearRead'])
+            ->middleware('admin.permission:'.InboxPermissions::QUERY);
+        Route::get('messages/{id}', [InboxMessageController::class, 'show'])
+            ->middleware('admin.permission:'.InboxPermissions::QUERY);
+        Route::post('messages/{id}/read', [InboxMessageController::class, 'markRead'])
+            ->middleware('admin.permission:'.InboxPermissions::QUERY);
+        Route::delete('messages/{id}', [InboxMessageController::class, 'destroy'])
+            ->middleware('admin.permission:'.InboxPermissions::QUERY);
+        Route::post('messages/batch-destroy', [InboxMessageController::class, 'batchDestroy'])
+            ->middleware('admin.permission:'.InboxPermissions::QUERY);
     });
+    // --- end: 站内信（inbox/*） ---
 });

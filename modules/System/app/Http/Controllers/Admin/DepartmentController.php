@@ -19,22 +19,26 @@ class DepartmentController extends Controller
 {
     public function tree(Request $request): JsonResponse
     {
-        $query = Department::query()
-            ->with('leader:id,nickname,real_name,username')
-            ->orderBy('sort')
-            ->orderBy('id');
-
-        $admin = $request->user();
-        if (
-            $admin instanceof Admin
-            && ! ($request->boolean('unscoped') && $this->canLoadUnscopedDeptTree($admin))
-        ) {
-            app(DataScopeService::class)->applyDepartmentScope($query, $admin);
-        }
+        $query = $this->departmentTreeQuery($request)
+            ->with('leader:id,nickname,real_name,username');
 
         $rows = $query->get();
 
         return ApiResponse::success($this->buildTree($rows));
+    }
+
+    /**
+     * 部门选择器树：需登录，无按钮权限；默认按数据权限过滤，仅返回启用部门。
+     */
+    public function optionsTree(Request $request): JsonResponse
+    {
+        $query = $this->departmentTreeQuery($request)
+            ->where('status', 1)
+            ->select(['id', 'parent_id', 'name']);
+
+        $rows = $query->get();
+
+        return ApiResponse::success($this->buildOptionsTree($rows));
     }
 
     public function index(Request $request): JsonResponse
@@ -202,6 +206,43 @@ class DepartmentController extends Controller
             ->update(['status' => $data['status']]);
 
         return ApiResponse::success(['updated' => $updated], __('system::messages.batch_status_updated'));
+    }
+
+    private function departmentTreeQuery(Request $request)
+    {
+        $query = Department::query()
+            ->orderBy('sort')
+            ->orderBy('id');
+
+        $admin = $request->user();
+        if (
+            $admin instanceof Admin
+            && ! ($request->boolean('unscoped') && $this->canLoadUnscopedDeptTree($admin))
+        ) {
+            app(DataScopeService::class)->applyDepartmentScope($query, $admin);
+        }
+
+        return $query;
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection<int, Department>  $rows
+     * @return array<int, mixed>
+     */
+    private function buildOptionsTree($rows, int $parentId = 0): array
+    {
+        $branch = [];
+
+        foreach ($rows->where('parent_id', $parentId) as $item) {
+            $branch[] = [
+                'id' => $item->id,
+                'parent_id' => $item->parent_id,
+                'name' => $item->name,
+                'children' => $this->buildOptionsTree($rows, (int) $item->id),
+            ];
+        }
+
+        return $branch;
     }
 
     /**

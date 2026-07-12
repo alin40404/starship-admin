@@ -17,7 +17,7 @@ import { message } from 'ant-design-vue';
 import { useVbenForm } from '#/adapter/form';
 import {
   createMenu,
-  fetchMenuTree,
+  fetchMenuOptionsTree,
   isMenuPathDuplicate,
   updateMenu,
 } from '#/api/system/menu';
@@ -82,7 +82,7 @@ function filterTreeExcludeIds(
 }
 
 async function loadMenuTreeForParentSelect(): Promise<MenuTreeNode[]> {
-  const tree = await fetchMenuTree();
+  const tree = await fetchMenuOptionsTree();
   if (!tree.length) {
     return [];
   }

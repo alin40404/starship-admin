@@ -19,6 +19,22 @@ class MenuController extends Controller
 
     public function tree(): JsonResponse
     {
+        return ApiResponse::success($this->resolveMenuTree());
+    }
+
+    /**
+     * 菜单选择器树：需登录，无按钮权限；供角色授权、上级菜单、首页路径等表单复用。
+     */
+    public function optionsTree(): JsonResponse
+    {
+        return ApiResponse::success($this->resolveMenuTree());
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    private function resolveMenuTree(): array
+    {
         $rows = Menu::query()
             ->orderBy('sort')
             ->orderBy('id')
@@ -26,7 +42,7 @@ class MenuController extends Controller
 
         $moduleMap = $this->moduleMenuFilter->menuModuleMap($rows);
 
-        return ApiResponse::success($this->buildTree($rows, 0, $moduleMap));
+        return $this->buildTree($rows, 0, $moduleMap);
     }
 
     public function index(Request $request): JsonResponse

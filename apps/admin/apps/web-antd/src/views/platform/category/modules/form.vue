@@ -19,7 +19,7 @@ import { useVbenForm } from '#/adapter/form';
 import {
   createCategory,
   fetchCategory,
-  fetchCategoryTypes,
+  fetchCategoryOptionsTypes,
   updateCategory,
 } from '#/api/system/category';
 import { uploadAttachment } from '#/api/system/attachment';
@@ -169,7 +169,7 @@ async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
 
   formApi.resetForm();
   if (typeOptions.value.length === 0) {
-    typeOptions.value = await fetchCategoryTypes();
+    typeOptions.value = await fetchCategoryOptionsTypes();
   }
 
   const data = popupApi.getData<

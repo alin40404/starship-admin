@@ -18,7 +18,7 @@ import { useVbenForm } from '#/adapter/form';
 import { createAdmin, updateAdmin } from '#/api/system/admin';
 import { uploadAttachment } from '#/api/system/attachment';
 import { validateUploadFile } from '#/utils/upload-policy';
-import { fetchDepartmentTree } from '#/api/system/department';
+import { fetchDepartmentOptionsTree } from '#/api/system/department';
 import { fetchPostPage } from '#/api/system/post';
 import { fetchRolePage } from '#/api/system/role';
 import { ADMIN_PERMISSIONS } from '#/constants/admin-permissions';
@@ -319,7 +319,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
 
 async function loadMeta() {
   const [dept, roles, posts] = await Promise.all([
-    fetchDepartmentTree(),
+    fetchDepartmentOptionsTree(),
     fetchRolePage({ page: 1, per_page: 500 }),
     fetchPostPage({ page: 1, per_page: 500 }),
   ]);

@@ -42,7 +42,7 @@ import {
 import { mapDictItemOptions, DICT_TYPE_CODE } from '#/views/platform/dict/i18n';
 import { applySiteBranding } from '#/utils/site-branding';
 import { initAdminRuntimeConfig } from '#/utils/admin-runtime-config';
-import { fetchMenuTree } from '#/api/system/menu';
+import { fetchMenuOptionsTree } from '#/api/system/menu';
 import HomePathCascader from './home-path-cascader.vue';
 
 const props = defineProps<{
@@ -110,7 +110,7 @@ async function loadConfigs() {
     if (props.groupName === 'basic') {
       const [result, menuTree] = await Promise.all([
         fetchConfigs(props.groupName),
-        fetchMenuTree(),
+        fetchMenuOptionsTree(),
         loadSiteTimezoneOptions(),
       ]);
       rows.value = result.list ?? [];
@@ -127,7 +127,7 @@ async function loadConfigs() {
   }
 }
 
-function refreshHomePathCascader(menuTree: Awaited<ReturnType<typeof fetchMenuTree>>) {
+function refreshHomePathCascader(menuTree: Awaited<ReturnType<typeof fetchMenuOptionsTree>>) {
   const options = mapMenuTreeForHomePathCascader(menuTree);
   homePathCascaderOptions.value = mergeLegacyHomePathCascaderOption(
     options,

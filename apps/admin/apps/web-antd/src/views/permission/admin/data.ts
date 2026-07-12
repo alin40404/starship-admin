@@ -15,7 +15,7 @@ import { z } from '@vben/common-ui';
 import { preferences } from '@vben/preferences';
 import { formatDateTime } from '@vben/utils';
 
-import { fetchDepartmentTree } from '#/api/system/department';
+import { fetchDepartmentOptionsTree } from '#/api/system/department';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { ADMIN_PERMISSIONS } from '#/constants/admin-permissions';
 import { $t } from '#/locales';
@@ -56,7 +56,7 @@ export function useAdminMobileFilterSchema(): VbenFormSchema[] {
       component: 'ApiTreeSelect',
       componentProps: {
         allowClear: true,
-        api: async () => mapDeptForTreeSelect(await fetchDepartmentTree()),
+        api: async () => mapDeptForTreeSelect(await fetchDepartmentOptionsTree()),
         class: 'w-full',
         fieldNames: { children: 'children', label: 'label', value: 'value' },
         placeholder: $t('permission.admin.searchDept'),
@@ -153,7 +153,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
       component: 'ApiTreeSelect',
       componentProps: {
         allowClear: true,
-        api: async () => mapDeptForTreeSelect(await fetchDepartmentTree()),
+        api: async () => mapDeptForTreeSelect(await fetchDepartmentOptionsTree()),
         class: 'w-full',
         fieldNames: { children: 'children', label: 'label', value: 'value' },
         placeholder: $t('permission.admin.searchDept'),

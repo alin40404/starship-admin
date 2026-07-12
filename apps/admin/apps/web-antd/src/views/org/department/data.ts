@@ -6,7 +6,7 @@ import type {
 
 import type { DepartmentTreeNode } from '#/api/system/department';
 import { fetchAdminPage } from '#/api/system/admin';
-import { fetchDepartmentTree, mapDeptForTreeSelect } from '#/api/system/department';
+import { fetchDepartmentOptionsTree, mapDeptForTreeSelect } from '#/api/system/department';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { DEPARTMENT_PERMISSIONS } from '#/constants/department-permissions';
 import { $t } from '#/locales';
@@ -231,7 +231,7 @@ export function buildDepartmentFormSchema(params: {
 export async function loadDepartmentTreeForParent(
   excludeId?: number,
 ): Promise<ReturnType<typeof mapDeptForTreeSelect>> {
-  const tree = await fetchDepartmentTree(true);
+  const tree = await fetchDepartmentOptionsTree(true);
   const rootOption = {
     label: $t('org.department.rootOption'),
     value: 0,

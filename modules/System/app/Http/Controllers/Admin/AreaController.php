@@ -11,6 +11,38 @@ use Modules\System\App\Support\AreaHelper;
 
 class AreaController extends Controller
 {
+    /**
+     * 地区选择器：需登录，无按钮权限。
+     */
+    public function optionsTree(Request $request): JsonResponse
+    {
+        return $this->tree($request);
+    }
+
+    /**
+     * 地区子节点选择器（懒加载）：需登录，无按钮权限；逻辑同 children()。
+     */
+    public function optionsChildren(Request $request): JsonResponse
+    {
+        return $this->children($request);
+    }
+
+    /**
+     * 地区级联初始路径与首屏选项：需登录，无按钮权限；逻辑同 cascaderInit()。
+     */
+    public function optionsCascaderInit(Request $request): JsonResponse
+    {
+        return $this->cascaderInit($request);
+    }
+
+    /**
+     * 地区级联动态子选项（按 pid 懒加载）：需登录，无按钮权限；逻辑同 cascaderOptions()。
+     */
+    public function optionsCascaderOptions(Request $request): JsonResponse
+    {
+        return $this->cascaderOptions($request);
+    }
+
     public function tree(Request $request): JsonResponse
     {
         $query = Area::query()->orderBy('level')->orderBy('id');

@@ -13,7 +13,7 @@ import {
   fetchSchemaTables,
   importGeneratorTable,
 } from '#/api/generator';
-import { fetchMenuTree } from '#/api/system/menu';
+import { fetchMenuOptionsTree } from '#/api/system/menu';
 import { $t } from '#/locales';
 
 import {
@@ -68,7 +68,7 @@ async function loadModules() {
 async function loadMenuParents() {
   loadingMenuParents.value = true;
   try {
-    const tree = await fetchMenuTree();
+    const tree = await fetchMenuOptionsTree();
     menuParentOptions.value = mapMenuTreeForParentPathSelect(tree);
   } catch {
     menuParentOptions.value = [];

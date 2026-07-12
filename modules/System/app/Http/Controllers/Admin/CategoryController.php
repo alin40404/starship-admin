@@ -19,6 +19,34 @@ class CategoryController extends Controller
         return ApiResponse::success(CategoryType::options());
     }
 
+    /**
+     * 分类类型选择器：需登录，无按钮权限。
+     */
+    public function optionsTypes(): JsonResponse
+    {
+        return $this->types();
+    }
+
+    /**
+     * 分类选择器树：需登录，无按钮权限；仅返回启用（normal）节点。
+     */
+    public function optionsTree(Request $request): JsonResponse
+    {
+        $query = Category::query()
+            ->where('status', 'normal')
+            ->orderByDesc('sort')
+            ->orderByDesc('id');
+
+        $type = $request->get('type');
+        if (is_string($type) && $type !== '' && $type !== 'all') {
+            $query->where('type', $type);
+        }
+
+        $rows = $query->get(['id', 'parent_id', 'type', 'name', 'nickname', 'status']);
+
+        return ApiResponse::success($this->buildOptionsTree($rows));
+    }
+
     public function tree(Request $request): JsonResponse
     {
         $query = Category::query()->orderByDesc('sort')->orderByDesc('id');
@@ -153,6 +181,38 @@ class CategoryController extends Controller
             ->update(['status' => $data['status']]);
 
         return ApiResponse::success(['updated' => $updated], __('system::messages.category_batch_status_updated'));
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection<int, Category>  $rows
+     * @return array<int, mixed>
+     */
+    private function buildOptionsTree($rows, int $parentId = 0): array
+    {
+        $branch = [];
+
+        foreach ($rows as $item) {
+            if ((int) $item->parent_id !== $parentId) {
+                continue;
+            }
+
+            $node = [
+                'id' => $item->id,
+                'parent_id' => (int) $item->parent_id,
+                'type' => (string) $item->type,
+                'name' => (string) $item->name,
+                'nickname' => (string) $item->nickname,
+                'status' => (string) $item->status,
+            ];
+            $children = $this->buildOptionsTree($rows, (int) $item->id);
+            if ($children !== []) {
+                $node['children'] = $children;
+            }
+
+            $branch[] = $node;
+        }
+
+        return $branch;
     }
 
     /**

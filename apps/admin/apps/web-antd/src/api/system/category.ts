@@ -51,8 +51,22 @@ export function fetchCategoryTypes() {
   return requestClient.get<CategoryTypeOption[]>('/system/categories/types');
 }
 
+/** 分类类型选择器（需登录，无按钮权限） */
+export function fetchCategoryOptionsTypes() {
+  return requestClient.get<CategoryTypeOption[]>(
+    '/system/category-options/types',
+  );
+}
+
 export function fetchCategoryTree(params?: CategoryTreeQuery) {
   return requestClient.get<CategoryTreeNode[]>('/system/categories/tree', {
+    params,
+  });
+}
+
+/** 分类选择器（需登录，无按钮权限；仅启用节点） */
+export function fetchCategoryOptionsTree(params?: Pick<CategoryTreeQuery, 'type'>) {
+  return requestClient.get<CategoryTreeNode[]>('/system/category-options/tree', {
     params,
   });
 }
