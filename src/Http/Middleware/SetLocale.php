@@ -23,6 +23,7 @@ final class SetLocale
     {
         $header = (string) $request->header('Accept-Language', '');
         $primary = trim(explode(',', $header)[0] ?? '');
+        $primary = trim(explode(';', $primary)[0] ?? '');
 
         return match ($primary) {
             'zh-CN', 'zh_CN', 'zh' => 'zh_CN',
