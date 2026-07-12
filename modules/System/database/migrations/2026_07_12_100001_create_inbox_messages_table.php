@@ -28,6 +28,7 @@ return new class extends Migration
             $table->unsignedTinyInteger('is_read')->default(0)->comment('是否已读:0未读,1已读');
             $table->timestamp('read_at')->nullable()->comment('已读时间');
             $table->timestamps();
+            $table->softDeletes();
 
             $table->index(['admin_id', 'is_read', 'created_at'], 'inbox_admin_read_created_idx');
             $table->index(['admin_id', 'category', 'is_read'], 'inbox_admin_category_read_idx');

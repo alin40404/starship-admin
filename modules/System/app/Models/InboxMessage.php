@@ -4,9 +4,11 @@ namespace Modules\System\App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class InboxMessage extends Model
 {
+    use SoftDeletes;
     public const TYPE_SYSTEM = 'system';
 
     public const TYPE_TODO = 'todo';

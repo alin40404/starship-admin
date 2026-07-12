@@ -53,6 +53,26 @@ const [open, toggle] = useToggle();
 
 const showBadge = computed(() => props.count > 0 || props.dot);
 
+const displayCount = computed(() => {
+  if (props.count <= 0) {
+    return '';
+  }
+  return props.count > 99 ? '99+' : String(props.count);
+});
+
+const badgeClass = computed(() => {
+  if (props.count <= 0) {
+    return 'notification-badge notification-badge--dot';
+  }
+  if (props.count > 99) {
+    return 'notification-badge notification-badge--overflow';
+  }
+  if (props.count > 9) {
+    return 'notification-badge notification-badge--wide';
+  }
+  return 'notification-badge';
+});
+
 function close() {
   open.value = false;
 }
@@ -116,14 +136,8 @@ function showCategoryIcon(item: NotificationItem) {
     <template #trigger>
       <div class="mr-2 flex-center h-full" @click.stop="toggle()">
         <VbenIconButton class="bell-button relative text-foreground">
-          <span
-            v-if="showBadge"
-            class="absolute -top-0.5 -right-0.5 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] leading-4 text-white"
-            :class="count > 0 ? 'h-4' : 'size-2 p-0'"
-          >
-            <template v-if="count > 0">
-              {{ count > 99 ? '99+' : count }}
-            </template>
+          <span v-if="showBadge" :class="badgeClass">
+            <template v-if="count > 0">{{ displayCount }}</template>
           </span>
           <Bell class="size-4" />
         </VbenIconButton>
@@ -136,9 +150,9 @@ function showCategoryIcon(item: NotificationItem) {
           {{ $t('ui.widgets.notifications') }}
           <span
             v-if="count > 0"
-            class="ml-1 text-xs text-muted-foreground"
+            class="ml-1 text-xs text-muted-foreground tabular-nums"
           >
-            ({{ count }})
+            ({{ displayCount }})
           </span>
         </div>
         <VbenIconButton
@@ -253,6 +267,53 @@ function showCategoryIcon(item: NotificationItem) {
 </template>
 
 <style scoped>
+.notification-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 1px solid hsl(var(--background));
+  border-radius: 9999px;
+  background: hsl(var(--destructive));
+  color: #fff;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  box-sizing: border-box;
+}
+
+.notification-badge--dot {
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  min-width: 8px;
+  height: 8px;
+}
+
+.notification-badge--wide {
+  width: auto;
+  min-width: 20px;
+  right: -7px;
+  padding: 0 5px;
+}
+
+.notification-badge--overflow {
+  width: auto;
+  min-width: 26px;
+  right: -10px;
+  padding: 0 4px;
+  font-size: 9px;
+  letter-spacing: -0.02em;
+}
+
 :deep(.bell-button) {
   &:hover {
     svg {

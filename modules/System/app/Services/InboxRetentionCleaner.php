@@ -20,9 +20,9 @@ class InboxRetentionCleaner
         }
 
         $cutoff = now()->subDays($days);
-        InboxMessage::query()
+        InboxMessage::withTrashed()
             ->where('created_at', '<', $cutoff)
-            ->delete();
+            ->forceDelete();
 
         Cache::put('inbox_retention_cleaned_at', 1, now()->addHours(6));
     }
