@@ -453,6 +453,19 @@ export function normalizeParamValueForSave(
   return String(value ?? '').trim();
 }
 
+export function formatParamJsonForEdit(value: ConfigRow['value']): string {
+  const raw = String(value ?? '').trim();
+  if (raw === '') {
+    return '';
+  }
+
+  try {
+    return JSON.stringify(JSON.parse(raw), null, 2);
+  } catch {
+    return raw;
+  }
+}
+
 export function normalizeParamValueForEdit(
   type: string,
   value: ConfigRow['value'],
@@ -469,6 +482,10 @@ export function normalizeParamValueForEdit(
     return ['true', '1', 'yes', 'on'].includes(raw.toLowerCase())
       ? 'true'
       : 'false';
+  }
+
+  if (type === 'json') {
+    return formatParamJsonForEdit(value);
   }
 
   return raw;

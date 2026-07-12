@@ -2,7 +2,7 @@
 import type { ConfigRow } from '#/api/system/config';
 import type { VbenFormSchema } from '#/adapter/form';
 
-import { computed, ref } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
 import { $t } from '@vben/locales';
@@ -17,11 +17,15 @@ import {
   initAdminRuntimeConfig,
 } from '#/utils/admin-runtime-config';
 
+import { formatParamJsonForEdit } from '../data';
+
 const PARAM_GROUP = 'param';
 
 const emits = defineEmits<{ success: [] }>();
 
 const editingKey = ref<string | null>(null);
+const hydratingForm = ref(false);
+const valueFieldType = ref('string');
 
 function getDefaultValueForType(type: string): number | string | undefined {
   switch (type) {
@@ -59,6 +63,10 @@ function normalizeValueForForm(
       : 'false';
   }
 
+  if (type === 'json') {
+    return formatParamJsonForEdit(value);
+  }
+
   return raw;
 }
 
@@ -81,9 +89,9 @@ function buildValueFieldSchema(type: string): VbenFormSchema {
     return {
       component: 'Textarea',
       componentProps: {
-        class: 'w-full',
+        class: 'w-full font-mono',
         placeholder: $t('platform.config.param.jsonPlaceholder'),
-        rows: 4,
+        rows: 8,
       },
       fieldName: 'value',
       formItemClass: 'col-span-full w-full items-start',
@@ -207,6 +215,10 @@ const [Form, formApi] = useVbenForm({
   showDefaultActions: false,
   wrapperClass: 'grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1',
   handleValuesChange(values, fieldsChanged) {
+    if (hydratingForm.value) {
+      return;
+    }
+
     if (fieldsChanged.includes('type')) {
       const type = String(values.type ?? 'string');
       syncValueFieldByType(type);
@@ -216,6 +228,11 @@ const [Form, formApi] = useVbenForm({
 });
 
 function syncValueFieldByType(type: string) {
+  if (valueFieldType.value === type) {
+    return;
+  }
+
+  valueFieldType.value = type;
   const schema = [...(formApi.getState()?.schema ?? getParamFormSchema())];
   const index = schema.findIndex((item) => item.fieldName === 'value');
   if (index < 0) {
@@ -223,6 +240,48 @@ function syncValueFieldByType(type: string) {
   }
   schema[index] = buildValueFieldSchema(type);
   formApi.setState({ schema });
+}
+
+async function hydrateParamForm(row?: ConfigRow) {
+  hydratingForm.value = true;
+  valueFieldType.value = 'string';
+  formApi.resetForm();
+
+  if (row?.key) {
+    const type = row.type ?? 'string';
+    const normalizedValue = normalizeValueForForm(type, row.value);
+
+    editingKey.value = row.key;
+    syncKeyFieldDisabled(true);
+    syncValueFieldByType(type);
+    await nextTick();
+
+    await formApi.setValues({
+      key: row.key,
+      name: row.name,
+      remark: row.remark ?? '',
+      sort: row.sort ?? 0,
+      type,
+      value: normalizedValue,
+    });
+    await nextTick();
+    await formApi.setFieldValue('value', normalizedValue);
+  } else {
+    editingKey.value = null;
+    syncKeyFieldDisabled(false);
+    syncValueFieldByType('string');
+    await formApi.setValues({
+      key: '',
+      name: '',
+      remark: '',
+      sort: 0,
+      type: 'string',
+      value: '',
+    });
+  }
+
+  await nextTick();
+  hydratingForm.value = false;
 }
 
 const modalTitle = computed(() =>
@@ -276,35 +335,8 @@ const [Modal, modalApi] = useVbenModal({
   },
   onOpenChange(isOpen: boolean) {
     if (!isOpen) return;
-    formApi.resetForm();
     const data = modalApi.getData<ConfigRow | Record<string, never>>();
-    const row = data as ConfigRow;
-    if (row?.key) {
-      const type = row.type ?? 'string';
-      editingKey.value = row.key;
-      syncKeyFieldDisabled(true);
-      syncValueFieldByType(type);
-      formApi.setValues({
-        key: row.key,
-        name: row.name,
-        remark: row.remark ?? '',
-        sort: row.sort ?? 0,
-        type,
-        value: normalizeValueForForm(type, row.value),
-      });
-    } else {
-      editingKey.value = null;
-      syncKeyFieldDisabled(false);
-      syncValueFieldByType('string');
-      formApi.setValues({
-        key: '',
-        name: '',
-        remark: '',
-        sort: 0,
-        type: 'string',
-        value: '',
-      });
-    }
+    void hydrateParamForm((data as ConfigRow)?.key ? (data as ConfigRow) : undefined);
   },
 });
 </script>
