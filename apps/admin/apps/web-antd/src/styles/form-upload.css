@@ -1,9 +1,9 @@
 /**
- * picture-card 头像上传：缩小占位文案（点击上传）。
+ * picture-card 图片上传：本地上传 + 选择附件。
  * 圆角跟随主题 --radius（与 Ant Design Button/Input 一致）。
  */
-.avatar-upload-field {
-  --avatar-upload-card-radius: var(--radius);
+.picture-upload-field {
+  --picture-upload-card-radius: var(--radius);
   display: flex !important;
   flex-flow: row nowrap;
   align-items: flex-start;
@@ -12,21 +12,21 @@
   max-width: 100%;
 }
 
-.avatar-upload-field .avatar-picture-card-upload .ant-upload-select-picture-card,
-.avatar-upload-field
+.picture-upload-field .picture-card-upload .ant-upload-select-picture-card,
+.picture-upload-field
   .ant-upload-list-picture-card
   .ant-upload-list-item-container,
-.avatar-upload-field__select-card {
+.picture-upload-field__select-card {
   box-sizing: border-box;
   width: 102px;
   height: 102px;
   font-size: 13px;
   line-height: 1.25;
-  border-radius: var(--avatar-upload-card-radius);
+  border-radius: var(--picture-upload-card-radius);
 }
 
-.avatar-upload-field .avatar-upload-field__upload,
-.avatar-upload-field .avatar-upload-field__upload.ant-upload-wrapper {
+.picture-upload-field .picture-upload-field__upload,
+.picture-upload-field .picture-upload-field__upload.ant-upload-wrapper {
   flex: none;
   display: flex;
   align-items: center;
@@ -34,27 +34,29 @@
   margin: 0;
 }
 
-.avatar-upload-field .ant-upload-list.ant-upload-list-picture-card {
+.picture-upload-field .ant-upload-list.ant-upload-list-picture-card {
   display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   align-items: center;
   margin: 0;
 }
 
-.avatar-upload-field .ant-upload-list {
+.picture-upload-field .ant-upload-list {
   margin: 0;
 }
 
-.avatar-upload-field .ant-upload-list-picture-card .ant-upload-list-item-container {
+.picture-upload-field .ant-upload-list-picture-card .ant-upload-list-item-container {
   margin: 0 !important;
 }
 
-.avatar-upload-field .ant-upload-list-picture-card::before,
-.avatar-upload-field .ant-upload-list-picture-card::after {
+.picture-upload-field .ant-upload-list-picture-card::before,
+.picture-upload-field .ant-upload-list-picture-card::after {
   display: none;
 }
 
 /* 「选择附件」：实心主题色卡片，与左侧虚线上传区形成对比 */
-.avatar-upload-field__select-card {
+.picture-upload-field__select-card {
   display: inline-flex;
   flex: none;
   flex-direction: column;
@@ -68,7 +70,7 @@
   cursor: pointer;
   background: hsl(var(--primary) / 0.06);
   border: 1px solid hsl(var(--primary) / 0.35);
-  border-radius: var(--avatar-upload-card-radius);
+  border-radius: var(--picture-upload-card-radius);
   box-shadow: inset 0 0 0 1px hsl(var(--primary) / 0.04);
   transition:
     background-color 0.2s,
@@ -77,43 +79,43 @@
     color 0.2s;
 }
 
-.avatar-upload-field__select-card-icon {
+.picture-upload-field__select-card-icon {
   flex: none;
   width: 1.375rem;
   height: 1.375rem;
   opacity: 0.9;
 }
 
-.avatar-upload-field__select-card-text {
+.picture-upload-field__select-card-text {
   max-width: 100%;
   font-size: 12px;
   line-height: 1.25;
 }
 
-.avatar-upload-field__select-card:hover {
+.picture-upload-field__select-card:hover {
   color: hsl(var(--primary));
   background: hsl(var(--primary) / 0.12);
   border-color: hsl(var(--primary) / 0.55);
   box-shadow: inset 0 0 0 1px hsl(var(--primary) / 0.08);
 }
 
-.avatar-upload-field__select-card:active {
+.picture-upload-field__select-card:active {
   background: hsl(var(--primary) / 0.16);
 }
 
-.avatar-upload-field__select-card:disabled {
+.picture-upload-field__select-card:disabled {
   cursor: not-allowed;
   opacity: 0.5;
 }
 
-/* 表单项 control 区默认 overflow-hidden，会裁切头像旁的「选择附件」 */
-.overflow-hidden:has(.avatar-upload-field),
-.avatar-upload-form-item .overflow-hidden {
+/* 表单项 control 区默认 overflow-hidden，会裁切旁的「选择附件」 */
+.overflow-hidden:has(.picture-upload-field),
+.picture-upload-form-item .overflow-hidden {
   overflow: visible !important;
 }
 
 @media (max-width: 480px) {
-  .avatar-upload-field {
+  .picture-upload-field {
     flex-wrap: wrap;
   }
 }

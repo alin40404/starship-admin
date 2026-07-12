@@ -70,8 +70,8 @@ import { message, Modal, notification, Drawer } from 'ant-design-vue';
 
 import type { AttachmentFieldProps } from '#/components/attachment-field';
 import { AttachmentField } from '#/components/attachment-field';
-import type { AvatarUploadFieldProps } from '#/components/avatar-upload-field';
-import { AvatarUploadField } from '#/components/avatar-upload-field';
+import type { PictureUploadFieldProps } from '#/components/picture-upload-field';
+import { PictureUploadField } from '#/components/picture-upload-field';
 
 type AdapterUploadProps = UploadProps & {
   aspectRatio?: string;
@@ -606,7 +606,7 @@ export type ComponentType =
   | 'ApiSelect'
   | 'ApiTreeSelect'
   | 'AttachmentField'
-  | 'AvatarUploadField'
+  | 'PictureUploadField'
   | 'AutoComplete'
   | 'Cascader'
   | 'Checkbox'
@@ -641,7 +641,7 @@ export interface ComponentPropsMap {
   ApiSelect: ApiComponentSharedProps & SelectProps;
   ApiTreeSelect: ApiComponentSharedProps & TreeSelectProps;
   AttachmentField: AttachmentFieldProps;
-  AvatarUploadField: AvatarUploadFieldProps;
+  PictureUploadField: PictureUploadFieldProps;
   AutoComplete: AutoCompleteProps;
   Cascader: CascaderProps;
   Checkbox: CheckboxProps;
@@ -697,7 +697,7 @@ async function initComponentAdapter() {
       visibleEvent: 'onDropdownVisibleChange',
     }),
     AttachmentField,
-    AvatarUploadField,
+    PictureUploadField,
     AutoComplete,
     Cascader,
     Checkbox,

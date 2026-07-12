@@ -384,13 +384,14 @@ export function buildAdminFormSchema(params: {
       label: $t('permission.admin.realName'),
     },
     {
-      component: 'AvatarUploadField',
+      component: 'PictureUploadField',
       componentProps: {
         customRequest: onAvatarUpload,
         handleChange: onAvatarChange,
+        maxCount: 1,
       },
       fieldName: 'avatar',
-      formItemClass: 'avatar-upload-form-item',
+      formItemClass: 'picture-upload-form-item',
       label: $t('permission.admin.avatar'),
     },
     {

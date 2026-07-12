@@ -76,12 +76,13 @@ const formSchema = computed((): VbenFormSchema[] => {
     },
     {
       fieldName: 'avatar',
-      component: 'AvatarUploadField',
+      component: 'PictureUploadField',
       componentProps: {
         customRequest: onAvatarUpload,
         handleChange: onAvatarChange,
+        maxCount: 1,
       },
-      formItemClass: 'avatar-upload-form-item',
+      formItemClass: 'picture-upload-form-item',
       label: '头像',
     },
     {
