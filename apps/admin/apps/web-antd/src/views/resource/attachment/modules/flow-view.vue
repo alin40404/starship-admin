@@ -6,7 +6,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { IconifyIcon } from '@vben/icons';
 import { $t } from '@vben/locales';
 
-import { Button, Image, Tooltip } from 'ant-design-vue';
+import { Button, Image, Spin, Tooltip } from 'ant-design-vue';
 
 import {
   formatFileSize,
@@ -19,6 +19,7 @@ const props = withDefaults(
   defineProps<{
     canDelete?: boolean;
     hasMore?: boolean;
+    loading?: boolean;
     loadingMore?: boolean;
     rows: AttachmentRow[];
     scrollRoot?: HTMLElement | null;
@@ -31,6 +32,7 @@ const props = withDefaults(
   {
     canDelete: false,
     hasMore: false,
+    loading: false,
     loadingMore: false,
     showActions: true,
     showCopy: true,
@@ -229,7 +231,11 @@ function onPreviewVisibleChange(visible: boolean) {
         :class="{ 'attachment-flow-view__body--external': isExternalScroll }"
         @scroll="onBodyScroll"
       >
-    <div v-if="rows.length > 0" class="attachment-flow-grid">
+    <div v-if="loading" class="attachment-flow-loading">
+      <Spin />
+    </div>
+    <template v-else-if="rows.length > 0">
+      <div class="attachment-flow-grid">
     <article
       v-for="row in rows"
       :key="row.id"
@@ -321,35 +327,36 @@ function onPreviewVisibleChange(visible: boolean) {
         </Tooltip>
       </div>
     </article>
-    </div>
+      </div>
 
-    <div
-      v-if="showLoadFooter"
-      class="attachment-flow-loadmore"
-    >
-      <span class="attachment-flow-loadmore__meta">
-        {{ $t('resource.attachment.flow.loadedMeta', [rows.length, total]) }}
-      </span>
-      <Button
-        v-if="hasMore"
-        :loading="loadingMore"
-        size="small"
-        type="default"
-        @click="emit('load-more')"
+      <div
+        v-if="showLoadFooter"
+        class="attachment-flow-loadmore"
       >
-        {{ $t('resource.attachment.flow.loadMore') }}
-      </Button>
-      <span v-else class="attachment-flow-loadmore__done">{{ $t('resource.attachment.flow.allLoaded') }}</span>
-    </div>
+        <span class="attachment-flow-loadmore__meta">
+          {{ $t('resource.attachment.flow.loadedMeta', [rows.length, total]) }}
+        </span>
+        <Button
+          v-if="hasMore"
+          :loading="loadingMore"
+          size="small"
+          type="default"
+          @click="emit('load-more')"
+        >
+          {{ $t('resource.attachment.flow.loadMore') }}
+        </Button>
+        <span v-else class="attachment-flow-loadmore__done">{{ $t('resource.attachment.flow.allLoaded') }}</span>
+      </div>
 
-    <div
-      v-if="showLoadFooter && hasMore"
-      ref="sentinelRef"
-      class="attachment-flow-loadmore__sentinel"
-      aria-hidden="true"
-    />
+      <div
+        v-if="showLoadFooter && hasMore"
+        ref="sentinelRef"
+        class="attachment-flow-loadmore__sentinel"
+        aria-hidden="true"
+      />
+    </template>
 
-    <div v-else-if="rows.length === 0" class="attachment-flow-empty">
+    <div v-else class="attachment-flow-empty">
       <IconifyIcon class="mx-auto size-16 text-muted-foreground/40" icon="lucide:inbox" />
       <div class="mt-2 text-sm text-muted-foreground">{{ $t('resource.attachment.flow.empty') }}</div>
       <slot name="empty-extra" />
@@ -615,8 +622,17 @@ function onPreviewVisibleChange(visible: boolean) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 240px;
-  padding: 24px 8px;
+  min-height: 200px;
+  padding: 24px 12px;
+}
+
+.attachment-flow-loading {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 24px 12px;
 }
 
 .attachment-flow-loadmore {

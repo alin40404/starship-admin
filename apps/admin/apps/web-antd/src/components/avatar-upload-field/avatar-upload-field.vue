@@ -103,13 +103,11 @@ function onPickerConfirm(urls: string[]) {
     </button>
 
     <AttachmentPickerModal
-      v-if="pickerOpen"
+      v-model:open="pickerOpen"
       accept="image"
       :initial-urls="pickerInitialUrls"
       :multiple="false"
-      :open="pickerOpen"
       @confirm="onPickerConfirm"
-      @update:open="pickerOpen = $event"
     />
   </div>
 </template>

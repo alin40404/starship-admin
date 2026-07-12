@@ -58,6 +58,7 @@ const canUpload = computed(() =>
 );
 const uploadAccept = computed(() => resolveUploadAccept(props.accept));
 const uploading = ref(false);
+const showPickerContent = ref(false);
 
 const fileNameQuery = ref('');
 const selectedRows = ref<AttachmentRow[]>([]);
@@ -114,16 +115,46 @@ function closePopup() {
   getActivePopupApi().close();
 }
 
+function setPopupLoading(loading: boolean) {
+  modalApi.setState({ loading });
+  drawerApi.setState({ loading });
+}
+
 async function syncFlowTeleportTarget() {
   await nextTick();
   await nextTick();
   if (!isFlowMode.value || !layoutRef.value) {
     flowTeleportTarget.value = null;
-    return;
+    return false;
   }
   flowTeleportTarget.value = layoutRef.value.querySelector(
     '.vxe-grid--layout-body-content-wrapper',
   ) as HTMLElement | null;
+  return !!flowTeleportTarget.value;
+}
+
+async function waitForFlowTeleportTarget(maxAttempts = 20) {
+  for (let i = 0; i < maxAttempts; i++) {
+    if (await syncFlowTeleportTarget()) {
+      await nextTick();
+      return true;
+    }
+    await nextTick();
+  }
+  return false;
+}
+
+async function loadPickerGrid() {
+  setPopupLoading(true);
+  try {
+    await refreshGrid();
+    if (isFlowMode.value) {
+      await waitForFlowTeleportTarget();
+    }
+    await nextTick();
+  } finally {
+    setPopupLoading(false);
+  }
 }
 
 function syncSelection() {
@@ -154,8 +185,7 @@ function setViewMode(mode: AttachmentViewMode) {
   viewMode.value = mode;
   localStorage.setItem(ATTACHMENT_PICKER_VIEW_MODE_KEY, mode);
   clearSelection();
-  void refreshGrid();
-  syncFlowTeleportTarget();
+  void loadPickerGrid();
 }
 
 function buildSelectionColumn() {
@@ -264,7 +294,7 @@ function selectUploadedRows(uploadedRows: AttachmentRow[]) {
 }
 
 async function onUploadSuccess(uploadedRows: AttachmentRow[] = []) {
-  await refreshGrid();
+  await loadPickerGrid();
   selectUploadedRows(uploadedRows);
 }
 
@@ -327,7 +357,7 @@ function onOpenUpload() {
 }
 
 const debouncedRefreshGrid = useDebounceFn(() => {
-  void refreshGrid();
+  void loadPickerGrid();
 }, 400);
 
 watch(fileNameQuery, () => {
@@ -509,9 +539,9 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
 });
 
 watch(
-  [gridWrapHeight, isFlowMode, isMobile],
+  [gridWrapHeight, isFlowMode, isMobile, showPickerContent],
   async ([height, flow]) => {
-    if (!(await isGridReady())) {
+    if (!showPickerContent.value || !(await isGridReady())) {
       return;
     }
     gridApi.setGridOptions({
@@ -533,6 +563,8 @@ watch(flowRows, () => {
 function handlePopupOpenChange(isOpen: boolean) {
   emit('update:open', isOpen);
   if (!isOpen) {
+    showPickerContent.value = false;
+    setPopupLoading(false);
     fileNameQuery.value = '';
     clearSelection();
     flowRows.value = [];
@@ -540,11 +572,16 @@ function handlePopupOpenChange(isOpen: boolean) {
     flowPage.value = 1;
     return;
   }
-  syncGridColumns();
+
+  showPickerContent.value = false;
+  setPopupLoading(true);
 }
 
-function handlePopupOpened() {
-  void refreshGrid();
+async function handlePopupOpened() {
+  showPickerContent.value = true;
+  await nextTick();
+  syncGridColumns();
+  await loadPickerGrid();
 }
 
 const [Modal, modalApi] = useVbenModal({
@@ -565,9 +602,10 @@ const [Drawer, drawerApi] = useVbenDrawer({
 watch(
   () => props.multiple,
   () => {
-    syncGridColumns();
+    if (showPickerContent.value) {
+      syncGridColumns();
+    }
   },
-  { immediate: true },
 );
 
 watch(
@@ -593,6 +631,7 @@ watch(
   >
     <div :class="contentWrapClass">
       <div
+        v-if="showPickerContent"
         ref="gridWrapRef"
         class="attachment-picker-layout min-h-0 flex-1"
         :class="layoutClass"
@@ -693,6 +732,7 @@ watch(
   >
     <div :class="contentWrapClass">
       <div
+        v-if="showPickerContent"
         ref="gridWrapRef"
         class="attachment-picker-layout min-h-0 flex-1"
         :class="layoutClass"
@@ -847,6 +887,11 @@ watch(
 }
 
 .attachment-picker-layout--flow :deep(.vxe-grid--pager-wrapper) {
+  display: none !important;
+}
+
+.attachment-picker-layout--flow :deep(.vxe-table--empty-placeholder),
+.attachment-picker-layout--flow :deep(.vxe-grid--empty-block) {
   display: none !important;
 }
 
