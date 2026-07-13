@@ -3,12 +3,15 @@
 namespace Starship\Core\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Starship\Core\Console\Commands\ModuleMakeCommand;
 use Starship\Core\Console\Commands\PluginDisableCommand;
 use Starship\Core\Console\Commands\PluginDiscoverCommand;
 use Starship\Core\Console\Commands\PluginEnableCommand;
 use Starship\Core\Console\Commands\PluginInstallCommand;
 use Starship\Core\Console\Commands\PluginListCommand;
+use Starship\Core\Console\Commands\PluginUninstallCommand;
 use Starship\Core\Module\ModuleManager;
+use Starship\Core\Module\ModuleValidator;
 use Starship\Core\Plugin\PluginConfigRepository;
 use Starship\Core\Plugin\PluginLifecycle;
 use Starship\Core\Plugin\PluginLoader;
@@ -43,11 +46,13 @@ class CoreServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->commands([
+                ModuleMakeCommand::class,
                 PluginDiscoverCommand::class,
                 PluginListCommand::class,
                 PluginInstallCommand::class,
                 PluginEnableCommand::class,
                 PluginDisableCommand::class,
+                PluginUninstallCommand::class,
             ]);
         }
     }
@@ -55,8 +60,11 @@ class CoreServiceProvider extends ServiceProvider
     protected function registerModules(): void
     {
         $manager = $this->app->make(ModuleManager::class);
+        $enabled = $manager->enabled();
 
-        foreach ($manager->enabled() as $module) {
+        app(ModuleValidator::class)->assertAll($enabled);
+
+        foreach ($enabled as $module) {
             foreach ($module->providers() as $provider) {
                 if (class_exists($provider)) {
                     $this->app->register($provider);

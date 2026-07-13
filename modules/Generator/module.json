@@ -3,6 +3,9 @@
   "title": "代码生成",
   "version": "0.1.0",
   "enabled": true,
+  "require": {
+    "modules": ["system"]
+  },
   "providers": [
     "Modules\\Generator\\App\\Providers\\GeneratorServiceProvider"
   ],

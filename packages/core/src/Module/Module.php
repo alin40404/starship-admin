@@ -36,6 +36,24 @@ class Module
     }
 
     /**
+     * @return list<string>
+     */
+    public function requireModules(): array
+    {
+        $require = $this->attributes['require'] ?? [];
+        if (! is_array($require)) {
+            return [];
+        }
+
+        $modules = $require['modules'] ?? [];
+
+        return array_values(array_filter(
+            is_array($modules) ? $modules : [],
+            static fn ($module) => is_string($module) && $module !== '',
+        ));
+    }
+
+    /**
      * @return list<class-string<\Illuminate\Database\Seeder>>
      */
     public function seeders(): array
