@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bb6990c41ffe41e7f05b1c530f9832a8",
+    "content-hash": "9ac16ac980528f62c415c8dbdffb2c6b",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -4720,7 +4720,7 @@
             "dist": {
                 "type": "path",
                 "url": "../packages/core",
-                "reference": "c021fd295c4459a3772192b2bbff2e6fa6b05626"
+                "reference": "fd2cf50c90ef1d9c5c70e5e161679aff19a101c9"
             },
             "require": {
                 "composer/composer": "^2.7",
@@ -4750,7 +4750,7 @@
             "dist": {
                 "type": "path",
                 "url": "../modules/Generator",
-                "reference": "4741ea5cd33bad2b2bf161ada848b3a1c106a28c"
+                "reference": "49043a366a9b738ce9e49cf8029eaa7ee3b9dc9e"
             },
             "type": "library",
             "autoload": {
@@ -4767,34 +4767,12 @@
             }
         },
         {
-            "name": "starship/monitor",
-            "version": "0.1.0",
-            "dist": {
-                "type": "path",
-                "url": "../modules/Monitor",
-                "reference": "9a9b6e88fe4e01f54e5a949319c0b89cccf99a44"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Modules\\Monitor\\App\\": "app/"
-                }
-            },
-            "license": [
-                "MIT"
-            ],
-            "description": "Starship Admin Monitor module",
-            "transport-options": {
-                "relative": true
-            }
-        },
-        {
             "name": "starship/system",
             "version": "0.1.0",
             "dist": {
                 "type": "path",
                 "url": "../modules/System",
-                "reference": "0c7f41ac45acc101d5b6ce25ecebbcd3a9b54a4f"
+                "reference": "92fae3b464a350cf73e043175148cbe465ee58be"
             },
             "type": "library",
             "autoload": {
@@ -9887,7 +9865,6 @@
     "stability-flags": {
         "starship/core": 20,
         "starship/generator": 20,
-        "starship/monitor": 20,
         "starship/system": 20
     },
     "prefer-stable": true,
@@ -9895,6 +9872,6 @@
     "platform": {
         "php": "^8.3"
     },
-    "platform-dev": {},
+    "platform-dev": [],
     "plugin-api-version": "2.6.0"
 }

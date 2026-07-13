@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Monitor\App\Support;
+namespace Modules\System\App\Support;
 
 /**
  * 根据 logging 配置解析当前应用日志文件路径（供异常日志页提示文案使用）。
@@ -19,7 +19,7 @@ final class ApplicationLogPath
 
         $channel = (string) config('logging.default', 'stack');
 
-        return (string) __('monitor::messages.log_channel_output', ['channel' => $channel]);
+        return (string) __('system::monitor.log_channel_output', ['channel' => $channel]);
     }
 
     /**

@@ -1,16 +1,16 @@
 <?php
 
-namespace Modules\Monitor\App\Support;
+namespace Modules\System\App\Support;
 
-final class ExceptionLogPermissions
+final class LoginLogPermissions
 {
-    public const MANAGE = 'monitor.exception_logs';
+    public const MANAGE = 'monitor.login_logs';
 
-    public const QUERY = 'monitor.exception_logs.query';
+    public const QUERY = 'monitor.login_logs.query';
 
-    public const DELETE = 'monitor.exception_logs.delete';
+    public const DELETE = 'monitor.login_logs.delete';
 
-    public const BATCH_DELETE = 'monitor.exception_logs.batch_delete';
+    public const BATCH_DELETE = 'monitor.login_logs.batch_delete';
 
     /**
      * @return list<array{name: string, title: string, permission: string, sort: int}>

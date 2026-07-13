@@ -1,9 +1,9 @@
 <?php
 
-namespace Modules\Monitor\App\Services;
+namespace Modules\System\App\Services;
 
 use Illuminate\Support\Str;
-use Modules\Monitor\App\Models\LoginLog;
+use Modules\System\App\Models\LoginLog;
 
 class LoginLogWriter
 {

@@ -1,13 +1,13 @@
 <?php
 
-namespace Modules\Monitor\App\Http\Controllers\Admin;
+namespace Modules\System\App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Starship\Core\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Modules\Monitor\App\Models\OperationLog;
+use Modules\System\App\Models\OperationLog;
 use Modules\System\App\Support\AdminRuntimeConfig;
+use Starship\Core\Support\ApiResponse;
 
 class OperationLogController extends Controller
 {
@@ -69,7 +69,7 @@ class OperationLogController extends Controller
     {
         OperationLog::query()->whereKey($id)->firstOrFail()->delete();
 
-        return ApiResponse::success(null, __('monitor::messages.deleted'));
+        return ApiResponse::success(null, __('system::monitor.deleted'));
     }
 
     public function batchDestroy(Request $request): JsonResponse
@@ -81,6 +81,6 @@ class OperationLogController extends Controller
 
         $deleted = OperationLog::query()->whereIn('id', $ids)->delete();
 
-        return ApiResponse::success(['deleted' => $deleted], __('monitor::messages.batch_deleted'));
+        return ApiResponse::success(['deleted' => $deleted], __('system::monitor.batch_deleted'));
     }
 }

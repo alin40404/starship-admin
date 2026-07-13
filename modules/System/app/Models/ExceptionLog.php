@@ -1,18 +1,21 @@
 <?php
 
-namespace Modules\Monitor\App\Models;
+namespace Modules\System\App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Modules\System\App\Models\Admin;
 
-class LoginLog extends Model
+class ExceptionLog extends Model
 {
     public const UPDATED_AT = null;
 
-    protected $table = 'monitor_login_logs';
+    protected $table = 'monitor_exception_logs';
 
     protected $guarded = [];
+
+    protected $casts = [
+        'trace_id' => 'string',
+    ];
 
     /**
      * @return BelongsTo<Admin, $this>

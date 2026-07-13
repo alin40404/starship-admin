@@ -1,14 +1,14 @@
 <?php
 
-namespace Modules\Monitor\App\Services;
+namespace Modules\System\App\Services;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use Modules\Monitor\App\Models\ExceptionLog;
-use Modules\Monitor\App\Support\ApplicationLogPath;
 use Modules\System\App\Models\Admin;
+use Modules\System\App\Models\ExceptionLog;
+use Modules\System\App\Support\ApplicationLogPath;
 use Throwable;
 
 class ExceptionLogWriter

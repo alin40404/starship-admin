@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Monitor\App\Support;
+namespace Modules\System\App\Support;
 
 final class OperationLogPermissions
 {

@@ -10,12 +10,18 @@
     "Modules\\System\\Database\\Seeders\\StarshipFoundationSeeder"
   ],
   "menus": {
-    "paths": []
+    "paths": [
+      "/monitor",
+      "/monitor/operation-logs",
+      "/monitor/login-logs",
+      "/monitor/exception-logs"
+    ]
   },
   "permissions": {
     "prefixes": [
       "system.",
-      "dashboard."
+      "dashboard.",
+      "monitor."
     ],
     "exact": []
   }

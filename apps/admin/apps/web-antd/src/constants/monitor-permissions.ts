@@ -1,5 +1,5 @@
 /**
- * 监控中心权限，与 modules/Monitor/app/Support/*Permissions.php 保持一致。
+ * 监控中心权限，与 modules/System/app/Support/*LogPermissions.php 保持一致。
  */
 import { $t } from '#/locales';
 

@@ -16,6 +16,7 @@ use Modules\System\App\Services\AdminLoginSmsService;
 use Modules\System\App\Services\AdminPasswordResetService;
 use Modules\System\App\Services\AdminPermissionService;
 use Modules\System\App\Services\InboxMessageWriter;
+use Modules\System\App\Services\LoginLogWriter;
 use Modules\System\App\Support\AdminRuntimeConfig;
 
 class AuthController extends Controller
@@ -404,11 +405,7 @@ class AuthController extends Controller
         Request $request,
         string $action = 'login',
     ): void {
-        if (! class_exists(\Modules\Monitor\App\Services\LoginLogWriter::class)) {
-            return;
-        }
-
-        $writer = app(\Modules\Monitor\App\Services\LoginLogWriter::class);
+        $writer = app(LoginLogWriter::class);
         if ($action === 'logout' && $adminId !== null) {
             $writer->recordLogout(
                 username: $username,

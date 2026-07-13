@@ -1,11 +1,11 @@
 <?php
 
-namespace Modules\Monitor\App\Http\Middleware;
+namespace Modules\System\App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Modules\Monitor\App\Services\OperationLogWriter;
 use Modules\System\App\Models\Admin;
+use Modules\System\App\Services\OperationLogWriter;
 use Symfony\Component\HttpFoundation\Response;
 
 class LogAdminOperation

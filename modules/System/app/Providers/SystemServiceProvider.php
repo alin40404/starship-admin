@@ -2,6 +2,7 @@
 
 namespace Modules\System\App\Providers;
 
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Modules\System\App\Http\Middleware\EnsureAdminAnyPermission;
@@ -11,9 +12,12 @@ use Modules\System\App\Http\Middleware\EnsureAdminForbiddenIp;
 use Modules\System\App\Http\Middleware\EnsureAdminMaintenanceMode;
 use Modules\System\App\Http\Middleware\EnsureAdminMenuStorePermission;
 use Modules\System\App\Http\Middleware\EnsureAdminPermission;
+use Modules\System\App\Http\Middleware\LogAdminOperation;
 use Modules\System\App\Http\Middleware\RenewAdminTokenExpiration;
+use Modules\System\App\Services\ExceptionLogWriter;
 use Modules\System\App\Support\MailConfigRegistrar;
 use Modules\System\App\Support\StorageConfigRegistrar;
+use Throwable;
 
 class SystemServiceProvider extends ServiceProvider
 {
@@ -33,6 +37,17 @@ class SystemServiceProvider extends ServiceProvider
         Route::aliasMiddleware('admin.forbidden_ip', EnsureAdminForbiddenIp::class);
 
         Route::pushMiddlewareToGroup('api', RenewAdminTokenExpiration::class);
+        Route::pushMiddlewareToGroup('api', LogAdminOperation::class);
+
+        $this->app->afterResolving(ExceptionHandler::class, function (ExceptionHandler $handler): void {
+            if (! method_exists($handler, 'reportable')) {
+                return;
+            }
+
+            $handler->reportable(function (Throwable $exception): void {
+                app(ExceptionLogWriter::class)->record($exception);
+            });
+        });
 
         $this->loadRoutesFrom(__DIR__.'/../../routes/admin.php');
         $this->loadRoutesFrom(__DIR__.'/../../routes/web.php');

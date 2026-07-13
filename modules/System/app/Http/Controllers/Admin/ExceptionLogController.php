@@ -1,14 +1,14 @@
 <?php
 
-namespace Modules\Monitor\App\Http\Controllers\Admin;
+namespace Modules\System\App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Starship\Core\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Modules\Monitor\App\Models\ExceptionLog;
-use Modules\Monitor\App\Support\ApplicationLogPath;
+use Modules\System\App\Models\ExceptionLog;
 use Modules\System\App\Support\AdminRuntimeConfig;
+use Modules\System\App\Support\ApplicationLogPath;
+use Starship\Core\Support\ApiResponse;
 
 class ExceptionLogController extends Controller
 {
@@ -54,7 +54,7 @@ class ExceptionLogController extends Controller
 
         return ApiResponse::success([
             ...$log->toArray(),
-            'log_hint' => __('monitor::messages.log_hint', [
+            'log_hint' => __('system::monitor.log_hint', [
                 'log_path' => $this->resolveLogPath($log),
                 'trace_id' => $log->trace_id,
             ]),
@@ -65,7 +65,7 @@ class ExceptionLogController extends Controller
     {
         ExceptionLog::query()->whereKey($id)->firstOrFail()->delete();
 
-        return ApiResponse::success(null, __('monitor::messages.deleted'));
+        return ApiResponse::success(null, __('system::monitor.deleted'));
     }
 
     public function batchDestroy(Request $request): JsonResponse
@@ -77,7 +77,7 @@ class ExceptionLogController extends Controller
 
         $deleted = ExceptionLog::query()->whereIn('id', $ids)->delete();
 
-        return ApiResponse::success(['deleted' => $deleted], __('monitor::messages.batch_deleted'));
+        return ApiResponse::success(['deleted' => $deleted], __('system::monitor.batch_deleted'));
     }
 
     private function resolveLogPath(ExceptionLog $log): string

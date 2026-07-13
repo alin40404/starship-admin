@@ -14,7 +14,6 @@
         "overtrue/pinyin": "5.0",
         "starship/core": "@dev",
         "starship/generator": "@dev",
-        "starship/monitor": "@dev",
         "starship/system": "@dev"
     },
     "require-dev": {
@@ -40,10 +39,6 @@
         {
             "type": "path",
             "url": "../modules/System"
-        },
-        {
-            "type": "path",
-            "url": "../modules/Monitor"
         },
         {
             "type": "path",

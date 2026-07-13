@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\Monitor\App\Services;
+namespace Modules\System\App\Services;
 
 use Illuminate\Support\Str;
-use Modules\Monitor\App\Models\OperationLog;
 use Modules\System\App\Models\Admin;
+use Modules\System\App\Models\OperationLog;
 
 class OperationLogWriter
 {

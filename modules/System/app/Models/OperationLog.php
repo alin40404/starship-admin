@@ -1,10 +1,9 @@
 <?php
 
-namespace Modules\Monitor\App\Models;
+namespace Modules\System\App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Modules\System\App\Models\Admin;
 
 class OperationLog extends Model
 {

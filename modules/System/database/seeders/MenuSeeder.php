@@ -19,9 +19,9 @@ use Modules\System\App\Support\RolePermissions;
 use Modules\System\App\Support\UserGroupPermissions;
 use Modules\System\Database\Seeders\Concerns\SeedsMenus;
 use Modules\Generator\App\Support\GeneratorPermissions;
-use Modules\Monitor\App\Support\ExceptionLogPermissions;
-use Modules\Monitor\App\Support\LoginLogPermissions;
-use Modules\Monitor\App\Support\OperationLogPermissions;
+use Modules\System\App\Support\ExceptionLogPermissions;
+use Modules\System\App\Support\LoginLogPermissions;
+use Modules\System\App\Support\OperationLogPermissions;
 
 class MenuSeeder extends Seeder
 {

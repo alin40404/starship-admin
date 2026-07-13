@@ -11,6 +11,9 @@ use Modules\System\App\Http\Controllers\Admin\DepartmentController;
 use Modules\System\App\Http\Controllers\Admin\DevModuleController;
 use Modules\System\App\Http\Controllers\Admin\DictItemController;
 use Modules\System\App\Http\Controllers\Admin\DictTypeController;
+use Modules\System\App\Http\Controllers\Admin\ExceptionLogController;
+use Modules\System\App\Http\Controllers\Admin\LoginLogController;
+use Modules\System\App\Http\Controllers\Admin\OperationLogController;
 use Modules\System\App\Http\Controllers\Admin\InboxMessageController;
 use Modules\System\App\Http\Controllers\Admin\MenuController;
 use Modules\System\App\Http\Controllers\Admin\PluginController;
@@ -24,6 +27,9 @@ use Modules\System\App\Support\AttachmentPermissions;
 use Modules\System\App\Support\ConfigPermissions;
 use Modules\System\App\Support\DepartmentPermissions;
 use Modules\System\App\Support\DictPermissions;
+use Modules\System\App\Support\ExceptionLogPermissions;
+use Modules\System\App\Support\LoginLogPermissions;
+use Modules\System\App\Support\OperationLogPermissions;
 use Modules\System\App\Support\InboxPermissions;
 use Modules\System\App\Support\MenuPermissions;
 use Modules\System\App\Support\ModulePermissions;
@@ -298,6 +304,37 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
         Route::put('plugins/{slug}/config', [PluginController::class, 'updateConfig'])
             ->middleware('admin.permission:'.PluginPermissions::CONFIG);
     });
+
+    // --- start: 监控中心（monitor/*） ---
+    Route::middleware('auth:sanctum')->prefix('monitor')->group(function () {
+        Route::get('operation-logs', [OperationLogController::class, 'index'])
+            ->middleware('admin.permission:'.OperationLogPermissions::QUERY);
+        Route::get('operation-logs/{id}', [OperationLogController::class, 'show'])
+            ->middleware('admin.permission:'.OperationLogPermissions::QUERY);
+        Route::delete('operation-logs/{id}', [OperationLogController::class, 'destroy'])
+            ->middleware('admin.permission:'.OperationLogPermissions::DELETE);
+        Route::post('operation-logs/batch-destroy', [OperationLogController::class, 'batchDestroy'])
+            ->middleware('admin.permission:'.OperationLogPermissions::BATCH_DELETE);
+
+        Route::get('login-logs', [LoginLogController::class, 'index'])
+            ->middleware('admin.permission:'.LoginLogPermissions::QUERY);
+        Route::get('login-logs/{id}', [LoginLogController::class, 'show'])
+            ->middleware('admin.permission:'.LoginLogPermissions::QUERY);
+        Route::delete('login-logs/{id}', [LoginLogController::class, 'destroy'])
+            ->middleware('admin.permission:'.LoginLogPermissions::DELETE);
+        Route::post('login-logs/batch-destroy', [LoginLogController::class, 'batchDestroy'])
+            ->middleware('admin.permission:'.LoginLogPermissions::BATCH_DELETE);
+
+        Route::get('exception-logs', [ExceptionLogController::class, 'index'])
+            ->middleware('admin.permission:'.ExceptionLogPermissions::QUERY);
+        Route::get('exception-logs/{id}', [ExceptionLogController::class, 'show'])
+            ->middleware('admin.permission:'.ExceptionLogPermissions::QUERY);
+        Route::delete('exception-logs/{id}', [ExceptionLogController::class, 'destroy'])
+            ->middleware('admin.permission:'.ExceptionLogPermissions::DELETE);
+        Route::post('exception-logs/batch-destroy', [ExceptionLogController::class, 'batchDestroy'])
+            ->middleware('admin.permission:'.ExceptionLogPermissions::BATCH_DELETE);
+    });
+    // --- end: 监控中心（monitor/*） ---
 
     // --- start: 站内信（inbox/*） ---
     Route::middleware('auth:sanctum')->prefix('inbox')->group(function () {
