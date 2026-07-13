@@ -82,27 +82,36 @@ class SchemaReader
 
     public function tableExists(string $tableName): bool
     {
-        return DB::getSchemaBuilder()->hasTable($tableName);
+        return DB::getSchemaBuilder()->hasTable($this->logicalTableName($tableName));
     }
 
     /**
-     * 解析物理表名：支持省略 DB 前缀（article → sa_article）。
+     * 去掉 DB 前缀后的逻辑表名（demo_products），供 Eloquent / Schema 使用。
      */
-    public function resolveTableName(string $tableName): string
+    public function logicalTableName(string $tableName): string
     {
-        if ($this->tableExists($tableName)) {
-            return $tableName;
-        }
-
+        $tableName = trim($tableName);
         $prefix = (string) DB::connection()->getTablePrefix();
-        if ($prefix !== '' && ! str_starts_with($tableName, $prefix)) {
-            $prefixed = $prefix.$tableName;
-            if ($this->tableExists($prefixed)) {
-                return $prefixed;
-            }
+
+        if ($prefix !== '' && str_starts_with($tableName, $prefix)) {
+            return substr($tableName, strlen($prefix));
         }
 
         return $tableName;
+    }
+
+    /**
+     * 解析逻辑表名：支持省略或包含 DB 前缀（sa_article / article → demo_products）。
+     */
+    public function resolveTableName(string $tableName): string
+    {
+        $logical = $this->logicalTableName($tableName);
+
+        if ($this->tableExists($logical)) {
+            return $logical;
+        }
+
+        return $logical;
     }
 
     /**
@@ -110,10 +119,10 @@ class SchemaReader
      */
     public function physicalTableName(string $tableName): string
     {
-        $logical = $this->resolveTableName($tableName);
+        $logical = $this->logicalTableName($tableName);
         $prefix = (string) DB::connection()->getTablePrefix();
 
-        if ($prefix === '' || str_starts_with($logical, $prefix)) {
+        if ($prefix === '') {
             return $logical;
         }
 

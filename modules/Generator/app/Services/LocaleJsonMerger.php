@@ -55,6 +55,9 @@ final class LocaleJsonMerger
     public function mergeMenuKeysIntoArray(array $existing, array $menuEntries): string
     {
         $menu = is_array($existing['menu'] ?? null) ? $existing['menu'] : [];
+        if ($menu !== [] && array_is_list($menu)) {
+            $menu = [];
+        }
         $existing['menu'] = array_replace($menu, $menuEntries);
 
         $encoded = json_encode(
@@ -99,6 +102,11 @@ final class LocaleJsonMerger
 
         $decoded = json_decode((string) File::get($path), true);
         if (! is_array($decoded) || ! is_array($decoded['menu'] ?? null)) {
+            return;
+        }
+
+        $menu = $decoded['menu'];
+        if ($menu !== [] && array_is_list($menu)) {
             return;
         }
 

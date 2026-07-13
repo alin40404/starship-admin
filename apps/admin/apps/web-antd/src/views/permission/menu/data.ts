@@ -13,7 +13,8 @@ import { componentKeys } from '#/router/routes';
 import { IconifyIcon } from '@vben/icons';
 import { getPopupContainer } from '@vben/utils';
 import { h } from 'vue';
-import { $t } from '#/locales';
+import { $t, $te } from '@vben/locales';
+import { resolveMenuI18nKey } from '#/utils/menu-i18n';
 
 /** 1目录 2菜单 3按钮 4内嵌 5外链 */
 export function getMenuTypeOptions() {
@@ -115,10 +116,15 @@ export const BADGE_VARIANT_OPTIONS = (
   value,
 }));
 
-/** 列表/上级菜单下拉：与路由侧栏一致，优先展示中文标题，否则内部名称 */
+/** 列表/上级菜单下拉：与路由侧栏一致，优先 i18n，否则 DB title / 内部名称 */
 export function menuDisplayLabel(
-  row: Pick<MenuTreeNode, 'name' | 'title'>,
+  row: Pick<MenuTreeNode, 'name' | 'title' | 'permission' | 'module'>,
 ): string {
+  const key = resolveMenuI18nKey(row, $te);
+  if (key) {
+    return $t(key);
+  }
+
   const t = row.title?.trim();
   return t ? t : (row.name ?? '');
 }

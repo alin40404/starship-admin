@@ -3,6 +3,7 @@ import type { RouteRecordStringComponent } from '@vben/types';
 import { $te } from '@vben/locales';
 
 import { requestClient } from '#/api/request';
+import { resolveMenuI18nKey } from '#/utils/menu-i18n';
 
 /** Starship 菜单节点（与 AdminPermissionService::menuTreeForAdmin 一致） */
 interface StarshipMenuNode {
@@ -91,14 +92,9 @@ function resolveMenuPageComponent(node: StarshipMenuNode): string {
   return resolvePageComponent(node.path);
 }
 
-function menuI18nKey(node: StarshipMenuNode): string {
-  return `system.menu.${node.name}`;
-}
-
-/** 返回 i18n key（layout 侧栏/标签会 $t）；无翻译时 fallback 到 DB title */
 function menuDisplayTitle(node: StarshipMenuNode): string {
-  const key = menuI18nKey(node);
-  if ($te(key)) {
+  const key = resolveMenuI18nKey(node, $te);
+  if (key) {
     return key;
   }
 
