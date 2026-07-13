@@ -19,17 +19,20 @@ import type { DefaultOptionType } from 'ant-design-vue/es/select';
 
 import { batchUpsertConfigs, fetchConfigs, testSmsConfig } from '#/api/system/config';
 import { fetchDictOptions } from '#/api/system/dict';
-import { AttachmentField } from '#/components/attachment-field';
+import { uploadAttachment } from '#/api/system/attachment';
+import { PictureUploadField } from '#/components/picture-upload-field';
 import { useUserStore } from '@vben/stores';
 import { preferences } from '@vben/preferences';
+import type { UploadFile } from 'ant-design-vue/es/upload';
+
+import { validateUploadFile } from '#/utils/upload-policy';
 
 import {
   configFieldLabel,
   configFieldRemark,
   getConfigSelectOptions,
-  isAttachmentImageField,
+  isPictureUploadField,
   isHomePathSelectField,
-  configAttachmentPlaceholder,
   isStorageFieldVisible,
   mapMenuTreeForHomePathCascader,
   mergeLegacyHomePathCascaderOption,
@@ -211,6 +214,62 @@ async function onSmsTest() {
   }
 }
 
+function normalizeUploadToFileList(url?: null | string): UploadFile[] {
+  if (!url) {
+    return [];
+  }
+  return [
+    {
+      name: 'file',
+      status: 'done',
+      uid: 'upload-existing',
+      url,
+    },
+  ];
+}
+
+function resolveUploadUrl(files: unknown): string {
+  const uploadFiles = Array.isArray(files) ? files : [];
+  const file = uploadFiles[0] as
+    | { response?: { file_url?: string }; url?: string }
+    | undefined;
+  if (!file) {
+    return '';
+  }
+  return file.response?.file_url ?? file.url ?? '';
+}
+
+function getPictureFileList(key: string) {
+  return normalizeUploadToFileList(draftValues.value[key]);
+}
+
+function setPictureFileList(key: string, files: UploadFile[]) {
+  draftValues.value[key] = resolveUploadUrl(files);
+}
+
+function onPictureUploadChange(_event: unknown) {}
+
+async function onPictureUpload(options: any) {
+  const file = options?.file as File | undefined;
+  if (!file) {
+    options?.onError?.(new Error('missing file'));
+    return;
+  }
+  const validationError = validateUploadFile(file, 'image');
+  if (validationError) {
+    message.error(validationError);
+    options?.onError?.(new Error(validationError));
+    return;
+  }
+  try {
+    const row = await uploadAttachment(file);
+    options?.onSuccess?.(row);
+  } catch (error) {
+    options?.onError?.(error);
+    throw error;
+  }
+}
+
 watch(
   () => props.groupName,
   () => {
@@ -283,14 +342,15 @@ defineExpose({
                   (val) => (draftValues[row.key] = String(val ?? ''))
                 "
               />
-              <AttachmentField
-                v-else-if="isAttachmentImageField(row.key)"
+              <PictureUploadField
+                v-else-if="isPictureUploadField(row.key)"
                 accept="image"
+                :custom-request="onPictureUpload"
                 :disabled="!props.canManage"
-                :multiple="false"
-                :placeholder="configAttachmentPlaceholder(row.key)"
-                :value="draftValues[row.key]"
-                @update:value="(val) => (draftValues[row.key] = String(val ?? ''))"
+                :file-list="getPictureFileList(row.key)"
+                :handle-change="onPictureUploadChange"
+                :max-count="1"
+                @update:file-list="setPictureFileList(row.key, $event)"
               />
               <Input.TextArea
                 v-else-if="row.type === 'text' || row.type === 'json'"
@@ -361,7 +421,7 @@ defineExpose({
   max-width: 28rem;
 }
 
-.config-settings-form :deep(.attachment-field) {
+.config-settings-form :deep(.picture-upload-field) {
   width: 100%;
   max-width: 28rem;
 }

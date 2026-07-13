@@ -105,14 +105,22 @@ export function isStorageFieldVisible(key: string, driver: string): boolean {
   return true;
 }
 
-/** 使用附件图片上传组件的配置项 key */
-export const CONFIG_ATTACHMENT_IMAGE_KEYS = ['site.logo', 'site.favicon'] as const;
+/** 使用图片上传组件的配置项 key */
+export const CONFIG_PICTURE_UPLOAD_KEYS = ['site.logo', 'site.favicon'] as const;
+
+/** @deprecated 使用 CONFIG_PICTURE_UPLOAD_KEYS */
+export const CONFIG_ATTACHMENT_IMAGE_KEYS = CONFIG_PICTURE_UPLOAD_KEYS;
 
 /** 默认主页：从菜单路由下拉选择 */
 export const SITE_FIXED_PAGE_KEY = 'site.fixed_page';
 
+export function isPictureUploadField(key: string): boolean {
+  return (CONFIG_PICTURE_UPLOAD_KEYS as readonly string[]).includes(key);
+}
+
+/** @deprecated 使用 isPictureUploadField */
 export function isAttachmentImageField(key: string): boolean {
-  return (CONFIG_ATTACHMENT_IMAGE_KEYS as readonly string[]).includes(key);
+  return isPictureUploadField(key);
 }
 
 export function configAttachmentPlaceholder(key: string): string {
