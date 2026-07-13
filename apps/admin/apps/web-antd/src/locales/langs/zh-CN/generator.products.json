@@ -1,8 +1,8 @@
 {
-    "title": "演示产品",
-    "searchPlaceholder": "搜索演示产品",
-    "batchDeleteConfirm": "确定删除选中的 {0} 条演示产品吗？",
-    "batchStatusConfirm": "确定将选中的 {0} 条演示产品批量【{1}】吗？",
+    "title": "产品",
+    "searchPlaceholder": "搜索产品",
+    "batchDeleteConfirm": "确定删除选中的 {0} 条产品吗？",
+    "batchStatusConfirm": "确定将选中的 {0} 条产品批量【{1}】吗？",
     "columns": {
         "name": "产品名称",
         "code": "产品编码",
@@ -34,8 +34,8 @@
         "status": "状态"
     },
     "form": {
-        "createTitle": "新增演示产品",
-        "editTitle": "编辑演示产品",
-        "viewTitle": "查看演示产品"
+        "createTitle": "新增产品",
+        "editTitle": "编辑产品",
+        "viewTitle": "查看产品"
     }
 }

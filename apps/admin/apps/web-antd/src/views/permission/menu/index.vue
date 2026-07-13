@@ -26,6 +26,9 @@ import {
 } from '#/api/system/menu';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { MENU_PERMISSIONS } from '#/constants/menu-permissions';
+import {
+  isDevOnlyModuleUnavailable,
+} from '#/utils/dev-only-module';
 
 import { menuDisplayLabel, useColumns } from './data';
 import MenuForm from './modules/form.vue';
@@ -40,6 +43,9 @@ const menuAccess = {
 function moduleTooltip(
   module: NonNullable<MenuTreeNode['module']>,
 ): string {
+  if (isDevOnlyModuleUnavailable(module)) {
+    return $t('permission.menu.moduleDevOnlyTooltip', [module.title]);
+  }
   if (module.enabled) {
     return $t('permission.menu.moduleBelong', [
       module.title,
@@ -47,6 +53,17 @@ function moduleTooltip(
     ]);
   }
   return $t('permission.menu.moduleDisabled', [module.title]);
+}
+
+function moduleDevOnlySuffix(
+  module: NonNullable<MenuTreeNode['module']>,
+): string {
+  if (!module.dev_only) {
+    return '';
+  }
+  return isDevOnlyModuleUnavailable(module)
+    ? $t('permission.menu.moduleDevOnlyUnavailableTag')
+    : $t('permission.menu.moduleDevOnlyTag');
 }
 
 const [MenuFormDrawer, menuFormDrawerApi] = useVbenDrawer({
@@ -345,10 +362,21 @@ function onBatchUpdateStatus(status: 0 | 1) {
       </template>
       <template #module="{ row }">
         <Tooltip v-if="row.module" :title="moduleTooltip(row.module)">
-          <Tag :color="row.module.enabled ? 'processing' : 'warning'">
+          <Tag
+            :color="
+              !row.module.enabled || isDevOnlyModuleUnavailable(row.module)
+                ? 'warning'
+                : row.module.dev_only
+                  ? 'default'
+                  : 'processing'
+            "
+          >
             {{ row.module.title }}
             <template v-if="!row.module.enabled">
               {{ $t('permission.menu.moduleDisabledTag') }}
+            </template>
+            <template v-else-if="row.module.dev_only">
+              {{ moduleDevOnlySuffix(row.module) }}
             </template>
           </Tag>
         </Tooltip>

@@ -10,6 +10,7 @@ export interface DevModuleRow {
   seeders: string[];
   providers_count: number;
   seeders_count: number;
+  dev_only: boolean;
 }
 
 export interface DevModuleDetail extends DevModuleRow {

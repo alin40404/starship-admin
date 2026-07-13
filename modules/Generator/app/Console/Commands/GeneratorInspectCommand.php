@@ -3,17 +3,23 @@
 namespace Modules\Generator\App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Modules\Generator\App\Console\Concerns\EnsuresDevelopmentEnvironment;
 use Modules\Generator\App\Services\ColumnInferencer;
 use Modules\Generator\App\Services\SchemaReader;
 
 class GeneratorInspectCommand extends Command
 {
+    use EnsuresDevelopmentEnvironment;
     protected $signature = 'starship:generator:inspect {table : 物理表名，如 sa_article}';
 
     protected $description = '查看表字段及智能推断的生成配置';
 
     public function handle(SchemaReader $schemaReader, ColumnInferencer $columnInferencer): int
     {
+        if (($exitCode = $this->abortUnlessDevelopmentEnvironment()) !== null) {
+            return $exitCode;
+        }
+
         $table = (string) $this->argument('table');
 
         if (! $schemaReader->tableExists($table)) {

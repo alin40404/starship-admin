@@ -58,6 +58,13 @@ export function useColumns(
     },
     {
       align: 'center',
+      field: 'dev_only',
+      slots: { default: 'devOnly' },
+      title: $t('dev.modules.devOnlyColumn'),
+      width: 120,
+    },
+    {
+      align: 'center',
       cellRender: {
         name: 'CellTag',
         options: [...getModuleStatusTagOptions()],

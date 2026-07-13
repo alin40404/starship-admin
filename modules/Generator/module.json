@@ -3,6 +3,7 @@
   "title": "代码生成",
   "version": "0.1.0",
   "enabled": true,
+  "dev_only": true,
   "require": {
     "modules": ["system"]
   },
@@ -11,7 +12,9 @@
   ],
   "seeders": [],
   "menus": {
-    "paths": []
+    "paths": [
+      "/dev/codegen"
+    ]
   },
   "permissions": {
     "prefixes": [

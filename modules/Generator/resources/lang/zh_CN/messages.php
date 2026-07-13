@@ -10,4 +10,5 @@ return [
     'import_success' => '导入成功',
     'table_not_found' => '数据表不存在',
     'generate_complete' => '生成完成',
+    'dev_only' => '代码生成器仅可在开发环境（local / development）使用',
 ];

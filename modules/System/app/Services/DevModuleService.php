@@ -26,6 +26,7 @@ class DevModuleService
      *   seeders: list<string>,
      *   providers_count: int,
      *   seeders_count: int,
+     *   dev_only: bool,
      * }>
      */
     public function list(): array
@@ -154,6 +155,7 @@ class DevModuleService
      *   seeders: list<string>,
      *   providers_count: int,
      *   seeders_count: int,
+     *   dev_only: bool,
      * }
      */
     private function formatModule(Module $module, array $data, string $directory): array
@@ -168,6 +170,7 @@ class DevModuleService
             'seeders' => $module->seeders(),
             'providers_count' => count($module->providers()),
             'seeders_count' => count($module->seeders()),
+            'dev_only' => $module->devOnly(),
         ];
     }
 

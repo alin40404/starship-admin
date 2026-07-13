@@ -35,6 +35,7 @@ export interface MenuTreeNode {
     name: string;
     title: string;
     enabled: boolean;
+    dev_only: boolean;
   } | null;
   children: MenuTreeNode[];
 }

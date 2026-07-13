@@ -46,7 +46,10 @@
     "disablePluginConfirm": "Disable plugin [{0}]? Restart the backend service after disabling.",
     "uninstallPluginTitle": "Uninstall Plugin",
     "uninstallPluginConfirm": "Uninstall plugin [{0}]? Configuration data will be kept.",
-    "discoverResult": "Discovered {0} plugin(s), created {1}, updated {2}"
+    "discoverResult": "Discovered {0} plugin(s), created {1}, updated {2}",
+    "devOnlyTag": "Dev only",
+    "devOnlyUnavailableTag": "Unavailable in prod",
+    "devOnlyTooltip": "This module is only available in development (local / development). It is disabled in the current production environment."
   },
   "codegen": {
     "entity": "Codegen Config",
@@ -108,6 +111,7 @@
     "columnName": "Module Slug",
     "columnTitle": "Module Name",
     "detailTitle": "Module Detail",
-    "toggleStatusHint": "Changing enabled status writes module.json; restart the PHP service for changes to take effect."
+    "toggleStatusHint": "Changing enabled status writes module.json; restart the PHP service for changes to take effect.",
+    "devOnlyColumn": "Environment"
   }
 }

@@ -46,7 +46,10 @@
     "disablePluginConfirm": "确定禁用插件【{0}】吗？禁用后需重启后端服务。",
     "uninstallPluginTitle": "卸载插件",
     "uninstallPluginConfirm": "确定卸载插件【{0}】吗？卸载后保留配置数据。",
-    "discoverResult": "发现 {0} 个插件，新建 {1} 个，更新 {2} 个"
+    "discoverResult": "发现 {0} 个插件，新建 {1} 个，更新 {2} 个",
+    "devOnlyTag": "仅开发",
+    "devOnlyUnavailableTag": "生产不可用",
+    "devOnlyTooltip": "此模块仅可在开发环境（local / development）使用；当前为生产环境，功能已禁用"
   },
   "codegen": {
     "entity": "代码生成配置",
@@ -108,6 +111,7 @@
     "columnName": "模块标识",
     "columnTitle": "模块名称",
     "detailTitle": "模块详情",
-    "toggleStatusHint": "修改启用状态会写入 module.json，需重启 PHP 服务后生效。"
+    "toggleStatusHint": "修改启用状态会写入 module.json，需重启 PHP 服务后生效。",
+    "devOnlyColumn": "环境"
   }
 }

@@ -7,12 +7,16 @@ import { ref } from 'vue';
 import { useAccess } from '@vben/access';
 import { Page } from '@vben/common-ui';
 
-import { Alert } from 'ant-design-vue';
+import { Alert, Tag, Tooltip } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { fetchDevModules } from '#/api/dev-module';
 import { MODULE_PERMISSIONS } from '#/constants/module-permissions';
 import { $t } from '#/locales';
+import {
+  devOnlyModuleTagColor,
+  isDevOnlyModuleUnavailable,
+} from '#/utils/dev-only-module';
 
 import { useColumns } from './data';
 import DetailDrawer from './modules/detail-drawer.vue';
@@ -67,7 +71,23 @@ const [Grid, gridApi] = useVbenVxeGrid<DevModuleRow>({
       />
 
       <div class="min-h-0 flex-1">
-        <Grid class="h-full" />
+        <Grid class="h-full">
+          <template #devOnly="{ row }">
+            <Tooltip
+              v-if="row.dev_only"
+              :title="$t('dev.shared.devOnlyTooltip')"
+            >
+              <Tag :color="devOnlyModuleTagColor(row)">
+                {{
+                  isDevOnlyModuleUnavailable(row)
+                    ? $t('dev.shared.devOnlyUnavailableTag')
+                    : $t('dev.shared.devOnlyTag')
+                }}
+              </Tag>
+            </Tooltip>
+            <span v-else class="text-muted-foreground">—</span>
+          </template>
+        </Grid>
       </div>
     </div>
   </Page>

@@ -30,6 +30,11 @@ class Module
         return (bool) ($this->attributes['enabled'] ?? false);
     }
 
+    public function devOnly(): bool
+    {
+        return (bool) ($this->attributes['dev_only'] ?? false);
+    }
+
     public function providers(): array
     {
         return $this->attributes['providers'] ?? [];

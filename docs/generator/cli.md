@@ -1,5 +1,7 @@
 # Generator CLI 使用说明
 
+> **环境限制**：代码生成器（Web 界面、`starship:generator:*` 命令）仅在 **开发环境**（`APP_ENV=local` 或 `development`）可用；生产环境会拒绝 API 请求且不注册 CLI 命令。
+
 Starship Generator 提供以下 Artisan 命令，统一归属 **`starship:generator:*`** 命名空间，与 `starship:module:*`、`starship:plugin:*` 保持一致。
 
 ## 命令列表

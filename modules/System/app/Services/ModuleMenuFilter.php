@@ -4,6 +4,7 @@ namespace Modules\System\App\Services;
 
 use Starship\Core\Module\Module;
 use Starship\Core\Module\ModuleManager;
+use Starship\Core\Support\DevEnvironment;
 use Illuminate\Support\Collection;
 use Modules\System\App\Models\Menu;
 
@@ -21,7 +22,7 @@ class ModuleMenuFilter
      */
     public function excludedMenuIds(Collection $menus): array
     {
-        $bindings = $this->disabledModuleMenuBindings();
+        $bindings = $this->unavailableModuleMenuBindings();
         if ($this->bindingsAreEmpty($bindings)) {
             return [];
         }
@@ -39,7 +40,7 @@ class ModuleMenuFilter
     /**
      * 菜单管理页：解析菜单归属模块（按 module.json 的 menus / permissions 规则）。
      *
-     * @return array<int, array{name: string, title: string, enabled: bool}>
+     * @return array<int, array{name: string, title: string, enabled: bool, dev_only: bool}>
      */
     public function menuModuleMap(Collection $menus): array
     {
@@ -66,6 +67,7 @@ class ModuleMenuFilter
                 'name' => $best->name(),
                 'title' => $best->title(),
                 'enabled' => $best->enabled(),
+                'dev_only' => $best->devOnly(),
             ];
         }
 
@@ -98,14 +100,14 @@ class ModuleMenuFilter
      *   permissions: array{prefixes: list<string>, exact: list<string>}
      * }
      */
-    private function disabledModuleMenuBindings(): array
+    private function unavailableModuleMenuBindings(): array
     {
         $paths = [];
         $prefixes = [];
         $exact = [];
 
         foreach ((new ModuleManager($this->modulesPath()))->all() as $module) {
-            if ($module->enabled()) {
+            if ($this->moduleMenusAreAvailable($module)) {
                 continue;
             }
 
@@ -122,6 +124,15 @@ class ModuleMenuFilter
                 'exact' => array_values(array_unique($exact)),
             ],
         ];
+    }
+
+    private function moduleMenusAreAvailable(Module $module): bool
+    {
+        if (! $module->enabled()) {
+            return false;
+        }
+
+        return ! ($module->devOnly() && ! DevEnvironment::isDevelopment());
     }
 
     /**

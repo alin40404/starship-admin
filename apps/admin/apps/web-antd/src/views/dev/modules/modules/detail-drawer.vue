@@ -3,10 +3,14 @@ import type { DevModuleDetail, DevModuleRow } from '#/api/dev-module';
 
 import { computed, ref } from 'vue';
 
-import { Descriptions, Drawer, message, Switch } from 'ant-design-vue';
+import { Descriptions, Drawer, message, Switch, Tag, Tooltip } from 'ant-design-vue';
 
 import { fetchDevModule, updateDevModuleStatus } from '#/api/dev-module';
 import { $t } from '#/locales';
+import {
+  devOnlyModuleTagColor,
+  isDevOnlyModuleUnavailable,
+} from '#/utils/dev-only-module';
 
 const descriptionsLabelStyle = {
   minWidth: '148px',
@@ -110,6 +114,20 @@ defineExpose({ open: show });
       <Descriptions.Item :label="$t('dev.modules.columnTitle')">{{ detail.title }}</Descriptions.Item>
       <Descriptions.Item :label="$t('dev.shared.version')">{{ detail.version || '--' }}</Descriptions.Item>
       <Descriptions.Item :label="$t('dev.shared.directory')">{{ detail.directory }}</Descriptions.Item>
+      <Descriptions.Item
+        v-if="detail.dev_only"
+        :label="$t('dev.modules.devOnlyColumn')"
+      >
+        <Tooltip :title="$t('dev.shared.devOnlyTooltip')">
+          <Tag :color="devOnlyModuleTagColor(detail)">
+            {{
+              isDevOnlyModuleUnavailable(detail)
+                ? $t('dev.shared.devOnlyUnavailableTag')
+                : $t('dev.shared.devOnlyTag')
+            }}
+          </Tag>
+        </Tooltip>
+      </Descriptions.Item>
       <Descriptions.Item :label="$t('dev.shared.manifestPath')">{{ detail.manifest_path }}</Descriptions.Item>
       <Descriptions.Item label="ServiceProvider">
         <div v-if="detail.providers.length > 0" class="space-y-1">

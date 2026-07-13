@@ -2,6 +2,8 @@
 
 namespace Modules\System\App\Support;
 
+use Starship\Core\Support\DevEnvironment;
+
 /**
  * 管理端运行参数（admin.*）读取与解析。
  */
@@ -171,7 +173,8 @@ final class AdminRuntimeConfig
      *     loginForgetPassword: bool,
      *     loginRegister: bool,
      *     loginThirdParty: bool,
-     *     maintenance: bool
+     *     maintenance: bool,
+     *     isDevelopment: bool
      * }
      */
     public static function publicSnapshot(): array
@@ -187,6 +190,7 @@ final class AdminRuntimeConfig
             'loginRegister' => self::loginRegisterEnabled(),
             'loginThirdParty' => self::loginThirdPartyEnabled(),
             'maintenance' => self::maintenanceEnabled(),
+            'isDevelopment' => DevEnvironment::isDevelopment(),
         ];
     }
 

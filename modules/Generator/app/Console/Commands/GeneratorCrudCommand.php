@@ -3,11 +3,13 @@
 namespace Modules\Generator\App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Modules\Generator\App\Console\Concerns\EnsuresDevelopmentEnvironment;
 use Modules\Generator\App\Services\CodegenService;
 use Modules\Generator\App\Support\ModulePathResolver;
 
 class GeneratorCrudCommand extends Command
 {
+    use EnsuresDevelopmentEnvironment;
     protected $signature = 'starship:generator:crud
                             {table : 物理表名，如 sa_article 或 article}
                             {--module= : 目标模块，如 system（大小写不敏感）}
@@ -28,6 +30,10 @@ class GeneratorCrudCommand extends Command
 
     public function handle(CodegenService $codegenService, ModulePathResolver $modulePathResolver): int
     {
+        if (($exitCode = $this->abortUnlessDevelopmentEnvironment()) !== null) {
+            return $exitCode;
+        }
+
         $table = (string) $this->argument('table');
 
         $available = $modulePathResolver->availableModules();

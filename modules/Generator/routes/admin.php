@@ -7,7 +7,7 @@ use Modules\Generator\App\Http\Controllers\Admin\TableConfigController;
 use Modules\Generator\App\Support\GeneratorPermissions;
 
 Route::middleware('api')->prefix('admin-api')->group(function () {
-    Route::middleware('auth:sanctum')->prefix('generator')->group(function () {
+    Route::middleware(['auth:sanctum', 'generator.dev'])->prefix('generator')->group(function () {
         Route::get('schemas/tables', [SchemaController::class, 'tables'])
             ->middleware('admin.permission:'.GeneratorPermissions::QUERY);
         Route::get('schemas/tables/{tableName}/columns', [SchemaController::class, 'columns'])

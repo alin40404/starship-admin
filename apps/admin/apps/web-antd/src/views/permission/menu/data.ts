@@ -241,7 +241,7 @@ export function useColumns(
       field: 'module',
       slots: { default: 'module' },
       title: $t('permission.menu.module'),
-      width: 140,
+      width: 168,
     },
     {
       align: 'left',
