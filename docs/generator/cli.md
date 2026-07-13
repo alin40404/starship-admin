@@ -65,6 +65,12 @@ php artisan starship:generator:crud {table} --module=System --delete --drop-tabl
 php artisan starship:generator:crud {table} --module=System --delete --force
 ```
 
+**`--module` 与删除：**
+
+- 若 `generator_tables` 中已有该表记录：**`--module` 必须与记录中的 `module_slug` 一致**，否则会报错并中止，避免误删其他模块产物。
+- 若无 DB 记录：按 `--module` 及当前参数**推断路径**删除文件（不删 `generator_tables`）。
+- 省略 `--module` 时：按 DB 记录中的模块删除；无记录则按默认推断。
+
 删除范围：
 - 后端 Model / Controller / Permissions / admin-generator 路由文件
 - 前端 api / constants / views

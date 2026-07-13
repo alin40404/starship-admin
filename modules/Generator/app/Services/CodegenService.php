@@ -161,11 +161,46 @@ class CodegenService
         $config = $this->findGeneratorConfig($tableName);
         if ($config) {
             $config->loadMissing('columns');
+            $this->assertRequestedModuleMatches($config, $options, '删除');
 
             return [$config, true];
         }
 
         return [$this->buildEphemeralConfig($tableName, $options), false];
+    }
+
+    /**
+     * @param  array<string, mixed>  $options
+     */
+    protected function assertRequestedModuleMatches(
+        GeneratorTable $config,
+        array $options,
+        string $action,
+    ): void {
+        $requestedModule = $this->normalizeModuleOption($options['module'] ?? null);
+        if ($requestedModule === null) {
+            return;
+        }
+
+        if (strtolower($config->module_slug) !== $requestedModule) {
+            throw new \InvalidArgumentException(sprintf(
+                '表 %s 的生成记录属于模块 %s，与 --module=%s 不一致。请使用 --module=%s，或省略 --module 按记录%s。',
+                $config->table_name,
+                $config->module_slug,
+                $options['module'],
+                $config->module_slug,
+                $action,
+            ));
+        }
+    }
+
+    protected function normalizeModuleOption(mixed $module): ?string
+    {
+        if ($module === null || $module === '') {
+            return null;
+        }
+
+        return strtolower((string) $module);
     }
 
     protected function findGeneratorConfig(string $tableName): ?GeneratorTable

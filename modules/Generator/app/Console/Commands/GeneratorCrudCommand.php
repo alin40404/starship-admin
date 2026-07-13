@@ -116,29 +116,51 @@ class GeneratorCrudCommand extends Command
      */
     protected function handleDelete(CodegenService $codegenService, string $table, array $options): int
     {
-        if ($this->option('preview')) {
-            $result = $codegenService->previewDelete($table, $options);
-            $this->info('删除预览：以下路径将被处理');
-            foreach ($result['paths'] as $path) {
-                $exists = is_file($path) ? ' [存在]' : ' [不存在]';
-                $this->line('- '.$path.$exists);
+        try {
+            if ($this->option('preview')) {
+                return $this->renderDeletePreview($codegenService, $table, $options);
             }
 
-            if ($result['sync_menu']) {
-                $this->line('- 菜单/权限：'.$result['config']->route_path.' / '.$result['config']->permission_prefix);
-            }
+            return $this->executeDelete($codegenService, $table, $options);
+        } catch (\InvalidArgumentException $exception) {
+            $this->error($exception->getMessage());
 
-            if ($result['drop_table']) {
-                $this->line('- 物理表：'.$result['config']->table_name);
-            }
+            return self::FAILURE;
+        }
+    }
 
-            if (! $result['persisted']) {
-                $this->warn('未找到 generator_tables 配置，将按当前参数推断路径（不会删除生成器 DB 配置）');
-            }
-
-            return self::SUCCESS;
+    /**
+     * @param  array<string, mixed>  $options
+     */
+    protected function renderDeletePreview(CodegenService $codegenService, string $table, array $options): int
+    {
+        $result = $codegenService->previewDelete($table, $options);
+        $this->info('删除预览：以下路径将被处理');
+        foreach ($result['paths'] as $path) {
+            $exists = is_file($path) ? ' [存在]' : ' [不存在]';
+            $this->line('- '.$path.$exists);
         }
 
+        if ($result['sync_menu']) {
+            $this->line('- 菜单/权限：'.$result['config']->route_path.' / '.$result['config']->permission_prefix);
+        }
+
+        if ($result['drop_table']) {
+            $this->line('- 物理表：'.$result['config']->table_name);
+        }
+
+        if (! $result['persisted']) {
+            $this->warn('未找到 generator_tables 配置，将按当前参数推断路径（不会删除生成器 DB 配置）');
+        }
+
+        return self::SUCCESS;
+    }
+
+    /**
+     * @param  array<string, mixed>  $options
+     */
+    protected function executeDelete(CodegenService $codegenService, string $table, array $options): int
+    {
         $preview = $codegenService->previewDelete($table, $options);
 
         $canDeleteMenu = (bool) ($options['sync_menu'] ?? true);
