@@ -51,7 +51,7 @@ const DEFAULT_SNAPSHOT: AdminRuntimeSnapshot = {
   pageSize: ADMIN_PAGE_SIZE_DEFAULT,
   uploadAllowedExtensions: [...ADMIN_UPLOAD_ALLOWED_EXTENSIONS_DEFAULT],
   uploadMaxSizeMb: ADMIN_UPLOAD_MAX_SIZE_MB_DEFAULT,
-  isDevelopment: import.meta.env.DEV,
+  isDevelopment: false,
 };
 
 let snapshot: AdminRuntimeSnapshot = { ...DEFAULT_SNAPSHOT };
@@ -130,7 +130,7 @@ function normalizeSnapshot(data: Record<string, unknown>): AdminRuntimeSnapshot 
       data.uploadMaxSizeMb,
       ADMIN_UPLOAD_MAX_SIZE_MB_DEFAULT,
     ),
-    isDevelopment: parseBool(data.isDevelopment, import.meta.env.DEV),
+    isDevelopment: parseBool(data.isDevelopment, false),
   };
 }
 

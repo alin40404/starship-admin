@@ -49,7 +49,8 @@
     "discoverResult": "Discovered {0} plugin(s), created {1}, updated {2}",
     "devOnlyTag": "Dev only",
     "devOnlyUnavailableTag": "Unavailable in prod",
-    "devOnlyTooltip": "This module is only available in development (local / development). It is disabled in the current production environment."
+    "devOnlyTooltipDev": "This module is only available in development (local / development).",
+    "devOnlyTooltipProd": "Production environment: this module is disabled."
   },
   "codegen": {
     "entity": "Codegen Config",

@@ -15,6 +15,7 @@ import { MODULE_PERMISSIONS } from '#/constants/module-permissions';
 import { $t } from '#/locales';
 import {
   devOnlyModuleTagColor,
+  devOnlyModuleTooltipKey,
   isDevOnlyModuleUnavailable,
 } from '#/utils/dev-only-module';
 
@@ -75,7 +76,7 @@ const [Grid, gridApi] = useVbenVxeGrid<DevModuleRow>({
           <template #devOnly="{ row }">
             <Tooltip
               v-if="row.dev_only"
-              :title="$t('dev.shared.devOnlyTooltip')"
+              :title="$t(devOnlyModuleTooltipKey(row))"
             >
               <Tag :color="devOnlyModuleTagColor(row)">
                 {{

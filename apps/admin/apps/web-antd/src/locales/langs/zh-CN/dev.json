@@ -49,7 +49,8 @@
     "discoverResult": "发现 {0} 个插件，新建 {1} 个，更新 {2} 个",
     "devOnlyTag": "仅开发",
     "devOnlyUnavailableTag": "生产不可用",
-    "devOnlyTooltip": "此模块仅可在开发环境（local / development）使用；当前为生产环境，功能已禁用"
+    "devOnlyTooltipDev": "此模块仅可在开发环境（local / development）使用",
+    "devOnlyTooltipProd": "当前为生产环境，此模块功能已禁用"
   },
   "codegen": {
     "entity": "代码生成配置",

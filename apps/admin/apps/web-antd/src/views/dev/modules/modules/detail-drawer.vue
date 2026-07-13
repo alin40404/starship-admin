@@ -9,6 +9,7 @@ import { fetchDevModule, updateDevModuleStatus } from '#/api/dev-module';
 import { $t } from '#/locales';
 import {
   devOnlyModuleTagColor,
+  devOnlyModuleTooltipKey,
   isDevOnlyModuleUnavailable,
 } from '#/utils/dev-only-module';
 
@@ -118,7 +119,7 @@ defineExpose({ open: show });
         v-if="detail.dev_only"
         :label="$t('dev.modules.devOnlyColumn')"
       >
-        <Tooltip :title="$t('dev.shared.devOnlyTooltip')">
+        <Tooltip :title="$t(devOnlyModuleTooltipKey(detail))">
           <Tag :color="devOnlyModuleTagColor(detail)">
             {{
               isDevOnlyModuleUnavailable(detail)

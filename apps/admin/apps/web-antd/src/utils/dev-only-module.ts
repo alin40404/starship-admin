@@ -15,3 +15,11 @@ export function devOnlyModuleTagColor(
 ): 'default' | 'warning' {
   return isDevOnlyModuleUnavailable(module) ? 'warning' : 'default';
 }
+
+export function devOnlyModuleTooltipKey(
+  module: DevOnlyModuleLike | null | undefined,
+): 'dev.shared.devOnlyTooltipDev' | 'dev.shared.devOnlyTooltipProd' {
+  return isDevOnlyModuleUnavailable(module)
+    ? 'dev.shared.devOnlyTooltipProd'
+    : 'dev.shared.devOnlyTooltipDev';
+}
