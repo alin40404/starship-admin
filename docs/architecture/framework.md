@@ -18,7 +18,7 @@ Starship Admin 不是某个具体业务系统，而是一套：
 
 | 场景 | 做法 |
 |------|------|
-| 企业内部 ERP | 复用 System + Monitor，新增 `modules/Erp` |
+| 企业内部 ERP | 复用 System（含监控日志），新增 `modules/Erp` |
 | 商城运营后台 | 复用底座，新增 `modules/Shop` + 支付/短信插件 |
 | SaaS 管理端 | 复用底座，独立业务仓库 + 引用 Starship 包 |
 | 第三方服务接入 | 仅写 `plugins/StorageQiniu` 等适配器 |
@@ -32,7 +32,7 @@ Layer 4  业务实例     my-shop-admin、cms-admin（独立仓库或 solutions/
     ↓
 Layer 3  可选插件     plugins/SmsAliyun、plugins/StorageQiniu
     ↓
-Layer 2  底座模块     modules/System、Monitor、Generator（可开关）
+Layer 2  底座模块     modules/System、Generator（可开关）
     ↓
 Layer 1  框架内核     packages/core（Module/Plugin 引擎、契约、ApiResponse）
     ↓
@@ -85,15 +85,16 @@ Layer 0  Laravel 壳  backend/（bootstrap、config、artisan，尽量保持官�
 
 | 模块 | Composer 包名 | 职责 |
 |------|---------------|------|
-| System | `starship/system` | 认证、RBAC、菜单、组织、字典、配置、附件、插件管理 UI |
-| Monitor | `starship/monitor` | 操作/登录/异常日志 |
+| System | `starship/system` | 认证、RBAC、菜单、组织、字典、配置、附件、插件管理 UI、**操作/登录/异常日志（监控中心）** |
 | Generator | `starship/generator` | 表结构读取、CRUD 代码生成 |
+
+> **说明**：原独立的 `Monitor` 模块已合并进 `System`。对外 API 前缀仍为 `/admin-api/monitor/*`，权限码仍为 `monitor.*`，数据表仍为 `monitor_*`。
 
 每个模块通过 `module.json` 声明启用状态、Provider、种子、菜单与权限绑定。
 
 **规则**：
 
-- 底座模块之间尽量减少循环依赖（System 为核心，Monitor/Generator 依赖 System 能力）
+- 底座模块之间尽量减少循环依赖（Generator 依赖 System 能力）
 - 新底座能力用新模块，不往 System 无限堆功能
 - 业务模块（Shop、Cms）**不应**放在此目录（见 Layer 4）
 
@@ -123,7 +124,7 @@ Layer 0  Laravel 壳  backend/（bootstrap、config、artisan，尽量保持官�
 apps/admin/
 └── apps/web-antd/          # 官方管理端 UI 实现（Vben Admin 5.x）
     └── src/
-        ├── views/          # 底座页面（随 System/Monitor/Generator）
+        ├── views/          # 底座页面（随 System/Generator）
         ├── api/            # 底座 API 封装
         ├── components/     # 可复用组件（如 AttachmentField）
         └── plugins/        # 插件前端扩展点（规划）
@@ -188,7 +189,7 @@ interface PluginConfigStoreInterface
     "paths": []
   },
   "permissions": {
-    "prefixes": ["system.", "dashboard."],
+    "prefixes": ["system.", "dashboard.", "monitor."],
     "exact": []
   },
   "require": {
@@ -273,7 +274,7 @@ interface PluginConfigStoreInterface
     "laravel/framework": "^13.0",
     "starship/core": "^1.0",
     "starship/system": "^1.0",
-    "starship/monitor": "^1.0"
+    "starship/generator": "^1.0"
   }
 }
 ```
@@ -284,7 +285,7 @@ interface PluginConfigStoreInterface
 
 ### 阶段一：底座夯实（当前 → 约 3～6 个月）
 
-- [ ] System / Monitor / Generator 核心功能完整
+- [ ] System（含监控日志）/ Generator 核心功能完整
 - [ ] Generator 端到端：表 → 后端 + 前端 + 菜单 + 权限
 - [ ] 插件全流程：发现 / 安装 / 启用 / 配置 / 路由
 - [ ] 文档：API、权限码、描述文件规范稳定
@@ -338,7 +339,7 @@ php artisan starship:generate:crud erp_orders
 | 你要做的事 | 放哪里 |
 |------------|--------|
 | 改登录、权限、菜单 | `modules/System/` |
-| 加操作日志 | `modules/Monitor/` |
+| 加操作/登录/异常日志 | `modules/System/`（监控中心，`monitor.*` 权限） |
 | 改 CRUD 生成逻辑 | `modules/Generator/` |
 | 接阿里云短信 | `plugins/SmsAliyun/` |
 | 开发商城订单管理 | 业务仓库 `modules/Shop/` |

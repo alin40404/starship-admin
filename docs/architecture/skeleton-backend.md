@@ -110,7 +110,7 @@ my-admin/
 **不在 backend 迁移：**
 
 - `plugins` / `plugin_configs` 表 → `packages/core` 包内迁移
-- System/Monitor/Generator 业务表 → 各 `modules/*` 包内迁移
+- System/Generator 业务表 → 各 `modules/*` 包内迁移；System 包内亦含 `monitor_*` 监控表
 
 ### 3.7 public/
 
@@ -158,13 +158,11 @@ my-admin/
   "repositories": [
     { "type": "path", "url": "../packages/core" },
     { "type": "path", "url": "../modules/System" },
-    { "type": "path", "url": "../modules/Monitor" },
     { "type": "path", "url": "../modules/Generator" }
   ],
   "require": {
     "starship/core": "@dev",
     "starship/system": "@dev",
-    "starship/monitor": "@dev",
     "starship/generator": "@dev"
   }
 }
@@ -182,7 +180,6 @@ my-admin/
     "laravel/sanctum": "^4.3",
     "starship/core": "^1.0",
     "starship/system": "^1.0",
-    "starship/monitor": "^1.0",
     "starship/generator": "^1.0"
   }
 }

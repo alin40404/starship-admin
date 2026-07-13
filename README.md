@@ -16,15 +16,14 @@ Starship Admin 不是一个“大而全”的业务系统，也不是一开始�
 
 第一阶段不建议急着开发复杂业务系统，而是先把后台框架最核心的底座能力做好。
 
-第一阶段重点建设三个核心模块：
+第一阶段重点建设两个底座模块：
 
-- `System`：系统基础模块
-- `Monitor`：日志与监控模块
+- `System`：系统基础模块（含监控中心：操作/登录/异常日志）
 - `Generator`：CRUD 代码生成器模块
 
 同时，第一阶段需要提前预留插件机制，但插件机制不作为第四个业务模块，而作为框架扩展能力建设。
 
-这三个底座模块稳定之后，再基于 Starship Admin 孵化独立业务系统或行业解决方案，例如：
+这两个底座模块稳定之后，再基于 Starship Admin 孵化独立业务系统或行业解决方案，例如：
 
 - CMS 内容管理系统
 - 商城系统
@@ -137,24 +136,9 @@ Starship Admin 遵循以下设计原则：
 - 个人资料
 - 修改密码
 - 基础参数配置
+- **监控中心**：操作日志、登录日志、异常日志（API 前缀 `/admin-api/monitor/*`，权限 `monitor.*`）
 
-### 5.2 Monitor 模块
-
-`Monitor` 是日志与监控模块，负责系统运行过程中的审计、追踪和问题排查。
-
-建议包含：
-
-- 操作日志
-- 登录日志
-- 接口访问日志
-- 异常日志
-- 队列失败日志
-- 定时任务日志
-- 系统运行状态，可选
-- 在线用户，可选
-- 请求耗时统计，可选
-
-### 5.3 Generator 模块
+### 5.2 Generator 模块
 
 `Generator` 是 CRUD 代码生成器模块，负责提升后台业务开发效率。
 
@@ -177,7 +161,7 @@ Starship Admin 遵循以下设计原则：
 - 表格列配置
 - 表单项配置
 
-### 5.4 插件能力预留
+### 5.3 插件能力预留
 
 插件能力不建议作为第一阶段的重业务模块，但建议作为框架基础扩展机制提前规划。
 
@@ -192,7 +176,7 @@ Starship Admin 遵循以下设计原则：
 - 支持插件注册 ServiceProvider
 - 支持插件注册后台 API 路由
 - 支持插件同步菜单和权限节点
-- 支持插件异常进入 Monitor 日志
+- 支持插件异常进入 System 监控日志
 
 第一阶段不建议做：
 
@@ -211,14 +195,13 @@ Starship Admin 遵循以下设计原则：
 
 更准确的定义是：
 
-> `System`、`Monitor`、`Generator` 是 Starship Admin 的底座模块；CMS、商城、O2O、SaaS、会员、支付、订单等应该是基于底座延伸出来的独立业务系统或业务中心。
+> `System`、`Generator` 是 Starship Admin 的底座模块（其中 System 含监控中心能力）；CMS、商城、O2O、SaaS、会员、支付、订单等应该是基于底座延伸出来的独立业务系统或业务中心。
 
 建议演进顺序：
 
 | 阶段 | 名称 | 准确定义 | 说明 |
 |---|---|---|---|
-| 第一阶段 | System | 底座模块 | 系统基础能力，包括管理员、角色、菜单、权限、配置、字典、文件上传 |
-| 第一阶段 | Monitor | 底座模块 | 日志、审计、异常、接口访问、运行监控 |
+| 第一阶段 | System | 底座模块 | 系统基础能力（含管理员、角色、菜单、权限、配置、字典、文件上传、操作/登录/异常日志） |
 | 第一阶段 | Generator | 底座模块 | CRUD 代码生成器，生成后端代码、前端页面、菜单和权限节点 |
 | 第二阶段 | Cms | 独立内容管理系统 | 可独立建设官网、文章、栏目、页面、内容发布能力 |
 | 第二阶段 | Member | 独立会员中心系统 | 会员、等级、标签、积分、成长值、会员资产等能力 |
@@ -282,7 +265,7 @@ Starship Admin 中三类扩展对象的边界建议这样定义：
 
 | 类型 | 目录 | 定位 | 示例 |
 |---|---|---|---|
-| 底座模块 | `modules/` | 框架内置核心能力，和主框架一起演进 | `System`、`Monitor`、`Generator` |
+| 底座模块 | `modules/` | 框架内置核心能力，和主框架一起演进 | `System`、`Generator` |
 | 插件 | `plugins/` | 可选安装的增强能力或第三方服务适配器 | 阿里云短信、七牛存储、微信支付适配器 |
 | 独立业务系统 | `solutions/` 或独立仓库 | 基于 Starship Admin 构建的完整业务系统 | CMS、商城、O2O、SaaS |
 
@@ -747,14 +730,14 @@ php artisan starship:plugin:disable SmsAliyun
 建议规则：
 
 - 插件不能直接修改 `backend/app` 核心代码
-- 插件不能直接修改 `modules/System`、`modules/Monitor`、`modules/Generator`
+- 插件不能直接修改 `modules/System`、`modules/Generator`
 - 插件数据库迁移必须可追踪
 - 插件启用前必须校验依赖和版本
 - 插件路由必须走统一认证和权限中间件
 - 插件配置敏感字段必须加密
 - 插件卸载默认不删除业务数据
 - 插件前端页面必须经过菜单和权限控制
-- 插件异常必须记录到 Monitor 模块
+- 插件异常必须记录到 System 监控日志
 
 如果后期支持第三方插件上传安装，必须增加：
 
@@ -780,7 +763,7 @@ php artisan starship:plugin:disable SmsAliyun
 - 插件可以加载自己的配置
 - 插件可以同步菜单和权限节点
 - 插件配置可以在后台保存
-- 插件异常可以进入 Monitor 日志
+- 插件异常可以进入 System 监控日志
 - 插件不能绕过后台登录和权限校验
 
 第一阶段可以用 `SmsAliyun` 或 `StorageQiniu` 做验证插件。
@@ -817,8 +800,7 @@ starship-admin/
 │     └─ .env.example                 # 前端环境变量模板
 │
 ├─ modules/                           # Starship Admin 底座模块
-│  ├─ System/                         # 系统基础模块
-│  ├─ Monitor/                        # 日志与监控模块
+│  ├─ System/                         # 系统基础模块（含监控中心）
 │  └─ Generator/                      # CRUD 代码生成器模块
 │
 ├─ plugins/                           # 插件预留目录，放可选插件和第三方服务适配器
@@ -895,7 +877,6 @@ apps/mobile/      # 移动端 H5
 
 ```text
 modules/System
-modules/Monitor
 modules/Generator
 ```
 
@@ -911,7 +892,7 @@ extensions
 
 原因：
 
-- `System`、`Monitor`、`Generator` 属于底座能力模块，不是普通插件
+- `System`、`Generator` 属于底座能力模块，不是普通插件
 - CMS、商城、O2O、SaaS 更适合定义为独立业务系统或解决方案
 - `plugins` 更适合后期第三方插件市场或外部服务适配器
 
@@ -930,7 +911,7 @@ plugins/
 
 建议规则：
 
-- `modules`：底座功能模块，例如 `System`、`Monitor`、`Generator`
+- `modules`：底座功能模块，例如 `System`、`Generator`
 - `plugins`：可选插件、第三方服务适配器、能力增强包
 - `solutions`：独立业务系统或行业解决方案
 
@@ -1103,7 +1084,6 @@ modules/System/
 
 ```text
 modules/System
-modules/Monitor
 modules/Generator
 ```
 
@@ -1113,7 +1093,6 @@ modules/Generator
 
 ```text
 system
-monitor
 generator
 ```
 
@@ -1123,7 +1102,6 @@ generator
 
 ```php
 Modules\System
-Modules\Monitor
 Modules\Generator
 ```
 
@@ -1135,9 +1113,11 @@ Modules\Generator
 /system/user
 /system/role
 /system/menu
-/monitor/operation-log
+/monitor/operation-logs
 /generator/table
 ```
+
+> 监控中心页面路由仍使用 `/monitor/*`；对应权限码为 `monitor.*`（定义于 `modules/System/app/Support/*LogPermissions.php`）。
 
 ### 12.5 权限节点
 
@@ -1462,17 +1442,22 @@ sa_system_post               # 岗位表
 
 ---
 
-## 18. Monitor 模块建议表
+## 18. System 模块 — 监控相关表
 
-第一版可优先设计这些表：
+监控能力已并入 `System` 模块，表名仍使用 `monitor_*` 前缀。第一版已实现：
 
 ```text
-sa_monitor_operation_log     # 操作日志表
-sa_monitor_login_log         # 登录日志表
-sa_monitor_api_log           # 接口日志表
-sa_monitor_exception_log     # 异常日志表
-sa_monitor_queue_failed      # 队列失败日志表，可选
-sa_monitor_schedule_log      # 定时任务日志表，可选
+monitor_operation_logs       # 操作日志表
+monitor_login_logs           # 登录日志表
+monitor_exception_logs       # 异常日志表
+```
+
+后续可选扩展：
+
+```text
+monitor_api_logs             # 接口日志表
+monitor_queue_failed         # 队列失败日志表
+monitor_schedule_logs        # 定时任务日志表
 ```
 
 ---
@@ -1742,15 +1727,13 @@ pnpm dev
 ```text
 1. 先完成 backend Laravel 宿主应用
 2. 完成模块加载机制
-3. 完成 System 模块
-4. 完成后台登录、菜单、权限
-5. 完成 Monitor 模块
-6. 完成 Generator 模块
-7. 完成插件发现、注册、启用、禁用的最小闭环
-8. 用 Generator 生成一个 Demo CRUD 验证闭环
-9. 补充模块开发规范
-10. 补充部署文档
-11. 再开始建设独立业务系统或解决方案
+3. 完成 System 模块（含登录、菜单、权限、监控日志）
+4. 完成 Generator 模块
+5. 完成插件发现、注册、启用、禁用的最小闭环
+6. 用 Generator 生成一个 Demo CRUD 验证闭环
+7. 补充模块开发规范
+8. 补充部署文档
+9. 再开始建设独立业务系统或解决方案
 ```
 
 ---
@@ -1771,17 +1754,9 @@ pnpm dev
 - 可以维护数据字典
 - 可以维护系统配置
 - 可以上传文件
+- 可以查看登录/操作/异常日志（监控中心）
 
-### 27.2 Monitor 模块
-
-- 可以查看登录日志
-- 可以查看操作日志
-- 可以查看接口日志
-- 可以查看异常日志
-- 关键操作可以被审计
-- 敏感字段可以脱敏
-
-### 27.3 Generator 模块
+### 27.2 Generator 模块
 
 - 可以读取数据库表
 - 可以读取字段信息
@@ -1792,7 +1767,7 @@ pnpm dev
 - 可以生成权限节点
 - 可以生成后直接访问后台页面
 
-### 27.4 插件能力预留
+### 27.3 插件能力预留
 
 - 可以扫描 `plugins/` 目录
 - 可以读取 `plugin.json`
@@ -1803,7 +1778,7 @@ pnpm dev
 - 插件可以加载配置
 - 插件可以同步菜单和权限节点
 - 插件配置可以保存到数据库
-- 插件异常可以记录到 Monitor 模块
+- 插件异常可以记录到 System 监控日志
 
 ---
 
@@ -1821,8 +1796,7 @@ docs/
 │
 ├─ modules/
 │  ├─ module-spec.md                  # 模块开发规范
-│  ├─ system.md                       # System 模块设计
-│  ├─ monitor.md                      # Monitor 模块设计
+│  ├─ system.md                       # System 模块设计（含监控中心）
 │  └─ generator.md                    # Generator 模块设计
 │
 ├─ plugins/
@@ -1840,8 +1814,7 @@ docs/
 │
 ├─ database/
 │  ├─ naming.md                       # 数据库命名规范
-│  ├─ system-tables.md                # System 模块表设计
-│  ├─ monitor-tables.md               # Monitor 模块表设计
+│  ├─ system-tables.md                # System 模块表设计（含 monitor_*）
 │  └─ generator-tables.md             # Generator 模块表设计
 │
 ├─ api/
@@ -1873,8 +1846,7 @@ docs/
 - Laravel 宿主应用
 - Vue 后台前端
 - 模块加载机制
-- System 模块
-- Monitor 模块
+- System 模块（含监控中心）
 - Generator 模块
 - 插件机制最小闭环：发现、注册、启用、禁用、配置
 
@@ -1936,7 +1908,6 @@ starship-admin/
 │  └─ admin/
 ├─ modules/
 │  ├─ System/
-│  ├─ Monitor/
 │  └─ Generator/
 ├─ plugins/
 │  └─ .gitkeep
@@ -1952,7 +1923,7 @@ starship-admin/
 
 这个结构更适合作为 Starship Admin 的第一版基础框架。
 
-后续等 `System`、`Monitor`、`Generator` 三个底座模块稳定之后，再根据实际业务建设独立系统。
+后续等 `System`、`Generator` 两个底座模块稳定之后，再根据实际业务建设独立系统。
 
 如果正式产品化，建议拆成独立仓库：
 
@@ -2010,9 +1981,7 @@ Starship Admin 的第一阶段应该聚焦于后台框架底座，而不是业�
 最合理的建设路线是：
 
 ```text
-System 模块
-  ↓
-Monitor 模块
+System 模块（含监控中心）
   ↓
 Generator 模块
   ↓
@@ -2023,4 +1992,4 @@ Demo CRUD 验证
 独立业务系统建设
 ```
 
-只要 `System`、`Monitor`、`Generator` 三个底座模块稳定，并且插件机制完成最小闭环，Starship Admin 就可以成为后续 CMS、商城、O2O、SaaS、会员、支付、订单等独立业务系统的统一开发底座。
+只要 `System`、`Generator` 两个底座模块稳定，并且插件机制完成最小闭环，Starship Admin 就可以成为后续 CMS、商城、O2O、SaaS、会员、支付、订单等独立业务系统的统一开发底座。
