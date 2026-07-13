@@ -19,6 +19,7 @@ export function useColumns(
   access: PluginAccessChecker,
 ) {
   return [
+    { align: 'center', fixed: 'left', type: 'checkbox', width: 48 },
     {
       align: 'left',
       field: 'slug',

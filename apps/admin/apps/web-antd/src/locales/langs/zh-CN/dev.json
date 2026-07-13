@@ -43,7 +43,7 @@
     "uninstallSuccess": "卸载成功",
     "discoverPlugins": "发现插件",
     "disablePluginTitle": "禁用插件",
-    "disablePluginConfirm": "确定禁用插件【{0}】吗？禁用后需重启后端服务。",
+    "disablePluginConfirm": "确定禁用插件【{0}】吗？",
     "uninstallPluginTitle": "卸载插件",
     "uninstallPluginConfirm": "确定卸载插件【{0}】吗？卸载后保留配置数据。",
     "discoverResult": "发现 {0} 个插件，新建 {1} 个，更新 {2} 个",
@@ -93,7 +93,7 @@
   },
   "plugins": {
     "entity": "插件",
-    "hint": "扫描 plugins/ 目录下的 plugin.json，在此统一管理插件的安装、启用、禁用与配置。启用/禁用后需重启后端服务。",
+    "hint": "扫描 plugins/ 目录下的 plugin.json，在此统一管理插件的安装、启用、禁用与配置。启用/禁用后新 Web 请求将自动按最新状态加载插件。",
     "columnSlug": "插件标识",
     "columnName": "插件名称",
     "detailTitle": "插件详情",
@@ -104,7 +104,17 @@
     "statusDiscovered": "未安装",
     "statusInstalled": "已安装",
     "statusEnabled": "已启用",
-    "statusDisabled": "已禁用"
+    "statusDisabled": "已禁用",
+    "batchInstall": "批量安装",
+    "batchInstallConfirm": "确定安装选中的 {0} 个插件吗？",
+    "batchEnableConfirm": "确定启用选中的 {0} 个插件吗？",
+    "batchDisableConfirm": "确定禁用选中的 {0} 个插件吗？",
+    "batchUninstall": "批量卸载",
+    "batchUninstallConfirm": "确定卸载选中的 {0} 个插件吗？卸载后保留配置数据。",
+    "batchNoEligible": "所选插件均不符合该操作条件",
+    "batchPartial": "成功 {0} 个，失败 {1} 个",
+    "enabledSuccess": "已启用",
+    "disabledSuccess": "已禁用"
   },
   "modules": {
     "entity": "模块",

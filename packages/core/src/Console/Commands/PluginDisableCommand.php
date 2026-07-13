@@ -17,7 +17,7 @@ class PluginDisableCommand extends PluginActionCommand
         try {
             $slug = $this->resolveSlug($pluginManager);
             $pluginLifecycle->disable($slug);
-            $this->info("插件 {$slug} 已禁用，请重启后端服务后生效");
+            $this->info("插件 {$slug} 已禁用");
 
             return self::SUCCESS;
         } catch (InvalidArgumentException $exception) {

@@ -43,7 +43,7 @@
     "uninstallSuccess": "Uninstalled successfully",
     "discoverPlugins": "Discover Plugins",
     "disablePluginTitle": "Disable Plugin",
-    "disablePluginConfirm": "Disable plugin [{0}]? Restart the backend service after disabling.",
+    "disablePluginConfirm": "Disable plugin [{0}]?",
     "uninstallPluginTitle": "Uninstall Plugin",
     "uninstallPluginConfirm": "Uninstall plugin [{0}]? Configuration data will be kept.",
     "discoverResult": "Discovered {0} plugin(s), created {1}, updated {2}",
@@ -93,7 +93,7 @@
   },
   "plugins": {
     "entity": "Plugin",
-    "hint": "Scans plugin.json under plugins/ to manage install, enable, disable and configuration. Restart the backend after enable/disable.",
+    "hint": "Scans plugin.json under plugins/ to manage install, enable, disable and configuration. After enable/disable, new web requests automatically load plugins with the latest status.",
     "columnSlug": "Plugin Slug",
     "columnName": "Plugin Name",
     "detailTitle": "Plugin Detail",
@@ -104,7 +104,17 @@
     "statusDiscovered": "Not Installed",
     "statusInstalled": "Installed",
     "statusEnabled": "Enabled",
-    "statusDisabled": "Disabled"
+    "statusDisabled": "Disabled",
+    "batchInstall": "Batch Install",
+    "batchInstallConfirm": "Install {0} selected plugin(s)?",
+    "batchEnableConfirm": "Enable {0} selected plugin(s)?",
+    "batchDisableConfirm": "Disable {0} selected plugin(s)?",
+    "batchUninstall": "Batch Uninstall",
+    "batchUninstallConfirm": "Uninstall {0} selected plugin(s)? Configuration data will be kept.",
+    "batchNoEligible": "None of the selected plugins are eligible for this action",
+    "batchPartial": "{0} succeeded, {1} failed",
+    "enabledSuccess": "Enabled",
+    "disabledSuccess": "Disabled"
   },
   "modules": {
     "entity": "Module",
