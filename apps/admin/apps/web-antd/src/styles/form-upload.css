@@ -4,12 +4,81 @@
  */
 .picture-upload-field {
   --picture-upload-card-radius: var(--radius);
-  display: flex !important;
+  --picture-upload-card-size: 102px;
+  --picture-upload-gap: 0.75rem;
+  max-width: 100%;
+}
+
+/* 单图 / 多图空态：__body 内 flex 紧凑并排 */
+.picture-upload-field__body {
+  display: flex;
   flex-flow: row nowrap;
   align-items: flex-start;
-  gap: 0.5rem;
-  width: fit-content !important;
+  gap: var(--picture-upload-gap);
+  width: fit-content;
+  min-width: 0;
+}
+
+.picture-upload-field:not(.picture-upload-field--flow-grid) .picture-upload-field__upload,
+.picture-upload-field:not(.picture-upload-field--flow-grid)
+  .picture-upload-field__upload.ant-upload-wrapper,
+.picture-upload-field:not(.picture-upload-field--flow-grid)
+  .picture-upload-field__upload.ant-upload-picture-card-wrapper {
+  flex: none;
+  display: flex !important;
+  align-items: center;
+  width: auto !important;
   max-width: 100%;
+  margin: 0;
+}
+
+.picture-upload-field:not(.picture-upload-field--flow-grid)
+  .ant-upload-list.ant-upload-list-picture-card {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--picture-upload-gap);
+  align-items: center;
+  width: auto;
+  margin: 0;
+}
+
+.picture-upload-field:not(.picture-upload-field--flow-grid)
+  .ant-upload-select.ant-upload-select-picture-card {
+  margin: 0 !important;
+}
+
+/*
+ * 有图片时：外层 flex-wrap 统一 gap；__body / Upload 链 display:contents 展平，
+ * 缩略图、点击上传、选择附件均为同一 flex 容器的子项。
+ */
+.picture-upload-field--flow-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--picture-upload-gap);
+  width: 100%;
+  min-width: 0;
+}
+
+.picture-upload-field--flow-grid .picture-upload-field__body {
+  display: contents;
+}
+
+.picture-upload-field--flow-grid
+  .picture-upload-field__upload.ant-upload-wrapper,
+.picture-upload-field--flow-grid
+  .picture-upload-field__upload.ant-upload-picture-card-wrapper,
+.picture-upload-field--flow-grid
+  .ant-upload-list.ant-upload-list-picture-card {
+  display: contents !important;
+}
+
+.picture-upload-field--flow-grid .ant-upload-list-item-container,
+.picture-upload-field--flow-grid .ant-upload-select.ant-upload-select-picture-card,
+.picture-upload-field--flow-grid .picture-upload-field__select-btn {
+  flex: none;
+  margin: 0 !important;
+  float: none !important;
 }
 
 .picture-upload-field .picture-card-upload .ant-upload-select-picture-card,
@@ -18,28 +87,11 @@
   .ant-upload-list-item-container,
 .picture-upload-field__select-btn.ant-btn {
   box-sizing: border-box;
-  width: 102px;
-  height: 102px;
+  width: var(--picture-upload-card-size);
+  height: var(--picture-upload-card-size);
   font-size: 13px;
   line-height: 1.25;
   border-radius: var(--picture-upload-card-radius);
-}
-
-.picture-upload-field .picture-upload-field__upload,
-.picture-upload-field .picture-upload-field__upload.ant-upload-wrapper {
-  flex: none;
-  display: flex;
-  align-items: center;
-  width: auto !important;
-  margin: 0;
-}
-
-.picture-upload-field .ant-upload-list.ant-upload-list-picture-card {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  align-items: center;
-  margin: 0;
 }
 
 .picture-upload-field .ant-upload-list {
@@ -50,9 +102,17 @@
   margin: 0 !important;
 }
 
+/* ant-design clearFix 伪元素在 flex/contents 布局下会占一个格子 */
+.picture-upload-field .ant-upload-picture-card-wrapper::before,
+.picture-upload-field .ant-upload-picture-card-wrapper::after {
+  display: none !important;
+  content: none !important;
+}
+
 .picture-upload-field .ant-upload-list-picture-card::before,
 .picture-upload-field .ant-upload-list-picture-card::after {
-  display: none;
+  display: none !important;
+  content: none !important;
 }
 
 /* 「选择附件」：实心主色按钮，与左侧虚线上传区形成对比 */
@@ -87,8 +147,22 @@
   overflow: visible !important;
 }
 
+/* flex 子项默认 min-width:auto，多图会把整行撑开无法换行 */
+.picture-upload-form-item.col-span-full {
+  min-width: 0;
+}
+
+.picture-upload-form-item.col-span-full > .w-full.flex-auto {
+  min-width: 0;
+}
+
+.picture-upload-form-item.col-span-full .relative.flex.w-full {
+  align-items: flex-start;
+  min-width: 0;
+}
+
 @media (max-width: 480px) {
-  .picture-upload-field {
+  .picture-upload-field__body {
     flex-wrap: wrap;
   }
 }

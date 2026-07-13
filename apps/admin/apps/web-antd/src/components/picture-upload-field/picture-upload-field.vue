@@ -40,6 +40,16 @@ const canAddMore = computed(
   () => !props.maxCount || innerFileList.value.length < props.maxCount,
 );
 
+/** 多图/相册：流式换行；单图：封面等横向紧凑布局 */
+const isFlowLayout = computed(
+  () => props.flowLayout === true || props.maxCount !== 1,
+);
+
+/** 有图片时启用 grid 流式；空态与封面图相同 flex 并排 */
+const isFlowGrid = computed(
+  () => isFlowLayout.value && innerFileList.value.length > 0,
+);
+
 const pickerMultiple = computed(() => props.maxCount !== 1);
 
 const pickerInitialUrls = computed(() =>
@@ -102,43 +112,51 @@ function onPickerConfirm(urls: string[]) {
 </script>
 
 <template>
-  <div class="picture-upload-field">
-    <Upload
-      :accept="resolveUploadAcceptAttr(accept)"
-      class="picture-card-upload picture-upload-field__upload shrink-0"
-      :custom-request="customRequest"
-      :disabled="disabled"
-      :file-list="innerFileList"
-      list-type="picture-card"
-      :max-count="maxCount"
-      @change="onUploadChange"
-    >
-      <div v-if="canAddMore && !disabled">
-        {{ $t('ui.placeholder.upload') }}
-      </div>
-    </Upload>
+  <div
+    class="picture-upload-field"
+    :class="{
+      'picture-upload-field--flow': isFlowLayout,
+      'picture-upload-field--flow-grid': isFlowGrid,
+    }"
+  >
+    <div class="picture-upload-field__body">
+      <Upload
+        :accept="resolveUploadAcceptAttr(accept)"
+        class="picture-card-upload picture-upload-field__upload shrink-0"
+        :custom-request="customRequest"
+        :disabled="disabled"
+        :file-list="innerFileList"
+        list-type="picture-card"
+        :max-count="maxCount"
+        @change="onUploadChange"
+      >
+        <div v-if="canAddMore && !disabled">
+          {{ $t('ui.placeholder.upload') }}
+        </div>
+      </Upload>
 
-    <Button
-      v-if="canAddMore && !disabled"
-      type="primary"
-      class="picture-upload-field__select-btn"
-      @click="onSelectClick"
-    >
-      <IconifyIcon
-        class="picture-upload-field__select-btn-icon"
-        icon="lucide:folder-open"
-      />
-      <span class="picture-upload-field__select-btn-text">
-        {{ $t('resource.attachment.picker.title') }}
-      </span>
-    </Button>
-
-    <AttachmentPickerModal
-      v-model:open="pickerOpen"
-      :accept="accept"
-      :initial-urls="pickerInitialUrls"
-      :multiple="pickerMultiple"
-      @confirm="onPickerConfirm"
-    />
+      <Button
+        v-if="canAddMore && !disabled"
+        type="primary"
+        class="picture-upload-field__select-btn"
+        @click="onSelectClick"
+      >
+        <IconifyIcon
+          class="picture-upload-field__select-btn-icon"
+          icon="lucide:folder-open"
+        />
+        <span class="picture-upload-field__select-btn-text">
+          {{ $t('resource.attachment.picker.title') }}
+        </span>
+      </Button>
+    </div>
   </div>
+
+  <AttachmentPickerModal
+    v-model:open="pickerOpen"
+    :accept="accept"
+    :initial-urls="pickerInitialUrls"
+    :multiple="pickerMultiple"
+    @confirm="onPickerConfirm"
+  />
 </template>

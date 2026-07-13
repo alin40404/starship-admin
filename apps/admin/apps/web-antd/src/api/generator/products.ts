@@ -16,6 +16,7 @@ export interface ProductsRow {
   category_id: number;
   parent_id: number;
   cover: string;
+  images: string;
   attachment: string;
   brochure: string;
   summary: string;
@@ -60,6 +61,7 @@ export interface ProductsSavePayload {
   category_id?: number;
   parent_id: number;
   cover?: string;
+  images?: string;
   attachment?: string;
   brochure?: string;
   summary?: string;

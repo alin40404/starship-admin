@@ -12,6 +12,7 @@ import { defineStore } from 'pinia';
 
 import { getAccessCodesApi, getUserInfoApi, loginApi, logoutApi, smsLoginApi } from '#/api';
 import { $t } from '#/locales';
+import { refreshAccess as refreshAccessFromServer } from '#/utils/refresh-access';
 
 export const useAuthStore = defineStore('auth', () => {
   const accessStore = useAccessStore();
@@ -152,6 +153,10 @@ export const useAuthStore = defineStore('auth', () => {
     return userInfo;
   }
 
+  async function refreshAccess() {
+    return refreshAccessFromServer();
+  }
+
   function $reset() {
     loginLoading.value = false;
   }
@@ -163,5 +168,6 @@ export const useAuthStore = defineStore('auth', () => {
     fetchUserInfo,
     loginLoading,
     logout,
+    refreshAccess,
   };
 });

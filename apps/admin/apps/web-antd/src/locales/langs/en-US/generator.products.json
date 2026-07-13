@@ -17,6 +17,7 @@
         "category_id": "Category Id",
         "parent_id": "Parent Id",
         "cover": "Cover",
+        "images": "Images",
         "attachment": "Attachment",
         "brochure": "Brochure",
         "summary": "Summary",

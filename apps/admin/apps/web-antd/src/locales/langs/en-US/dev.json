@@ -82,7 +82,10 @@
     "syncMenu": "Sync menu registration",
     "forceOverwrite": "Force overwrite existing files",
     "conflictSkipped": "{0} existing file(s) skipped; enable force overwrite and retry",
-    "generateDone": "Generation completed, wrote {0} file(s)"
+    "generateDone": "Generation completed, wrote {0} file(s)",
+    "refreshAccess": "Refresh Access",
+    "refreshAccessDone": "Menus and permissions refreshed",
+    "refreshAccessFailed": "Generation succeeded, but access refresh failed. Click Refresh Access or sign in again."
   },
   "plugins": {
     "entity": "Plugin",

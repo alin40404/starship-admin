@@ -9,10 +9,13 @@ import { Checkbox, message } from 'ant-design-vue';
 
 import { generateCodegen } from '#/api/generator';
 import { $t } from '#/locales';
+import { useAuthStore } from '#/store';
 
 const emit = defineEmits<{
   success: [];
 }>();
+
+const authStore = useAuthStore();
 
 const generateTarget = ref<GeneratorTableRow | null>(null);
 const generateForce = ref(false);
@@ -45,6 +48,14 @@ const [Modal, modalApi] = useVbenModal({
         message.warning($t('dev.codegen.conflictSkipped', [conflictCount]));
       } else {
         message.success($t('dev.codegen.generateDone', [writtenCount]));
+        if (generateSyncMenu.value) {
+          try {
+            await authStore.refreshAccess();
+            message.success($t('dev.codegen.refreshAccessDone'));
+          } catch {
+            message.warning($t('dev.codegen.refreshAccessFailed'));
+          }
+        }
         modalApi.close();
       }
       emit('success');

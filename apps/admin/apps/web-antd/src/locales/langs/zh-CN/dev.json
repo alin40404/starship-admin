@@ -82,7 +82,10 @@
     "syncMenu": "同步注册菜单",
     "forceOverwrite": "强制覆盖已存在文件",
     "conflictSkipped": "有 {0} 个文件已存在被跳过，可勾选强制覆盖后重试",
-    "generateDone": "生成完成，写入 {0} 个文件"
+    "generateDone": "生成完成，写入 {0} 个文件",
+    "refreshAccess": "刷新权限",
+    "refreshAccessDone": "菜单与权限已刷新",
+    "refreshAccessFailed": "生成成功，但权限刷新失败，请手动点击「刷新权限」或重新登录"
   },
   "plugins": {
     "entity": "插件",

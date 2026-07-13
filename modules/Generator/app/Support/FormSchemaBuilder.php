@@ -568,8 +568,7 @@ final class FormSchemaBuilder
      */
     protected function buildPictureUploadLines(string $columnKey, string $i18nPrefix, array $options): array
     {
-        $maxCount = (int) ($options['max_count'] ?? 1);
-        $formItemClass = $maxCount > 1
+        $formItemClass = $this->uploadUsesFullRow($options)
             ? 'picture-upload-form-item col-span-full w-full items-start'
             : 'picture-upload-form-item items-start';
         $lines = [];
@@ -578,7 +577,9 @@ final class FormSchemaBuilder
         $lines[] = '      componentProps: {';
         $lines[] = '        customRequest: params.onImageUpload,';
         $lines[] = '        handleChange: params.onImageChange,';
-        $lines[] = "        maxCount: {$maxCount},";
+        foreach ($this->buildUploadMaxCountPropLines($options) as $line) {
+            $lines[] = $line;
+        }
         $lines[] = '        disabled,';
         $lines[] = '      },';
         $lines[] = "      fieldName: '{$columnKey}',";
@@ -595,8 +596,7 @@ final class FormSchemaBuilder
      */
     protected function buildAttachmentFieldLines(string $columnKey, string $i18nPrefix, array $options): array
     {
-        $maxCount = (int) ($options['max_count'] ?? 1);
-        $formItemClass = $maxCount > 1
+        $formItemClass = $this->uploadUsesFullRow($options)
             ? 'col-span-full items-start'
             : 'items-start';
         $lines = [];
@@ -604,7 +604,9 @@ final class FormSchemaBuilder
         $lines[] = "      component: 'AttachmentField',";
         $lines[] = '      componentProps: {';
         $lines[] = '        customRequest: params.onAttachmentUpload,';
-        $lines[] = "        maxCount: {$maxCount},";
+        foreach ($this->buildUploadMaxCountPropLines($options) as $line) {
+            $lines[] = $line;
+        }
         $lines[] = '        disabled,';
         $lines[] = '      },';
         $lines[] = "      fieldName: '{$columnKey}',";
@@ -634,6 +636,31 @@ final class FormSchemaBuilder
         $lines[] = '    },';
 
         return $lines;
+    }
+
+    /**
+     * @param  array<string, mixed>  $options
+     */
+    protected function uploadUsesFullRow(array $options): bool
+    {
+        if (! array_key_exists('max_count', $options)) {
+            return true;
+        }
+
+        return (int) $options['max_count'] > 1;
+    }
+
+    /**
+     * @param  array<string, mixed>  $options
+     * @return list<string>
+     */
+    protected function buildUploadMaxCountPropLines(array $options): array
+    {
+        if (! array_key_exists('max_count', $options)) {
+            return [];
+        }
+
+        return ['        maxCount: '.(int) $options['max_count'].','];
     }
 
     /**

@@ -54,6 +54,24 @@ class FormFieldInferencerTest extends TestCase
     {
         $result = UploadFieldResolver::resolve('attachment', 'varchar(500)');
         $this->assertSame('AttachmentField', $result['component']);
+        $this->assertSame(1, $result['max_count']);
+    }
+
+    #[Test]
+    public function upload_field_resolver_plural_images_has_no_default_limit(): void
+    {
+        $result = UploadFieldResolver::resolve('images', 'text', '图片相册');
+
+        $this->assertSame('PictureUploadField', $result['component']);
+        $this->assertArrayNotHasKey('max_count', $result);
+    }
+
+    #[Test]
+    public function upload_field_resolver_reads_max_count_from_comment(): void
+    {
+        $result = UploadFieldResolver::resolve('images', 'text', '图片相册;最多:9');
+
+        $this->assertSame(9, $result['max_count']);
     }
 
     #[Test]

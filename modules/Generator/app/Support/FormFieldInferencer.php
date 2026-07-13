@@ -46,7 +46,7 @@ final class FormFieldInferencer
             ];
         }
 
-        $upload = UploadFieldResolver::resolve($name, $type);
+        $upload = UploadFieldResolver::resolve($name, $type, $comment);
         if ($upload !== null) {
             return [
                 'form_component' => $upload['component'],

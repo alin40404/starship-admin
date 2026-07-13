@@ -1,3 +1,5 @@
 {
-    "menu": []
+    "menu": {
+        "ProductsMgmt": "演示产品"
+    }
 }

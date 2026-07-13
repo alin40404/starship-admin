@@ -6,7 +6,7 @@ import { ref } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { Page } from '@vben/common-ui';
-import { Plus } from '@vben/icons';
+import { Plus, RotateCw } from '@vben/icons';
 
 import { Button, message } from 'ant-design-vue';
 
@@ -17,6 +17,7 @@ import {
 } from '#/api/generator';
 import { GENERATOR_PERMISSIONS } from '#/constants/generator-permissions';
 import { $t } from '#/locales';
+import { useAuthStore } from '#/store';
 
 import { useColumns } from './data';
 import GenerateModal from './modules/generate-modal.vue';
@@ -26,7 +27,9 @@ import PreviewDrawer from './modules/preview-drawer.vue';
 const importModalRef = ref<InstanceType<typeof ImportModal>>();
 const generateModalRef = ref<InstanceType<typeof GenerateModal>>();
 const previewDrawerRef = ref<InstanceType<typeof PreviewDrawer>>();
+const refreshAccessLoading = ref(false);
 
+const authStore = useAuthStore();
 const { hasAccessByCodes } = useAccess();
 
 const codegenAccess = {
@@ -36,6 +39,16 @@ const codegenAccess = {
 
 function onImport() {
   importModalRef.value?.open();
+}
+
+async function onRefreshAccess() {
+  refreshAccessLoading.value = true;
+  try {
+    await authStore.refreshAccess();
+    message.success($t('dev.codegen.refreshAccessDone'));
+  } finally {
+    refreshAccessLoading.value = false;
+  }
 }
 
 function onActionClick({ code, row }: OnActionClickParams<GeneratorTableRow>) {
@@ -90,6 +103,14 @@ const [Grid, gridApi] = useVbenVxeGrid<GeneratorTableRow>({
         >
           <Plus class="size-4" />
           {{ $t('dev.codegen.importTable') }}
+        </Button>
+        <Button
+          :loading="refreshAccessLoading"
+          class="ml-2"
+          @click="onRefreshAccess"
+        >
+          <RotateCw class="size-4" />
+          {{ $t('dev.codegen.refreshAccess') }}
         </Button>
       </template>
     </Grid>

@@ -8,6 +8,8 @@ export interface PictureUploadFieldProps {
   customRequest?: UploadProps['customRequest'];
   disabled?: boolean;
   fileList?: UploadFile[];
+  /** 多图相册强制流式换行布局 */
+  flowLayout?: boolean;
   handleChange?: (event: UploadChangeParam) => void;
   /** 不传则不限制张数 */
   maxCount?: number;
