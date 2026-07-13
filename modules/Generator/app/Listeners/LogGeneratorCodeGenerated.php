@@ -32,7 +32,7 @@ class LogGeneratorCodeGenerated
             'title' => '代码生成：'.$event->tableConfig->business_name,
             'content' => json_encode($payload, JSON_UNESCAPED_UNICODE),
             'method' => 'CLI',
-            'url' => 'artisan generator:crud',
+            'url' => 'artisan starship:generator:crud',
             'status_code' => 200,
             'ip' => '127.0.0.1',
             'user_agent' => 'generator-cli',

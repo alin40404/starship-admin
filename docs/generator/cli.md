@@ -1,15 +1,15 @@
 # Generator CLI 使用说明
 
-参考 FastAdmin / BuildAdmin 的命令行 CRUD 生成模式，Starship 提供以下 Artisan 命令。
+Starship Generator 提供以下 Artisan 命令，统一归属 **`starship:generator:*`** 命名空间，与 `starship:module:*`、`starship:plugin:*` 保持一致。
 
 ## 命令列表
 
 | 命令 | 说明 |
 |---|---|
-| `php artisan generator:tables` | 列出数据库物理表 |
-| `php artisan generator:inspect {table}` | 查看字段及智能推断配置 |
-| `php artisan generator:import {table}` | 导入表结构到生成器配置 |
-| `php artisan generator:crud {table}` | 生成或删除 CRUD 代码 |
+| `php artisan starship:generator:tables` | 列出数据库物理表 |
+| `php artisan starship:generator:inspect {table}` | 查看字段及智能推断配置 |
+| `php artisan starship:generator:import {table}` | 导入表结构到生成器配置 |
+| `php artisan starship:generator:crud {table}` | 生成或删除 CRUD 代码 |
 
 ## 快速开始
 
@@ -17,25 +17,25 @@
 cd backend
 
 # 1. 查看已有物理表
-php artisan generator:tables
+php artisan starship:generator:tables
 
 # 2. 查看字段推断（{table} 为物理表名，可省略 sa_ 前缀）
-php artisan generator:inspect {table}
+php artisan starship:generator:inspect {table}
 
 # 3. 预览将生成的文件
-php artisan generator:crud {table} --preview
+php artisan starship:generator:crud {table} --preview
 
 # 4. 执行生成
-php artisan generator:crud {table} --module=System --business=业务名称
+php artisan starship:generator:crud {table} --module=System --business=业务名称
 
 # 5. 若文件已存在，需要覆盖时
-php artisan generator:crud {table} --force
+php artisan starship:generator:crud {table} --force
 ```
 
 ## 常用参数
 
 ```bash
-php artisan generator:crud {table} \
+php artisan starship:generator:crud {table} \
   --module=System \
   --class=YourModel \
   --business=业务名称 \
@@ -49,20 +49,20 @@ php artisan generator:crud {table} \
   --skip-menu
 ```
 
-## 删除模式（参考 FastAdmin `--delete`）
+## 删除模式
 
 ```bash
 # 预览将删除的文件 / 菜单
-php artisan generator:crud {table} --module=System --delete --preview
+php artisan starship:generator:crud {table} --module=System --delete --preview
 
 # 删除生成的代码、菜单与 generator_tables 配置
-php artisan generator:crud {table} --module=System --delete
+php artisan starship:generator:crud {table} --module=System --delete
 
 # 同时删除物理表
-php artisan generator:crud {table} --module=System --delete --drop-table
+php artisan starship:generator:crud {table} --module=System --delete --drop-table
 
 # 跳过确认
-php artisan generator:crud {table} --module=System --delete --force
+php artisan starship:generator:crud {table} --module=System --delete --force
 ```
 
 删除范围：

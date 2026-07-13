@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 /**
- * 由 generator:crud 自动生成
+ * 由 starship:generator:crud 自动生成
  * 数据表：{{ $table_name }}
- * 请勿手工修改，重新执行 generator:crud 即可更新
+ * 请勿手工修改，重新执行 starship:generator:crud 即可更新
  */
 
 use Illuminate\Support\Facades\Route;

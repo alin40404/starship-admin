@@ -9,7 +9,7 @@ use Modules\Generator\App\Support\ModulePathResolver;
 
 class GeneratorCrudCommand extends Command
 {
-    protected $signature = 'generator:crud
+    protected $signature = 'starship:generator:crud
                             {table : 物理表名，如 sa_article 或 article}
                             {--module= : 目标模块，如 System}
                             {--class= : 类名覆盖}
@@ -22,10 +22,10 @@ class GeneratorCrudCommand extends Command
                             {--preview : 仅预览，不写入文件}
                             {--force : 覆盖已存在文件 / 删除时跳过生成标记校验}
                             {--skip-menu : 跳过菜单/权限同步}
-                            {--delete : 删除模式，移除 generator:crud 生成的代码}
+                            {--delete : 删除模式，移除 starship:generator:crud 生成的代码}
                             {--drop-table : 删除模式下同时 drop 物理表}';
 
-    protected $description = '根据数据表生成或删除 CRUD 代码（参考 fastadmin/buildadmin 命令行模式）';
+    protected $description = '根据数据表生成或删除 CRUD 代码';
 
     public function handle(CodegenService $codegenService, ModulePathResolver $modulePathResolver): int
     {

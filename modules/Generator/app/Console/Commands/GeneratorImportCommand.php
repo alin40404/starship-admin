@@ -9,7 +9,7 @@ use Modules\Generator\App\Support\ModulePathResolver;
 
 class GeneratorImportCommand extends Command
 {
-    protected $signature = 'generator:import
+    protected $signature = 'starship:generator:import
                             {table : 物理表名}
                             {--module= : 目标模块，如 System}
                             {--class= : 类名覆盖}

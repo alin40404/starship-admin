@@ -7,7 +7,7 @@ use Modules\Generator\App\Services\SchemaReader;
 
 class GeneratorTablesCommand extends Command
 {
-    protected $signature = 'generator:tables {--keyword=}';
+    protected $signature = 'starship:generator:tables {--keyword=}';
 
     protected $description = '列出数据库中可生成 CRUD 的物理表';
 

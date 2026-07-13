@@ -184,6 +184,7 @@ php artisan starship:plugin:uninstall sms-aliyun
 
 # 代码生成
 php artisan starship:generator:tables
+php artisan starship:generator:inspect {table}
 php artisan starship:generator:import {table}
 php artisan starship:generator:crud {table}
 ```

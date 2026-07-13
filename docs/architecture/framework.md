@@ -329,7 +329,7 @@ php artisan starship:plugin:discover
 php artisan starship:plugin:enable sms-aliyun
 
 # 5. 用 Generator 生成 CRUD
-php artisan starship:generate:crud erp_orders
+php artisan starship:generator:crud erp_orders
 ```
 
 ---
