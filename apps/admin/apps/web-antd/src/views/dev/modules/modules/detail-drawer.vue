@@ -49,7 +49,10 @@ const manifestText = computed(() =>
 );
 
 const canToggle = computed(
-  () => props.canUpdate && detail.value?.name.toLowerCase() !== 'system',
+  () =>
+    props.canUpdate &&
+    detail.value?.name.toLowerCase() !== 'system' &&
+    !isDevOnlyModuleUnavailable(detail.value),
 );
 
 async function show(row: DevModuleRow) {

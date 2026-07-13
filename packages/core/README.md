@@ -49,4 +49,14 @@ return [
 - 可依赖 `laravel/framework`
 - 不依赖 `Modules\System\*` 等业务模块
 
+## 测试
+
+Core 包测试独立于 `backend/`，使用 [Orchestra Testbench](https://github.com/orchestral/testbench)：
+
+```bash
+cd packages/core
+composer install
+composer test
+```
+
 详见 [docs/architecture/framework.md](../../docs/architecture/framework.md)。

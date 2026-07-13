@@ -28,7 +28,7 @@
 | Plugin 发现 / 安装 / 启用 / 禁用 | ✅ | CLI + System 管理端 |
 | Plugin 卸载 CLI | ✅ | `starship:plugin:uninstall` |
 | `starship:module:make` | ✅ | 模块脚手架 |
-| `starship:plugin:make` | ❌ | 插件脚手架 |
+| `starship:plugin:make` | ✅ | 插件脚手架 |
 | Generator 端到端 Demo | ✅ | `sa_demo_products` 表 + CLI 全流程已验收 |
 | Contract 体系 | ❌ | 如 `StorageInterface` |
 | Event / Hook | ❌ | 阶段三 |
@@ -57,7 +57,7 @@
 
 #### P1 — 文档与规范对齐
 
-- [ ] `starship:plugin:make` 脚手架
+- [x] `starship:plugin:make` 脚手架
 - [ ] 同步 `docs/deployment/Starship_Module_开发规范.md` 与真实目录（Providers 在 `app/Providers/`）
 - [ ] API / 权限码文档与 `module.json` 保持一致
 - [ ] System 插件管理页对接 uninstall
@@ -65,7 +65,8 @@
 #### P2 — 框架产品化前置
 
 - [ ] 最小 Contract（如 `StorageInterface`、`SmsInterface`）
-- [ ] 框架级 Feature Test（`php artisan test` 冒烟）
+- [ ] 框架级 Feature Test（`php artisan test` 冒烟，仅 backend 应用壳）
+- [ ] `packages/core` 包测试（`cd packages/core && composer test`）
 - [ ] 项目模板 `starship/admin`
 
 ### 阶段二：主题体系（底座稳定后，约 1～2 个月）
@@ -178,6 +179,7 @@ starship-admin/
 php artisan starship:module:make Erp
 
 # 插件
+php artisan starship:plugin:make SmsAliyun --type=sms
 php artisan starship:plugin:discover
 php artisan starship:plugin:install sms-aliyun
 php artisan starship:plugin:enable sms-aliyun

@@ -17,6 +17,18 @@
             "src/helpers.php"
         ]
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Starship\\Core\\Tests\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "orchestra/testbench": "^11.1",
+        "phpunit/phpunit": "^12.5.12"
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
     "minimum-stability": "stable",
     "prefer-stable": true
 }

@@ -131,6 +131,8 @@ my-admin/
 | `tests/Feature/ExampleTest.php` | 可改为 `/admin-api/ping` 冒烟测试 |
 | `tests/Unit/ExampleTest.php` | 可选 |
 
+> **Core / 模块测试不放 backend**：`packages/core/tests/`、`modules/*/tests/` 各自独立运行；backend 仅保留应用壳冒烟。
+
 ---
 
 ## 4. 建议删除或精简（🗑️ skeleton 不需要）

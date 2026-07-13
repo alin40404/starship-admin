@@ -9,6 +9,7 @@ use Starship\Core\Console\Commands\PluginDiscoverCommand;
 use Starship\Core\Console\Commands\PluginEnableCommand;
 use Starship\Core\Console\Commands\PluginInstallCommand;
 use Starship\Core\Console\Commands\PluginListCommand;
+use Starship\Core\Console\Commands\PluginMakeCommand;
 use Starship\Core\Console\Commands\PluginUninstallCommand;
 use Starship\Core\Module\ModuleManager;
 use Starship\Core\Module\ModuleValidator;
@@ -53,6 +54,7 @@ class CoreServiceProvider extends ServiceProvider
                 PluginEnableCommand::class,
                 PluginDisableCommand::class,
                 PluginUninstallCommand::class,
+                PluginMakeCommand::class,
             ]);
         }
     }
