@@ -86,6 +86,31 @@ php artisan starship:generator:crud {table} --module=system --delete --force
   - `tinyint` / `int` 等整型 → 启用/禁用（`0` / `1`），Switch + 批量改状态
   - `varchar` 等字符串 → 从字段注释解析枚举（如 `状态: normal,hidden`），Switch 使用对应字符串值；未写注释时默认 `normal` / `hidden`
   - 重新生成时会读取数据库 `information_schema` 注释，不依赖旧的 `generator_columns.validation_rules`
+- **表单组件推断（对标 FastAdmin）**：
+
+| 数据库/字段特征 | 表单组件 | 说明 |
+|---|---|---|
+| `enum`（≤4 项）/ 注释枚举 | `RadioGroup` | 如 `product_type` |
+| `enum`（>4 项）/ 字典 | `Select` | 注释 `字典:xxx` |
+| `set` / 注释含 `多选` | `CheckboxGroup` | 如 `flags` 字段 |
+| `tinyint(1)` / `is_*` | `Switch` | 布尔开关 |
+| `password` / `secret` | `InputPassword` | |
+| `rate` / `score` | `Rate` | 1–5 星 |
+| `time` | `TimePicker` | |
+| `icon` | `IconPicker` | |
+| 注释 `自动完成:` | `AutoComplete` | |
+| `keywords` 等 | `Mentions` | |
+| `image` / `avatar` / `cover` 等字段名 | `PictureUploadField` | 图片上传，表单自动注入 `uploadAttachment` |
+| `file` / `attachment` 等字段名 | `AttachmentField` | 附件选择/上传 |
+| `longtext` + `content`/`body` 等 | `RichEditor` | Tiptap 富文本 |
+| `*_id` 外键 | `ApiSelect` | 关联表分页拉取选项 |
+| `parent_id` | `ApiTreeSelect` | 同表树形父级（平铺选项兜底） |
+| `remark` / `text` | `Textarea` | 多行文本 |
+| `date` / `datetime` | `DatePicker` | 带 `valueFormat` / `showTime` |
+| 数值类型 | `InputNumber` | 数字输入 |
+| 默认 | `Input` | 单行文本 |
+
+重新 `import` 后会写入 `generator_columns.form_options`（选项、关联 API、上传类型等），再 `crud --force` 即可更新前端表单。
 - 冲突策略：默认跳过已存在文件，`--force` 覆盖
 - 菜单注册：写入 DB `component` 字段，不改 `menu.ts`
 - 路由注册：写入目标模块 `routes/admin-generator/{table_suffix}.php`，由 `routes/admin.php` 中的 loader 自动加载

@@ -13,6 +13,12 @@ import { formatDateTime } from '@vben/utils';
 
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { {{ $permissions_export_name }} } from '#/constants/{{ $entity_kebab }}-permissions';
+@if($has_dict_fields)
+import { DICT_TYPE_CODE, mapDictItemOptions } from '#/views/platform/dict/i18n';
+@endif
+@if($has_relation_fields)
+{!! $relation_imports_body !!}
+@endif
 
 export type {{ $model_class }}AccessChecker = {
   can: (code: string) => boolean;
@@ -87,7 +93,24 @@ export function useColumns(
   ] as CrudGridColumn<{{ $model_class }}Row>[];
 }
 
-export function build{{ $model_class }}FormSchema(readonly = false): VbenFormSchema[] {
+@if($has_relation_fields)
+{!! $relation_loaders_body !!}
+@endif
+
+export type {{ $model_class }}FormSchemaParams = {
+  readonly?: boolean;
+@if($has_upload_fields)
+  onImageChange?: (event: unknown) => void;
+  onImageUpload?: (options: unknown) => Promise<void> | void;
+  onAttachmentUpload?: (options: unknown) => Promise<void> | void;
+  onFileUpload?: (options: unknown) => Promise<void> | void;
+@endif
+};
+
+export function build{{ $model_class }}FormSchema(
+  params: {{ $model_class }}FormSchemaParams = {},
+): VbenFormSchema[] {
+  const readonly = params.readonly ?? false;
   const disabled = readonly;
   return [
 {!! $form_schema_body !!}

@@ -43,6 +43,7 @@ return new class extends Migration
             $table->boolean('is_form')->default(true);
             $table->string('form_component', 50)->default('Input')->comment('表单组件');
             $table->string('dict_code', 100)->nullable()->comment('字典编码');
+            $table->json('form_options')->nullable()->comment('表单扩展配置：options/relation/upload 等');
             $table->json('validation_rules')->nullable()->comment('验证规则');
             $table->integer('sort')->default(0);
             $table->timestamps();

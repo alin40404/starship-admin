@@ -1,3 +1,5 @@
 {
-    "menu": {}
+    "menu": {
+        "ProductsMgmt": "Products"
+    }
 }

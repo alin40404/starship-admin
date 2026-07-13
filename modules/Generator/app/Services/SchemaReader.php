@@ -80,6 +80,34 @@ class SchemaReader
         }, $rows);
     }
 
+    /**
+     * @return list<array{column: string, referenced_table: string, referenced_column: string}>
+     */
+    public function listForeignKeys(string $tableName): array
+    {
+        $tableName = $this->physicalTableName($tableName);
+        $database = $this->databaseName();
+        $rows = DB::select(
+            'SELECT COLUMN_NAME AS column_name,
+                    REFERENCED_TABLE_NAME AS referenced_table,
+                    REFERENCED_COLUMN_NAME AS referenced_column
+             FROM information_schema.KEY_COLUMN_USAGE
+             WHERE TABLE_SCHEMA = ?
+               AND TABLE_NAME = ?
+               AND REFERENCED_TABLE_NAME IS NOT NULL
+             ORDER BY ORDINAL_POSITION',
+            [$database, $tableName],
+        );
+
+        return array_map(static function (object $row): array {
+            return [
+                'column' => (string) $row->column_name,
+                'referenced_table' => (string) $row->referenced_table,
+                'referenced_column' => (string) $row->referenced_column,
+            ];
+        }, $rows);
+    }
+
     public function tableExists(string $tableName): bool
     {
         return DB::getSchemaBuilder()->hasTable($this->logicalTableName($tableName));

@@ -67,7 +67,7 @@ class TableConfigService
             );
 
             $columns = $this->schemaReader->listColumns($tableName);
-            $inferred = $this->columnInferencer->inferMany($columns);
+            $inferred = $this->columnInferencer->inferMany($columns, $tableName);
 
             GeneratorColumn::query()->where('generator_table_id', $config->id)->delete();
             foreach ($inferred as $column) {

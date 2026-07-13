@@ -22,8 +22,9 @@ class GeneratorInspectCommand extends Command
             return self::FAILURE;
         }
 
+        $tableName = $schemaReader->resolveTableName($table);
         $columns = $schemaReader->listColumns($table);
-        $inferred = $columnInferencer->inferMany($columns);
+        $inferred = $columnInferencer->inferMany($columns, $tableName);
 
         $this->info("表：{$table}");
         $comment = $schemaReader->tableComment($table);

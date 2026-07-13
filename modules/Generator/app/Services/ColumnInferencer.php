@@ -3,6 +3,7 @@
 namespace Modules\Generator\App\Services;
 
 use Modules\Generator\App\Support\ColumnLabelFormatter;
+use Modules\Generator\App\Support\FormFieldInferencer;
 use Modules\Generator\App\Support\StatusFieldResolver;
 
 class ColumnInferencer
@@ -17,6 +18,11 @@ class ColumnInferencer
         'deleted_at',
     ];
 
+    public function __construct(
+        protected SchemaReader $schemaReader,
+        protected FormFieldInferencer $formFieldInferencer,
+    ) {}
+
     /**
      * @param  list<array{
      *   name: string,
@@ -29,11 +35,12 @@ class ColumnInferencer
      * }>  $columns
      * @return list<array<string, mixed>>
      */
-    public function inferMany(array $columns): array
+    public function inferMany(array $columns, string $tableName = ''): array
     {
+        $foreignKeys = $tableName !== '' ? $this->schemaReader->listForeignKeys($tableName) : [];
         $result = [];
         foreach ($columns as $index => $column) {
-            $result[] = $this->infer($column, $index);
+            $result[] = $this->infer($column, $index, $tableName, $foreignKeys);
         }
 
         return $result;
@@ -49,9 +56,10 @@ class ColumnInferencer
      *   extra: string,
      *   comment: string|null
      * }  $column
+     * @param  list<array{column: string, referenced_table: string, referenced_column: string}>  $foreignKeys
      * @return array<string, mixed>
      */
-    public function infer(array $column, int $sort = 0): array
+    public function infer(array $column, int $sort = 0, string $tableName = '', array $foreignKeys = []): array
     {
         $name = $column['name'];
         $type = strtolower($column['type']);
@@ -59,29 +67,41 @@ class ColumnInferencer
         $isStatus = $name === 'status';
         $isJson = str_contains($type, 'json');
         $comment = $column['comment'] ?? null;
+        $baseRules = $this->inferValidationRules($name, $type, $column['nullable'], $comment);
+        $fieldMeta = $this->formFieldInferencer->infer($column, $tableName, $foreignKeys, $baseRules);
 
         return [
             'column_name' => $name,
             'column_type' => $column['type'],
             'column_comment' => ColumnLabelFormatter::fromComment($comment, $name),
-            'ts_type' => $this->inferTsType($type, $isStatus, $comment),
+            'ts_type' => $this->inferTsType($type, $isStatus, $comment, $fieldMeta['form_component']),
             'is_pk' => $isPk,
             'is_list' => ! $isPk && ! in_array($name, ['created_at', 'updated_at', 'deleted_at', 'created_by', 'updated_by'], true),
-            'is_search' => in_array($name, ['name', 'title', 'code', 'status'], true),
+            'is_search' => in_array($name, ['name', 'title', 'code', 'status'], true)
+                || in_array($fieldMeta['form_component'], ['Select', 'ApiSelect'], true),
             'is_form' => ! $isPk && ! in_array($name, ['created_at', 'updated_at', 'deleted_at', 'created_by', 'updated_by'], true) && ! $isJson,
-            'form_component' => $this->inferFormComponent($name, $type),
-            'dict_code' => null,
-            'validation_rules' => $this->inferValidationRules($name, $type, $column['nullable'], $comment),
+            'form_component' => $fieldMeta['form_component'],
+            'dict_code' => $fieldMeta['dict_code'],
+            'form_options' => $fieldMeta['form_options'],
+            'validation_rules' => $fieldMeta['validation_rules'],
             'sort' => $sort,
         ];
     }
 
-    protected function inferTsType(string $type, bool $isStatus, ?string $comment): string
+    protected function inferTsType(string $type, bool $isStatus, ?string $comment, string $formComponent): string
     {
         if ($isStatus) {
             $profile = StatusFieldResolver::fromColumnTypeAndComment($type, $comment);
 
             return $profile?->tsType() ?? 'number';
+        }
+
+        if (in_array($formComponent, ['ApiSelect', 'ApiTreeSelect', 'InputNumber'], true)) {
+            return 'number';
+        }
+
+        if ($formComponent === 'Switch') {
+            return 'number';
         }
 
         if (preg_match('/\b(int|tinyint|smallint|mediumint|bigint)\b/', $type)) {
@@ -97,27 +117,6 @@ class ColumnInferencer
         }
 
         return 'string';
-    }
-
-    protected function inferFormComponent(string $name, string $type): string
-    {
-        if ($name === 'status') {
-            return 'Switch';
-        }
-
-        if ($name === 'remark' || str_contains($type, 'text')) {
-            return 'Textarea';
-        }
-
-        if (preg_match('/\b(int|tinyint|smallint|mediumint|bigint|decimal|float|double)\b/', $type)) {
-            return 'InputNumber';
-        }
-
-        if (preg_match('/\b(date|datetime|timestamp)\b/', $type)) {
-            return 'DatePicker';
-        }
-
-        return 'Input';
     }
 
     /**

@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use Modules\Generator\App\Models\GeneratorRecord;
 use Modules\Generator\App\Models\GeneratorTable;
 use Modules\Generator\App\Support\ColumnLabelFormatter;
+use Modules\Generator\App\Support\FormSchemaBuilder;
 use Modules\Generator\App\Support\GeneratorNaming;
 use Modules\Generator\App\Support\StatusFieldProfile;
 use Modules\Generator\App\Support\StatusFieldResolver;
@@ -24,6 +25,7 @@ class CodegenService
         protected SchemaReader $schemaReader,
         protected LocaleJsonMerger $localeJsonMerger,
         protected ModuleLangEnsurer $moduleLangEnsurer,
+        protected FormSchemaBuilder $formSchemaBuilder,
     ) {}
 
     /**
@@ -369,6 +371,23 @@ class CodegenService
             ->values();
 
         $apiRoutePrefix = GeneratorNaming::defaultApiRoutePrefix($config->module_slug);
+        $uploadFieldNames = $this->formSchemaBuilder->uploadFieldNames($formColumns);
+        $multiValueFieldNames = $this->formSchemaBuilder->multiValueFieldNames($formColumns);
+        $hasUploadFields = $uploadFieldNames !== [];
+        $hasMultiValueFields = $multiValueFieldNames !== [];
+        $hasDictFields = $formColumns->contains(function ($column): bool {
+            $options = is_array($column->form_options ?? null) ? $column->form_options : [];
+
+            return ($options['kind'] ?? null) === 'dict' || ! empty($column->dict_code);
+        });
+        $hasRelationFields = $formColumns->contains(function ($column): bool {
+            $options = is_array($column->form_options ?? null) ? $column->form_options : [];
+
+            return ($options['kind'] ?? null) === 'relation';
+        });
+        $hasRichEditor = $formColumns->contains(fn ($column): bool => $column->form_component === 'RichEditor');
+        $relationImports = $this->formSchemaBuilder->buildRelationImportsBody($formColumns);
+        $relationLoaders = $this->formSchemaBuilder->buildRelationLoadersBody($formColumns);
 
         return [
             'config' => $config,
@@ -404,8 +423,17 @@ class CodegenService
             'form_rules_body' => $this->buildFormRulesBody($formColumns, $statusProfile),
             'allowed_sorts_body' => $this->buildAllowedSortsBody($listColumns),
             'search_filters_body' => $this->buildSearchFiltersBody($filteredSearchColumns),
-            'grid_form_schema_body' => $this->buildGridFormSchemaBody($searchColumns, $i18nPrefix, $statusProfile),
-            'form_schema_body' => $this->buildFormSchemaBody($formColumns, $i18nPrefix, $statusProfile),
+            'grid_form_schema_body' => $this->formSchemaBuilder->buildGridFormSchemaBody($searchColumns, $i18nPrefix, $statusProfile),
+            'form_schema_body' => $this->formSchemaBuilder->buildFormSchemaBody($formColumns, $i18nPrefix, $statusProfile),
+            'relation_imports_body' => $relationImports === [] ? '' : implode(PHP_EOL, $relationImports),
+            'relation_loaders_body' => $relationLoaders === [] ? '' : implode(PHP_EOL, $relationLoaders),
+            'has_upload_fields' => $hasUploadFields,
+            'has_multi_value_fields' => $hasMultiValueFields,
+            'has_dict_fields' => $hasDictFields,
+            'has_relation_fields' => $hasRelationFields,
+            'has_rich_editor' => $hasRichEditor,
+            'upload_field_names_ts' => implode(', ', array_map(static fn (string $field): string => "'{$field}'", $uploadFieldNames)),
+            'multi_value_field_names_ts' => implode(', ', array_map(static fn (string $field): string => "'{$field}'", $multiValueFieldNames)),
             'api_row_fields_body' => $this->buildApiRowFieldsBody($listColumns),
             'api_page_query_fields_body' => $this->buildApiPageQueryFieldsBody($searchColumns),
             'api_save_payload_fields_body' => $this->buildApiSavePayloadFieldsBody($formColumns),
@@ -669,9 +697,14 @@ class CodegenService
                 continue;
             }
 
-            if ($column->ts_type === 'number') {
+            $formOptions = is_array($column->form_options ?? null) ? $column->form_options : [];
+            $isExactSearch = in_array($column->form_component, ['Select', 'ApiSelect', 'ApiTreeSelect', 'Switch', 'RadioGroup'], true)
+                || ($formOptions['kind'] ?? null) === 'enum'
+                || ($formOptions['kind'] ?? null) === 'relation';
+
+            if ($column->ts_type === 'number' || $isExactSearch) {
                 $lines[] = "        if (\$request->filled('{$column->column_name}')) {";
-                $lines[] = "            \$query->where('{$column->column_name}', (int) \$request->get('{$column->column_name}'));";
+                $lines[] = "            \$query->where('{$column->column_name}', \$request->get('{$column->column_name}'));";
                 $lines[] = '        }';
             } else {
                 $lines[] = "        if (\$request->filled('{$column->column_name}')) {";
@@ -685,37 +718,12 @@ class CodegenService
 
     protected function buildGridFormSchemaBody($searchColumns, string $i18nPrefix, ?StatusFieldProfile $statusProfile): string
     {
-        $lines = [];
-        foreach ($searchColumns as $column) {
-            $columnKey = $column->column_name;
-            if ($column->column_name === 'status' && $statusProfile !== null) {
-                $lines[] = '    {';
-                $lines[] = "      component: 'Select',";
-                $lines[] = '      componentProps: {';
-                $lines[] = "        allowClear: true,";
-                $lines[] = "        class: 'w-full',";
-                $lines[] = "        options: [";
-                $lines[] = $this->buildStatusOptionLines($statusProfile, '        ');
-                $lines[] = '        ],';
-                $lines[] = "        placeholder: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
-                $lines[] = '      },';
-                $lines[] = "      fieldName: '{$columnKey}',";
-                $lines[] = "      label: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
-                $lines[] = '    },';
+        return $this->formSchemaBuilder->buildGridFormSchemaBody($searchColumns, $i18nPrefix, $statusProfile);
+    }
 
-                continue;
-            }
-
-            $component = $column->form_component === 'Switch' ? 'Select' : $column->form_component;
-            $lines[] = '    {';
-            $lines[] = "      component: '{$component}',";
-            $lines[] = "      componentProps: { class: 'w-full', placeholder: \$t('{$i18nPrefix}.columns.{$columnKey}') },";
-            $lines[] = "      fieldName: '{$columnKey}',";
-            $lines[] = "      label: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
-            $lines[] = '    },';
-        }
-
-        return implode(PHP_EOL, $lines);
+    protected function buildFormSchemaBody($formColumns, string $i18nPrefix, ?StatusFieldProfile $statusProfile): string
+    {
+        return $this->formSchemaBuilder->buildFormSchemaBody($formColumns, $i18nPrefix, $statusProfile);
     }
 
     protected function buildListColumnsBody(
@@ -761,6 +769,22 @@ class CodegenService
                 continue;
             }
 
+            $formOptions = is_array($column->form_options ?? null) ? $column->form_options : [];
+            if ($column->form_component === 'PictureUploadField' || ($formOptions['kind'] ?? null) === 'image') {
+                $lines[] = '    {';
+                $lines[] = "      align: 'center',";
+                $lines[] = "      field: '{$columnKey}',";
+                $lines[] = '      cellRender: {';
+                $lines[] = "        name: 'CellImage',";
+                $lines[] = '        props: { height: 40, preview: true, width: 40 },';
+                $lines[] = '      },';
+                $lines[] = "      title: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
+                $lines[] = '      width: 80,';
+                $lines[] = '    },';
+
+                continue;
+            }
+
             if (str_contains($column->column_type, 'datetime') || str_contains($column->column_type, 'timestamp')) {
                 $lines[] = '    {';
                 $lines[] = "      field: '{$column->column_name}',";
@@ -781,58 +805,6 @@ class CodegenService
             $lines[] = '      minWidth: 120,';
             $lines[] = '      sortable: true,';
             $lines[] = "      title: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
-            $lines[] = '    },';
-        }
-
-        return implode(PHP_EOL, $lines);
-    }
-
-    protected function buildFormSchemaBody($formColumns, string $i18nPrefix, ?StatusFieldProfile $statusProfile): string
-    {
-        $lines = [];
-        foreach ($formColumns as $column) {
-            $component = $column->form_component === 'Switch' ? 'RadioGroup' : $column->form_component;
-            $columnKey = $column->column_name;
-            $lines[] = '    {';
-            $lines[] = "      component: '{$component}',";
-            if ($column->column_name === 'status' && $statusProfile !== null) {
-                $lines[] = '      componentProps: {';
-                $lines[] = "        buttonStyle: 'solid',";
-                $lines[] = "        class: 'w-full',";
-                $lines[] = '        disabled,';
-                $lines[] = "        optionType: 'button',";
-                $lines[] = '        options: [';
-                $lines[] = $this->buildStatusOptionLines($statusProfile, '        ');
-                $lines[] = '        ],';
-                $lines[] = '      },';
-                $lines[] = "      defaultValue: {$statusProfile->jsLiteral($statusProfile->enabledValue)},";
-            } elseif ($component === 'RadioGroup') {
-                $lines[] = '      componentProps: {';
-                $lines[] = "        buttonStyle: 'solid',";
-                $lines[] = "        class: 'w-full',";
-                $lines[] = '        disabled,';
-                $lines[] = "        optionType: 'button',";
-                $lines[] = '        options: [';
-                $lines[] = "          { label: \$t('common.enabled'), value: 1 },";
-                $lines[] = "          { label: \$t('common.disabled'), value: 0 },";
-                $lines[] = '        ],';
-                $lines[] = '      },';
-                $lines[] = '      defaultValue: 1,';
-            } elseif ($component === 'InputNumber') {
-                $lines[] = "      componentProps: { class: 'w-full', disabled, min: 0 },";
-                $lines[] = '      defaultValue: 0,';
-            } elseif ($component === 'Textarea') {
-                $lines[] = "      componentProps: { class: 'w-full', disabled, rows: 2 },";
-                $lines[] = "      formItemClass: 'col-span-full w-full items-start',";
-            } else {
-                $lines[] = "      componentProps: { class: 'w-full', disabled },";
-            }
-            $lines[] = "      fieldName: '{$columnKey}',";
-            $lines[] = "      label: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
-            $required = in_array('required', $column->validation_rules ?? [], true);
-            if ($required) {
-                $lines[] = "      rules: readonly ? undefined : 'required',";
-            }
             $lines[] = '    },';
         }
 

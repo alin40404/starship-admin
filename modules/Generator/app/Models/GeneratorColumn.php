@@ -14,6 +14,7 @@ class GeneratorColumn extends Model
         'is_search' => 'boolean',
         'is_form' => 'boolean',
         'validation_rules' => 'array',
+        'form_options' => 'array',
     ];
 
     protected $guarded = [];

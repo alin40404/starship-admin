@@ -68,6 +68,9 @@ import { isEmpty } from '@vben/utils';
 
 import { message, Modal, notification, Drawer } from 'ant-design-vue';
 
+import type { TipTapProps } from '@vben/plugins/tiptap';
+import { VbenTiptap } from '@vben/plugins/tiptap';
+
 import type { AttachmentFieldProps } from '#/components/attachment-field';
 import { AttachmentField } from '#/components/attachment-field';
 import type { PictureUploadFieldProps } from '#/components/picture-upload-field';
@@ -607,6 +610,7 @@ export type ComponentType =
   | 'ApiTreeSelect'
   | 'AttachmentField'
   | 'PictureUploadField'
+  | 'RichEditor'
   | 'AutoComplete'
   | 'Cascader'
   | 'Checkbox'
@@ -642,6 +646,7 @@ export interface ComponentPropsMap {
   ApiTreeSelect: ApiComponentSharedProps & TreeSelectProps;
   AttachmentField: AttachmentFieldProps;
   PictureUploadField: PictureUploadFieldProps;
+  RichEditor: TipTapProps;
   AutoComplete: AutoCompleteProps;
   Cascader: CascaderProps;
   Checkbox: CheckboxProps;
@@ -726,6 +731,7 @@ async function initComponentAdapter() {
     RadioGroup,
     RangePicker,
     Rate,
+    RichEditor: withDefaultPlaceholder(VbenTiptap, 'input'),
     Select: withDefaultPlaceholder(Select, 'select'),
     Space,
     Switch,
