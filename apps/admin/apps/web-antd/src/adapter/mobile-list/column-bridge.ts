@@ -11,6 +11,9 @@ import { $t } from '@vben/locales';
 import { formatDate, formatDateTime, get, isFunction } from '@vben/utils';
 
 import { TABLE_CELL_EMPTY } from '#/constants/table';
+import {
+  extractFileNameFromUrl,
+} from '#/utils/list-cell';
 
 const VXE_STRING_FORMATTERS: Record<string, (value: unknown) => string> = {
   formatDate: (value) => {
@@ -70,7 +73,42 @@ function formatColumnCellValue<T>(column: CrudGridColumn<T>, row: T): string {
     const getSrc = column.cellRender?.attrs?.getSrc;
     if (isFunction(getSrc)) {
       const src = getSrc(row, column);
-      return src ? String(src) : TABLE_CELL_EMPTY;
+      if (!src) {
+        return TABLE_CELL_EMPTY;
+      }
+      const getExtraCount = column.cellRender?.attrs?.getExtraCount;
+      const extraCount = isFunction(getExtraCount)
+        ? Number(getExtraCount(row, column) ?? 0)
+        : 0;
+      return extraCount > 0 ? `${src} (+${extraCount})` : String(src);
+    }
+  }
+  if (column.cellRender?.name === 'CellIcon') {
+    const getIcon = column.cellRender?.attrs?.getIcon;
+    if (isFunction(getIcon)) {
+      const icon = getIcon(row, column);
+      return icon ? String(icon) : TABLE_CELL_EMPTY;
+    }
+  }
+  if (column.cellRender?.name === 'CellFile') {
+    const getUrl = column.cellRender?.attrs?.getUrl;
+    if (isFunction(getUrl)) {
+      const url = getUrl(row, column);
+      if (!url) {
+        return TABLE_CELL_EMPTY;
+      }
+      const getFileName = column.cellRender?.attrs?.getFileName;
+      const fileName = isFunction(getFileName)
+        ? getFileName(row, column)
+        : extractFileNameFromUrl(String(url));
+      const getExtraCount = column.cellRender?.attrs?.getExtraCount;
+      const extraCount = isFunction(getExtraCount)
+        ? Number(getExtraCount(row, column) ?? 0)
+        : 0;
+      if (extraCount > 0) {
+        return `${fileName || String(url)} (+${extraCount})`;
+      }
+      return fileName || String(url);
     }
   }
   if (column.cellRender?.name === 'CellSwitch' && column.field) {
@@ -116,6 +154,7 @@ export function buildMobileFieldsFromColumns<T>(
     .map((column) => {
       const isImage = column.cellRender?.name === 'CellImage';
       const isSwitch = column.cellRender?.name === 'CellSwitch';
+      const isIcon = column.cellRender?.name === 'CellIcon';
 
       return {
         label: column.title ?? column.field ?? '',

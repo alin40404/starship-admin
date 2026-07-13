@@ -19,6 +19,7 @@
         "cover": "封面图",
         "images": "图片相册",
         "attachment": "附件",
+        "attachments": "附件(多个)",
         "brochure": "宣传册文件",
         "summary": "简介",
         "content": "详情内容",

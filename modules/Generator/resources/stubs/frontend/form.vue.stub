@@ -33,6 +33,9 @@ const singlePictureUploadFieldNames = [{{ $single_picture_upload_field_names_ts 
 const multiPictureUploadFieldNames = [{{ $multi_picture_upload_field_names_ts }}] as const;
 @endif
 @endif
+@if($has_multi_attachment_fields)
+const multiAttachmentFieldNames = [{{ $multi_attachment_field_names_ts }}] as const;
+@endif
 @if($has_multi_value_fields)
 const multiValueFieldNames = [{{ $multi_value_field_names_ts }}] as const;
 @endif
@@ -180,6 +183,14 @@ async function handleConfirm(popupApi: PopupApi) {
   }
 @endif
 @endif
+@if($has_multi_attachment_fields)
+  for (const fieldName of multiAttachmentFieldNames) {
+    const current = values[fieldName];
+    if (Array.isArray(current)) {
+      values[fieldName] = current.join(',');
+    }
+  }
+@endif
 @if($has_multi_value_fields)
   for (const fieldName of multiValueFieldNames) {
     const current = values[fieldName];
@@ -214,7 +225,7 @@ async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
   readonly.value = false;
   formApi.setState({ schema: buildSchema() });
   if (id) {
-@if($has_picture_upload_fields || $has_multi_value_fields)
+@if($has_picture_upload_fields || $has_multi_attachment_fields || $has_multi_value_fields)
     const row = { ...(data as {{ $model_class }}Row) } as Record<string, unknown>;
 @endif
 @if($has_picture_upload_fields)
@@ -233,6 +244,17 @@ async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
     }
 @endif
 @endif
+@if($has_multi_attachment_fields)
+    for (const fieldName of multiAttachmentFieldNames) {
+      const value = row[fieldName];
+      if (typeof value === 'string' && value) {
+        row[fieldName] = value
+          .split(',')
+          .map((item) => item.trim())
+          .filter(Boolean);
+      }
+    }
+@endif
 @if($has_multi_value_fields)
     for (const fieldName of multiValueFieldNames) {
       const value = row[fieldName];
@@ -241,7 +263,7 @@ async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
       }
     }
 @endif
-@if($has_picture_upload_fields || $has_multi_value_fields)
+@if($has_picture_upload_fields || $has_multi_attachment_fields || $has_multi_value_fields)
     formApi.setValues(row as {{ $model_class }}Row);
 @else
     formApi.setValues(data as {{ $model_class }}Row);

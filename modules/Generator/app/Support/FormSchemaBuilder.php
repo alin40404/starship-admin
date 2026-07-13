@@ -473,6 +473,29 @@ final class FormSchemaBuilder
     }
 
     /**
+     * 多附件（无 max_count 或 max_count>1）字段，提交时逗号拼接多个 URL。
+     *
+     * @return list<string>
+     */
+    public function multiAttachmentFieldNames($formColumns): array
+    {
+        $names = [];
+        foreach ($formColumns as $column) {
+            $options = is_array($column->form_options ?? null) ? $column->form_options : [];
+            if (($options['kind'] ?? null) !== 'attachment'
+                && ($options['kind'] ?? null) !== 'file'
+                && ! in_array($column->form_component, ['AttachmentField', 'Upload'], true)) {
+                continue;
+            }
+            if (! array_key_exists('max_count', $options) || (int) $options['max_count'] > 1) {
+                $names[] = $column->column_name;
+            }
+        }
+
+        return $names;
+    }
+
+    /**
      * @return list<string>
      */
     public function multiValueFieldNames($formColumns): array

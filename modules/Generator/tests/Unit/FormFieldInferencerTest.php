@@ -58,6 +58,15 @@ class FormFieldInferencerTest extends TestCase
     }
 
     #[Test]
+    public function upload_field_resolver_plural_attachments_has_no_default_limit(): void
+    {
+        $result = UploadFieldResolver::resolve('attachments', 'text', '附件(多个)');
+
+        $this->assertSame('AttachmentField', $result['component']);
+        $this->assertArrayNotHasKey('max_count', $result);
+    }
+
+    #[Test]
     public function upload_field_resolver_plural_images_has_no_default_limit(): void
     {
         $result = UploadFieldResolver::resolve('images', 'text', '图片相册');

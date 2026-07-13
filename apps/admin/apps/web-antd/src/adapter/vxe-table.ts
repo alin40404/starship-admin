@@ -16,6 +16,12 @@ import { get, isFunction, isString } from '@vben/utils';
 import { objectOmit } from '@vueuse/core';
 import { Button, Image, Popconfirm, Switch, Tag } from 'ant-design-vue';
 
+import {
+  extractFileNameFromUrl,
+  isImageUrl,
+  truncateFileName,
+} from '#/components/attachment-field/utils';
+import { csvExtraCount, firstCsvValue } from '#/utils/list-cell';
 import { getAdminPageSizeSync } from '#/utils/admin-runtime-config';
 
 import { useVbenForm } from './form';
@@ -66,6 +72,10 @@ setupVbenVxeTable({
           typeof attrs?.getSrc === 'function'
             ? attrs.getSrc(row, column)
             : row[column.field];
+        const extraCount =
+          typeof attrs?.getExtraCount === 'function'
+            ? Number(attrs.getExtraCount(row, column) ?? 0)
+            : 0;
         const width = props?.width ?? 40;
         const height = props?.height ?? 40;
         const fileIcon =
@@ -76,35 +86,178 @@ setupVbenVxeTable({
           typeof attrs?.getFileIconClass === 'function'
             ? attrs.getFileIconClass(row, column)
             : 'text-muted-foreground';
+        const imageNode = src
+          ? h(Image, {
+              ...props,
+              height,
+              preview: props?.preview,
+              src,
+              style: {
+                maxHeight: '100%',
+                maxWidth: '100%',
+                objectFit: 'contain',
+                ...(typeof props?.style === 'object' ? props.style : {}),
+              },
+              width,
+            })
+          : fileIcon
+            ? h(IconifyIcon, {
+                class: `size-5 ${fileIconClass}`,
+                icon: fileIcon,
+              })
+            : undefined;
+
+        if (!imageNode) {
+          return h('span', { class: 'text-muted-foreground' }, '--');
+        }
+
         return h(
           'div',
           {
-            class: 'inline-flex items-center justify-center',
-            style: {
-              height: `${height}px`,
-              width: `${width}px`,
-            },
+            class: 'inline-flex items-center gap-1',
           },
-          src
-            ? h(Image, {
-                ...props,
+          [
+            h(
+              'div',
+              {
+                class: 'inline-flex shrink-0 items-center justify-center',
+                style: {
+                  height: `${height}px`,
+                  width: `${width}px`,
+                },
+              },
+              imageNode,
+            ),
+            extraCount > 0
+              ? h(
+                  'span',
+                  {
+                    class: 'whitespace-nowrap text-xs',
+                    style: { color: 'var(--ant-blue-6, #1677ff)' },
+                  },
+                  `+${extraCount}`,
+                )
+              : null,
+          ],
+        );
+      },
+    });
+
+    vxeUI.renderer.add('CellIcon', {
+      renderTableDefault(renderOpts, params) {
+        const { attrs, props } = renderOpts;
+        const { column, row } = params;
+        const icon =
+          typeof attrs?.getIcon === 'function'
+            ? attrs.getIcon(row, column)
+            : row[column.field];
+        if (!icon) {
+          return h('span', { class: 'text-muted-foreground' }, '--');
+        }
+        return h(
+          'div',
+          { class: 'inline-flex items-center justify-center' },
+          h(IconifyIcon, {
+            class: props?.class ?? 'size-5',
+            icon: String(icon),
+          }),
+        );
+      },
+    });
+
+    vxeUI.renderer.add('CellFile', {
+      renderTableDefault(renderOpts, params) {
+        const { attrs, props } = renderOpts;
+        const { column, row } = params;
+        const rawValue =
+          typeof attrs?.getUrl === 'function'
+            ? attrs.getUrl(row, column)
+            : row[column.field];
+        if (!rawValue) {
+          return h('span', { class: 'text-muted-foreground' }, '--');
+        }
+        const rawText = String(rawValue);
+        const urlText = firstCsvValue(rawText);
+        if (!urlText) {
+          return h('span', { class: 'text-muted-foreground' }, '--');
+        }
+        const extraCount =
+          typeof attrs?.getExtraCount === 'function'
+            ? Number(attrs.getExtraCount(row, column) ?? 0)
+            : csvExtraCount(rawText);
+        const fileName =
+          typeof attrs?.getFileName === 'function'
+            ? attrs.getFileName(row, column)
+            : extractFileNameFromUrl(urlText);
+        const displayName = truncateFileName(
+          fileName,
+          props?.maxFileNameLength ?? 20,
+        );
+        const width = props?.width ?? 40;
+        const height = props?.height ?? 40;
+
+        const fileNode = isImageUrl(urlText)
+          ? h(
+              'div',
+              {
+                class: 'inline-flex shrink-0 items-center justify-center',
+                style: {
+                  height: `${height}px`,
+                  width: `${width}px`,
+                },
+              },
+              h(Image, {
                 height,
-                preview: props?.preview,
-                src,
+                preview: props?.preview ?? true,
+                src: urlText,
                 style: {
                   maxHeight: '100%',
                   maxWidth: '100%',
                   objectFit: 'contain',
-                  ...(typeof props?.style === 'object' ? props.style : {}),
                 },
                 width,
-              })
-            : fileIcon
-              ? h(IconifyIcon, {
-                  class: `size-5 ${fileIconClass}`,
-                  icon: fileIcon,
-                })
-              : undefined,
+              }),
+            )
+          : h(
+              'a',
+              {
+                class:
+                  'inline-flex max-w-full items-center gap-1 text-primary hover:underline',
+                href: urlText,
+                rel: 'noopener noreferrer',
+                target: '_blank',
+                title: fileName,
+                onClick: (event: MouseEvent) => event.stopPropagation(),
+              },
+              [
+                h(IconifyIcon, {
+                  class: 'size-4 shrink-0',
+                  icon: props?.fileIcon ?? 'mdi:paperclip',
+                }),
+                h('span', { class: 'truncate' }, displayName),
+              ],
+            );
+
+        if (extraCount <= 0) {
+          return fileNode;
+        }
+
+        return h(
+          'div',
+          {
+            class: 'inline-flex max-w-full items-center gap-1',
+          },
+          [
+            fileNode,
+            h(
+              'span',
+              {
+                class: 'shrink-0 whitespace-nowrap text-xs',
+                style: { color: 'var(--ant-blue-6, #1677ff)' },
+              },
+              `+${extraCount}`,
+            ),
+          ],
         );
       },
     });

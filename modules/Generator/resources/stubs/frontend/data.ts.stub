@@ -13,6 +13,14 @@ import { formatDateTime } from '@vben/utils';
 
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { {{ $permissions_export_name }} } from '#/constants/{{ $entity_kebab }}-permissions';
+@if($has_list_cell_helpers)
+import {
+  csvExtraCount,
+  extractFileNameFromUrl,
+  firstCsvValue,
+  stripHtmlSummary,
+} from '#/utils/list-cell';
+@endif
 @if($has_dict_fields)
 import { DICT_TYPE_CODE, mapDictItemOptions } from '#/views/platform/dict/i18n';
 @endif

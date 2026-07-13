@@ -375,9 +375,11 @@ class CodegenService
         $singlePictureUploadFieldNames = $this->formSchemaBuilder->singlePictureUploadFieldNames($formColumns);
         $multiPictureUploadFieldNames = $this->formSchemaBuilder->multiPictureUploadFieldNames($formColumns);
         $attachmentFieldNames = $this->formSchemaBuilder->attachmentFieldNames($formColumns);
+        $multiAttachmentFieldNames = $this->formSchemaBuilder->multiAttachmentFieldNames($formColumns);
         $multiValueFieldNames = $this->formSchemaBuilder->multiValueFieldNames($formColumns);
         $hasPictureUploadFields = $pictureUploadFieldNames !== [];
         $hasAttachmentFields = $attachmentFieldNames !== [];
+        $hasMultiAttachmentFields = $multiAttachmentFieldNames !== [];
         $hasUploadFields = $hasPictureUploadFields || $hasAttachmentFields;
         $hasMultiValueFields = $multiValueFieldNames !== [];
         $hasDictFields = $formColumns->contains(function ($column): bool {
@@ -391,6 +393,15 @@ class CodegenService
             return ($options['kind'] ?? null) === 'relation';
         });
         $hasRichEditor = $formColumns->contains(fn ($column): bool => $column->form_component === 'RichEditor');
+        $hasListCellHelpers = $listColumns->contains(function ($column): bool {
+            $formOptions = is_array($column->form_options ?? null) ? $column->form_options : [];
+            if ($column->form_component === 'PictureUploadField' || ($formOptions['kind'] ?? null) === 'image') {
+                return ! array_key_exists('max_count', $formOptions);
+            }
+
+            return in_array($column->form_component, ['AttachmentField', 'RichEditor', 'IconPicker'], true)
+                || in_array($formOptions['kind'] ?? null, ['attachment', 'file'], true);
+        });
         $relationImports = $this->formSchemaBuilder->buildRelationImportsBody($formColumns);
         $relationLoaders = $this->formSchemaBuilder->buildRelationLoadersBody($formColumns);
 
@@ -435,10 +446,13 @@ class CodegenService
             'has_upload_fields' => $hasUploadFields,
             'has_picture_upload_fields' => $hasPictureUploadFields,
             'has_attachment_fields' => $hasAttachmentFields,
+            'has_multi_attachment_fields' => $hasMultiAttachmentFields,
+            'multi_attachment_field_names_ts' => implode(', ', array_map(static fn (string $field): string => "'{$field}'", $multiAttachmentFieldNames)),
             'has_multi_value_fields' => $hasMultiValueFields,
             'has_dict_fields' => $hasDictFields,
             'has_relation_fields' => $hasRelationFields,
             'has_rich_editor' => $hasRichEditor,
+            'has_list_cell_helpers' => $hasListCellHelpers,
             'picture_upload_field_names_ts' => implode(', ', array_map(static fn (string $field): string => "'{$field}'", $pictureUploadFieldNames)),
             'single_picture_upload_field_names_ts' => implode(', ', array_map(static fn (string $field): string => "'{$field}'", $singlePictureUploadFieldNames)),
             'multi_picture_upload_field_names_ts' => implode(', ', array_map(static fn (string $field): string => "'{$field}'", $multiPictureUploadFieldNames)),
@@ -781,15 +795,73 @@ class CodegenService
 
             $formOptions = is_array($column->form_options ?? null) ? $column->form_options : [];
             if ($column->form_component === 'PictureUploadField' || ($formOptions['kind'] ?? null) === 'image') {
+                $isMultiImage = ! array_key_exists('max_count', $formOptions);
                 $lines[] = '    {';
                 $lines[] = "      align: 'center',";
                 $lines[] = "      field: '{$columnKey}',";
                 $lines[] = '      cellRender: {';
+                if ($isMultiImage) {
+                    $lines[] = '        attrs: {';
+                    $lines[] = "          getExtraCount: (row: {$modelClass}Row) => csvExtraCount(row.{$columnKey}),";
+                    $lines[] = "          getSrc: (row: {$modelClass}Row) => firstCsvValue(row.{$columnKey}),";
+                    $lines[] = '        },';
+                }
                 $lines[] = "        name: 'CellImage',";
                 $lines[] = '        props: { height: 40, preview: true, width: 40 },';
                 $lines[] = '      },';
                 $lines[] = "      title: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
-                $lines[] = '      width: 80,';
+                $lines[] = '      width: '.($isMultiImage ? 100 : 80).',';
+                $lines[] = '    },';
+
+                continue;
+            }
+
+            if ($column->form_component === 'AttachmentField'
+                || in_array($formOptions['kind'] ?? null, ['attachment', 'file'], true)) {
+                $lines[] = '    {';
+                $lines[] = "      align: 'left',";
+                $lines[] = "      field: '{$columnKey}',";
+                $lines[] = '      cellRender: {';
+                $lines[] = '        attrs: {';
+                $lines[] = "          getExtraCount: (row: {$modelClass}Row) => csvExtraCount(row.{$columnKey}),";
+                $lines[] = "          getFileName: (row: {$modelClass}Row) => extractFileNameFromUrl(firstCsvValue(row.{$columnKey} ?? '')),";
+                $lines[] = "          getUrl: (row: {$modelClass}Row) => firstCsvValue(row.{$columnKey}),";
+                $lines[] = '        },';
+                $lines[] = "        name: 'CellFile',";
+                $lines[] = '        props: { maxFileNameLength: 24, preview: true },';
+                $lines[] = '      },';
+                $lines[] = '      minWidth: 140,';
+                $lines[] = "      title: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
+                $lines[] = '    },';
+
+                continue;
+            }
+
+            if ($column->form_component === 'RichEditor') {
+                $lines[] = '    {';
+                $lines[] = "      align: 'left',";
+                $lines[] = "      field: '{$columnKey}',";
+                $lines[] = '      formatter: ({ cellValue }) =>';
+                $lines[] = '        stripHtmlSummary(cellValue, 48) || TABLE_CELL_EMPTY,';
+                $lines[] = '      minWidth: 160,';
+                $lines[] = "      title: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
+                $lines[] = '    },';
+
+                continue;
+            }
+
+            if ($column->form_component === 'IconPicker') {
+                $lines[] = '    {';
+                $lines[] = "      align: 'center',";
+                $lines[] = "      field: '{$columnKey}',";
+                $lines[] = '      cellRender: {';
+                $lines[] = '        attrs: {';
+                $lines[] = "          getIcon: (row: {$modelClass}Row) => row.{$columnKey},";
+                $lines[] = '        },';
+                $lines[] = "        name: 'CellIcon',";
+                $lines[] = '      },';
+                $lines[] = "      title: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
+                $lines[] = '      width: 72,';
                 $lines[] = '    },';
 
                 continue;

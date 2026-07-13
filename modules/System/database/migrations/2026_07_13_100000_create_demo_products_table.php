@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('cover', 500)->nullable()->comment('封面图');
             $table->text('images')->nullable()->comment('图片相册');
             $table->string('attachment', 500)->nullable()->comment('附件');
+            $table->text('attachments')->nullable()->comment('附件(多个)');
             $table->string('brochure', 500)->nullable()->comment('宣传册文件');
             $table->string('summary', 255)->nullable()->comment('简介');
             $table->longText('content')->nullable()->comment('详情内容');

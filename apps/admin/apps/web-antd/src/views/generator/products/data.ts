@@ -13,6 +13,13 @@ import { formatDateTime } from '@vben/utils';
 
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { GENERATOR_PRODUCTS_PERMISSIONS } from '#/constants/products-permissions';
+import {
+  csvExtraCount,
+  extractFileNameFromUrl,
+  firstCsvValue,
+  stripHtmlSummary,
+} from '#/utils/list-cell';
+
 import { DICT_TYPE_CODE, mapDictItemOptions } from '#/views/platform/dict/i18n';
 
 import { fetchCategoryOptionsTree, mapCategoryForTreeSelect } from '#/api/system/category';
@@ -200,26 +207,59 @@ export function useColumns(
       align: 'center',
       field: 'images',
       cellRender: {
+        attrs: {
+          getExtraCount: (row: ProductsRow) => csvExtraCount(row.images),
+          getSrc: (row: ProductsRow) => firstCsvValue(row.images),
+        },
         name: 'CellImage',
         props: { height: 40, preview: true, width: 40 },
       },
       title: $t('generator.products.columns.images'),
-      width: 80,
+      width: 100,
     },
     {
       align: 'left',
       field: 'attachment',
-      formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
-      minWidth: 120,
-      sortable: true,
+      cellRender: {
+        attrs: {
+          getExtraCount: (row: ProductsRow) => csvExtraCount(row.attachment),
+          getFileName: (row: ProductsRow) => extractFileNameFromUrl(firstCsvValue(row.attachment ?? '')),
+          getUrl: (row: ProductsRow) => firstCsvValue(row.attachment),
+        },
+        name: 'CellFile',
+        props: { maxFileNameLength: 24, preview: true },
+      },
+      minWidth: 140,
       title: $t('generator.products.columns.attachment'),
     },
     {
       align: 'left',
+      field: 'attachments',
+      cellRender: {
+        attrs: {
+          getExtraCount: (row: ProductsRow) => csvExtraCount(row.attachments),
+          getFileName: (row: ProductsRow) => extractFileNameFromUrl(firstCsvValue(row.attachments ?? '')),
+          getUrl: (row: ProductsRow) => firstCsvValue(row.attachments),
+        },
+        name: 'CellFile',
+        props: { maxFileNameLength: 24, preview: true },
+      },
+      minWidth: 140,
+      title: $t('generator.products.columns.attachments'),
+    },
+    {
+      align: 'left',
       field: 'brochure',
-      formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
-      minWidth: 120,
-      sortable: true,
+      cellRender: {
+        attrs: {
+          getExtraCount: (row: ProductsRow) => csvExtraCount(row.brochure),
+          getFileName: (row: ProductsRow) => extractFileNameFromUrl(firstCsvValue(row.brochure ?? '')),
+          getUrl: (row: ProductsRow) => firstCsvValue(row.brochure),
+        },
+        name: 'CellFile',
+        props: { maxFileNameLength: 24, preview: true },
+      },
+      minWidth: 140,
       title: $t('generator.products.columns.brochure'),
     },
     {
@@ -233,18 +273,22 @@ export function useColumns(
     {
       align: 'left',
       field: 'content',
-      formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
-      minWidth: 120,
-      sortable: true,
+      formatter: ({ cellValue }) =>
+        stripHtmlSummary(cellValue, 48) || TABLE_CELL_EMPTY,
+      minWidth: 160,
       title: $t('generator.products.columns.content'),
     },
     {
-      align: 'left',
+      align: 'center',
       field: 'icon',
-      formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
-      minWidth: 120,
-      sortable: true,
+      cellRender: {
+        attrs: {
+          getIcon: (row: ProductsRow) => row.icon,
+        },
+        name: 'CellIcon',
+      },
       title: $t('generator.products.columns.icon'),
+      width: 72,
     },
     {
       align: 'left',
@@ -542,6 +586,16 @@ export function buildProductsFormSchema(
       fieldName: 'attachment',
       formItemClass: 'attachment-form-item items-start',
       label: $t('generator.products.columns.attachment'),
+    },
+    {
+      component: 'AttachmentField',
+      componentProps: {
+        multiple: true,
+        disabled,
+      },
+      fieldName: 'attachments',
+      formItemClass: 'attachment-form-item col-span-full w-full items-start',
+      label: $t('generator.products.columns.attachments'),
     },
     {
       component: 'AttachmentField',

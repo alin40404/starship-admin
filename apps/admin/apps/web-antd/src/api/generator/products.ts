@@ -18,6 +18,7 @@ export interface ProductsRow {
   cover: string;
   images: string;
   attachment: string;
+  attachments: string;
   brochure: string;
   summary: string;
   content: string;
@@ -63,6 +64,7 @@ export interface ProductsSavePayload {
   cover?: string;
   images?: string;
   attachment?: string;
+  attachments?: string;
   brochure?: string;
   summary?: string;
   content?: string;
