@@ -37,13 +37,17 @@ class CoreServiceProvider extends ServiceProvider
         $this->app->singleton(PluginLifecycle::class);
 
         $this->registerModules();
-        $this->registerEnabledPlugins();
     }
 
     public function boot(): void
     {
         $this->loadTranslationsFrom(__DIR__.'/../../resources/lang', 'core');
         $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
+
+        // 须在 System 等模块 boot 完成（admin.permission 中间件别名）后再加载插件路由
+        $this->app->booted(function (): void {
+            $this->registerEnabledPlugins();
+        });
 
         if ($this->app->runningInConsole()) {
             $this->commands([

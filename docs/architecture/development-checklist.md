@@ -35,6 +35,7 @@
 | ThemeManager | ❌ | 阶段二 |
 | 脚手架 `starship/admin` | ❌ | `composer create-project` 模板 |
 | 框架 Feature Test | ❌ | 启动、模块、插件冒烟 |
+| `packages/core` 包测试 | ✅ | `cd packages/core && composer test` |
 
 图例：✅ 已完成 · 🚧 进行中 · ⚠️ 部分可用 · ❌ 未开始
 
@@ -50,7 +51,7 @@
 
 - [x] Monitor 合并进 System
 - [x] `starship:plugin:uninstall` CLI
-- [ ] SmsAliyun 插件完整闭环（发现 → 安装 → 启用 → 配置 → 禁用 → 卸载）
+- [x] SmsAliyun 插件完整闭环（发现 → 安装 → 启用 → 配置 → 禁用 → 卸载）
 - [x] Module `require.modules` 启动依赖校验
 - [x] `starship:module:make {Name}` 脚手架
 - [x] Generator 一张表端到端 Demo 验收（`sa_demo_products`）
@@ -60,13 +61,13 @@
 - [x] `starship:plugin:make` 脚手架
 - [ ] 同步 `docs/deployment/Starship_Module_开发规范.md` 与真实目录（Providers 在 `app/Providers/`）
 - [ ] API / 权限码文档与 `module.json` 保持一致
-- [ ] System 插件管理页对接 uninstall
+- [x] System 插件管理页对接 uninstall
 
 #### P2 — 框架产品化前置
 
 - [ ] 最小 Contract（如 `StorageInterface`、`SmsInterface`）
 - [ ] 框架级 Feature Test（`php artisan test` 冒烟，仅 backend 应用壳）
-- [ ] `packages/core` 包测试（`cd packages/core && composer test`）
+- [x] `packages/core` 包测试（`cd packages/core && composer test`）
 - [ ] 项目模板 `starship/admin`
 
 ### 阶段二：主题体系（底座稳定后，约 1～2 个月）
@@ -152,6 +153,19 @@ Composer 包名：`starship/shop`（需在 `backend/composer.json` 添加 path �
 5. 管理端访问 `/org/products`（超管 `admin` 登录后可见）
 
 > 修复：`SchemaReader::physicalTableName()` 解决 DB 前缀下 `inspect`/字段推断为空的问题。
+
+### 4.5 SmsAliyun 插件闭环
+
+验收路径（CLI + 自动化测试）：
+
+1. `php artisan starship:plugin:discover`
+2. `php artisan starship:plugin:install sms-aliyun`
+3. `php artisan starship:plugin:enable sms-aliyun`（重启 PHP 后路由生效）
+4. 管理端 `/dev/plugins` 配置并测试发送
+5. `php artisan starship:plugin:disable sms-aliyun`
+6. `php artisan starship:plugin:uninstall sms-aliyun`
+
+自动化：`cd packages/core && composer test`（`SmsAliyunPluginLifecycleTest`）。
 
 ---
 
