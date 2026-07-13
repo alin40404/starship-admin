@@ -17,7 +17,7 @@ class PluginEnableCommand extends PluginActionCommand
         try {
             $slug = $this->resolveSlug($pluginManager);
             $pluginLifecycle->enable($slug);
-            $this->info("插件 {$slug} 已启用，请重启后端服务后生效");
+            $this->info("插件 {$slug} 已启用");
 
             return self::SUCCESS;
         } catch (InvalidArgumentException $exception) {
