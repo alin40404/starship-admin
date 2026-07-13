@@ -26,7 +26,8 @@ const { isMobile } = usePreferences();
 const editingId = ref<number | null>(null);
 const readonly = ref(false);
 
-const pictureUploadFieldNames = ['cover', 'images'] as const;
+const singlePictureUploadFieldNames = ['cover'] as const;
+const multiPictureUploadFieldNames = ['images'] as const;
 
 const multiValueFieldNames = ['flags'] as const;
 
@@ -45,6 +46,22 @@ function normalizeUploadToFileList(url?: null | string): UploadFile[] {
   ];
 }
 
+function normalizeMultiUploadToFileList(value?: null | string): UploadFile[] {
+  if (!value) {
+    return [];
+  }
+  return value
+    .split(',')
+    .map((url) => url.trim())
+    .filter(Boolean)
+    .map((url, index) => ({
+      name: `file-${index}`,
+      status: 'done' as const,
+      uid: `upload-existing-${index}`,
+      url,
+    }));
+}
+
 function resolveUploadUrl(files: unknown): string {
   const uploadFiles = Array.isArray(files) ? files : [];
   const file = uploadFiles[0] as
@@ -54,6 +71,17 @@ function resolveUploadUrl(files: unknown): string {
     return '';
   }
   return file.response?.file_url ?? file.url ?? '';
+}
+
+function resolveMultiUploadUrls(files: unknown): string {
+  const uploadFiles = Array.isArray(files) ? files : [];
+  return uploadFiles
+    .map((file) => {
+      const item = file as { response?: { file_url?: string }; url?: string };
+      return item.response?.file_url ?? item.url ?? '';
+    })
+    .filter(Boolean)
+    .join(',');
 }
 
 function onImageChange(_event: unknown) {}
@@ -127,9 +155,14 @@ async function handleConfirm(popupApi: PopupApi) {
   if (!valid) return;
 
   const values = (await formApi.getValues()) as Record<string, unknown>;
-  for (const fieldName of pictureUploadFieldNames) {
+  for (const fieldName of singlePictureUploadFieldNames) {
     if (fieldName in values) {
       values[fieldName] = resolveUploadUrl(values[fieldName]);
+    }
+  }
+  for (const fieldName of multiPictureUploadFieldNames) {
+    if (fieldName in values) {
+      values[fieldName] = resolveMultiUploadUrls(values[fieldName]);
     }
   }
 
@@ -168,10 +201,17 @@ async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
   if (id) {
     const row = { ...(data as ProductsRow) } as Record<string, unknown>;
 
-    for (const fieldName of pictureUploadFieldNames) {
+    for (const fieldName of singlePictureUploadFieldNames) {
       const value = row[fieldName];
       if (typeof value === 'string' && value) {
         row[fieldName] = normalizeUploadToFileList(value);
+      }
+    }
+
+    for (const fieldName of multiPictureUploadFieldNames) {
+      const value = row[fieldName];
+      if (typeof value === 'string' && value) {
+        row[fieldName] = normalizeMultiUploadToFileList(value);
       }
     }
 

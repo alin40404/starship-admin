@@ -372,6 +372,8 @@ class CodegenService
 
         $apiRoutePrefix = GeneratorNaming::defaultApiRoutePrefix($config->module_slug);
         $pictureUploadFieldNames = $this->formSchemaBuilder->pictureUploadFieldNames($formColumns);
+        $singlePictureUploadFieldNames = $this->formSchemaBuilder->singlePictureUploadFieldNames($formColumns);
+        $multiPictureUploadFieldNames = $this->formSchemaBuilder->multiPictureUploadFieldNames($formColumns);
         $attachmentFieldNames = $this->formSchemaBuilder->attachmentFieldNames($formColumns);
         $multiValueFieldNames = $this->formSchemaBuilder->multiValueFieldNames($formColumns);
         $hasPictureUploadFields = $pictureUploadFieldNames !== [];
@@ -438,6 +440,9 @@ class CodegenService
             'has_relation_fields' => $hasRelationFields,
             'has_rich_editor' => $hasRichEditor,
             'picture_upload_field_names_ts' => implode(', ', array_map(static fn (string $field): string => "'{$field}'", $pictureUploadFieldNames)),
+            'single_picture_upload_field_names_ts' => implode(', ', array_map(static fn (string $field): string => "'{$field}'", $singlePictureUploadFieldNames)),
+            'multi_picture_upload_field_names_ts' => implode(', ', array_map(static fn (string $field): string => "'{$field}'", $multiPictureUploadFieldNames)),
+            'has_multi_picture_upload_fields' => $multiPictureUploadFieldNames !== [],
             'multi_value_field_names_ts' => implode(', ', array_map(static fn (string $field): string => "'{$field}'", $multiValueFieldNames)),
             'api_row_fields_body' => $this->buildApiRowFieldsBody($listColumns),
             'api_page_query_fields_body' => $this->buildApiPageQueryFieldsBody($searchColumns),

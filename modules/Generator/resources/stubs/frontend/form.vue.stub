@@ -28,7 +28,10 @@ const editingId = ref<number | null>(null);
 const readonly = ref(false);
 
 @if($has_picture_upload_fields)
-const pictureUploadFieldNames = [{{ $picture_upload_field_names_ts }}] as const;
+const singlePictureUploadFieldNames = [{{ $single_picture_upload_field_names_ts }}] as const;
+@if($has_multi_picture_upload_fields)
+const multiPictureUploadFieldNames = [{{ $multi_picture_upload_field_names_ts }}] as const;
+@endif
 @endif
 @if($has_multi_value_fields)
 const multiValueFieldNames = [{{ $multi_value_field_names_ts }}] as const;
@@ -50,6 +53,22 @@ function normalizeUploadToFileList(url?: null | string): UploadFile[] {
   ];
 }
 
+function normalizeMultiUploadToFileList(value?: null | string): UploadFile[] {
+  if (!value) {
+    return [];
+  }
+  return value
+    .split(',')
+    .map((url) => url.trim())
+    .filter(Boolean)
+    .map((url, index) => ({
+      name: `file-${index}`,
+      status: 'done' as const,
+      uid: `upload-existing-${index}`,
+      url,
+    }));
+}
+
 function resolveUploadUrl(files: unknown): string {
   const uploadFiles = Array.isArray(files) ? files : [];
   const file = uploadFiles[0] as
@@ -59,6 +78,17 @@ function resolveUploadUrl(files: unknown): string {
     return '';
   }
   return file.response?.file_url ?? file.url ?? '';
+}
+
+function resolveMultiUploadUrls(files: unknown): string {
+  const uploadFiles = Array.isArray(files) ? files : [];
+  return uploadFiles
+    .map((file) => {
+      const item = file as { response?: { file_url?: string }; url?: string };
+      return item.response?.file_url ?? item.url ?? '';
+    })
+    .filter(Boolean)
+    .join(',');
 }
 
 function onImageChange(_event: unknown) {}
@@ -137,11 +167,18 @@ async function handleConfirm(popupApi: PopupApi) {
 
   const values = (await formApi.getValues()) as Record<string, unknown>;
 @if($has_picture_upload_fields)
-  for (const fieldName of pictureUploadFieldNames) {
+  for (const fieldName of singlePictureUploadFieldNames) {
     if (fieldName in values) {
       values[fieldName] = resolveUploadUrl(values[fieldName]);
     }
   }
+@if($has_multi_picture_upload_fields)
+  for (const fieldName of multiPictureUploadFieldNames) {
+    if (fieldName in values) {
+      values[fieldName] = resolveMultiUploadUrls(values[fieldName]);
+    }
+  }
+@endif
 @endif
 @if($has_multi_value_fields)
   for (const fieldName of multiValueFieldNames) {
@@ -181,12 +218,20 @@ async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
     const row = { ...(data as {{ $model_class }}Row) } as Record<string, unknown>;
 @endif
 @if($has_picture_upload_fields)
-    for (const fieldName of pictureUploadFieldNames) {
+    for (const fieldName of singlePictureUploadFieldNames) {
       const value = row[fieldName];
       if (typeof value === 'string' && value) {
         row[fieldName] = normalizeUploadToFileList(value);
       }
     }
+@if($has_multi_picture_upload_fields)
+    for (const fieldName of multiPictureUploadFieldNames) {
+      const value = row[fieldName];
+      if (typeof value === 'string' && value) {
+        row[fieldName] = normalizeMultiUploadToFileList(value);
+      }
+    }
+@endif
 @endif
 @if($has_multi_value_fields)
     for (const fieldName of multiValueFieldNames) {

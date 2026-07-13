@@ -369,6 +369,48 @@ final class FormSchemaBuilder
     }
 
     /**
+     * 单图（含 max_count）字段，提交时取第一张 URL。
+     *
+     * @return list<string>
+     */
+    public function singlePictureUploadFieldNames($formColumns): array
+    {
+        $names = [];
+        foreach ($formColumns as $column) {
+            $options = is_array($column->form_options ?? null) ? $column->form_options : [];
+            if (($options['kind'] ?? null) !== 'image' && $column->form_component !== 'PictureUploadField') {
+                continue;
+            }
+            if (array_key_exists('max_count', $options)) {
+                $names[] = $column->column_name;
+            }
+        }
+
+        return $names;
+    }
+
+    /**
+     * 多图相册（无 max_count）字段，提交时逗号拼接多个 URL。
+     *
+     * @return list<string>
+     */
+    public function multiPictureUploadFieldNames($formColumns): array
+    {
+        $names = [];
+        foreach ($formColumns as $column) {
+            $options = is_array($column->form_options ?? null) ? $column->form_options : [];
+            if (($options['kind'] ?? null) !== 'image' && $column->form_component !== 'PictureUploadField') {
+                continue;
+            }
+            if (! array_key_exists('max_count', $options)) {
+                $names[] = $column->column_name;
+            }
+        }
+
+        return $names;
+    }
+
+    /**
      * @return list<string>
      */
     public function attachmentFieldNames($formColumns): array
