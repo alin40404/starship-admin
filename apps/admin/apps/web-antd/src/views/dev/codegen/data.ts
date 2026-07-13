@@ -35,6 +35,8 @@ export function toModuleSelectOption(slug: string) {
 
 export interface BuildImportFormSchemaParams {
   getMenuParentTree: () => MenuParentTreeOption[];
+  /** 菜单树加载完成后递增，驱动 ApiTreeSelect 重新请求（api 引用变化不会触发）。 */
+  menuParentRefreshKey: number;
   loadingMenuParents: boolean;
   loadingTables: boolean;
   moduleOptions: Array<{ label: string; value: string }>;
@@ -79,6 +81,8 @@ export function buildImportFormSchema(
         api: async () => params.getMenuParentTree(),
         class: 'w-full',
         loading: params.loadingMenuParents,
+        options: params.getMenuParentTree(),
+        params: { refreshKey: params.menuParentRefreshKey },
         placeholder: $t('dev.codegen.menuParentPlaceholder'),
         showSearch: true,
         treeDefaultExpandAll: true,

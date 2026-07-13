@@ -29,7 +29,7 @@
 | Plugin 卸载 CLI | ✅ | `starship:plugin:uninstall` |
 | `starship:module:make` | ✅ | 模块脚手架 |
 | `starship:plugin:make` | ❌ | 插件脚手架 |
-| Generator 端到端 Demo | ⚠️ | 表 → CRUD → 菜单 → 权限，待验收 |
+| Generator 端到端 Demo | ✅ | `sa_demo_products` 表 + CLI 全流程已验收 |
 | Contract 体系 | ❌ | 如 `StorageInterface` |
 | Event / Hook | ❌ | 阶段三 |
 | ThemeManager | ❌ | 阶段二 |
@@ -53,7 +53,7 @@
 - [ ] SmsAliyun 插件完整闭环（发现 → 安装 → 启用 → 配置 → 禁用 → 卸载）
 - [x] Module `require.modules` 启动依赖校验
 - [x] `starship:module:make {Name}` 脚手架
-- [ ] Generator 一张表端到端 Demo 验收
+- [x] Generator 一张表端到端 Demo 验收（`sa_demo_products`）
 
 #### P1 — 文档与规范对齐
 
@@ -142,13 +142,15 @@ Composer 包名：`starship/shop`（需在 `backend/composer.json` 添加 path �
 
 ### 4.4 Generator 端到端 Demo
 
-验收路径：
+验收路径（已执行）：
 
-1. 建表 `sa_demo_products`
-2. `starship:generator:import` → 配置字段
-3. `starship:generator:crud` → 生成后端 + 前端
-4. 菜单 / 权限自动注册
-5. 管理端 CRUD 可操作
+1. 迁移建表 `sa_demo_products`（`modules/System/database/migrations/2026_07_13_100000_create_demo_products_table.php`）
+2. `starship:generator:import demo_products --module=System --business=演示产品`
+3. `starship:generator:crud demo_products --module=System --business=演示产品 --force`
+4. 菜单 / 权限自动注册（menu:131～136）
+5. 管理端访问 `/org/products`（超管 `admin` 登录后可见）
+
+> 修复：`SchemaReader::physicalTableName()` 解决 DB 前缀下 `inspect`/字段推断为空的问题。
 
 ---
 

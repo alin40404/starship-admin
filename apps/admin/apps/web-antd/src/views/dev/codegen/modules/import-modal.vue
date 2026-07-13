@@ -36,6 +36,7 @@ const emit = defineEmits<{
 const modules = ref<string[]>(['System']);
 const tableOptions = ref<Array<{ label: string; value: string }>>([]);
 const menuParentOptions = ref<MenuParentTreeOption[]>([]);
+const menuParentRefreshKey = ref(0);
 const loadingTables = ref(false);
 const loadingMenuParents = ref(false);
 
@@ -45,6 +46,7 @@ function createSchemaParams(): BuildImportFormSchemaParams {
     moduleOptions: modules.value.map(toModuleSelectOption),
     loadingTables: loadingTables.value,
     loadingMenuParents: loadingMenuParents.value,
+    menuParentRefreshKey: menuParentRefreshKey.value,
     getMenuParentTree: () => menuParentOptions.value,
     onTableSearch: searchTables,
   };
@@ -65,6 +67,7 @@ const [Form, formApi] = useVbenForm({
     moduleOptions: [{ label: 'System', value: 'System' }],
     loadingTables: false,
     loadingMenuParents: false,
+    menuParentRefreshKey: 0,
     getMenuParentTree: () => [],
     onTableSearch: () => {},
   }),
@@ -89,6 +92,7 @@ async function loadMenuParents() {
     menuParentOptions.value = [];
   } finally {
     loadingMenuParents.value = false;
+    menuParentRefreshKey.value += 1;
   }
 }
 

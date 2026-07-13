@@ -51,6 +51,7 @@ class SchemaReader
      */
     public function listColumns(string $tableName): array
     {
+        $tableName = $this->physicalTableName($tableName);
         $database = $this->databaseName();
         $rows = DB::select(
             'SELECT COLUMN_NAME AS name,
@@ -104,8 +105,25 @@ class SchemaReader
         return $tableName;
     }
 
+    /**
+     * information_schema 查询使用的物理表名（含 DB 前缀）。
+     */
+    public function physicalTableName(string $tableName): string
+    {
+        $logical = $this->resolveTableName($tableName);
+        $prefix = (string) DB::connection()->getTablePrefix();
+
+        if ($prefix === '' || str_starts_with($logical, $prefix)) {
+            return $logical;
+        }
+
+        return $prefix.$logical;
+    }
+
     public function tableComment(string $tableName): ?string
     {
+        $tableName = $this->physicalTableName($tableName);
+
         foreach ($this->listTables() as $table) {
             if ($table['name'] === $tableName) {
                 return $table['comment'];

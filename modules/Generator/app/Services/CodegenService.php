@@ -105,10 +105,11 @@ class CodegenService
     {
         $tableName = $this->schemaReader->resolveTableName($tableName);
         [$config, $persisted] = $this->resolveDeleteConfig($tableName, $options);
-        $files = $this->buildFiles($config, $this->buildViewData($config));
-        $paths = array_values(array_unique(array_map(
-            static fn (array $file): string => $file['path'],
-            $files,
+        $viewData = $this->buildViewData($config);
+        $files = $this->buildFiles($config, $viewData);
+        $paths = array_values(array_unique(array_merge(
+            array_map(static fn (array $file): string => $file['path'], $files),
+            $this->localeEntityPaths($config, $viewData),
         )));
 
         $existingPaths = array_values(array_filter($paths, static fn (string $path): bool => is_file($path)));
@@ -130,6 +131,10 @@ class CodegenService
 
         $fileResult = $this->fileWriter->deleteMany($paths, $force);
         $menu = $syncMenu ? $this->menuPermissionSync->remove($config) : [];
+
+        if ($syncMenu) {
+            $this->removeMenuLocaleKeys($config, $viewData);
+        }
 
         if ($dropTable) {
             $this->dropPhysicalTable($config);
@@ -410,65 +415,80 @@ class CodegenService
     {
         $frontendRoot = $this->modulePathResolver->frontendRoot();
         $moduleSlug = strtolower($config->module_slug);
-        $entityKey = (string) $viewData['entity_kebab'];
+        $localeBasename = $this->localeEntityBasename($config, $viewData);
         $entries = $this->buildLocaleEntityEntries($config, $viewData);
 
-        return array_merge(
+        $files = [
             [
-                [
-                    'path' => $frontendRoot.'/locales/langs/zh-CN/'.$moduleSlug.'.json',
-                    'content' => $this->localeJsonMerger->mergeEntity(
-                        $frontendRoot.'/locales/langs/zh-CN/'.$moduleSlug.'.json',
-                        $entityKey,
-                        $entries['zh-CN'],
-                    ),
-                ],
-                [
-                    'path' => $frontendRoot.'/locales/langs/en-US/'.$moduleSlug.'.json',
-                    'content' => $this->localeJsonMerger->mergeEntity(
-                        $frontendRoot.'/locales/langs/en-US/'.$moduleSlug.'.json',
-                        $entityKey,
-                        $entries['en-US'],
-                    ),
-                ],
+                'path' => $frontendRoot.'/locales/langs/zh-CN/'.$localeBasename.'.json',
+                'content' => $this->localeJsonMerger->encodeEntityFile($entries['zh-CN']),
             ],
-            $this->buildMenuLocaleFiles($config, $viewData),
-        );
+            [
+                'path' => $frontendRoot.'/locales/langs/en-US/'.$localeBasename.'.json',
+                'content' => $this->localeJsonMerger->encodeEntityFile($entries['en-US']),
+            ],
+        ];
+
+        if ($config->options['sync_menu'] ?? true) {
+            $menuName = Str::studly($config->api_prefix).'Mgmt';
+            $files[] = [
+                'path' => $frontendRoot.'/locales/langs/zh-CN/'.$moduleSlug.'.json',
+                'content' => $this->localeJsonMerger->mergeMenuKeys(
+                    $frontendRoot.'/locales/langs/zh-CN/'.$moduleSlug.'.json',
+                    [$menuName => $config->business_name],
+                ),
+            ];
+            $files[] = [
+                'path' => $frontendRoot.'/locales/langs/en-US/'.$moduleSlug.'.json',
+                'content' => $this->localeJsonMerger->mergeMenuKeys(
+                    $frontendRoot.'/locales/langs/en-US/'.$moduleSlug.'.json',
+                    [
+                        $menuName => (string) ($viewData['entity_title_en'] ?? $config->class_name),
+                    ],
+                ),
+            ];
+        }
+
+        return $files;
     }
 
     /**
-     * @param  array<string, mixed>  $viewData
-     * @return list<array{path: string, content: string}>
+     * @return list<string>
      */
-    protected function buildMenuLocaleFiles(GeneratorTable $config, array $viewData): array
+    protected function localeEntityPaths(GeneratorTable $config, array $viewData): array
     {
-        if (! ($config->options['sync_menu'] ?? true)) {
-            return [];
-        }
-
-        $menuName = Str::studly($config->api_prefix).'Mgmt';
         $frontendRoot = $this->modulePathResolver->frontendRoot();
-        $entriesZh = [$menuName => $config->business_name];
-        $entriesEn = [
-            $menuName => (string) ($viewData['entity_title_en'] ?? $config->class_name),
-        ];
+        $localeBasename = $this->localeEntityBasename($config, $viewData);
 
         return [
-            [
-                'path' => $frontendRoot.'/locales/langs/zh-CN/system.json',
-                'content' => $this->localeJsonMerger->mergeMenuKeys(
-                    $frontendRoot.'/locales/langs/zh-CN/system.json',
-                    $entriesZh,
-                ),
-            ],
-            [
-                'path' => $frontendRoot.'/locales/langs/en-US/system.json',
-                'content' => $this->localeJsonMerger->mergeMenuKeys(
-                    $frontendRoot.'/locales/langs/en-US/system.json',
-                    $entriesEn,
-                ),
-            ],
+            $frontendRoot.'/locales/langs/zh-CN/'.$localeBasename.'.json',
+            $frontendRoot.'/locales/langs/en-US/'.$localeBasename.'.json',
         ];
+    }
+
+    protected function localeEntityBasename(GeneratorTable $config, array $viewData): string
+    {
+        return strtolower($config->module_slug).'.'.(string) $viewData['entity_kebab'];
+    }
+
+    protected function removeMenuLocaleKeys(GeneratorTable $config, array $viewData): void
+    {
+        if (! ($config->options['sync_menu'] ?? true)) {
+            return;
+        }
+
+        $frontendRoot = $this->modulePathResolver->frontendRoot();
+        $moduleSlug = strtolower($config->module_slug);
+        $menuName = Str::studly($config->api_prefix).'Mgmt';
+
+        $this->localeJsonMerger->removeMenuKeys(
+            $frontendRoot.'/locales/langs/zh-CN/'.$moduleSlug.'.json',
+            [$menuName],
+        );
+        $this->localeJsonMerger->removeMenuKeys(
+            $frontendRoot.'/locales/langs/en-US/'.$moduleSlug.'.json',
+            [$menuName],
+        );
     }
 
     /**

@@ -42,7 +42,7 @@ export function delete{{ $model_class }}(id: number) {
 }
 @if($has_batch_delete)
 
-export function batchDelete{{ $model_class }}s(ids: number[]) {
+export function {{ $batch_delete_fn_name }}(ids: number[]) {
   return requestClient.post<{ deleted: number }>(
     '/{{ $api_route_prefix }}/{{ $api_prefix }}/batch-destroy',
     { ids },
