@@ -189,6 +189,8 @@ my-admin/
 
 无 `repositories` path，全部从 Packagist 拉。
 
+下游安装 `starship/core` 的逐步说明见 [packages/core/README.md](../../packages/core/README.md)。
+
 ### 5.3 可选依赖
 
 | 包 | skeleton 默认 | 说明 |
