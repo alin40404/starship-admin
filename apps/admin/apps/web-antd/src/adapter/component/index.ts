@@ -420,7 +420,7 @@ function cropImage(file: File, aspectRatio: string | undefined) {
 const withPreviewUpload = () => {
   return defineComponent({
     name: Upload.name,
-    emits: ['update:modelValue'],
+    emits: ['update:fileList', 'update:modelValue'],
     setup(
       props: any,
       { attrs, slots, emit }: { attrs: any; emit: any; slots: any },
@@ -466,6 +466,12 @@ const withPreviewUpload = () => {
         return attrs.beforeUpload?.(file) ?? true;
       };
 
+      const syncFileListToModel = (list: UploadProps['fileList']) => {
+        const next = list?.length ? list : undefined;
+        emit('update:fileList', next);
+        emit('update:modelValue', next);
+      };
+
       const handleChange = (event: UploadChangeParam) => {
         try {
           attrs.handleChange?.(event);
@@ -476,10 +482,7 @@ const withPreviewUpload = () => {
         fileList.value = event.fileList.filter(
           (file) => file.status !== 'removed',
         );
-        emit(
-          'update:modelValue',
-          event.fileList?.length ? fileList.value : undefined,
-        );
+        syncFileListToModel(fileList.value);
       };
 
       const handlePreview = async (file: UploadFile) => {
@@ -561,18 +564,18 @@ const withPreviewUpload = () => {
             }
 
             attrs.onDragSort?.(oldIndex, newIndex);
-            emit('update:modelValue', fileList.value);
+            syncFileListToModel(fileList.value);
           },
         });
 
         sortableInstance.value = await initializeSortable();
       }
 
-      // 监听表单值变化
+      // 监听表单值变化（表单 adapter 绑定 fileList）
       watch(
-        () => attrs.modelValue,
+        () => attrs.fileList ?? attrs.modelValue,
         (res) => {
-          fileList.value = res;
+          fileList.value = res ?? [];
         },
       );
 

@@ -1,11 +1,13 @@
 <script lang="ts" setup>
-import { computed, ref, useTemplateRef } from 'vue';
+import type { AttachmentRow } from '#/api/system/attachment';
+
+import { computed, ref, useTemplateRef, watch } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { IconifyIcon } from '@vben/icons';
 import { $t } from '@vben/locales';
 
-import { Button, Image, Input, message, Space } from 'ant-design-vue';
+import { Button, Image, message } from 'ant-design-vue';
 
 import { uploadAttachment } from '#/api/system/attachment';
 import { ATTACHMENT_PERMISSIONS } from '#/constants/attachment-permissions';
@@ -13,12 +15,17 @@ import { ATTACHMENT_PERMISSIONS } from '#/constants/attachment-permissions';
 import AttachmentPickerModal from './attachment-picker-modal.vue';
 import type { AttachmentAcceptMode } from './types';
 import {
+  extractFileNameFromUrl,
+  formatAttachmentDisplayName,
   isImageUrl,
   normalizeFieldValue,
-  parseInputText,
-  valueToInputText,
 } from './utils';
 import { resolveUploadAcceptAttr, validateUploadFile } from '#/utils/upload-policy';
+
+interface FileMeta {
+  name: string;
+  size?: number;
+}
 
 const props = withDefaults(
   defineProps<{
@@ -51,7 +58,9 @@ const canUpload = computed(() =>
 
 const pickerOpen = ref(false);
 const uploading = ref(false);
+const isDragOver = ref(false);
 const fileInputRef = useTemplateRef<HTMLInputElement>('fileInputRef');
+const fileMetaMap = ref<Record<string, FileMeta>>({});
 const brokenImageUrls = ref<Set<string>>(new Set());
 const previewUrl = ref('');
 const previewVisible = ref(false);
@@ -61,20 +70,15 @@ const currentUrls = computed(() => {
   return Array.isArray(normalized) ? normalized : normalized ? [normalized] : [];
 });
 
-const inputText = computed({
-  get() {
-    return valueToInputText(props.value, props.multiple);
-  },
-  set(text: string) {
-    const nextValue = parseInputText(text, props.multiple);
-    emit('update:value', nextValue);
-    emit('change', nextValue);
-  },
-});
+const isInteractive = computed(() => !props.disabled);
 
-const resolvedPlaceholder = computed(
-  () => props.placeholder ?? $t('resource.attachment.field.placeholder'),
-);
+const rootClass = computed(() => ({
+  'attachment-field': true,
+  'attachment-field--disabled': props.disabled,
+  'attachment-field--drag-over': isDragOver.value && isInteractive.value,
+  'w-full': true,
+  'min-w-0': true,
+}));
 
 function emitValue(urls: string[]) {
   const nextValue = props.multiple ? urls : (urls[0] ?? '');
@@ -82,8 +86,60 @@ function emitValue(urls: string[]) {
   emit('change', nextValue);
 }
 
-function onUploadClick() {
-  if (props.disabled) {
+function rememberMeta(url: string, meta: Partial<FileMeta>) {
+  if (!url) {
+    return;
+  }
+  fileMetaMap.value = {
+    ...fileMetaMap.value,
+    [url]: {
+      name: meta.name ?? extractFileNameFromUrl(url),
+      size: meta.size,
+    },
+  };
+}
+
+function rememberFromRow(row: AttachmentRow) {
+  if (!row.file_url) {
+    return;
+  }
+  rememberMeta(row.file_url, {
+    name: row.file_name,
+    size: row.file_size,
+  });
+}
+
+watch(
+  currentUrls,
+  (urls) => {
+    const nextMap = { ...fileMetaMap.value };
+    for (const url of urls) {
+      if (!nextMap[url]) {
+        nextMap[url] = { name: extractFileNameFromUrl(url) };
+      }
+    }
+    for (const key of Object.keys(nextMap)) {
+      if (!urls.includes(key)) {
+        delete nextMap[key];
+      }
+    }
+    fileMetaMap.value = nextMap;
+  },
+  { immediate: true },
+);
+
+function getDisplayName(url: string) {
+  const meta = fileMetaMap.value[url];
+  const name = meta?.name ?? extractFileNameFromUrl(url);
+  return formatAttachmentDisplayName(name, meta?.size);
+}
+
+function getFileIcon(url: string) {
+  return isImageUrl(url) ? 'lucide:image' : 'lucide:paperclip';
+}
+
+function onUploadTrigger() {
+  if (!isInteractive.value) {
     return;
   }
   if (!canUpload.value) {
@@ -94,17 +150,18 @@ function onUploadClick() {
 }
 
 function onSelectClick() {
-  if (props.disabled) {
+  if (!isInteractive.value) {
     return;
   }
   pickerOpen.value = true;
 }
 
-async function onFileInputChange(event: Event) {
-  const input = event.target as HTMLInputElement;
-  const files = input.files ? [...input.files] : [];
-  input.value = '';
-  if (files.length === 0) {
+async function uploadFiles(files: File[]) {
+  if (files.length === 0 || !isInteractive.value) {
+    return;
+  }
+  if (!canUpload.value) {
+    message.warning($t('resource.attachment.field.noUploadPermission'));
     return;
   }
 
@@ -124,6 +181,7 @@ async function onFileInputChange(event: Event) {
       }
       const row = await uploadAttachment(file);
       if (row.file_url) {
+        rememberFromRow(row);
         uploadedUrls.push(row.file_url);
       }
     }
@@ -144,20 +202,61 @@ async function onFileInputChange(event: Event) {
   }
 }
 
-function onPickerConfirm(urls: string[]) {
+async function onFileInputChange(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const files = input.files ? [...input.files] : [];
+  input.value = '';
+  await uploadFiles(files);
+}
+
+function onDragOver(event: DragEvent) {
+  if (!isInteractive.value) {
+    return;
+  }
+  event.preventDefault();
+  event.stopPropagation();
+  isDragOver.value = true;
+}
+
+function onDragLeave(event: DragEvent) {
+  if (!isInteractive.value) {
+    return;
+  }
+  event.preventDefault();
+  event.stopPropagation();
+  const currentTarget = event.currentTarget as HTMLElement | null;
+  if (currentTarget && !currentTarget.contains(event.relatedTarget as Node | null)) {
+    isDragOver.value = false;
+  }
+}
+
+async function onDrop(event: DragEvent) {
+  if (!isInteractive.value) {
+    return;
+  }
+  event.preventDefault();
+  event.stopPropagation();
+  isDragOver.value = false;
+  const files = event.dataTransfer?.files
+    ? [...event.dataTransfer.files]
+    : [];
+  await uploadFiles(files);
+}
+
+function onPickerConfirm(urls: string[], rows: AttachmentRow[] = []) {
+  for (const row of rows) {
+    rememberFromRow(row);
+  }
+  for (const url of urls) {
+    if (!fileMetaMap.value[url]) {
+      rememberMeta(url, { name: extractFileNameFromUrl(url) });
+    }
+  }
   if (props.multiple) {
     emitValue([...new Set([...currentUrls.value, ...urls])]);
   } else {
     emitValue(urls.slice(0, 1));
   }
-}
-
-function shouldShowImagePreview(url: string) {
-  return isImageUrl(url) && !brokenImageUrls.value.has(url);
-}
-
-function onPreviewImageError(url: string) {
-  brokenImageUrls.value = new Set([...brokenImageUrls.value, url]);
 }
 
 function onRemoveUrl(url: string) {
@@ -168,6 +267,10 @@ function onRemoveUrl(url: string) {
   brokenImageUrls.value = new Set(
     [...brokenImageUrls.value].filter((item) => item !== url),
   );
+}
+
+function shouldShowImagePreview(url: string) {
+  return isImageUrl(url) && !brokenImageUrls.value.has(url);
 }
 
 function onPreviewUrl(url: string) {
@@ -185,6 +288,14 @@ function onOpenUrl(url: string) {
   window.open(url, '_blank', 'noopener,noreferrer');
 }
 
+function onItemClick(url: string) {
+  if (shouldShowImagePreview(url)) {
+    onPreviewUrl(url);
+    return;
+  }
+  onOpenUrl(url);
+}
+
 function onPreviewVisibleChange(visible: boolean) {
   previewVisible.value = visible;
   if (!visible) {
@@ -194,87 +305,81 @@ function onPreviewVisibleChange(visible: boolean) {
 </script>
 
 <template>
-  <div class="attachment-field w-full min-w-0">
-    <Space.Compact block class="attachment-field__compact w-full">
-      <Input
-        v-bind="$attrs"
-        v-model:value="inputText"
-        class="attachment-field__input min-w-0 flex-1"
-        :disabled="disabled"
-        :placeholder="resolvedPlaceholder"
-      />
-      <Button
-        class="attachment-field__btn attachment-field__btn--upload"
-        :disabled="disabled || uploading"
-        :loading="uploading"
-        size="small"
-        @click="onUploadClick"
+  <div
+    v-bind="$attrs"
+    :class="rootClass"
+    @dragover.prevent="onDragOver"
+    @dragleave.prevent="onDragLeave"
+    @drop.prevent="onDrop"
+  >
+    <div class="attachment-field__header">
+      <button
+        class="attachment-field__trigger"
+        :class="{ 'attachment-field__trigger--disabled': !isInteractive }"
+        :disabled="!isInteractive || uploading"
+        type="button"
+        @click="onUploadTrigger"
       >
-        <IconifyIcon class="size-3.5" icon="lucide:upload" />
-        <span>{{ $t('resource.attachment.field.upload') }}</span>
-      </Button>
+        <IconifyIcon
+          v-if="isInteractive"
+          class="attachment-field__trigger-icon"
+          icon="lucide:paperclip"
+        />
+        <span class="attachment-field__trigger-text">
+          <template v-if="isDragOver">
+            {{ $t('resource.attachment.field.dragHint') }}
+          </template>
+          <template v-else>
+            <span class="attachment-field__trigger-label">
+              {{ $t('resource.attachment.field.entityLabel') }}
+            </span>
+            <span class="attachment-field__trigger-tip">
+              {{ $t('resource.attachment.field.dragTip') }}
+            </span>
+          </template>
+        </span>
+      </button>
+
       <Button
-        class="attachment-field__btn attachment-field__btn--select attachment-field__btn--select-last"
-        :disabled="disabled"
-        size="small"
-        @click="onSelectClick"
+        v-if="isInteractive"
+        class="attachment-field__select-btn shrink-0"
+        :loading="uploading"
+        type="primary"
+        @click.stop="onSelectClick"
       >
         <IconifyIcon class="size-3.5" icon="lucide:folder-open" />
-        <span>{{ $t('resource.attachment.field.select') }}</span>
+        {{ $t('resource.attachment.field.select') }}
       </Button>
-    </Space.Compact>
+    </div>
 
-    <div
-      v-if="currentUrls.length > 0"
-      class="attachment-field__preview-list mt-2 flex flex-wrap gap-2"
-    >
+    <div v-if="currentUrls.length > 0" class="attachment-field__body">
       <div
         v-for="url in currentUrls"
         :key="url"
-        class="attachment-field__preview-item group"
-        :title="url"
+        class="attachment-field__item"
       >
-        <img
-          v-if="shouldShowImagePreview(url)"
-          :alt="url"
-          class="attachment-field__preview-image"
-          :src="url"
-          @error="onPreviewImageError(url)"
-        />
-        <div v-else class="attachment-field__preview-file">
-          <IconifyIcon class="size-7 text-muted-foreground" icon="lucide:paperclip" />
-        </div>
         <button
-          v-if="!disabled"
-          class="attachment-field__preview-remove"
-          :title="$t('resource.attachment.field.remove')"
+          class="attachment-field__item-main"
+          :title="url"
           type="button"
-          @click="onRemoveUrl(url)"
-        >
-          <IconifyIcon class="size-3" icon="lucide:x" />
-        </button>
-        <button
-          class="attachment-field__preview-open"
-          :title="
-            shouldShowImagePreview(url)
-              ? $t('resource.attachment.field.preview')
-              : $t('resource.attachment.field.open')
-          "
-          type="button"
-          @click="
-            shouldShowImagePreview(url)
-              ? onPreviewUrl(url)
-              : onOpenUrl(url)
-          "
+          @click="onItemClick(url)"
         >
           <IconifyIcon
-            class="size-3"
-            :icon="
-              shouldShowImagePreview(url)
-                ? 'lucide:eye'
-                : 'lucide:external-link'
-            "
+            class="attachment-field__item-icon"
+            :icon="getFileIcon(url)"
           />
+          <span class="attachment-field__item-name">
+            {{ getDisplayName(url) }}
+          </span>
+        </button>
+        <button
+          v-if="!disabled"
+          class="attachment-field__item-remove"
+          :title="$t('resource.attachment.field.remove')"
+          type="button"
+          @click.stop="onRemoveUrl(url)"
+        >
+          <IconifyIcon class="size-4" icon="lucide:x" />
         </button>
       </div>
     </div>
@@ -314,138 +419,3 @@ function onPreviewVisibleChange(visible: boolean) {
     />
   </div>
 </template>
-
-<style scoped>
-.attachment-field__file-input {
-  display: none !important;
-}
-
-.attachment-field__compact :deep(.ant-input) {
-  border-start-start-radius: var(--radius);
-  border-end-start-radius: var(--radius);
-  border-start-end-radius: 0;
-  border-end-end-radius: 0;
-}
-
-.attachment-field__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0;
-  height: 32px;
-  padding-inline: 10px;
-  font-size: 12px;
-  line-height: 1;
-  border-radius: 0;
-}
-
-.attachment-field__btn--upload {
-  color: #fff;
-  background: #1677ff;
-  border-color: #1677ff;
-}
-
-.attachment-field__btn--upload:hover:not(:disabled) {
-  color: #fff;
-  background: #4096ff;
-  border-color: #4096ff;
-}
-
-.attachment-field__btn--select {
-  color: #fff;
-  background: #52c41a;
-  border-color: #52c41a;
-}
-
-.attachment-field__btn--select-last {
-  border-start-end-radius: var(--radius);
-  border-end-end-radius: var(--radius);
-}
-
-.attachment-field__btn--select:hover:not(:disabled) {
-  color: #fff;
-  background: #73d13d;
-  border-color: #73d13d;
-}
-
-.attachment-field__btn:disabled {
-  opacity: 0.55;
-}
-
-.attachment-field__preview-item {
-  position: relative;
-  overflow: hidden;
-  width: 64px;
-  height: 64px;
-  border: 1px solid hsl(var(--border));
-  border-radius: var(--radius-md);
-  background: hsl(var(--background));
-}
-
-.attachment-field__preview-remove {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  padding: 0;
-  color: #fff;
-  cursor: pointer;
-  background: rgb(0 0 0 / 55%);
-  border: none;
-  border-radius: 50%;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-}
-
-.attachment-field__preview-item:hover .attachment-field__preview-remove,
-.attachment-field__preview-remove:focus-visible {
-  opacity: 1;
-}
-
-.attachment-field__preview-open {
-  position: absolute;
-  right: 2px;
-  bottom: 2px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  padding: 0;
-  color: #fff;
-  cursor: pointer;
-  background: rgb(0 0 0 / 55%);
-  border: none;
-  border-radius: 50%;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-}
-
-.attachment-field__preview-item:hover .attachment-field__preview-open,
-.attachment-field__preview-open:focus-visible {
-  opacity: 1;
-}
-
-.attachment-field__preview-open:hover {
-  background: rgb(0 0 0 / 72%);
-}
-
-.attachment-field__preview-image {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.attachment-field__preview-file {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  background: hsl(var(--muted));
-}
-</style>

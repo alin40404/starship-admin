@@ -375,8 +375,6 @@ export type ProductsFormSchemaParams = {
   readonly?: boolean;
   onImageChange?: (event: unknown) => void;
   onImageUpload?: (options: unknown) => Promise<void> | void;
-  onAttachmentUpload?: (options: unknown) => Promise<void> | void;
-  onFileUpload?: (options: unknown) => Promise<void> | void;
 
 };
 
@@ -530,7 +528,6 @@ export function buildProductsFormSchema(
       componentProps: {
         customRequest: params.onImageUpload,
         handleChange: params.onImageChange,
-        flowLayout: true,
         disabled,
       },
       fieldName: 'images',
@@ -540,23 +537,19 @@ export function buildProductsFormSchema(
     {
       component: 'AttachmentField',
       componentProps: {
-        customRequest: params.onAttachmentUpload,
-        maxCount: 1,
         disabled,
       },
       fieldName: 'attachment',
-      formItemClass: 'items-start',
+      formItemClass: 'attachment-form-item items-start',
       label: $t('generator.products.columns.attachment'),
     },
     {
-      component: 'Upload',
+      component: 'AttachmentField',
       componentProps: {
-        customRequest: params.onFileUpload,
-        maxCount: 1,
         disabled,
       },
       fieldName: 'brochure',
-      formItemClass: 'items-start',
+      formItemClass: 'attachment-form-item items-start',
       label: $t('generator.products.columns.brochure'),
     },
     {

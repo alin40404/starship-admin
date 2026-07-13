@@ -346,14 +346,40 @@ final class FormSchemaBuilder
      */
     public function uploadFieldNames($formColumns): array
     {
+        return array_values(array_unique(array_merge(
+            $this->pictureUploadFieldNames($formColumns),
+            $this->attachmentFieldNames($formColumns),
+        )));
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function pictureUploadFieldNames($formColumns): array
+    {
         $names = [];
         foreach ($formColumns as $column) {
             $options = is_array($column->form_options ?? null) ? $column->form_options : [];
-            if (! in_array($options['kind'] ?? null, ['image', 'attachment', 'file'], true)
-                && ! in_array($column->form_component, ['PictureUploadField', 'AttachmentField', 'Upload'], true)) {
-                continue;
+            if (($options['kind'] ?? null) === 'image' || $column->form_component === 'PictureUploadField') {
+                $names[] = $column->column_name;
             }
-            $names[] = $column->column_name;
+        }
+
+        return $names;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function attachmentFieldNames($formColumns): array
+    {
+        $names = [];
+        foreach ($formColumns as $column) {
+            $options = is_array($column->form_options ?? null) ? $column->form_options : [];
+            if (in_array($options['kind'] ?? null, ['attachment', 'file'], true)
+                || in_array($column->form_component, ['AttachmentField', 'Upload'], true)) {
+                $names[] = $column->column_name;
+            }
         }
 
         return $names;
@@ -387,12 +413,10 @@ final class FormSchemaBuilder
             return $this->buildPictureUploadLines($columnKey, $i18nPrefix, $options);
         }
 
-        if (($options['kind'] ?? null) === 'attachment' || $column->form_component === 'AttachmentField') {
+        if (($options['kind'] ?? null) === 'attachment'
+            || ($options['kind'] ?? null) === 'file'
+            || in_array($column->form_component, ['AttachmentField', 'Upload'], true)) {
             return $this->buildAttachmentFieldLines($columnKey, $i18nPrefix, $options);
-        }
-
-        if (($options['kind'] ?? null) === 'file' || $column->form_component === 'Upload') {
-            return $this->buildUploadLines($columnKey, $i18nPrefix);
         }
 
         if ($column->form_component === 'RichEditor') {
@@ -597,41 +621,19 @@ final class FormSchemaBuilder
     protected function buildAttachmentFieldLines(string $columnKey, string $i18nPrefix, array $options): array
     {
         $formItemClass = $this->uploadUsesFullRow($options)
-            ? 'col-span-full items-start'
-            : 'items-start';
+            ? 'attachment-form-item col-span-full w-full items-start'
+            : 'attachment-form-item items-start';
         $lines = [];
         $lines[] = '    {';
         $lines[] = "      component: 'AttachmentField',";
         $lines[] = '      componentProps: {';
-        $lines[] = '        customRequest: params.onAttachmentUpload,';
-        foreach ($this->buildUploadMaxCountPropLines($options) as $line) {
-            $lines[] = $line;
+        if (! array_key_exists('max_count', $options)) {
+            $lines[] = '        multiple: true,';
         }
         $lines[] = '        disabled,';
         $lines[] = '      },';
         $lines[] = "      fieldName: '{$columnKey}',";
         $lines[] = "      formItemClass: '{$formItemClass}',";
-        $lines[] = "      label: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
-        $lines[] = '    },';
-
-        return $lines;
-    }
-
-    /**
-     * @return list<string>
-     */
-    protected function buildUploadLines(string $columnKey, string $i18nPrefix): array
-    {
-        $lines = [];
-        $lines[] = '    {';
-        $lines[] = "      component: 'Upload',";
-        $lines[] = '      componentProps: {';
-        $lines[] = '        customRequest: params.onFileUpload,';
-        $lines[] = "        maxCount: 1,";
-        $lines[] = '        disabled,';
-        $lines[] = '      },';
-        $lines[] = "      fieldName: '{$columnKey}',";
-        $lines[] = "      formItemClass: 'items-start',";
         $lines[] = "      label: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
         $lines[] = '    },';
 

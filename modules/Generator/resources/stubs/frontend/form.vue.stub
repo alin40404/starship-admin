@@ -8,7 +8,7 @@ import { $t } from '@vben/locales';
 import { usePreferences } from '@vben/preferences';
 
 import { message } from 'ant-design-vue';
-@if($has_upload_fields)
+@if($has_picture_upload_fields)
 import type { UploadFile } from 'ant-design-vue/es/upload';
 
 import { uploadAttachment } from '#/api/system/attachment';
@@ -27,14 +27,14 @@ const { isMobile } = usePreferences();
 const editingId = ref<number | null>(null);
 const readonly = ref(false);
 
-@if($has_upload_fields)
-const uploadFieldNames = [{{ $upload_field_names_ts }}] as const;
+@if($has_picture_upload_fields)
+const pictureUploadFieldNames = [{{ $picture_upload_field_names_ts }}] as const;
 @endif
 @if($has_multi_value_fields)
 const multiValueFieldNames = [{{ $multi_value_field_names_ts }}] as const;
 @endif
 
-@if($has_upload_fields)
+@if($has_picture_upload_fields)
 
 function normalizeUploadToFileList(url?: null | string): UploadFile[] {
   if (!url) {
@@ -84,21 +84,11 @@ async function onImageUpload(options: any) {
   }
 }
 
-async function onAttachmentUpload(options: any) {
-  await onImageUpload(options);
-}
-
-async function onFileUpload(options: any) {
-  await onImageUpload(options);
-}
-
 function buildSchema() {
   return build{{ $model_class }}FormSchema({
     readonly: readonly.value,
     onImageChange,
     onImageUpload,
-    onAttachmentUpload,
-    onFileUpload,
   });
 }
 @else
@@ -146,8 +136,8 @@ async function handleConfirm(popupApi: PopupApi) {
   if (!valid) return;
 
   const values = (await formApi.getValues()) as Record<string, unknown>;
-@if($has_upload_fields)
-  for (const fieldName of uploadFieldNames) {
+@if($has_picture_upload_fields)
+  for (const fieldName of pictureUploadFieldNames) {
     if (fieldName in values) {
       values[fieldName] = resolveUploadUrl(values[fieldName]);
     }
@@ -187,11 +177,11 @@ async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
   readonly.value = false;
   formApi.setState({ schema: buildSchema() });
   if (id) {
-@if($has_upload_fields || $has_multi_value_fields)
+@if($has_picture_upload_fields || $has_multi_value_fields)
     const row = { ...(data as {{ $model_class }}Row) } as Record<string, unknown>;
 @endif
-@if($has_upload_fields)
-    for (const fieldName of uploadFieldNames) {
+@if($has_picture_upload_fields)
+    for (const fieldName of pictureUploadFieldNames) {
       const value = row[fieldName];
       if (typeof value === 'string' && value) {
         row[fieldName] = normalizeUploadToFileList(value);
@@ -206,7 +196,7 @@ async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
       }
     }
 @endif
-@if($has_upload_fields || $has_multi_value_fields)
+@if($has_picture_upload_fields || $has_multi_value_fields)
     formApi.setValues(row as {{ $model_class }}Row);
 @else
     formApi.setValues(data as {{ $model_class }}Row);

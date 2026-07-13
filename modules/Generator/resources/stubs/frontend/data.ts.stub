@@ -99,11 +99,9 @@ export function useColumns(
 
 export type {{ $model_class }}FormSchemaParams = {
   readonly?: boolean;
-@if($has_upload_fields)
+@if($has_picture_upload_fields)
   onImageChange?: (event: unknown) => void;
   onImageUpload?: (options: unknown) => Promise<void> | void;
-  onAttachmentUpload?: (options: unknown) => Promise<void> | void;
-  onFileUpload?: (options: unknown) => Promise<void> | void;
 @endif
 };
 

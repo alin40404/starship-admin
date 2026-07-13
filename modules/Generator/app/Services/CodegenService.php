@@ -371,9 +371,12 @@ class CodegenService
             ->values();
 
         $apiRoutePrefix = GeneratorNaming::defaultApiRoutePrefix($config->module_slug);
-        $uploadFieldNames = $this->formSchemaBuilder->uploadFieldNames($formColumns);
+        $pictureUploadFieldNames = $this->formSchemaBuilder->pictureUploadFieldNames($formColumns);
+        $attachmentFieldNames = $this->formSchemaBuilder->attachmentFieldNames($formColumns);
         $multiValueFieldNames = $this->formSchemaBuilder->multiValueFieldNames($formColumns);
-        $hasUploadFields = $uploadFieldNames !== [];
+        $hasPictureUploadFields = $pictureUploadFieldNames !== [];
+        $hasAttachmentFields = $attachmentFieldNames !== [];
+        $hasUploadFields = $hasPictureUploadFields || $hasAttachmentFields;
         $hasMultiValueFields = $multiValueFieldNames !== [];
         $hasDictFields = $formColumns->contains(function ($column): bool {
             $options = is_array($column->form_options ?? null) ? $column->form_options : [];
@@ -428,11 +431,13 @@ class CodegenService
             'relation_imports_body' => $relationImports === [] ? '' : implode(PHP_EOL, $relationImports),
             'relation_loaders_body' => $relationLoaders === [] ? '' : implode(PHP_EOL, $relationLoaders),
             'has_upload_fields' => $hasUploadFields,
+            'has_picture_upload_fields' => $hasPictureUploadFields,
+            'has_attachment_fields' => $hasAttachmentFields,
             'has_multi_value_fields' => $hasMultiValueFields,
             'has_dict_fields' => $hasDictFields,
             'has_relation_fields' => $hasRelationFields,
             'has_rich_editor' => $hasRichEditor,
-            'upload_field_names_ts' => implode(', ', array_map(static fn (string $field): string => "'{$field}'", $uploadFieldNames)),
+            'picture_upload_field_names_ts' => implode(', ', array_map(static fn (string $field): string => "'{$field}'", $pictureUploadFieldNames)),
             'multi_value_field_names_ts' => implode(', ', array_map(static fn (string $field): string => "'{$field}'", $multiValueFieldNames)),
             'api_row_fields_body' => $this->buildApiRowFieldsBody($listColumns),
             'api_page_query_fields_body' => $this->buildApiPageQueryFieldsBody($searchColumns),

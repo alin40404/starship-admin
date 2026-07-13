@@ -4,7 +4,7 @@ namespace Modules\Generator\App\Support;
 
 final class UploadFieldResolver
 {
-  /** @var list<string> */
+    /** @var list<string> */
     protected const IMAGE_FIELD_NAMES = [
         'image', 'images', 'avatar', 'cover', 'logo', 'thumb', 'thumbnail', 'banner', 'pic', 'picture',
     ];
@@ -32,22 +32,19 @@ final class UploadFieldResolver
         }
 
         if (in_array($name, self::FILE_FIELD_NAMES, true)) {
-            $kind = in_array($name, ['brochure', 'manual'], true) ? 'file' : 'attachment';
-            $component = $kind === 'file' ? 'Upload' : 'AttachmentField';
-
-            return self::buildResult($kind, $component, $name, $explicitMax);
+            return self::buildResult('attachment', 'AttachmentField', $name, $explicitMax);
         }
 
         if (str_contains($name, 'image') || str_contains($name, 'avatar') || str_contains($name, 'cover')) {
             return self::buildResult('image', 'PictureUploadField', $name, $explicitMax, defaultSingle: true);
         }
 
-        if (preg_match('/\b(file|attach)\b/', $name)) {
+        if (preg_match('/\b(file|attach|doc|brochure|manual)\b/', $name)) {
             return self::buildResult('attachment', 'AttachmentField', $name, $explicitMax, defaultSingle: true);
         }
 
         if (preg_match('/\b(blob|binary)\b/', $type)) {
-            return self::buildResult('file', 'Upload', $name, $explicitMax, defaultSingle: true);
+            return self::buildResult('attachment', 'AttachmentField', $name, $explicitMax, defaultSingle: true);
         }
 
         return null;

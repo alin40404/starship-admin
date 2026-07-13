@@ -86,3 +86,62 @@ export function parseInputText(text: string, multiple: boolean): string | string
   }
   return text.trim();
 }
+
+export interface AttachmentFileMeta {
+  name: string;
+  size?: number;
+}
+
+/** 从 URL 路径提取文件名 */
+export function extractFileNameFromUrl(url: string): string {
+  const trimmed = url?.trim();
+  if (!trimmed) {
+    return 'file';
+  }
+  try {
+    const pathname = new URL(trimmed, 'http://localhost').pathname;
+    const segment = pathname.split('/').pop() ?? 'file';
+    return decodeURIComponent(segment.split('?')[0] ?? segment) || 'file';
+  } catch {
+    const segment = trimmed.split('/').pop() ?? trimmed;
+    return decodeURIComponent(segment.split('?')[0] ?? segment) || 'file';
+  }
+}
+
+/** 格式化文件大小（与 wkcrm fileSize 一致） */
+export function formatFileSize(value?: null | number | string): string {
+  if (typeof value === 'string' && value) {
+    return value;
+  }
+  if (value == null || value === '' || Number(value) === 0) {
+    return '0 Bytes';
+  }
+  const unitArr = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const srcSize = Number(value);
+  const index = Math.min(
+    Math.floor(Math.log(srcSize) / Math.log(1024)),
+    unitArr.length - 1,
+  );
+  const size = (srcSize / 1024 ** index).toFixed(2);
+  return `${size}${unitArr[index]}`;
+}
+
+export function truncateFileName(name: string, maxLength = 24): string {
+  if (name.length <= maxLength) {
+    return name;
+  }
+  return `${name.slice(0, maxLength)}...`;
+}
+
+/** 列表展示：文件名(大小) */
+export function formatAttachmentDisplayName(
+  name: string,
+  size?: number,
+  maxLength = 24,
+): string {
+  const displayName = truncateFileName(name, maxLength);
+  if (size == null || size === 0) {
+    return displayName;
+  }
+  return `${displayName}(${formatFileSize(size)})`;
+}

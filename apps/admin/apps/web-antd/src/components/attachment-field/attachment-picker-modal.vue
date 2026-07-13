@@ -46,7 +46,7 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-  confirm: [urls: string[]];
+  confirm: [urls: string[], rows: AttachmentRow[]];
   'update:open': [open: boolean];
 }>();
 
@@ -439,7 +439,7 @@ function confirmWithRows(rows: AttachmentRow[]) {
     );
     return;
   }
-  emit('confirm', props.multiple ? urls : [urls[0]!]);
+  emit('confirm', props.multiple ? urls : [urls[0]!], rows);
   closePopup();
 }
 

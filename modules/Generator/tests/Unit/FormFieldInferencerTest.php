@@ -75,6 +75,16 @@ class FormFieldInferencerTest extends TestCase
     }
 
     #[Test]
+    public function upload_field_resolver_detects_brochure_as_attachment(): void
+    {
+        $result = UploadFieldResolver::resolve('brochure', 'varchar(500)');
+
+        $this->assertSame('AttachmentField', $result['component']);
+        $this->assertSame('attachment', $result['kind']);
+        $this->assertSame(1, $result['max_count']);
+    }
+
+    #[Test]
     public function enum_field_resolver_parses_mysql_enum(): void
     {
         $values = EnumFieldResolver::parseEnumColumnType("enum('normal','hidden')");

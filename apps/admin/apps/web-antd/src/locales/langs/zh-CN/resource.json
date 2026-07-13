@@ -38,6 +38,10 @@
     },
     "field": {
       "placeholder": "请选择或上传附件",
+      "entityLabel": "附件",
+      "dragTip": "（点击或拖拽文件到此处上传）",
+      "dragHint": "松开鼠标完成上传",
+      "multiHint": "提示：不限文件格式，支持多个文件上传",
       "upload": "上传",
       "select": "选择",
       "remove": "删除",

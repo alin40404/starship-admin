@@ -26,7 +26,7 @@ const { isMobile } = usePreferences();
 const editingId = ref<number | null>(null);
 const readonly = ref(false);
 
-const uploadFieldNames = ['cover', 'images', 'attachment', 'brochure'] as const;
+const pictureUploadFieldNames = ['cover', 'images'] as const;
 
 const multiValueFieldNames = ['flags'] as const;
 
@@ -79,21 +79,11 @@ async function onImageUpload(options: any) {
   }
 }
 
-async function onAttachmentUpload(options: any) {
-  await onImageUpload(options);
-}
-
-async function onFileUpload(options: any) {
-  await onImageUpload(options);
-}
-
 function buildSchema() {
   return buildProductsFormSchema({
     readonly: readonly.value,
     onImageChange,
     onImageUpload,
-    onAttachmentUpload,
-    onFileUpload,
   });
 }
 
@@ -137,7 +127,7 @@ async function handleConfirm(popupApi: PopupApi) {
   if (!valid) return;
 
   const values = (await formApi.getValues()) as Record<string, unknown>;
-  for (const fieldName of uploadFieldNames) {
+  for (const fieldName of pictureUploadFieldNames) {
     if (fieldName in values) {
       values[fieldName] = resolveUploadUrl(values[fieldName]);
     }
@@ -178,7 +168,7 @@ async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
   if (id) {
     const row = { ...(data as ProductsRow) } as Record<string, unknown>;
 
-    for (const fieldName of uploadFieldNames) {
+    for (const fieldName of pictureUploadFieldNames) {
       const value = row[fieldName];
       if (typeof value === 'string' && value) {
         row[fieldName] = normalizeUploadToFileList(value);

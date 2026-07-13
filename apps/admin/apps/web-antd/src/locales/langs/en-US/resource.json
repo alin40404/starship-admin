@@ -38,6 +38,10 @@
     },
     "field": {
       "placeholder": "Select or upload attachment",
+      "entityLabel": "Attachment",
+      "dragTip": "(Click or drag files here to upload)",
+      "dragHint": "Release to upload",
+      "multiHint": "Hint: Any file type, multiple files supported",
       "upload": "Upload",
       "select": "Select",
       "remove": "Remove",
