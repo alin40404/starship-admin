@@ -5,8 +5,9 @@ namespace Modules\System\App\Support\Sms;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Modules\System\App\Support\SmsConfigRegistrar;
+use Starship\Core\Contracts\Sms\SmsSenderInterface;
 
-final class SmsGateway
+class SmsGateway implements SmsSenderInterface
 {
     public function sendVerificationCode(string $mobile, string $code): void
     {

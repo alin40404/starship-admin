@@ -16,14 +16,16 @@ use Modules\System\App\Http\Middleware\LogAdminOperation;
 use Modules\System\App\Http\Middleware\RenewAdminTokenExpiration;
 use Modules\System\App\Services\ExceptionLogWriter;
 use Modules\System\App\Support\MailConfigRegistrar;
+use Modules\System\App\Support\Sms\SmsGateway;
 use Modules\System\App\Support\StorageConfigRegistrar;
+use Starship\Core\Contracts\Sms\SmsSenderInterface;
 use Throwable;
 
 class SystemServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        $this->app->singleton(SmsSenderInterface::class, SmsGateway::class);
     }
 
     public function boot(): void

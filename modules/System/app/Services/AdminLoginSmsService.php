@@ -6,14 +6,18 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Modules\System\App\Models\Admin;
 use Modules\System\App\Support\AdminRuntimeConfig;
-use Modules\System\App\Support\Sms\SmsGateway;
 use Modules\System\App\Support\SmsConfigRegistrar;
+use Starship\Core\Contracts\Sms\SmsSenderInterface;
 
 class AdminLoginSmsService
 {
     public const CODE_TTL_MINUTES = 5;
 
     public const SEND_COOLDOWN_SECONDS = 60;
+
+    public function __construct(
+        protected SmsSenderInterface $smsSender,
+    ) {}
 
     public function ensureReady(): void
     {
@@ -53,7 +57,7 @@ class AdminLoginSmsService
         $code = (string) random_int(100000, 999999);
 
         try {
-            app(SmsGateway::class)->sendVerificationCode($mobile, $code);
+            $this->smsSender->sendVerificationCode($mobile, $code);
         } catch (\Throwable $exception) {
             throw new \RuntimeException(
                 $exception->getMessage() !== ''
@@ -107,7 +111,7 @@ class AdminLoginSmsService
         $code = (string) random_int(100000, 999999);
 
         try {
-            app(SmsGateway::class)->sendVerificationCode($mobile, $code);
+            $this->smsSender->sendVerificationCode($mobile, $code);
         } catch (\Throwable $exception) {
             throw new \RuntimeException(
                 $exception->getMessage() !== ''

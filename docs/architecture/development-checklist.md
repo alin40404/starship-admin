@@ -30,7 +30,7 @@
 | `starship:module:make` | ✅ | 模块脚手架 |
 | `starship:plugin:make` | ✅ | 插件脚手架 |
 | Generator 端到端 Demo | ✅ | `sa_demo_products` 表 + CLI 全流程已验收 |
-| Contract 体系 | ❌ | 如 `StorageInterface` |
+| Contract 体系 | ⚠️ | `SmsSenderInterface` 已落地；`StorageInterface` 待实现 |
 | Event / Hook | ❌ | 阶段三 |
 | ThemeManager | ❌ | 阶段二 |
 | 脚手架 `starship/admin` | ❌ | `composer create-project` 模板 |
@@ -59,13 +59,13 @@
 #### P1 — 文档与规范对齐
 
 - [x] `starship:plugin:make` 脚手架
-- [ ] 同步 `docs/deployment/Starship_Module_开发规范.md` 与真实目录（Providers 在 `app/Providers/`）
+- [x] 同步 `docs/deployment/Starship_Module_开发规范.md` 与真实目录（Providers 在 `app/Providers/`）
 - [ ] API / 权限码文档与 `module.json` 保持一致
 - [x] System 插件管理页对接 uninstall
 
 #### P2 — 框架产品化前置
 
-- [ ] 最小 Contract（如 `StorageInterface`、`SmsInterface`）
+- [ ] 最小 Contract（`StorageInterface` 等待实现；`SmsSenderInterface` ✅）
 - [ ] 框架级 Feature Test（`php artisan test` 冒烟，仅 backend 应用壳）
 - [x] `packages/core` 包测试（`cd packages/core && composer test`）
 - [ ] 项目模板 `starship/admin`
@@ -160,7 +160,7 @@ Composer 包名：`starship/shop`（需在 `backend/composer.json` 添加 path �
 
 1. `php artisan starship:plugin:discover`
 2. `php artisan starship:plugin:install sms-aliyun`
-3. `php artisan starship:plugin:enable sms-aliyun`（重启 PHP 后路由生效）
+3. `php artisan starship:plugin:enable sms-aliyun`（新 Web 请求自动加载路由）
 4. 管理端 `/dev/plugins` 配置并测试发送
 5. `php artisan starship:plugin:disable sms-aliyun`
 6. `php artisan starship:plugin:uninstall sms-aliyun`

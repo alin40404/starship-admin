@@ -2,34 +2,35 @@
 
 namespace Plugins\SmsAliyun\Http\Controllers\Admin;
 
-use Starship\Core\Plugin\PluginConfigRepository;
 use App\Http\Controllers\Controller;
-use Starship\Core\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Starship\Core\Contracts\Sms\SmsSenderInterface;
+use Starship\Core\Support\ApiResponse;
 
 class SmsAliyunController extends Controller
 {
-    public function test(Request $request, PluginConfigRepository $pluginConfigRepository): JsonResponse
+    public function test(Request $request, SmsSenderInterface $smsSender): JsonResponse
     {
         $data = $request->validate([
             'mobile' => ['required', 'string', 'max:20'],
         ]);
 
-        $accessKey = (string) $pluginConfigRepository->get('sms-aliyun', 'access_key', '');
-        $secretKey = (string) $pluginConfigRepository->get('sms-aliyun', 'secret_key', '');
-        $signName = (string) $pluginConfigRepository->get('sms-aliyun', 'sign_name', '');
-        $templateCode = (string) $pluginConfigRepository->get('sms-aliyun', 'template_code', '');
+        $code = (string) random_int(100000, 999999);
 
-        if ($accessKey === '' || $secretKey === '' || $signName === '' || $templateCode === '') {
-            return ApiResponse::error(__('sms-aliyun::messages.config_incomplete'), 422);
+        try {
+            $smsSender->sendVerificationCode($data['mobile'], $code);
+        } catch (\Throwable $exception) {
+            return ApiResponse::error(
+                $exception->getMessage() !== ''
+                    ? $exception->getMessage()
+                    : __('sms-aliyun::messages.send_failed'),
+                422,
+            );
         }
 
         return ApiResponse::success([
             'mobile' => $data['mobile'],
-            'sign_name' => $signName,
-            'template_code' => $templateCode,
-            'message' => '测试请求已通过插件路由校验（第一版不调用真实阿里云 SDK）',
-        ], '测试成功');
+        ], __('sms-aliyun::messages.test_success'));
     }
 }

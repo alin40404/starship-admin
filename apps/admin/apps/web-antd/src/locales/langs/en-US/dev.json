@@ -100,7 +100,7 @@
     "configTitle": "Plugin Configuration",
     "configTab": "Configuration",
     "testTab": "Test",
-    "testHint": "First version validates plugin routes and config only; does not call the real Alibaba Cloud SDK.",
+    "testHint": "Sends a test verification code via SmsSenderInterface. Valid Alibaba Cloud SMS credentials are required.",
     "statusDiscovered": "Not Installed",
     "statusInstalled": "Installed",
     "statusEnabled": "Enabled",

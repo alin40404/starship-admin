@@ -3,6 +3,8 @@
 namespace Starship\Core\Tests\Feature;
 
 use Illuminate\Support\Facades\Route;
+use Plugins\SmsAliyun\Services\AliyunSmsSender;
+use Starship\Core\Contracts\Sms\SmsSenderInterface;
 use Starship\Core\Models\Plugin as PluginModel;
 use Starship\Core\Plugin\Plugin;
 use Starship\Core\Plugin\PluginConfigRepository;
@@ -61,8 +63,10 @@ class SmsAliyunPluginLifecycleTest extends TestCase
         $this->assertNotNull($plugin);
         $this->assertTrue($plugin->isEnabled());
 
-        // 模拟 PHP 重启后由 PluginLoader 注册已启用插件路由
+        // 模拟新请求由 PluginLoader 注册已启用插件路由与 Contract 绑定
         $this->app->make(PluginLoader::class)->register($plugin);
+
+        $this->assertInstanceOf(AliyunSmsSender::class, $this->app->make(SmsSenderInterface::class));
 
         $uris = collect(Route::getRoutes()->getRoutes())
             ->map(static fn ($route) => $route->uri())

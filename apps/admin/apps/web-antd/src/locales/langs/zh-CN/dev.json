@@ -100,7 +100,7 @@
     "configTitle": "插件配置",
     "configTab": "配置",
     "testTab": "测试",
-    "testHint": "第一版仅验证插件路由与配置，不调用真实阿里云 SDK。",
+    "testHint": "通过 SmsSenderInterface 发送测试验证码，需填写有效的阿里云短信配置。",
     "statusDiscovered": "未安装",
     "statusInstalled": "已安装",
     "statusEnabled": "已启用",

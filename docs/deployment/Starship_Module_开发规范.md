@@ -30,48 +30,34 @@ Module特点：
 
 # 2. Module目录规范
 
-    modules/Shop/
+以 `starship:module:make Shop` 脚手架生成为准：
 
+```
+modules/Shop/
+├── composer.json
+├── module.json
+├── app/
+│   ├── Http/Controllers/Admin/
+│   ├── Models/
+│   ├── Services/
+│   ├── Support/          # *Permissions.php 等
+│   └── Providers/
+│       └── ShopServiceProvider.php
+├── routes/
+│   └── admin.php
+├── database/
+│   ├── migrations/
+│   └── seeders/
+└── resources/
+    └── lang/
+```
 
-    ├── module.json
+说明：
 
-    ├── app/
-
-    │   ├── Models
-
-    │   ├── Services
-
-    │   ├── Controllers
-
-    │   ├── Repositories
-
-    │   └── Policies
-
-
-    ├── routes/
-
-    │   ├── admin.php
-
-    │   └── api.php
-
-
-    ├── database/
-
-    │   ├── migrations
-
-    │   └── seeders
-
-
-    ├── resources/
-
-    │   ├── lang
-
-    │   └── views
-
-
-    ├── permissions/
-
-    └── Providers/
+- Controller 位于 `app/Http/Controllers/Admin/`，非根级 `app/Controllers`
+- Provider 位于 `app/Providers/`，非根级 `Providers/`
+- 权限码为 `app/Support/*Permissions.php` 常量类，无独立 `permissions/` 目录
+- Repository / Policies 层按需添加，非脚手架默认内容
 
 ------------------------------------------------------------------------
 
