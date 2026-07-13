@@ -27,10 +27,8 @@ const editingId = ref<number | null>(null);
 const readonly = ref(false);
 
 const singlePictureUploadFieldNames = ['cover'] as const;
-@if($has_multi_picture_upload_fields)
 const multiPictureUploadFieldNames = ['images'] as const;
 
-@endif
 const multiAttachmentFieldNames = ['attachments'] as const;
 
 const multiValueFieldNames = ['flags'] as const;
@@ -164,14 +162,12 @@ async function handleConfirm(popupApi: PopupApi) {
       values[fieldName] = resolveUploadUrl(values[fieldName]);
     }
   }
-@if($has_multi_picture_upload_fields)
   for (const fieldName of multiPictureUploadFieldNames) {
     if (fieldName in values) {
       values[fieldName] = resolveMultiUploadUrls(values[fieldName]);
     }
   }
 
-@endif
   for (const fieldName of multiAttachmentFieldNames) {
     const current = values[fieldName];
     if (Array.isArray(current)) {
@@ -220,7 +216,6 @@ async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
         row[fieldName] = normalizeUploadToFileList(value);
       }
     }
-@if($has_multi_picture_upload_fields)
     for (const fieldName of multiPictureUploadFieldNames) {
       const value = row[fieldName];
       if (typeof value === 'string' && value) {
@@ -228,7 +223,6 @@ async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
       }
     }
 
-@endif
     for (const fieldName of multiAttachmentFieldNames) {
       const value = row[fieldName];
       if (typeof value === 'string' && value) {

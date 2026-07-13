@@ -594,7 +594,7 @@ export function buildProductsFormSchema(
         disabled,
       },
       fieldName: 'attachments',
-      formItemClass: 'attachment-form-item col-span-full w-full items-start',
+      formItemClass: 'attachment-form-item items-start',
       label: $t('generator.products.columns.attachments'),
     },
     {

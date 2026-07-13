@@ -38,23 +38,29 @@ class TemplateRenderer
      */
     protected function processIf(string $content, array $data): string
     {
-        return (string) preg_replace_callback(
-            '/@if\(\$([^)]+)\)(.*?)@endif/s',
-            function (array $matches) use ($data): string {
-                $condition = $matches[1];
-                $body = $matches[2];
-                $matched = $this->evaluateIfCondition($condition, $data);
+        $pattern = '/@if\(\$([^)]+)\)((?:(?!@if).)*?)@endif/s';
 
-                if (str_contains($body, '@else')) {
-                    [$ifPart, $elsePart] = explode('@else', $body, 2);
+        while (preg_match($pattern, $content)) {
+            $content = (string) preg_replace_callback(
+                $pattern,
+                function (array $matches) use ($data): string {
+                    $condition = $matches[1];
+                    $body = $matches[2];
+                    $matched = $this->evaluateIfCondition($condition, $data);
 
-                    return $this->renderIfBody($matched ? $ifPart : $elsePart, true);
-                }
+                    if (str_contains($body, '@else')) {
+                        [$ifPart, $elsePart] = explode('@else', $body, 2);
 
-                return $this->renderIfBody($body, $matched);
-            },
-            $content,
-        );
+                        return $this->renderIfBody($matched ? $ifPart : $elsePart, true);
+                    }
+
+                    return $this->renderIfBody($body, $matched);
+                },
+                $content,
+            );
+        }
+
+        return $content;
     }
 
     /**

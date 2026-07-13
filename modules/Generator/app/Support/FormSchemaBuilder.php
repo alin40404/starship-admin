@@ -685,9 +685,7 @@ final class FormSchemaBuilder
      */
     protected function buildAttachmentFieldLines(string $columnKey, string $i18nPrefix, array $options): array
     {
-        $formItemClass = $this->uploadUsesFullRow($options)
-            ? 'attachment-form-item col-span-full w-full items-start'
-            : 'attachment-form-item items-start';
+        $formItemClass = 'attachment-form-item items-start';
         $lines = [];
         $lines[] = '    {';
         $lines[] = "      component: 'AttachmentField',";
