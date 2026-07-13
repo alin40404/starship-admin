@@ -3,15 +3,15 @@
 namespace Modules\Generator\App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Modules\Generator\App\Services\CodegenService;
 use Modules\Generator\App\Services\TableConfigService;
-use Modules\Generator\App\Support\GeneratorNaming;
 use Modules\Generator\App\Support\ModulePathResolver;
 
 class GeneratorImportCommand extends Command
 {
     protected $signature = 'starship:generator:import
                             {table : 物理表名}
-                            {--module= : 目标模块，如 System}
+                            {--module= : 目标模块，如 system（大小写不敏感）}
                             {--class= : 类名覆盖}
                             {--business= : 业务中文名}
                             {--route-group= : 前端 views 分组，如 org}
@@ -22,14 +22,16 @@ class GeneratorImportCommand extends Command
 
     protected $description = '从数据库导入表结构到生成器配置';
 
-    public function handle(TableConfigService $tableConfigService, ModulePathResolver $modulePathResolver): int
-    {
+    public function handle(
+        TableConfigService $tableConfigService,
+        CodegenService $codegenService,
+        ModulePathResolver $modulePathResolver,
+    ): int {
         $table = (string) $this->argument('table');
-        $naming = GeneratorNaming::fromTableName($table, $this->option('module'));
 
         $available = $modulePathResolver->availableModules();
-        $module = $this->option('module') ?? $naming['module_slug'];
-        if (! in_array(strtolower((string) $module), array_map('strtolower', $available), true)) {
+        $module = $codegenService->resolveCliModuleOption($table, $this->option('module'));
+        if (! $modulePathResolver->moduleExists($module)) {
             $this->error('目标模块不存在或未启用：'.$module);
             $this->line('可用模块：'.implode(', ', $available));
 

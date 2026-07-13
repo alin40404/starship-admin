@@ -32,6 +32,38 @@ final class ModulePathResolver
             ->all();
     }
 
+    /**
+     * 将 CLI/UI 传入的模块名规范为 module.json 的 name（大小写不敏感）。
+     */
+    public function canonicalModuleSlug(string $moduleSlug): string
+    {
+        $normalized = strtolower(trim($moduleSlug));
+        if ($normalized === '') {
+            return $moduleSlug;
+        }
+
+        foreach ((new ModuleManager($this->modulesPath))->all() as $module) {
+            if (strtolower($module->name()) === $normalized) {
+                return $module->name();
+            }
+        }
+
+        return trim($moduleSlug);
+    }
+
+    public function moduleExists(string $moduleSlug): bool
+    {
+        $normalized = strtolower(trim($moduleSlug));
+
+        foreach ((new ModuleManager($this->modulesPath))->enabled() as $module) {
+            if (strtolower($module->name()) === $normalized) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function resolveModuleDirectory(string $moduleSlug): string
     {
         $slug = strtolower($moduleSlug);

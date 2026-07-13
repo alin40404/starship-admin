@@ -8,6 +8,8 @@ use Modules\Generator\App\Models\GeneratorRecord;
 use Modules\Generator\App\Models\GeneratorTable;
 use Modules\Generator\App\Support\ColumnLabelFormatter;
 use Modules\Generator\App\Support\GeneratorNaming;
+use Modules\Generator\App\Support\StatusFieldProfile;
+use Modules\Generator\App\Support\StatusFieldResolver;
 use Modules\Generator\App\Support\ModulePathResolver;
 
 class CodegenService
@@ -81,6 +83,25 @@ class CodegenService
     public function delete(string $tableName, array $options = []): array
     {
         return $this->buildDeleteResult($tableName, $options, dryRun: false);
+    }
+
+    /**
+     * CLI 未传 --module 时：优先用 generator_tables 记录，否则按表名推断。
+     */
+    public function resolveCliModuleOption(string $tableName, ?string $requestedModule = null): string
+    {
+        if ($requestedModule !== null && trim($requestedModule) !== '') {
+            return $this->modulePathResolver->canonicalModuleSlug($requestedModule);
+        }
+
+        $config = $this->findGeneratorConfig($this->schemaReader->resolveTableName($tableName));
+        if ($config !== null) {
+            return $this->modulePathResolver->canonicalModuleSlug($config->module_slug);
+        }
+
+        return $this->modulePathResolver->canonicalModuleSlug(
+            GeneratorNaming::fromTableName($tableName)['module_slug'],
+        );
     }
 
     /**
@@ -183,12 +204,13 @@ class CodegenService
         }
 
         if (strtolower($config->module_slug) !== $requestedModule) {
+            $canonical = $this->modulePathResolver->canonicalModuleSlug($config->module_slug);
             throw new \InvalidArgumentException(sprintf(
                 '表 %s 的生成记录属于模块 %s，与 --module=%s 不一致。请使用 --module=%s，或省略 --module 按记录%s。',
                 $config->table_name,
-                $config->module_slug,
+                $canonical,
                 $options['module'],
-                $config->module_slug,
+                $canonical,
                 $action,
             ));
         }
@@ -224,7 +246,9 @@ class CodegenService
             isset($options['module']) ? (string) $options['module'] : null,
         );
 
-        $moduleSlug = (string) ($options['module'] ?? $naming['module_slug']);
+        $moduleSlug = $this->modulePathResolver->canonicalModuleSlug(
+            (string) ($options['module'] ?? $naming['module_slug']),
+        );
         $routeGroup = (string) ($options['route_group'] ?? GeneratorNaming::defaultRouteGroup($moduleSlug));
         $apiPrefix = (string) ($options['api_prefix'] ?? $naming['api_prefix']);
         $routePath = (string) ($options['route_path'] ?? '/'.$routeGroup.'/'.str_replace('_', '-', $apiPrefix));
@@ -333,6 +357,13 @@ class CodegenService
 
         $hasStatus = $columns->contains(fn ($column): bool => $column->column_name === 'status');
         $hasSoftDelete = (bool) ($config->options['soft_delete'] ?? false);
+        $statusProfile = $hasStatus ? $this->resolveStatusProfile($config, $columns) : null;
+        if ($statusProfile !== null) {
+            $statusColumn = $columns->first(fn ($column) => $column->column_name === 'status');
+            if ($statusColumn !== null) {
+                $statusColumn->ts_type = $statusProfile->tsType();
+            }
+        }
         $filteredSearchColumns = $searchColumns
             ->filter(fn ($column): bool => ! in_array($column->column_name, $keywordFields, true))
             ->values();
@@ -370,18 +401,26 @@ class CodegenService
             'filtered_search_columns' => $filteredSearchColumns,
             'keyword_fields' => $keywordFields,
             'keyword_fields_ts' => implode(', ', array_map(static fn (string $field): string => "'{$field}'", $keywordFields)),
-            'form_rules_body' => $this->buildFormRulesBody($formColumns),
+            'form_rules_body' => $this->buildFormRulesBody($formColumns, $statusProfile),
             'allowed_sorts_body' => $this->buildAllowedSortsBody($listColumns),
             'search_filters_body' => $this->buildSearchFiltersBody($filteredSearchColumns),
-            'grid_form_schema_body' => $this->buildGridFormSchemaBody($searchColumns, $i18nPrefix),
-            'form_schema_body' => $this->buildFormSchemaBody($formColumns, $i18nPrefix),
+            'grid_form_schema_body' => $this->buildGridFormSchemaBody($searchColumns, $i18nPrefix, $statusProfile),
+            'form_schema_body' => $this->buildFormSchemaBody($formColumns, $i18nPrefix, $statusProfile),
             'api_row_fields_body' => $this->buildApiRowFieldsBody($listColumns),
             'api_page_query_fields_body' => $this->buildApiPageQueryFieldsBody($searchColumns),
             'api_save_payload_fields_body' => $this->buildApiSavePayloadFieldsBody($formColumns),
             'index_query_fields_body' => $this->buildIndexQueryFieldsBody($searchColumns),
-            'list_columns_body' => $this->buildListColumnsBody($listColumns, $config->class_name, strtoupper(str_replace(['.', '-'], '_', $config->permission_prefix)).'_PERMISSIONS', $i18nPrefix),
+            'list_columns_body' => $this->buildListColumnsBody($listColumns, $config->class_name, strtoupper(str_replace(['.', '-'], '_', $config->permission_prefix)).'_PERMISSIONS', $i18nPrefix, $statusProfile),
             'primary_label_field' => $listColumns->first()?->column_name ?? 'id',
             'has_status' => $hasStatus,
+            'status_is_integer' => $statusProfile?->isInteger() ?? true,
+            'status_ts_union' => $statusProfile?->tsUnionType() ?? '0 | 1',
+            'status_enabled_js' => $statusProfile?->jsLiteral($statusProfile->enabledValue) ?? '1',
+            'status_disabled_js' => $statusProfile?->jsLiteral($statusProfile->disabledValue) ?? '0',
+            'status_enabled_label_ts' => $statusProfile?->labelTsExpr($statusProfile->enabledValue) ?? "\$t('common.enabled')",
+            'status_disabled_label_ts' => $statusProfile?->labelTsExpr($statusProfile->disabledValue) ?? "\$t('common.disabled')",
+            'status_batch_validation_body' => $this->buildStatusBatchValidationBody($statusProfile),
+            'status_form_default_js' => $statusProfile?->jsLiteral($statusProfile->enabledValue) ?? '1',
             'has_soft_delete' => $hasSoftDelete,
             'has_batch_delete' => (bool) ($config->options['batch_delete'] ?? true),
             'has_batch_status' => (bool) ($config->options['batch_status'] ?? $hasStatus),
@@ -552,6 +591,8 @@ class CodegenService
             'zh-CN' => [
                 'title' => $businessName,
                 'searchPlaceholder' => '搜索'.$businessName,
+                'batchDeleteConfirm' => '确定删除选中的 {0} 条'.$businessName.'吗？',
+                'batchStatusConfirm' => '确定将选中的 {0} 条'.$businessName.'批量【{1}】吗？',
                 'columns' => $columnLabelsZh,
                 'form' => [
                     'createTitle' => '新增'.$businessName,
@@ -562,6 +603,8 @@ class CodegenService
             'en-US' => [
                 'title' => $businessNameEn,
                 'searchPlaceholder' => 'Search '.$businessNameEn,
+                'batchDeleteConfirm' => 'Delete {0} selected '.$businessNameEn.' record(s)?',
+                'batchStatusConfirm' => 'Batch set {0} '.$businessNameEn.' record(s) to [{1}]?',
                 'columns' => $columnLabelsEn,
                 'form' => [
                     'createTitle' => 'Create '.$businessNameEn,
@@ -580,14 +623,19 @@ class CodegenService
         return $content."\n";
     }
 
-    protected function buildFormRulesBody($formColumns): string
+    protected function buildFormRulesBody($formColumns, ?StatusFieldProfile $statusProfile = null): string
     {
         $lines = [];
         foreach ($formColumns as $column) {
-            $rules = collect($column->validation_rules ?? [])
+            $rules = collect($column->validation_rules ?? []);
+            if ($column->column_name === 'status' && $statusProfile !== null) {
+                $rules = $rules->reject(static fn (string $rule): bool => str_starts_with($rule, 'in:'));
+                $rules->push($statusProfile->laravelInRule());
+            }
+            $ruleString = $rules
                 ->map(static fn (string $rule): string => "'{$rule}'")
                 ->implode(', ');
-            $lines[] = "            '{$column->column_name}' => [{$rules}],";
+            $lines[] = "            '{$column->column_name}' => [{$ruleString}],";
         }
 
         return implode(PHP_EOL, $lines);
@@ -607,6 +655,20 @@ class CodegenService
     {
         $lines = [];
         foreach ($searchColumns as $column) {
+            if ($column->column_name === 'status') {
+                if ($column->ts_type === 'number') {
+                    $lines[] = "        if (\$request->filled('status')) {";
+                    $lines[] = "            \$query->where('status', (int) \$request->get('status'));";
+                    $lines[] = '        }';
+                } else {
+                    $lines[] = "        if (\$request->filled('status')) {";
+                    $lines[] = "            \$query->where('status', (string) \$request->get('status'));";
+                    $lines[] = '        }';
+                }
+
+                continue;
+            }
+
             if ($column->ts_type === 'number') {
                 $lines[] = "        if (\$request->filled('{$column->column_name}')) {";
                 $lines[] = "            \$query->where('{$column->column_name}', (int) \$request->get('{$column->column_name}'));";
@@ -621,12 +683,30 @@ class CodegenService
         return implode(PHP_EOL, $lines);
     }
 
-    protected function buildGridFormSchemaBody($searchColumns, string $i18nPrefix): string
+    protected function buildGridFormSchemaBody($searchColumns, string $i18nPrefix, ?StatusFieldProfile $statusProfile): string
     {
         $lines = [];
         foreach ($searchColumns as $column) {
-            $component = $column->form_component === 'Switch' ? 'Select' : $column->form_component;
             $columnKey = $column->column_name;
+            if ($column->column_name === 'status' && $statusProfile !== null) {
+                $lines[] = '    {';
+                $lines[] = "      component: 'Select',";
+                $lines[] = '      componentProps: {';
+                $lines[] = "        allowClear: true,";
+                $lines[] = "        class: 'w-full',";
+                $lines[] = "        options: [";
+                $lines[] = $this->buildStatusOptionLines($statusProfile, '        ');
+                $lines[] = '        ],';
+                $lines[] = "        placeholder: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
+                $lines[] = '      },';
+                $lines[] = "      fieldName: '{$columnKey}',";
+                $lines[] = "      label: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
+                $lines[] = '    },';
+
+                continue;
+            }
+
+            $component = $column->form_component === 'Switch' ? 'Select' : $column->form_component;
             $lines[] = '    {';
             $lines[] = "      component: '{$component}',";
             $lines[] = "      componentProps: { class: 'w-full', placeholder: \$t('{$i18nPrefix}.columns.{$columnKey}') },";
@@ -638,23 +718,41 @@ class CodegenService
         return implode(PHP_EOL, $lines);
     }
 
-    protected function buildListColumnsBody($listColumns, string $modelClass, string $permissionsExportName, string $i18nPrefix): string
-    {
+    protected function buildListColumnsBody(
+        $listColumns,
+        string $modelClass,
+        string $permissionsExportName,
+        string $i18nPrefix,
+        ?StatusFieldProfile $statusProfile,
+    ): string {
         $lines = [];
         foreach ($listColumns as $column) {
             $columnKey = $column->column_name;
             if ($column->column_name === 'status') {
-                $lines[] = "    {";
+                $statusCast = $statusProfile?->isInteger() ?? true
+                    ? 'number'
+                    : "{$modelClass}Row['status']";
+                $lines[] = '    {';
                 $lines[] = "      field: 'status',";
-                $lines[] = "      sortable: true,";
+                $lines[] = '      sortable: true,';
                 $lines[] = "      title: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
                 $lines[] = '      width: 100,';
                 $lines[] = '      cellRender: {';
                 $lines[] = '        attrs: {';
                 $lines[] = "          async beforeChange(newVal: unknown, row: {$modelClass}Row) {";
-                $lines[] = "            return onStatusBeforeChange(newVal as number, row);";
+                $lines[] = "            return onStatusBeforeChange(newVal as {$statusCast}, row);";
                 $lines[] = '          },';
-                $lines[] = '          getSwitchProps: () => ({ disabled: !canUpdate }),';
+                if ($statusProfile !== null && ! $statusProfile->isInteger()) {
+                    $lines[] = '          getSwitchProps: () => ({';
+                    $lines[] = "            checkedChildren: {$statusProfile->labelTsExpr($statusProfile->enabledValue)},";
+                    $lines[] = "            checkedValue: {$statusProfile->jsLiteral($statusProfile->enabledValue)},";
+                    $lines[] = '            disabled: !canUpdate,';
+                    $lines[] = "            unCheckedChildren: {$statusProfile->labelTsExpr($statusProfile->disabledValue)},";
+                    $lines[] = "            unCheckedValue: {$statusProfile->jsLiteral($statusProfile->disabledValue)},";
+                    $lines[] = '          }),';
+                } else {
+                    $lines[] = '          getSwitchProps: () => ({ disabled: !canUpdate }),';
+                }
                 $lines[] = '        },';
                 $lines[] = "        name: 'CellSwitch',";
                 $lines[] = '      },';
@@ -689,7 +787,7 @@ class CodegenService
         return implode(PHP_EOL, $lines);
     }
 
-    protected function buildFormSchemaBody($formColumns, string $i18nPrefix): string
+    protected function buildFormSchemaBody($formColumns, string $i18nPrefix, ?StatusFieldProfile $statusProfile): string
     {
         $lines = [];
         foreach ($formColumns as $column) {
@@ -697,7 +795,18 @@ class CodegenService
             $columnKey = $column->column_name;
             $lines[] = '    {';
             $lines[] = "      component: '{$component}',";
-            if ($component === 'RadioGroup') {
+            if ($column->column_name === 'status' && $statusProfile !== null) {
+                $lines[] = '      componentProps: {';
+                $lines[] = "        buttonStyle: 'solid',";
+                $lines[] = "        class: 'w-full',";
+                $lines[] = '        disabled,';
+                $lines[] = "        optionType: 'button',";
+                $lines[] = '        options: [';
+                $lines[] = $this->buildStatusOptionLines($statusProfile, '        ');
+                $lines[] = '        ],';
+                $lines[] = '      },';
+                $lines[] = "      defaultValue: {$statusProfile->jsLiteral($statusProfile->enabledValue)},";
+            } elseif ($component === 'RadioGroup') {
                 $lines[] = '      componentProps: {';
                 $lines[] = "        buttonStyle: 'solid',";
                 $lines[] = "        class: 'w-full',";
@@ -789,5 +898,50 @@ class CodegenService
             $column->column_comment ?? null,
             $column->column_name ?? null,
         );
+    }
+
+    protected function resolveStatusProfile(GeneratorTable $config, $columns): ?StatusFieldProfile
+    {
+        $statusColumn = $columns->first(fn ($column) => $column->column_name === 'status');
+        if ($statusColumn === null) {
+            return null;
+        }
+
+        $schemaComment = null;
+        foreach ($this->schemaReader->listColumns($config->table_name) as $schemaColumn) {
+            if ($schemaColumn['name'] === 'status') {
+                $schemaComment = $schemaColumn['comment'] ?? null;
+                break;
+            }
+        }
+
+        return StatusFieldResolver::fromColumnTypeAndComment(
+            (string) $statusColumn->column_type,
+            $schemaComment ?? (string) ($statusColumn->column_comment ?? null),
+            is_array($statusColumn->validation_rules) ? $statusColumn->validation_rules : null,
+        );
+    }
+
+    protected function buildStatusBatchValidationBody(?StatusFieldProfile $profile): string
+    {
+        if ($profile === null) {
+            return "'status' => ['required', 'integer', 'in:0,1'],";
+        }
+
+        return sprintf(
+            "'status' => ['required', '%s', '%s'],",
+            $profile->laravelValidationType(),
+            $profile->laravelInRule(),
+        );
+    }
+
+    protected function buildStatusOptionLines(StatusFieldProfile $profile, string $indent): string
+    {
+        $lines = [];
+        foreach ($profile->allowedValues as $value) {
+            $lines[] = $indent."  { label: {$profile->labelTsExpr($value)}, value: {$profile->jsLiteral($value)} },";
+        }
+
+        return implode(PHP_EOL, $lines);
     }
 }

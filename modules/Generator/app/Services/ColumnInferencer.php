@@ -3,6 +3,7 @@
 namespace Modules\Generator\App\Services;
 
 use Modules\Generator\App\Support\ColumnLabelFormatter;
+use Modules\Generator\App\Support\StatusFieldResolver;
 
 class ColumnInferencer
 {
@@ -55,29 +56,35 @@ class ColumnInferencer
         $name = $column['name'];
         $type = strtolower($column['type']);
         $isPk = $column['key'] === 'PRI';
-        $isSystem = in_array($name, $this->systemColumns, true);
         $isStatus = $name === 'status';
         $isJson = str_contains($type, 'json');
+        $comment = $column['comment'] ?? null;
 
         return [
             'column_name' => $name,
             'column_type' => $column['type'],
-            'column_comment' => ColumnLabelFormatter::fromComment($column['comment'], $name),
-            'ts_type' => $this->inferTsType($type, $isStatus),
+            'column_comment' => ColumnLabelFormatter::fromComment($comment, $name),
+            'ts_type' => $this->inferTsType($type, $isStatus, $comment),
             'is_pk' => $isPk,
             'is_list' => ! $isPk && ! in_array($name, ['created_at', 'updated_at', 'deleted_at', 'created_by', 'updated_by'], true),
             'is_search' => in_array($name, ['name', 'title', 'code', 'status'], true),
             'is_form' => ! $isPk && ! in_array($name, ['created_at', 'updated_at', 'deleted_at', 'created_by', 'updated_by'], true) && ! $isJson,
             'form_component' => $this->inferFormComponent($name, $type),
             'dict_code' => null,
-            'validation_rules' => $this->inferValidationRules($name, $type, $column['nullable']),
+            'validation_rules' => $this->inferValidationRules($name, $type, $column['nullable'], $comment),
             'sort' => $sort,
         ];
     }
 
-    protected function inferTsType(string $type, bool $isStatus): string
+    protected function inferTsType(string $type, bool $isStatus, ?string $comment): string
     {
-        if ($isStatus || preg_match('/\b(int|tinyint|smallint|mediumint|bigint)\b/', $type)) {
+        if ($isStatus) {
+            $profile = StatusFieldResolver::fromColumnTypeAndComment($type, $comment);
+
+            return $profile?->tsType() ?? 'number';
+        }
+
+        if (preg_match('/\b(int|tinyint|smallint|mediumint|bigint)\b/', $type)) {
             return 'number';
         }
 
@@ -116,7 +123,7 @@ class ColumnInferencer
     /**
      * @return list<string>
      */
-    protected function inferValidationRules(string $name, string $type, bool $nullable): array
+    protected function inferValidationRules(string $name, string $type, bool $nullable, ?string $comment): array
     {
         if (in_array($name, ['created_at', 'updated_at', 'deleted_at', 'created_by', 'updated_by'], true)) {
             return [];
@@ -132,7 +139,10 @@ class ColumnInferencer
         }
 
         if ($name === 'status') {
-            $rules[] = 'in:0,1';
+            $profile = StatusFieldResolver::fromColumnTypeAndComment($type, $comment);
+            if ($profile !== null) {
+                $rules[] = $profile->laravelInRule();
+            }
         }
 
         return $rules;

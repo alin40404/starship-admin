@@ -51,7 +51,7 @@ export function {{ $batch_delete_fn_name }}(ids: number[]) {
 @endif
 @if($has_batch_status)
 
-export function batchUpdate{{ $model_class }}Status(ids: number[], status: 0 | 1) {
+export function batchUpdate{{ $model_class }}Status(ids: number[], status: {{ $status_ts_union }}) {
   return requestClient.put<{ updated: number }>('/{{ $api_route_prefix }}/{{ $api_prefix }}/batch-status', {
     ids,
     status,

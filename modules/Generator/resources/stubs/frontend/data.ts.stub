@@ -47,7 +47,7 @@ export function build{{ $model_class }}MobileCrudConfig(params: {
 
 export function useColumns(
   onActionClick: OnActionClickFn<{{ $model_class }}Row>,
-  onStatusBeforeChange: (newVal: number, row: {{ $model_class }}Row) => Promise<boolean>,
+  onStatusBeforeChange: (newVal: {{ $model_class }}Row['status'], row: {{ $model_class }}Row) => Promise<boolean>,
   access: {{ $model_class }}AccessChecker,
 ): CrudGridColumn<{{ $model_class }}Row>[] {
   const canUpdate = access.can({{ $permissions_export_name }}.UPDATE);

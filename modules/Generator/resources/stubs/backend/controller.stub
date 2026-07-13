@@ -87,7 +87,7 @@ class {{ $controller_class }} extends Controller
         $data = $request->validate([
             'ids' => ['required', 'array', 'min:1'],
             'ids.*' => ['integer'],
-            'status' => ['required', 'integer', 'in:0,1'],
+            {!! $status_batch_validation_body !!}
         ]);
 
         $updated = {{ $model_class }}::query()

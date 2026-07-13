@@ -25,8 +25,8 @@ php artisan starship:generator:inspect {table}
 # 3. 预览将生成的文件
 php artisan starship:generator:crud {table} --preview
 
-# 4. 执行生成
-php artisan starship:generator:crud {table} --module=System --business=业务名称
+# 4. 执行生成（--module 与 module.json 的 name 一致，小写即可，大小写不敏感）
+php artisan starship:generator:crud {table} --module=system --business=业务名称
 
 # 5. 若文件已存在，需要覆盖时
 php artisan starship:generator:crud {table} --force
@@ -36,7 +36,7 @@ php artisan starship:generator:crud {table} --force
 
 ```bash
 php artisan starship:generator:crud {table} \
-  --module=System \
+  --module=system \
   --class=YourModel \
   --business=业务名称 \
   --route-group=org \
@@ -53,23 +53,24 @@ php artisan starship:generator:crud {table} \
 
 ```bash
 # 预览将删除的文件 / 菜单
-php artisan starship:generator:crud {table} --module=System --delete --preview
+php artisan starship:generator:crud {table} --module=system --delete --preview
 
 # 删除生成的代码、菜单与 generator_tables 配置
-php artisan starship:generator:crud {table} --module=System --delete
+php artisan starship:generator:crud {table} --module=system --delete
 
 # 同时删除物理表
-php artisan starship:generator:crud {table} --module=System --delete --drop-table
+php artisan starship:generator:crud {table} --module=system --delete --drop-table
 
 # 跳过确认
-php artisan starship:generator:crud {table} --module=System --delete --force
+php artisan starship:generator:crud {table} --module=system --delete --force
 ```
 
 **`--module` 与删除：**
 
-- 若 `generator_tables` 中已有该表记录：**`--module` 必须与记录中的 `module_slug` 一致**，否则会报错并中止，避免误删其他模块产物。
-- 若无 DB 记录：按 `--module` 及当前参数**推断路径**删除文件（不删 `generator_tables`）。
-- 省略 `--module` 时：按 DB 记录中的模块删除；无记录则按默认推断。
+- 若 `generator_tables` 中已有该表记录：**省略 `--module` 即可**，自动使用记录中的 `module_slug`（如 `demo_products` 不会误推断为 `Demo` 模块）。
+- 若指定 `--module`：**必须与记录中的 `module_slug` 一致**（大小写不敏感，`system` 与 `System` 等价），否则会报错并中止，避免误删其他模块产物。
+- 若无 DB 记录：按 `--module` 及当前参数**推断路径**删除文件（不删 `generator_tables`）；未指定时按表名前缀推断（如 `demo_products` → `Demo`，通常需显式传 `--module`）。
+- 省略 `--module` 时：有记录按记录删除；无记录则按表名推断。
 
 删除范围：
 - 后端 Model / Controller / Permissions / admin-generator 路由文件
@@ -80,7 +81,11 @@ php artisan starship:generator:crud {table} --module=System --delete --force
 
 ## 生成策略（已确认）
 
-- 落盘位置：用户可选模块（`--module`），模块必须已存在
+- 落盘位置：用户可选模块（`--module`，与 `module.json` 的 `name` 一致，推荐小写如 `system`、`generator`），模块必须已存在
+- **`status` 字段推断**：
+  - `tinyint` / `int` 等整型 → 启用/禁用（`0` / `1`），Switch + 批量改状态
+  - `varchar` 等字符串 → 从字段注释解析枚举（如 `状态: normal,hidden`），Switch 使用对应字符串值；未写注释时默认 `normal` / `hidden`
+  - 重新生成时会读取数据库 `information_schema` 注释，不依赖旧的 `generator_columns.validation_rules`
 - 冲突策略：默认跳过已存在文件，`--force` 覆盖
 - 菜单注册：写入 DB `component` 字段，不改 `menu.ts`
 - 路由注册：写入目标模块 `routes/admin-generator/{table_suffix}.php`，由 `routes/admin.php` 中的 loader 自动加载
