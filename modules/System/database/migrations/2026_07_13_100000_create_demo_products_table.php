@@ -23,6 +23,7 @@ return new class extends Migration
             $table->unsignedBigInteger('category_id')->nullable()->comment('分类ID');
             $table->unsignedBigInteger('parent_id')->default(0)->comment('父级产品');
             $table->string('cover', 500)->nullable()->comment('封面图');
+            $table->text('images')->nullable()->comment('图片相册');
             $table->string('attachment', 500)->nullable()->comment('附件');
             $table->string('brochure', 500)->nullable()->comment('宣传册文件');
             $table->string('summary', 255)->nullable()->comment('简介');

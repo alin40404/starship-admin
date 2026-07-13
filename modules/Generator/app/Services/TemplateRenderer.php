@@ -39,24 +39,56 @@ class TemplateRenderer
     protected function processIf(string $content, array $data): string
     {
         return (string) preg_replace_callback(
-            '/@if\(\$(\w+)\)(.*?)@endif/s',
+            '/@if\(\$([^)]+)\)(.*?)@endif/s',
             function (array $matches) use ($data): string {
-                $key = $matches[1];
+                $condition = $matches[1];
                 $body = $matches[2];
+                $matched = $this->evaluateIfCondition($condition, $data);
 
                 if (str_contains($body, '@else')) {
                     [$ifPart, $elsePart] = explode('@else', $body, 2);
 
-                    return $this->renderIfBody(
-                        ! empty($data[$key]) ? $ifPart : $elsePart,
-                        true,
-                    );
+                    return $this->renderIfBody($matched ? $ifPart : $elsePart, true);
                 }
 
-                return $this->renderIfBody($body, ! empty($data[$key]));
+                return $this->renderIfBody($body, $matched);
             },
             $content,
         );
+    }
+
+    /**
+     * 支持 stub 中的简单布尔表达式，如：
+     * has_upload_fields
+     * has_upload_fields || has_multi_value_fields
+     */
+    protected function evaluateIfCondition(string $expression, array $data): bool
+    {
+        $expression = trim($expression);
+
+        if (str_contains($expression, '||')) {
+            foreach (array_map('trim', explode('||', $expression)) as $part) {
+                if ($this->evaluateIfCondition($part, $data)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        if (str_contains($expression, '&&')) {
+            foreach (array_map('trim', explode('&&', $expression)) as $part) {
+                if (! $this->evaluateIfCondition($part, $data)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        $key = ltrim($expression, '$');
+
+        return ! empty($data[$key]);
     }
 
     protected function renderIfBody(string $body, bool $include): string

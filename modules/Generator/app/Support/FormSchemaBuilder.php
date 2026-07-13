@@ -173,6 +173,7 @@ final class FormSchemaBuilder
         $lines[] = '        ],';
         $lines[] = '      },';
         $lines[] = "      fieldName: '{$columnKey}',";
+        $lines[] = "      formItemClass: 'items-start',";
         $lines[] = "      label: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
         if (in_array('required', $column->validation_rules ?? [], true)) {
             $lines[] = "      rules: readonly ? undefined : 'required',";
@@ -206,7 +207,11 @@ final class FormSchemaBuilder
         $lines[] = '        ],';
         $lines[] = '      },';
         $lines[] = "      fieldName: '{$columnKey}',";
-        $lines[] = "      formItemClass: 'col-span-full w-full items-start',";
+        if (count($enumOptions) > 4) {
+            $lines[] = "      formItemClass: 'col-span-full w-full items-start',";
+        } else {
+            $lines[] = "      formItemClass: 'items-start',";
+        }
         $lines[] = "      label: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
         $lines[] = '    },';
 
@@ -564,6 +569,9 @@ final class FormSchemaBuilder
     protected function buildPictureUploadLines(string $columnKey, string $i18nPrefix, array $options): array
     {
         $maxCount = (int) ($options['max_count'] ?? 1);
+        $formItemClass = $maxCount > 1
+            ? 'picture-upload-form-item col-span-full w-full items-start'
+            : 'picture-upload-form-item items-start';
         $lines = [];
         $lines[] = '    {';
         $lines[] = "      component: 'PictureUploadField',";
@@ -574,7 +582,7 @@ final class FormSchemaBuilder
         $lines[] = '        disabled,';
         $lines[] = '      },';
         $lines[] = "      fieldName: '{$columnKey}',";
-        $lines[] = "      formItemClass: 'picture-upload-form-item items-start',";
+        $lines[] = "      formItemClass: '{$formItemClass}',";
         $lines[] = "      label: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
         $lines[] = '    },';
 
@@ -588,6 +596,9 @@ final class FormSchemaBuilder
     protected function buildAttachmentFieldLines(string $columnKey, string $i18nPrefix, array $options): array
     {
         $maxCount = (int) ($options['max_count'] ?? 1);
+        $formItemClass = $maxCount > 1
+            ? 'col-span-full items-start'
+            : 'items-start';
         $lines = [];
         $lines[] = '    {';
         $lines[] = "      component: 'AttachmentField',";
@@ -597,7 +608,7 @@ final class FormSchemaBuilder
         $lines[] = '        disabled,';
         $lines[] = '      },';
         $lines[] = "      fieldName: '{$columnKey}',";
-        $lines[] = "      formItemClass: 'col-span-full items-start',";
+        $lines[] = "      formItemClass: '{$formItemClass}',";
         $lines[] = "      label: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
         $lines[] = '    },';
 
@@ -618,7 +629,7 @@ final class FormSchemaBuilder
         $lines[] = '        disabled,';
         $lines[] = '      },';
         $lines[] = "      fieldName: '{$columnKey}',";
-        $lines[] = "      formItemClass: 'col-span-full items-start',";
+        $lines[] = "      formItemClass: 'items-start',";
         $lines[] = "      label: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
         $lines[] = '    },';
 
