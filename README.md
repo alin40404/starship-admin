@@ -216,6 +216,9 @@ composer install
 composer test
 ```
 
+- 无 `pdo_sqlite` 时自动回退读取 `backend/.env` 使用 MySQL
+- 含 `SmsAliyunPluginLifecycleTest` 插件全链路验收
+
 `backend/tests/` 仅保留应用壳冒烟（如 `/admin-api/ping`）；Core / 模块测试各自在对应包目录运行。
 
 ## 相关文档
