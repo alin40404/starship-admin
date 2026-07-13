@@ -13,7 +13,6 @@ import type { UploadFile } from 'ant-design-vue/es/upload';
 import { uploadAttachment } from '#/api/system/attachment';
 import { validateUploadFile } from '#/utils/upload-policy';
 
-
 import { useVbenForm } from '#/adapter/form';
 import { createProducts, updateProducts } from '#/api/generator/products';
 
@@ -28,11 +27,8 @@ const readonly = ref(false);
 
 const singlePictureUploadFieldNames = ['cover'] as const;
 const multiPictureUploadFieldNames = ['images'] as const;
-
 const multiAttachmentFieldNames = ['attachments'] as const;
-
 const multiValueFieldNames = ['flags'] as const;
-
 
 function normalizeUploadToFileList(url?: null | string): UploadFile[] {
   if (!url) {
@@ -116,7 +112,6 @@ function buildSchema() {
     onImageUpload,
   });
 }
-
 
 const [Form, formApi] = useVbenForm({
   commonConfig: {
@@ -203,7 +198,10 @@ async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
   if (!isOpen) return;
   formApi.resetForm();
   const data = popupApi.getData<ProductsRow | Record<string, never>>();
-  const id = data && typeof (data as ProductsRow).id === 'number' ? (data as ProductsRow).id : null;
+  const id =
+    data && typeof (data as ProductsRow).id === 'number'
+      ? (data as ProductsRow).id
+      : null;
   editingId.value = id;
   readonly.value = false;
   formApi.setState({ schema: buildSchema() });
@@ -241,7 +239,6 @@ async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
     }
 
     formApi.setValues(row as ProductsRow);
-
   }
 }
 
@@ -266,7 +263,6 @@ defineExpose({ open });
 
 <template>
   <ModalView v-if="!isMobile" :title="formTitle" class="w-[860px]">
-
     <Form />
   </ModalView>
   <DrawerView v-else :title="formTitle" class="w-full">
