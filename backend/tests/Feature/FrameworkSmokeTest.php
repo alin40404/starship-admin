@@ -55,6 +55,22 @@ class FrameworkSmokeTest extends TestCase
     }
 
     #[Test]
+    public function themes_directory_contains_default_manifest(): void
+    {
+        $path = (string) config('starship.themes_path');
+        $this->assertNotSame('', $path);
+        $this->assertDirectoryExists($path);
+
+        $manifest = $path.DIRECTORY_SEPARATOR.'default'.DIRECTORY_SEPARATOR.'theme.json';
+        $this->assertFileExists($manifest);
+
+        $decoded = json_decode((string) file_get_contents($manifest), true);
+        $this->assertIsArray($decoded);
+        $this->assertSame('default', $decoded['slug'] ?? null);
+        $this->assertSame('frontend', $decoded['type'] ?? null);
+    }
+
+    #[Test]
     public function core_contracts_are_bound(): void
     {
         $this->assertInstanceOf(SmsGateway::class, app(SmsSenderInterface::class));

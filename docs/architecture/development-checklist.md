@@ -13,7 +13,7 @@
 | 底座模块 | `modules/System`、`modules/Generator`，源码在仓库内，**近期不走 Packagist** |
 | 业务模块 | 新建目录放 `modules/{Name}/`，通过 `module.json` 注册 |
 | 插件 | `plugins/`，完整生命周期（发现 / 安装 / 启用 / 禁用 / 卸载） |
-| 主题 | `themes/` 占位，阶段二实现 ThemeManager |
+| 主题 | ThemeManager MVP 已落地；渲染层 / CMS Demo 待做 |
 | Monitor | 已并入 System，API `/admin-api/monitor/*`，权限 `monitor.*` |
 | 暂不做 | 多租户 Module、Module/Plugin 市场、`modules/` 改名 |
 
@@ -32,7 +32,7 @@
 | Generator 端到端 Demo | ✅ | `sa_demo_products` 表 + CLI 全流程已验收 |
 | Contract 体系 | ✅ | `SmsSenderInterface`、`StorageInterface` 已落地；System 默认实现可被插件覆盖 |
 | Event / Hook | ❌ | 阶段三 |
-| ThemeManager | ❌ | 阶段二 |
+| ThemeManager | ✅ | 发现/安装/启用/切换/卸载 + CLI |
 | 脚手架 `starship/skeleton` | 🚧 | 开发仓兼发布：根 `composer.json` 已备；待维护 `release` 分支 |
 | 框架 Feature Test | ✅ | `FrameworkSmokeTest`：ping / 模块 / 插件扫描 / Contract 绑定 |
 | `packages/core` 包测试 | ✅ | `cd packages/core && composer test` |
@@ -74,10 +74,10 @@
 
 ### 阶段二：主题体系（底座稳定后，约 1～2 个月）
 
-- [ ] ThemeManager + `theme.json` 解析
-- [ ] 主题发现 / 启用 / 切换
-- [ ] CMS / 商城前台主题 Demo
-- [ ] `themes/` 目录规范落地
+- [x] ThemeManager + `theme.json` 解析
+- [x] 主题发现 / 启用 / 切换（`starship:theme:*` CLI；`themes` 表 `is_active`）
+- [ ] CMS / 商城前台主题 Demo（ThemeLoader / 视图渲染）
+- [x] `themes/` 目录规范落地（`default` / `corporate` 种子 `theme.json`）
 
 ### 阶段三：生态扩展（长期）
 

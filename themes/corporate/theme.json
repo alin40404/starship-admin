@@ -1,0 +1,14 @@
+{
+  "name": "Corporate",
+  "slug": "corporate",
+  "title": "企业主题",
+  "version": "1.0.0",
+  "type": "frontend",
+  "description": "Starship 企业前台主题占位",
+  "require": {
+    "modules": []
+  },
+  "entry": {
+    "layout": "layouts/default.vue"
+  }
+}
