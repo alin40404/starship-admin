@@ -1,26 +1,27 @@
 {
-  "name": "generator",
-  "title": "代码生成",
-  "version": "0.1.0",
-  "enabled": true,
-  "dev_only": true,
-  "require": {
-    "modules": ["system"]
-  },
-  "providers": [
-    "Modules\\Generator\\App\\Providers\\GeneratorServiceProvider"
-  ],
-  "seeders": [],
-  "menus": {
-    "paths": [
-      "/dev/codegen",
-      "/generator/products"
-    ]
-  },
-  "permissions": {
-    "prefixes": [
-      "generator."
+    "name": "generator",
+    "title": "代码生成",
+    "version": "0.1.0",
+    "enabled": true,
+    "dev_only": true,
+    "require": {
+        "modules": [
+            "system"
+        ]
+    },
+    "providers": [
+        "Modules\\Generator\\App\\Providers\\GeneratorServiceProvider"
     ],
-    "exact": []
-  }
+    "seeders": [],
+    "menus": {
+        "paths": [
+            "/dev/codegen"
+        ]
+    },
+    "permissions": {
+        "prefixes": [
+            "generator."
+        ],
+        "exact": []
+    }
 }
