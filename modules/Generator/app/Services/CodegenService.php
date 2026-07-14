@@ -356,7 +356,7 @@ class CodegenService
         $moduleNamespace = $this->modulePathResolver->moduleNamespace($config->module_slug);
         $translationNs = strtolower($config->module_slug);
         $entityKebab = $naming['entity_kebab'];
-        $i18nPrefix = $translationNs.'.'.$entityKebab;
+        $i18nPrefix = $entityKebab;
         $columns = $config->columns;
         $formColumns = $columns->where('is_form', true)->values();
         $listColumns = $columns->where('is_list', true)->values();
@@ -607,7 +607,7 @@ class CodegenService
 
     protected function localeEntityBasename(GeneratorTable $config, array $viewData): string
     {
-        return strtolower($config->module_slug).'.'.(string) $viewData['entity_kebab'];
+        return (string) $viewData['entity_kebab'];
     }
 
     protected function removeMenuLocaleKeys(GeneratorTable $config, array $viewData): void

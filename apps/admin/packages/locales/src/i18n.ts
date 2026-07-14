@@ -118,8 +118,8 @@ function deepMergeLocale(
 }
 
 /**
- * 将 `module.entity` 形式的扁平 key 嵌套为 vue-i18n 可解析的结构。
- * 例如 `generator.products` → `generator.products.columns.name`
+ * 将带点号的扁平文件名嵌套为 vue-i18n 可解析的结构。
+ * 例如 `foo.bar.json` → `$t('foo.bar.columns.name')`；实体包多为单段名如 `products.json`。
  */
 function nestDottedLocaleKeys(
   messages: Record<string, unknown>,

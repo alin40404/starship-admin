@@ -141,8 +141,8 @@ require __DIR__.'/admin-generator/_loader.php';
 - `views/{group}/{entity}/index.vue`（`{group}` 为 route_group；Generator 默认 `dev`）
 - `views/{group}/{entity}/data.ts`
 - `views/{group}/{entity}/modules/form.vue`
-- `locales/zh-CN/{module}.{entity}.json`（实体独立翻译，如 `generator.products.json`）
-- `locales/en-US/{module}.{entity}.json`
+- `locales/zh-CN/{entity}.json`（实体独立翻译，如 `products.json`；目录已按模块划分，文件名不再带模块前缀）
+- `locales/en-US/{entity}.json`
 - `locales/zh-CN/{module}.json`（仅合并菜单名 `menu.*`，不写入实体字段）
 
 卸载 `--delete` 时会删除实体独立翻译文件，并从 `{module}.json` 移除对应菜单 key，不影响同模块其他实体。
