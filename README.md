@@ -44,24 +44,28 @@ Starship Admin 框架内核包（Layer 1）。
 
 ## 安装
 
-### 方式 A：从脚手架创建（推荐，目标态）
+> Packagist 发布与 monorepo subtree 流程见仓库文档  
+> [`docs/architecture/packagist.md`](../../docs/architecture/packagist.md)。
+
+### 方式 A：从本仓库发布分支创建（推荐）
 
 ```bash
-composer create-project starship/admin my-admin
-cd my-admin
+git clone -b release <starship-admin URL> my-admin
+cd my-admin/backend
+composer install   # starship/core 来自 Packagist
 cp .env.example .env
 php artisan key:generate
 php artisan migrate --seed
 ```
 
-脚手架已预置 `starship/core`、`starship/system`、`starship/generator` 与 `CoreServiceProvider` 注册。
+模板内 System / Generator 仍在 `modules/`（path），前端在 `apps/admin`。
 
 ### 方式 B：已有 Laravel 项目手动接入
 
-**1. 安装包**
+**1. 安装包**（需 Packagist 已上架或配置 VCS 仓库）
 
 ```bash
-composer require starship/core:^1.0
+composer require starship/core:^0.1
 ```
 
 ```json
@@ -69,7 +73,7 @@ composer require starship/core:^1.0
   "require": {
     "php": "^8.3",
     "laravel/framework": "^13.0",
-    "starship/core": "^1.0"
+    "starship/core": "^0.1"
   }
 }
 ```

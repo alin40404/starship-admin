@@ -1,0 +1,4 @@
+# Packagist / git archive export rules for starship/core
+/tests export-ignore
+/phpunit.xml export-ignore
+/.gitattributes export-ignore
