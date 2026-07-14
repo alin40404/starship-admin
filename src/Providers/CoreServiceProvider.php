@@ -18,6 +18,7 @@ use Starship\Core\Console\Commands\ThemeDiscoverCommand;
 use Starship\Core\Console\Commands\ThemeEnableCommand;
 use Starship\Core\Console\Commands\ThemeInstallCommand;
 use Starship\Core\Console\Commands\ThemeListCommand;
+use Starship\Core\Console\Commands\ThemeLinkCommand;
 use Starship\Core\Console\Commands\ThemeSwitchCommand;
 use Starship\Core\Console\Commands\ThemeUninstallCommand;
 use Starship\Core\Module\ModuleLocator;
@@ -28,6 +29,7 @@ use Starship\Core\Plugin\PluginConfigRepository;
 use Starship\Core\Plugin\PluginLifecycle;
 use Starship\Core\Plugin\PluginLoader;
 use Starship\Core\Plugin\PluginManager;
+use Starship\Core\Theme\ThemeAssetLinker;
 use Starship\Core\Theme\ThemeLifecycle;
 use Starship\Core\Theme\ThemeLoader;
 use Starship\Core\Theme\ThemeManager;
@@ -63,6 +65,7 @@ class CoreServiceProvider extends ServiceProvider
         $this->app->singleton(PluginLifecycle::class);
         $this->app->singleton(ThemeLifecycle::class);
         $this->app->singleton(ThemeLoader::class);
+        $this->app->singleton(ThemeAssetLinker::class);
 
         $this->registerModules();
     }
@@ -71,6 +74,7 @@ class CoreServiceProvider extends ServiceProvider
     {
         $this->loadTranslationsFrom(__DIR__.'/../../resources/lang', 'core');
         $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
+        $this->loadRoutesFrom(__DIR__.'/../../routes/web.php');
 
         try {
             $this->app->make(ThemeLoader::class)->register('frontend');
@@ -102,6 +106,7 @@ class CoreServiceProvider extends ServiceProvider
                 ThemeSwitchCommand::class,
                 ThemeDisableCommand::class,
                 ThemeUninstallCommand::class,
+                ThemeLinkCommand::class,
             ]);
         }
     }

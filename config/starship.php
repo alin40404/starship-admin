@@ -75,4 +75,20 @@ return [
         'frontend' => env('STARSHIP_FRONTEND_THEME', 'default'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Theme Asset CDN / 静态域名
+    |--------------------------------------------------------------------------
+    |
+    | 可选。填写后 theme_asset() 使用：
+    |   {theme_asset_url}/themes/{slug}/assets/{path}
+    | 例如：https://cdn.example.com 或 https://cdn.example.com/static
+    |
+    | 未填写时回退 Laravel asset()（自动尊重 APP 的 ASSET_URL）。
+    | CDN 上须保持相同路径：themes/{slug}/assets/...
+    |
+    */
+
+    'theme_asset_url' => env('STARSHIP_THEME_ASSET_URL'),
+
 ];
