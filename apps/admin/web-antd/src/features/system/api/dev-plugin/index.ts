@@ -30,6 +30,8 @@ export interface PluginRow {
   providers: string[];
   providers_count: number;
   pages: PluginPageMeta[];
+  cover: string | null;
+  cover_url: string | null;
   installed_at: string | null;
   enabled_at: string | null;
 }
@@ -62,6 +64,13 @@ export function discoverPlugins() {
 
 export function fetchPlugin(slug: string) {
   return requestClient.get<PluginDetail>(`/dev/plugins/${slug}`);
+}
+
+export function fetchPluginCoverBlob(slug: string) {
+  return requestClient.get<Blob>(`/dev/plugins/${slug}/cover`, {
+    responseType: 'blob',
+    responseReturn: 'body',
+  } as Record<string, unknown>);
 }
 
 export function installPlugin(slug: string) {

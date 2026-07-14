@@ -13,6 +13,8 @@ import { $t } from '#/locales';
 
 import type { PluginAccessChecker } from '../data';
 
+import PluginCover from './plugin-cover.vue';
+
 const props = defineProps<{
   access: PluginAccessChecker;
   loading?: boolean;
@@ -116,8 +118,14 @@ function switchLabel(row: PluginRow) {
             type="button"
             @click="emit('action', 'detail', row)"
           >
-            <span class="plugin-card__icon-glyph">{{ iconGlyph(row) }}</span>
+            <PluginCover
+              :cover-url="row.cover_url"
+              :fallback-glyph="iconGlyph(row)"
+              :slug="row.slug"
+              :title="row.name"
+            />
             <IconifyIcon
+              v-if="!row.cover_url"
               class="plugin-card__icon-mark"
               icon="lucide:puzzle"
             />
@@ -138,9 +146,10 @@ function switchLabel(row: PluginRow) {
             </div>
             <p class="plugin-card__meta">
               <span>{{ row.slug }}</span>
-              <span v-if="row.type">·</span>
-              <span v-if="row.type">{{ row.type_label || row.type }}</span>
-              <span>·</span>
+              <Tag v-if="row.type" class="plugin-card__type-tag" color="blue">
+                {{ row.type_label || row.type }}
+              </Tag>
+              <span class="plugin-card__meta-sep">·</span>
               <span>v{{ row.version }}</span>
             </p>
           </div>
@@ -275,15 +284,13 @@ function switchLabel(row: PluginRow) {
   cursor: pointer;
 }
 
-.plugin-card__icon:hover {
-  border-color: hsl(var(--primary) / 0.4);
+.plugin-card__icon :deep(.plugin-cover) {
+  position: absolute;
+  inset: 0;
 }
 
-.plugin-card__icon-glyph {
-  color: hsl(var(--foreground) / 0.72);
-  font-size: 1.45rem;
-  font-weight: 700;
-  line-height: 1;
+.plugin-card__icon:hover {
+  border-color: hsl(var(--primary) / 0.4);
 }
 
 .plugin-card__icon-mark {
@@ -331,14 +338,25 @@ function switchLabel(row: PluginRow) {
 }
 
 .plugin-card__meta {
+  display: flex;
+  align-items: center;
   margin: 0;
   min-width: 0;
   overflow: hidden;
   color: hsl(var(--muted-foreground));
   font-size: 12px;
   line-height: 1.4;
-  text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.plugin-card__meta-sep {
+  padding: 0 6px;
+}
+
+.plugin-card__type-tag {
+  margin: 0 0 0 6px !important;
+  font-size: 12px;
+  line-height: 18px;
 }
 
 .plugin-card__desc {

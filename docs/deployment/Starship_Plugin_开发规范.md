@@ -74,6 +74,8 @@ plugin.json 中 `type` 为英文标识；**中文文案由后端** `core::plugin
 
     ├── plugin.json
 
+    ├── cover.svg                 # 可选封面（或 plugin.json cover 指定）
+
     ├── src/
 
     │   ├── Providers
@@ -115,6 +117,8 @@ plugin.json 中 `type` 为英文标识；**中文文案由后端** `core::plugin
 "version":"1.0.0",
 
 "type":"payment",
+
+"cover":"cover.svg",
 
 "namespace":"Plugins\\PaymentWechat",
 

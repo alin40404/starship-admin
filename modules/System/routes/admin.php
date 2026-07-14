@@ -293,6 +293,8 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
             ->middleware('admin.permission:'.PluginPermissions::DISCOVER);
         Route::get('plugins/{slug}', [PluginController::class, 'show'])
             ->middleware('admin.permission:'.PluginPermissions::QUERY);
+        Route::get('plugins/{slug}/cover', [PluginController::class, 'cover'])
+            ->middleware('admin.permission:'.PluginPermissions::QUERY);
         Route::post('plugins/{slug}/install', [PluginController::class, 'install'])
             ->middleware('admin.permission:'.PluginPermissions::INSTALL);
         Route::post('plugins/{slug}/enable', [PluginController::class, 'enable'])

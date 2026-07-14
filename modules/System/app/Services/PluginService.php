@@ -151,9 +151,24 @@ class PluginService
             'providers' => $plugin->providers(),
             'providers_count' => count($plugin->providers()),
             'pages' => $plugin->pages(),
+            'cover' => $plugin->coverRelativePath(),
+            'cover_url' => $plugin->coverAbsolutePath() !== null
+                ? '/dev/plugins/'.$plugin->slug().'/cover'
+                : null,
             'installed_at' => $plugin->record()['installed_at'] ?? null,
             'enabled_at' => $plugin->record()['enabled_at'] ?? null,
         ];
+    }
+
+    public function coverAbsolutePath(string $slug): string
+    {
+        $plugin = $this->requirePlugin($slug);
+        $path = $plugin->coverAbsolutePath();
+        if ($path === null) {
+            throw new \InvalidArgumentException("插件封面不存在：{$slug}");
+        }
+
+        return $path;
     }
 
     protected function relativeManifestPath(string $manifestPath): string

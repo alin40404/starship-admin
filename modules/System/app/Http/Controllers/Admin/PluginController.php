@@ -3,11 +3,13 @@
 namespace Modules\System\App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Starship\Core\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Response;
 use InvalidArgumentException;
 use Modules\System\App\Services\PluginService;
+use Starship\Core\Support\ApiResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class PluginController extends Controller
 {
@@ -86,6 +88,27 @@ class PluginController extends Controller
             );
         } catch (InvalidArgumentException $exception) {
             return ApiResponse::error($exception->getMessage(), 422);
+        }
+    }
+
+    public function cover(string $slug, PluginService $pluginService): BinaryFileResponse|JsonResponse
+    {
+        try {
+            $path = $pluginService->coverAbsolutePath($slug);
+            $mime = match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+                'svg' => 'image/svg+xml',
+                'png' => 'image/png',
+                'webp' => 'image/webp',
+                'jpg', 'jpeg' => 'image/jpeg',
+                default => 'application/octet-stream',
+            };
+
+            return Response::file($path, [
+                'Content-Type' => $mime,
+                'Cache-Control' => 'private, max-age=3600',
+            ]);
+        } catch (InvalidArgumentException $exception) {
+            return ApiResponse::error($exception->getMessage(), 404);
         }
     }
 }

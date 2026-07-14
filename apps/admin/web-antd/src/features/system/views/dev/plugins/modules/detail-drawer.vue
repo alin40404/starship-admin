@@ -11,6 +11,8 @@ import { Descriptions, Drawer } from 'ant-design-vue';
 import { fetchPlugin } from '#/features/system/api/dev-plugin';
 import { $t } from '#/locales';
 
+import PluginCover from './plugin-cover.vue';
+
 const { isMobile } = usePreferences();
 const drawerWidth = computed(() => (isMobile.value ? '100%' : 'min(92vw, 880px)'));
 
@@ -85,6 +87,18 @@ defineExpose({ open: show });
     :title="drawerTitle"
     :width="drawerWidth"
   >
+    <div
+      v-if="detail?.cover_url"
+      class="plugin-detail-cover mb-4 overflow-hidden rounded border"
+    >
+      <PluginCover
+        :cover-url="detail.cover_url"
+        :fallback-glyph="(detail.name || detail.slug || '?').slice(0, 1).toUpperCase()"
+        :slug="detail.slug"
+        :title="detail.name"
+      />
+    </div>
+
     <Descriptions
       v-if="detail"
       :column="1"
@@ -126,3 +140,15 @@ defineExpose({ open: show });
     </div>
   </Drawer>
 </template>
+
+<style scoped>
+.plugin-detail-cover {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: hsl(var(--muted) / 0.45);
+}
+
+.plugin-detail-cover :deep(.plugin-cover__glyph) {
+  font-size: 2.5rem;
+}
+</style>

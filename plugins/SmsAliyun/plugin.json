@@ -6,6 +6,7 @@
   "version": "1.0.0",
   "description": "阿里云短信服务适配插件",
   "author": "Starship Admin",
+  "cover": "cover.svg",
   "require": {
     "starship": ">=1.0.0",
     "php": ">=8.3",

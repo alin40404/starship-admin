@@ -87,6 +87,42 @@ class Plugin
     }
 
     /**
+     * 封面相对路径（相对插件根目录），优先 plugin.json 的 cover，其次常见文件名。
+     */
+    public function coverRelativePath(): ?string
+    {
+        $cover = $this->manifest['cover'] ?? null;
+        if (is_string($cover) && $cover !== '') {
+            $normalized = str_replace(['\\', '..'], ['/', ''], $cover);
+            $absolute = $this->directory.DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $normalized);
+            if (is_file($absolute)) {
+                return $normalized;
+            }
+        }
+
+        foreach (['cover.jpg', 'cover.jpeg', 'cover.png', 'cover.webp', 'cover.svg', 'assets/cover.jpg', 'assets/cover.png', 'assets/cover.svg'] as $candidate) {
+            $absolute = $this->directory.DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $candidate);
+            if (is_file($absolute)) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    public function coverAbsolutePath(): ?string
+    {
+        $relative = $this->coverRelativePath();
+        if ($relative === null) {
+            return null;
+        }
+
+        $absolute = $this->directory.DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $relative);
+
+        return is_file($absolute) ? $absolute : null;
+    }
+
+    /**
      * @return list<string>
      */
     public function providers(): array
