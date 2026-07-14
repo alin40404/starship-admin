@@ -158,7 +158,7 @@ function canSwitch(row: ThemeRow) {
             </button>
             <button
               v-if="canDisable(row)"
-              class="theme-card__btn"
+              class="theme-card__btn theme-card__btn--warning"
               type="button"
               @click="emit('action', 'disable', row)"
             >
@@ -329,6 +329,17 @@ function canSwitch(row: ThemeRow) {
 }
 
 .theme-card__btn--success:hover {
+  color: #fff;
+  filter: brightness(1.05);
+}
+
+.theme-card__btn--warning {
+  border-color: hsl(32 95% 44% / 0.4);
+  background: hsl(32 95% 44%);
+  color: #fff;
+}
+
+.theme-card__btn--warning:hover {
   color: #fff;
   filter: brightness(1.05);
 }
