@@ -22,8 +22,8 @@ php artisan starship:module:export member --dir
 产物结构（与验收清单一致）：
 
 ```text
-member-0.1.0.zip  （或同名目录）
-└── member-0.1.0/
+member-0.2.0.zip  （或同名目录）
+└── member-0.2.0/
     ├── manifest.json
     ├── backend/      # modules/Member
     └── admin-ui/     # apps/admin/web-antd/src/features/member
@@ -32,9 +32,9 @@ member-0.1.0.zip  （或同名目录）
 ### 导入
 
 ```bash
-php artisan starship:module:import storage/app/starship-modules/member-0.1.0.zip
-php artisan starship:module:import ./member-0.1.0 --force --migrate --seed
-php artisan starship:module:import ./member-0.1.0.zip --no-admin-ui
+php artisan starship:module:import storage/app/starship-modules/member-0.2.0.zip
+php artisan starship:module:import ./member-0.2.0 --force --migrate --seed
+php artisan starship:module:import ./member-0.2.0.zip --no-admin-ui
 ```
 
 | 选项 | 说明 |

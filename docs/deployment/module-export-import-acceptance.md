@@ -36,7 +36,7 @@
 手工导出目录（或 zip 解压后）必须长这样：
 
 ```text
-member-0.1.0/
+member-0.2.0/
 ├── manifest.json
 ├── backend/                 # = modules/Member 全文
 │   ├── module.json
@@ -57,7 +57,7 @@ member-0.1.0/
 {
   "name": "member",
   "title": "会员中心",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "backend_target": "modules/Member",
   "admin_ui_target": "apps/admin/web-antd/src/features/member",
   "require": {
