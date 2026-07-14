@@ -6,7 +6,8 @@
     "license": "MIT",
     "authors": [
         {
-            "name": "allanchan"
+            "name": "allanchan",
+            "email": "alin40404@gmail.com"
         }
     ],
     "require": {
