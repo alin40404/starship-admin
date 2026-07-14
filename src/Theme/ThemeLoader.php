@@ -38,6 +38,12 @@ class ThemeLoader
         }
 
         View::addNamespace('theme', $viewsPath);
+
+        $langPath = $theme->directory().DIRECTORY_SEPARATOR.'lang';
+        if (is_dir($langPath)) {
+            app('translator')->addNamespace('theme', $langPath);
+        }
+
         View::share('theme', [
             'name' => $theme->name(),
             'slug' => $theme->slug(),
