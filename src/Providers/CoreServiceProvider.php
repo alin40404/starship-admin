@@ -11,12 +11,21 @@ use Starship\Core\Console\Commands\PluginInstallCommand;
 use Starship\Core\Console\Commands\PluginListCommand;
 use Starship\Core\Console\Commands\PluginMakeCommand;
 use Starship\Core\Console\Commands\PluginUninstallCommand;
+use Starship\Core\Console\Commands\ThemeDisableCommand;
+use Starship\Core\Console\Commands\ThemeDiscoverCommand;
+use Starship\Core\Console\Commands\ThemeEnableCommand;
+use Starship\Core\Console\Commands\ThemeInstallCommand;
+use Starship\Core\Console\Commands\ThemeListCommand;
+use Starship\Core\Console\Commands\ThemeSwitchCommand;
+use Starship\Core\Console\Commands\ThemeUninstallCommand;
 use Starship\Core\Module\ModuleManager;
 use Starship\Core\Module\ModuleValidator;
 use Starship\Core\Plugin\PluginConfigRepository;
 use Starship\Core\Plugin\PluginLifecycle;
 use Starship\Core\Plugin\PluginLoader;
 use Starship\Core\Plugin\PluginManager;
+use Starship\Core\Theme\ThemeLifecycle;
+use Starship\Core\Theme\ThemeManager;
 
 class CoreServiceProvider extends ServiceProvider
 {
@@ -32,9 +41,14 @@ class CoreServiceProvider extends ServiceProvider
             return new PluginManager((string) config('starship.plugins_path'));
         });
 
+        $this->app->singleton(ThemeManager::class, function () {
+            return new ThemeManager((string) config('starship.themes_path'));
+        });
+
         $this->app->singleton(PluginLoader::class);
         $this->app->singleton(PluginConfigRepository::class);
         $this->app->singleton(PluginLifecycle::class);
+        $this->app->singleton(ThemeLifecycle::class);
 
         $this->registerModules();
     }
@@ -59,6 +73,13 @@ class CoreServiceProvider extends ServiceProvider
                 PluginDisableCommand::class,
                 PluginUninstallCommand::class,
                 PluginMakeCommand::class,
+                ThemeDiscoverCommand::class,
+                ThemeListCommand::class,
+                ThemeInstallCommand::class,
+                ThemeEnableCommand::class,
+                ThemeSwitchCommand::class,
+                ThemeDisableCommand::class,
+                ThemeUninstallCommand::class,
             ]);
         }
     }

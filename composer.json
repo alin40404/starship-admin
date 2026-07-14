@@ -1,6 +1,6 @@
 {
     "name": "starship/core",
-    "description": "Starship Admin framework kernel — module scanner, plugin engine, contracts",
+    "description": "Starship Admin framework kernel — module scanner, plugin engine, theme manager, contracts",
     "type": "library",
     "license": "MIT",
     "authors": [

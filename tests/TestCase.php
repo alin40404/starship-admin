@@ -7,6 +7,7 @@ use Orchestra\Testbench\TestCase as OrchestraTestCase;
 use Starship\Core\Module\ModuleManager;
 use Starship\Core\Plugin\PluginManager;
 use Starship\Core\Providers\CoreServiceProvider;
+use Starship\Core\Theme\ThemeManager;
 
 abstract class TestCase extends OrchestraTestCase
 {
@@ -26,6 +27,7 @@ abstract class TestCase extends OrchestraTestCase
         $this->configureAppKey($this->app);
         $this->app->forgetInstance(ModuleManager::class);
         $this->app->forgetInstance(PluginManager::class);
+        $this->app->forgetInstance(ThemeManager::class);
     }
 
     protected function defineEnvironment($app): void
@@ -47,6 +49,7 @@ abstract class TestCase extends OrchestraTestCase
 
         $app['config']->set('starship.modules_path', $repoRoot.DIRECTORY_SEPARATOR.'modules');
         $app['config']->set('starship.plugins_path', $repoRoot.DIRECTORY_SEPARATOR.'plugins');
+        $app['config']->set('starship.themes_path', $repoRoot.DIRECTORY_SEPARATOR.'themes');
     }
 
     protected function configureTestingDatabase(mixed $app): void
