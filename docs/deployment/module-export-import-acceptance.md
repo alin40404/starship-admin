@@ -94,7 +94,7 @@ member-0.1.0/
 
 - [ ] 将 `backend/` 拷到 B：`modules/Member/`（目标目录原先不存在）  
 - [ ] 将 `admin-ui/` 拷到 B：`apps/admin/web-antd/src/features/member/`  
-- [ ] 将 `manifest.json` 存档到 B 项目旁或 `modules/Member/manifest.export.json`（便于对照，可选）
+- [ ] 对照用的 `manifest.json` 留在导出包内即可，不写入 `modules/`  
 
 ### 2.2 后端
 
