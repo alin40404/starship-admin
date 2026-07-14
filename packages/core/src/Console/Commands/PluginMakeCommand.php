@@ -78,10 +78,9 @@ class PluginMakeCommand extends Command
 
         $this->info("插件 {$studlyName} 已创建：{$pluginPath}");
         $this->line('下一步：');
-        $this->line('  1. 执行 php artisan starship:plugin:discover');
-        $this->line("  2. 执行 php artisan starship:plugin:install {$slug}");
-        $this->line("  3. 执行 php artisan starship:plugin:enable {$slug}");
-        $this->line('  4. 重启后端服务后在管理端「插件管理」中配置');
+        $this->line("  1. 执行 php artisan starship:plugin:install {$slug}（会自动发现入库）");
+        $this->line("  2. 执行 php artisan starship:plugin:enable {$slug}");
+        $this->line('  3. 重启后端服务后在管理端「插件管理」中配置');
 
         return self::SUCCESS;
     }

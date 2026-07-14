@@ -28,36 +28,12 @@ class PluginLifecycle
                 continue;
             }
 
-            $record = PluginModel::query()->where('slug', $plugin->slug())->first();
-
-            if ($record === null) {
-                PluginModel::query()->create([
-                    'name' => $plugin->name(),
-                    'slug' => $plugin->slug(),
-                    'type' => $plugin->type(),
-                    'version' => $plugin->version(),
-                    'description' => $plugin->description(),
-                    'author' => $plugin->author(),
-                    'namespace' => $plugin->namespace(),
-                    'path' => $plugin->directoryName(),
-                    'status' => Plugin::STATUS_DISCOVERED,
-                    'config' => $plugin->manifest(),
-                ]);
+            $result = $this->upsertRecord($plugin);
+            if ($result === 'created') {
                 $created++;
-                continue;
+            } else {
+                $updated++;
             }
-
-            $record->fill([
-                'name' => $plugin->name(),
-                'type' => $plugin->type(),
-                'version' => $plugin->version(),
-                'description' => $plugin->description(),
-                'author' => $plugin->author(),
-                'namespace' => $plugin->namespace(),
-                'path' => $plugin->directoryName(),
-                'config' => $plugin->manifest(),
-            ])->save();
-            $updated++;
         }
 
         return [
@@ -72,7 +48,7 @@ class PluginLifecycle
         $plugin = $this->requirePlugin($slug);
         $this->assertRequirements($plugin);
 
-        $record = $this->requireRecord($slug);
+        $record = $this->ensureDiscovered($slug);
         if ($record->status === Plugin::STATUS_ENABLED) {
             throw new InvalidArgumentException("插件 {$slug} 已启用");
         }
@@ -96,7 +72,7 @@ class PluginLifecycle
     public function enable(string $slug): Plugin
     {
         $plugin = $this->requirePlugin($slug);
-        $record = $this->requireRecord($slug);
+        $record = $this->ensureDiscovered($slug);
 
         if ($record->status < Plugin::STATUS_INSTALLED) {
             $plugin = $this->install($slug);
@@ -169,6 +145,59 @@ class PluginLifecycle
         }
 
         return $record;
+    }
+
+    /**
+     * 安装/启用时若尚未入库，自动从文件系统写入发现记录。
+     */
+    protected function ensureDiscovered(string $slug): PluginModel
+    {
+        $record = PluginModel::query()->where('slug', $slug)->first();
+        if ($record !== null) {
+            return $record;
+        }
+
+        $this->upsertRecord($this->requirePlugin($slug));
+
+        return $this->requireRecord($slug);
+    }
+
+    /**
+     * @return 'created'|'updated'
+     */
+    protected function upsertRecord(Plugin $plugin): string
+    {
+        $record = PluginModel::query()->where('slug', $plugin->slug())->first();
+
+        if ($record === null) {
+            PluginModel::query()->create([
+                'name' => $plugin->name(),
+                'slug' => $plugin->slug(),
+                'type' => $plugin->type(),
+                'version' => $plugin->version(),
+                'description' => $plugin->description(),
+                'author' => $plugin->author(),
+                'namespace' => $plugin->namespace(),
+                'path' => $plugin->directoryName(),
+                'status' => Plugin::STATUS_DISCOVERED,
+                'config' => $plugin->manifest(),
+            ]);
+
+            return 'created';
+        }
+
+        $record->fill([
+            'name' => $plugin->name(),
+            'type' => $plugin->type(),
+            'version' => $plugin->version(),
+            'description' => $plugin->description(),
+            'author' => $plugin->author(),
+            'namespace' => $plugin->namespace(),
+            'path' => $plugin->directoryName(),
+            'config' => $plugin->manifest(),
+        ])->save();
+
+        return 'updated';
     }
 
     protected function refreshPlugin(string $slug): Plugin

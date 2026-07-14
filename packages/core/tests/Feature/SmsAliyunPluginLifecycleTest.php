@@ -40,7 +40,7 @@ class SmsAliyunPluginLifecycleTest extends TestCase
     {
         $this->migrateStarshipTables();
 
-        $this->artisan('starship:plugin:discover')->assertSuccessful();
+        // 安装时自动发现入库，无需先执行 discover
         $this->artisan('starship:plugin:install', ['plugin' => self::SLUG])->assertSuccessful();
         $this->artisan('starship:plugin:enable', ['plugin' => self::SLUG])->assertSuccessful();
 
@@ -94,11 +94,24 @@ class SmsAliyunPluginLifecycleTest extends TestCase
     {
         $this->migrateStarshipTables();
 
-        $this->artisan('starship:plugin:discover')->assertSuccessful();
         $this->artisan('starship:plugin:install', ['plugin' => self::SLUG])->assertSuccessful();
         $this->artisan('starship:plugin:enable', ['plugin' => self::SLUG])->assertSuccessful();
 
         $this->artisan('starship:plugin:uninstall', ['plugin' => self::SLUG])->assertFailed();
+    }
+
+    public function test_install_auto_discovers_missing_record(): void
+    {
+        $this->migrateStarshipTables();
+
+        $this->assertNull(PluginModel::query()->where('slug', self::SLUG)->first());
+
+        $this->artisan('starship:plugin:install', ['plugin' => self::SLUG])->assertSuccessful();
+
+        $record = PluginModel::query()->where('slug', self::SLUG)->first();
+        $this->assertNotNull($record);
+        $this->assertSame(Plugin::STATUS_INSTALLED, (int) $record->status);
+        $this->assertNotNull($record->installed_at);
     }
 
     public function test_plugin_manager_lists_sms_aliyun_from_filesystem(): void
