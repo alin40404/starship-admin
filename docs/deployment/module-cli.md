@@ -6,6 +6,39 @@
 
 在 `backend/` 下执行：
 
+### 创建
+
+```bash
+php artisan starship:module:make shop
+php artisan starship:module:make shop --title=商城
+php artisan starship:module:make shop --title=商城 --no-update
+```
+
+| 选项 | 说明 |
+|------|------|
+| `--title=` | 显示名称（`module.json` 的 `title` 与语言包），默认与模块名相同 |
+| `--force` | 覆盖已存在的关键文件 |
+| `--no-composer` | 不自动改 `backend/composer.json` / 不跑 `composer update` |
+| `--no-update` | 只写 `composer.json`，不执行 `composer update` |
+
+### 删除时 Composer 清理
+
+先关掉模块（`module.json` → `"enabled": false`）或直接删目录前，在 `backend/` 执行：
+
+```bash
+composer remove starship/shop
+```
+
+这会从 `require` / lock / `vendor` 卸掉包。path 仓库条目（`repositories` 里的 `../modules/Shop`）有时仍会留着，需手动删掉该段，或再跑一次 `composer update` 确认无报错。
+
+完整建议顺序：
+
+1. `enabled: false`（可选）并重启  
+2. `composer remove starship/{slug}`  
+3. 删除 `modules/Shop`（以及前端 `features/shop` 若有）  
+4. 检查并去掉 `composer.json` 里残留的 path `repositories`  
+5. 若 `autoload-dev` / `phpunit.xml` 挂过该模块 tests，一并删掉后 `composer dump-autoload`
+
 ### 导出
 
 ```bash
