@@ -8,7 +8,7 @@ return [
     'nav_logout' => '退出',
     'member_login' => '会员登录',
     'member_register' => '注册账号',
-    'locale_zh' => '中文',
+    'locale_zh_CN' => '中文',
     'locale_en' => 'EN',
 
     'home_eyebrow' => 'Hello Elementor 风格',

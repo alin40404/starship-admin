@@ -1,6 +1,6 @@
 <?php
 
-namespace Starship\Core\Http\Controllers;
+namespace Modules\System\App\Http\Controllers\Frontend;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -11,7 +11,7 @@ class LocaleController extends Controller
 {
     public function __invoke(Request $request, string $locale): RedirectResponse
     {
-        $allowed = config('starship.locales', ['zh_CN', 'en']);
+        $allowed = config('system.locales', ['zh_CN', 'en']);
         if (! is_array($allowed) || ! in_array($locale, $allowed, true)) {
             abort(404);
         }

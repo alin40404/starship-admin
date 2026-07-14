@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\System\App\Http\Controllers\Frontend\HomeController;
+use Modules\System\App\Http\Controllers\Frontend\LocaleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -11,4 +12,8 @@ use Modules\System\App\Http\Controllers\Frontend\HomeController;
 
 Route::middleware('web')->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('frontend.home');
+
+    Route::get('/locale/{locale}', LocaleController::class)
+        ->where('locale', implode('|', config('system.locales', ['zh_CN', 'en'])))
+        ->name('system.locale');
 });

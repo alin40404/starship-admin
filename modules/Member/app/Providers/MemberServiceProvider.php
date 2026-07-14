@@ -2,9 +2,11 @@
 
 namespace Modules\Member\App\Providers;
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 use Modules\Member\App\Models\Member;
+use Modules\System\App\Support\GuestRedirect;
 
 class MemberServiceProvider extends ServiceProvider
 {
@@ -16,6 +18,14 @@ class MemberServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureAuth();
+
+        GuestRedirect::using(static function (Request $request): string|null|false {
+            if ($request->is('member', 'member/*')) {
+                return route('member.login');
+            }
+
+            return false;
+        });
 
         $this->loadRoutesFrom(__DIR__.'/../../routes/admin.php');
         $this->loadRoutesFrom(__DIR__.'/../../routes/web.php');

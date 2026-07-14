@@ -43,15 +43,15 @@
                 </li>
             @endauth
             <li class="site-locale" aria-label="Language">
-                <a
-                    href="{{ route('starship.locale', ['locale' => 'zh_CN']) }}"
-                    @class(['is-active' => app()->getLocale() === 'zh_CN'])
-                >{{ __('theme::ui.locale_zh') }}</a>
-                <span class="site-locale__sep">/</span>
-                <a
-                    href="{{ route('starship.locale', ['locale' => 'en']) }}"
-                    @class(['is-active' => app()->getLocale() === 'en'])
-                >{{ __('theme::ui.locale_en') }}</a>
+                @foreach (config('system.locales', []) as $i => $locale)
+                    @if ($i > 0)
+                        <span class="site-locale__sep">/</span>
+                    @endif
+                    <a
+                        href="{{ route('system.locale', ['locale' => $locale]) }}"
+                        @class(['is-active' => app()->getLocale() === $locale])
+                    >{{ __('theme::ui.locale_'.$locale) }}</a>
+                @endforeach
             </li>
         </ul>
     </div>

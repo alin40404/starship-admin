@@ -40,6 +40,21 @@ use Modules\System\App\Support\RolePermissions;
 use Modules\System\App\Support\ThemePermissions;
 use Modules\System\App\Support\UserGroupPermissions;
 
+// 探活：仅走 api 中间件组，不套维护模式 / IP 黑名单
+Route::middleware('api')->prefix('admin-api')->group(function () {
+    Route::get('ping', function () {
+        $payload = [
+            'message' => 'Starship Admin is running',
+        ];
+
+        if (config('app.debug')) {
+            $payload['env'] = app()->environment();
+        }
+
+        return response()->json($payload);
+    });
+});
+
 Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('admin-api')->group(function () {
     // --- start: 无需登录 ---
     Route::get('system/site', [ConfigController::class, 'site']);

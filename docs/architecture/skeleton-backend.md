@@ -80,7 +80,7 @@ my-admin/
 |------|------|
 | `app/Http/Controllers/Controller.php` | Laravel 基类 |
 | `app/Models/User.php` | Laravel 默认 User（宿主用，非 Admin 业务用户） |
-| `app/Providers/AppServiceProvider.php` | 仅 `Schema::defaultStringLength(191)` 等通用 boot |
+| `app/Providers/AppServiceProvider.php` | Laravel 壳 Provider（通用 boot 已迁入 `starship/core`） |
 
 **禁止出现在 skeleton app/ 中：**
 

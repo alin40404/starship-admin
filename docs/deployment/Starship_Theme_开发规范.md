@@ -18,6 +18,8 @@ Theme 是展示层扩展。
 -   权限
 
 > MVP 渲染使用 Blade（`ThemeLoader` + `theme::` 命名空间）；Vue 前台属后续能力，不在当前 Demo 范围。
+>
+> 语言列表与切换入口属于 System 模块（`config('system.locales')`、`GET /locale/{locale}`），不在 Core pack。Core 仅通过 `ThemeLoader` 注册当前主题的 `lang/` 为 `theme::` 命名空间；UI 文案放在各主题 `lang/{locale}/`。
 
 ------------------------------------------------------------------------
 
@@ -51,6 +53,9 @@ MVP（Blade）示例：
 themes/default/
 ├── theme.json
 ├── cover.svg                 # 管理端封面（API 直读）
+├── lang/                     # 可选：UI 文案（theme::），按 locale 分目录
+│   ├── zh_CN/
+│   └── en/
 ├── assets/                   # 前台 JS / CSS / 图片
 │   ├── css/
 │   │   ├── app.css

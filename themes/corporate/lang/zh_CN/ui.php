@@ -8,7 +8,7 @@ return [
     'nav_account' => '会员中心',
     'nav_logout' => '退出',
     'nav_login' => '会员登录',
-    'locale_zh' => '中文',
+    'locale_zh_CN' => '中文',
     'locale_en' => 'EN',
 
     'hero_brand' => 'Starship',

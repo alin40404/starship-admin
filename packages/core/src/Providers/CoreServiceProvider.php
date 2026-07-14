@@ -2,6 +2,8 @@
 
 namespace Starship\Core\Providers;
 
+use Illuminate\Database\Console\Seeds\SeedCommand;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Starship\Core\Console\Commands\ModuleExportCommand;
 use Starship\Core\Console\Commands\ModuleImportCommand;
@@ -75,6 +77,10 @@ class CoreServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // 生产环境禁止破坏性 migrate / db:seed
+        DB::prohibitDestructiveCommands($this->app->isProduction());
+        SeedCommand::prohibit($this->app->isProduction());
+
         $this->loadTranslationsFrom(__DIR__.'/../../resources/lang', 'core');
         $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
         $this->loadRoutesFrom(__DIR__.'/../../routes/web.php');
