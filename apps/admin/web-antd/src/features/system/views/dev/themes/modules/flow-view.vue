@@ -111,7 +111,14 @@ function canSwitch(row: ThemeRow) {
         <div class="theme-card__body">
           <div class="theme-card__title-row">
             <h3 class="theme-card__title" :title="row.title">{{ row.title }}</h3>
-            <Tag :color="statusColor(row.status)" class="!m-0 shrink-0">
+            <Tag
+              :color="statusColor(row.status)"
+              class="theme-card__status !m-0 shrink-0"
+              :class="{
+                'theme-card__status--enabled':
+                  row.status === THEME_STATUS.ENABLED,
+              }"
+            >
               {{ row.status_label }}
             </Tag>
           </div>
@@ -244,6 +251,14 @@ function canSwitch(row: ThemeRow) {
   font-weight: 600;
   line-height: 1.5;
   letter-spacing: 0.02em;
+}
+
+/* 已启用：实心绿底白字（覆盖 Ant Design success 浅绿描边样式） */
+.theme-card__status--enabled {
+  border-color: transparent !important;
+  background: #52c41a !important;
+  color: #fff !important;
+  font-weight: 600;
 }
 
 .theme-card__body {
