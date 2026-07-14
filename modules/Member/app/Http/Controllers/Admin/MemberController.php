@@ -135,4 +135,31 @@ class MemberController extends Controller
 
         return ApiResponse::success(null, __('member::messages.deleted'));
     }
+
+    public function batchDestroy(Request $request): JsonResponse
+    {
+        $ids = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+        ])['ids'];
+
+        $deleted = Member::query()->whereIn('id', $ids)->delete();
+
+        return ApiResponse::success(['deleted' => $deleted], __('member::messages.batch_deleted'));
+    }
+
+    public function batchUpdateStatus(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+            'status' => ['required', 'integer', 'in:0,1'],
+        ]);
+
+        $updated = Member::query()
+            ->whereIn('id', $data['ids'])
+            ->update(['status' => $data['status']]);
+
+        return ApiResponse::success(['updated' => $updated], __('member::messages.batch_status_updated'));
+    }
 }

@@ -14,10 +14,6 @@ class MemberMenuSeeder extends Seeder
 
     public function run(): void
     {
-        if (Menu::query()->where('path', '/member/members')->exists()) {
-            return;
-        }
-
         $root = Menu::query()->firstOrCreate(
             ['path' => '/member', 'type' => 1],
             [
@@ -33,36 +29,41 @@ class MemberMenuSeeder extends Seeder
             ],
         );
 
-        $list = Menu::query()->create([
-            'parent_id' => $root->id,
-            'type' => 2,
-            'name' => 'MemberList',
-            'title' => '会员管理',
-            'path' => '/member/members',
-            'component' => '/member/index',
-            'permission' => MemberPermissions::QUERY,
-            'icon' => 'ep:avatar',
-            'sort' => 51,
-            'other_settings' => $this->menuOther(1, 1),
-            'status' => 1,
-        ]);
+        $list = Menu::query()->firstOrCreate(
+            ['path' => '/member/members', 'type' => 2],
+            [
+                'parent_id' => $root->id,
+                'name' => 'MemberList',
+                'title' => '会员管理',
+                'component' => '/member/index',
+                'permission' => MemberPermissions::QUERY,
+                'icon' => 'ep:avatar',
+                'sort' => 51,
+                'other_settings' => $this->menuOther(1, 1),
+                'status' => 1,
+            ],
+        );
 
         $menuIds = [(int) $root->id, (int) $list->id];
 
         foreach (MemberPermissions::buttonDefinitions() as $btn) {
-            $button = Menu::query()->create([
-                'parent_id' => $list->id,
-                'type' => 3,
-                'name' => $btn['name'],
-                'title' => $btn['title'],
-                'path' => null,
-                'component' => null,
-                'permission' => $btn['permission'],
-                'icon' => null,
-                'sort' => $btn['sort'],
-                'other_settings' => $this->menuOther(0),
-                'status' => 1,
-            ]);
+            $button = Menu::query()->firstOrCreate(
+                [
+                    'parent_id' => $list->id,
+                    'type' => 3,
+                    'permission' => $btn['permission'],
+                ],
+                [
+                    'name' => $btn['name'],
+                    'title' => $btn['title'],
+                    'path' => null,
+                    'component' => null,
+                    'icon' => null,
+                    'sort' => $btn['sort'],
+                    'other_settings' => $this->menuOther(0),
+                    'status' => 1,
+                ],
+            );
             $menuIds[] = (int) $button->id;
         }
 

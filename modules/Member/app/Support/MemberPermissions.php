@@ -17,6 +17,10 @@ final class MemberPermissions
 
     public const DELETE = 'member.members.delete';
 
+    public const BATCH_DELETE = 'member.members.batch_delete';
+
+    public const BATCH_STATUS = 'member.members.batch_status';
+
     /**
      * @return list<array{name: string, title: string, permission: string, sort: int}>
      */
@@ -28,6 +32,8 @@ final class MemberPermissions
             ['name' => 'Update', 'title' => '编辑', 'permission' => self::UPDATE, 'sort' => 3],
             ['name' => 'Status', 'title' => '启停', 'permission' => self::STATUS, 'sort' => 4],
             ['name' => 'Delete', 'title' => '删除', 'permission' => self::DELETE, 'sort' => 5],
+            ['name' => 'BatchDelete', 'title' => '批量删除', 'permission' => self::BATCH_DELETE, 'sort' => 6],
+            ['name' => 'BatchStatus', 'title' => '批量改状态', 'permission' => self::BATCH_STATUS, 'sort' => 7],
         ];
     }
 }

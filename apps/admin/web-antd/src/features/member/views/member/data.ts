@@ -130,6 +130,12 @@ export function useColumns(
   const canStatus = access.can(MEMBER_PERMISSIONS.STATUS);
 
   return [
+    {
+      align: 'center',
+      fixed: 'left',
+      type: 'checkbox',
+      width: 48,
+    },
     { field: 'id', sortable: true, title: 'ID', width: 72 },
     {
       align: 'left',

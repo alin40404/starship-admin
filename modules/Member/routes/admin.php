@@ -10,6 +10,10 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
             ->middleware('admin.permission:'.MemberPermissions::QUERY);
         Route::post('members', [MemberController::class, 'store'])
             ->middleware('admin.permission:'.MemberPermissions::CREATE);
+        Route::post('members/batch-destroy', [MemberController::class, 'batchDestroy'])
+            ->middleware('admin.permission:'.MemberPermissions::BATCH_DELETE);
+        Route::put('members/batch-status', [MemberController::class, 'batchUpdateStatus'])
+            ->middleware('admin.permission:'.MemberPermissions::BATCH_STATUS);
         Route::get('members/{id}', [MemberController::class, 'show'])
             ->middleware('admin.permission:'.MemberPermissions::QUERY);
         Route::put('members/{id}', [MemberController::class, 'update'])

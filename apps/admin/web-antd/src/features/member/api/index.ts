@@ -66,3 +66,20 @@ export function updateMemberStatus(id: number, status: number) {
 export function deleteMember(id: number) {
   return requestClient.delete(`/member/members/${id}`);
 }
+
+export function batchDeleteMembers(ids: number[]) {
+  return requestClient.post<{ deleted: number }>(
+    '/member/members/batch-destroy',
+    { ids },
+  );
+}
+
+export function batchUpdateMemberStatus(ids: number[], status: 0 | 1) {
+  return requestClient.put<{ updated: number }>(
+    '/member/members/batch-status',
+    {
+      ids,
+      status,
+    },
+  );
+}

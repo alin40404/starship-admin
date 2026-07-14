@@ -12,6 +12,8 @@ import { Button, message, Modal } from 'ant-design-vue';
 
 import { useResponsiveCrud } from '#/adapter/mobile-list';
 import {
+  batchDeleteMembers,
+  batchUpdateMemberStatus,
   deleteMember,
   fetchMemberPage,
   updateMemberStatus,
@@ -70,6 +72,7 @@ const [CrudView, crudApi] = useResponsiveCrud<MemberRow>({
     submitButtonOptions: { content: $t('common.query') },
   },
   gridOptions: {
+    checkboxConfig: { highlight: true },
     columns: columns as VxeTableGridOptions<MemberRow>['columns'],
     height: 'auto',
     keepSource: true,
@@ -122,7 +125,7 @@ const [CrudView, crudApi] = useResponsiveCrud<MemberRow>({
   }),
 });
 
-const { reload } = crudApi;
+const { clearSelection, reload, selectedRows } = crudApi;
 
 function onRefresh() {
   reload();
@@ -138,6 +141,50 @@ async function onDelete(row: MemberRow) {
     async onOk() {
       await deleteMember(row.id);
       message.success($t('crud.deleted'));
+      clearSelection();
+      onRefresh();
+    },
+  });
+}
+
+function onBatchDelete() {
+  const ids = selectedRows.value.map((row) => row.id);
+  if (ids.length === 0) {
+    return;
+  }
+  Modal.confirm({
+    content: `确认批量删除选中的 ${ids.length} 个会员？`,
+    okText: $t('common.delete'),
+    okType: 'danger',
+    cancelText: $t('common.cancel'),
+    title: $t('system.shared.batchDelete'),
+    async onOk() {
+      await batchDeleteMembers(ids);
+      message.success($t('crud.batchDeleted'));
+      clearSelection();
+      onRefresh();
+    },
+  });
+}
+
+function onBatchUpdateStatus(status: 0 | 1) {
+  const ids = selectedRows.value.map((row) => row.id);
+  if (ids.length === 0) {
+    return;
+  }
+  const label =
+    status === 1
+      ? $t('system.shared.status.enable')
+      : $t('system.shared.status.disable');
+  Modal.confirm({
+    content: `确认将选中的 ${ids.length} 个会员设为「${label}」？`,
+    okText: $t('common.confirm'),
+    cancelText: $t('common.cancel'),
+    title: $t('system.shared.batchSet', [label]),
+    async onOk() {
+      await batchUpdateMemberStatus(ids, status);
+      message.success($t('system.shared.batchStatusDone', [label]));
+      clearSelection();
       onRefresh();
     },
   });
@@ -149,8 +196,37 @@ async function onDelete(row: MemberRow) {
     <MemberForm ref="memberFormRef" @success="onRefresh" />
     <CrudView>
       <template #toolbar-actions>
+        <div
+          v-if="selectedRows.length > 0"
+          class="vxe-grid-batch-toolbar"
+        >
+          <Button
+            v-if="memberAccess.can(MEMBER_PERMISSIONS.BATCH_DELETE)"
+            danger
+            @click="onBatchDelete"
+          >
+            {{ $t('system.shared.batchDeleteWithCount', [selectedRows.length]) }}
+          </Button>
+          <Button
+            v-if="memberAccess.can(MEMBER_PERMISSIONS.BATCH_STATUS)"
+            class="member-batch-btn-enable ml-2"
+            @click="onBatchUpdateStatus(1)"
+          >
+            {{ $t('system.shared.batchEnable') }}
+          </Button>
+          <Button
+            v-if="memberAccess.can(MEMBER_PERMISSIONS.BATCH_STATUS)"
+            class="member-batch-btn-disable ml-2"
+            @click="onBatchUpdateStatus(0)"
+          >
+            {{ $t('system.shared.batchDisable') }}
+          </Button>
+          <Button class="ml-2" type="link" @click="clearSelection">
+            {{ $t('system.shared.clearSelection') }}
+          </Button>
+        </div>
         <Button
-          v-if="memberAccess.can(MEMBER_PERMISSIONS.CREATE)"
+          v-else-if="memberAccess.can(MEMBER_PERMISSIONS.CREATE)"
           type="primary"
           @click="onCreate"
         >
@@ -161,3 +237,19 @@ async function onDelete(row: MemberRow) {
     </CrudView>
   </Page>
 </template>
+
+<style lang="scss">
+.vxe-grid .member-batch-btn-enable.ant-btn,
+.mobile-crud-list .member-batch-btn-enable.ant-btn {
+  color: #fff;
+  background-color: #52c41a;
+  border-color: #52c41a;
+}
+
+.vxe-grid .member-batch-btn-disable.ant-btn,
+.mobile-crud-list .member-batch-btn-disable.ant-btn {
+  color: #fff;
+  background-color: #fa8c16;
+  border-color: #fa8c16;
+}
+</style>
