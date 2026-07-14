@@ -2,9 +2,9 @@
   "name": "Corporate",
   "slug": "corporate",
   "title": "企业主题",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "frontend",
-  "description": "Starship 企业前台主题（Blade Demo）",
+  "description": "深色企业官网主题：全幅科技感 Hero、半透明导航与青色强调色（Blade）",
   "cover": "cover.svg",
   "require": {
     "modules": []

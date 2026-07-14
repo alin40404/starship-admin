@@ -1,0 +1,17 @@
+:root {
+  --c-bg: #00050a;
+  --c-bg-elevated: #0b1220;
+  --c-surface: rgba(15, 23, 42, 0.72);
+  --c-cyan: #00e5ff;
+  --c-cyan-dim: rgba(0, 229, 255, 0.35);
+  --c-text: #ffffff;
+  --c-muted: #a0a8b4;
+  --c-border: rgba(255, 255, 255, 0.12);
+  --c-danger: #f87171;
+  --c-header-h: 72px;
+  --c-content: 1120px;
+  --c-font: "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    sans-serif;
+  --c-display: "Segoe UI Semibold", "Segoe UI", "PingFang SC", "Microsoft YaHei",
+    sans-serif;
+}

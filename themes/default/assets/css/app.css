@@ -184,7 +184,22 @@ p {
 }
 
 .auth-shell .page-hero {
-  padding: 0 0 1.25rem;
+  padding: 0 0 0.85rem;
+}
+
+.auth-shell .page-hero__eyebrow {
+  margin: 0 0 0.2rem;
+}
+
+.auth-shell .page-hero h1 {
+  margin: 0 0 0.25rem;
+  line-height: 1.2;
+}
+
+.auth-shell .page-hero__lede {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
 }
 
 .member-form label {
