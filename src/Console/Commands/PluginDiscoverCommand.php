@@ -9,7 +9,7 @@ class PluginDiscoverCommand extends Command
 {
     protected $signature = 'starship:plugin:discover';
 
-    protected $description = '扫描 plugins/ 目录并同步插件注册表';
+    protected $description = '批量扫描 plugins/ 并同步注册表（安装不必先执行）';
 
     public function handle(PluginLifecycle $pluginLifecycle): int
     {

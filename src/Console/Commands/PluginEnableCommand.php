@@ -10,7 +10,7 @@ class PluginEnableCommand extends PluginActionCommand
 {
     protected $signature = 'starship:plugin:enable {plugin : 插件目录名或 slug}';
 
-    protected $description = '启用本地插件';
+    protected $description = '启用本地插件（未安装时会自动安装）';
 
     public function handle(PluginManager $pluginManager, PluginLifecycle $pluginLifecycle): int
     {
