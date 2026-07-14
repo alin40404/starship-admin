@@ -3,6 +3,8 @@
 namespace Starship\Core\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Starship\Core\Console\Commands\ModuleExportCommand;
+use Starship\Core\Console\Commands\ModuleImportCommand;
 use Starship\Core\Console\Commands\ModuleMakeCommand;
 use Starship\Core\Console\Commands\PluginDisableCommand;
 use Starship\Core\Console\Commands\PluginDiscoverCommand;
@@ -18,7 +20,9 @@ use Starship\Core\Console\Commands\ThemeInstallCommand;
 use Starship\Core\Console\Commands\ThemeListCommand;
 use Starship\Core\Console\Commands\ThemeSwitchCommand;
 use Starship\Core\Console\Commands\ThemeUninstallCommand;
+use Starship\Core\Module\ModuleLocator;
 use Starship\Core\Module\ModuleManager;
+use Starship\Core\Module\ModulePackageBuilder;
 use Starship\Core\Module\ModuleValidator;
 use Starship\Core\Plugin\PluginConfigRepository;
 use Starship\Core\Plugin\PluginLifecycle;
@@ -36,6 +40,14 @@ class CoreServiceProvider extends ServiceProvider
 
         $this->app->singleton(ModuleManager::class, function () {
             return new ModuleManager((string) config('starship.modules_path'));
+        });
+
+        $this->app->singleton(ModuleLocator::class, function () {
+            return new ModuleLocator((string) config('starship.modules_path'));
+        });
+
+        $this->app->singleton(ModulePackageBuilder::class, function ($app) {
+            return new ModulePackageBuilder($app->make(ModuleLocator::class));
         });
 
         $this->app->singleton(PluginManager::class, function () {
@@ -74,6 +86,8 @@ class CoreServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 ModuleMakeCommand::class,
+                ModuleExportCommand::class,
+                ModuleImportCommand::class,
                 PluginDiscoverCommand::class,
                 PluginListCommand::class,
                 PluginInstallCommand::class,
