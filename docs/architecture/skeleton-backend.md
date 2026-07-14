@@ -21,6 +21,26 @@ my-admin/
 
 `backend/` 职责：**HTTP 入口 + 环境配置 + 注册 Starship Core**，不含业务逻辑。
 
+### 1.1 交付形态（替代 monorepo sync）
+
+| 方式 | 说明 |
+|------|------|
+| **独立模板仓库**（推荐现阶段） | 新建 `starship-admin`（或同名）Git 仓，内容即上表整棵树；用户 `git clone` 或 `composer create-project`（VCS / Packagist） |
+| Packagist | 上架 `starship/admin` 后：`composer create-project starship/admin my-admin` |
+| **不要** | 在框架 monorepo 内用 sync 脚本再生成一份重复骨架 |
+
+现阶段 **做成独立仓库就够用**；Packagist 可后补，不影响下游开工。
+
+### 1.2 前端 `apps/admin` 怎么处理
+
+| 策略 | 适用 |
+|------|------|
+| **同仓交付（推荐）** | 模板仓内放入裁剪后的 `apps/admin`（去掉 playground / docs / backend-mock）；业务项目一 clone 前后端齐全 |
+| 子模块 / 双仓 | 前端独立仓，模板 README 写 `git clone` / submodule；升级解耦但上手成本高 |
+| 仅后端模板 | 最快，但下游必须自己接前端，体验差 |
+
+从本 monorepo 抽前端时建议保留：`apps/admin/apps/web-antd` + 工作区必要包；去掉演示与文档站。CORS 默认指向前端 dev 端口即可。
+
 ---
 
 ## 2. 文件清单总览
@@ -268,8 +288,8 @@ php artisan key:generate
 php artisan migrate --seed
 php artisan storage:link
 
-# 插件（可选）
-php artisan starship:plugin:discover
+# 插件（可选；安装会自动发现）
+php artisan starship:plugin:install sms-aliyun
 php artisan starship:plugin:enable sms-aliyun
 ```
 
@@ -287,6 +307,7 @@ php artisan starship:plugin:enable sms-aliyun
 - [ ] `bootstrap/providers.php` 只注册 App + Core
 - [ ] 文档中 CORS、DB_PREFIX、storage:link 已说明
 - [x] Feature 测试至少覆盖 `GET /admin-api/ping`（见 `tests/Feature/FrameworkSmokeTest.php`）
+- [ ] 独立模板仓库 `starship/admin`（create-project / git clone）；前端 `apps/admin` 同仓裁剪纳入
 
 ---
 

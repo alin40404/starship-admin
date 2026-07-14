@@ -287,11 +287,11 @@ interface PluginConfigStoreInterface
 
 ### 阶段一：底座夯实（当前 → 约 3～6 个月）
 
-- [ ] System（含监控日志）/ Generator 核心功能完整
-- [ ] Generator 端到端：表 → 后端 + 前端 + 菜单 + 权限
-- [ ] 插件全流程：发现 / 安装 / 启用 / 配置 / 路由
+- [x] System（含监控日志）/ Generator 核心功能完整
+- [x] Generator 端到端：表 → 后端 + 前端 + 菜单 + 权限
+- [x] 插件全流程：发现 / 安装 / 启用 / 配置 / 路由
 - [x] 文档：API、权限码、描述文件规范稳定
-- [ ] **纪律**：新业务不进 `backend/app/`、不污染 System 核心
+- [x] **纪律**：新业务不进 `backend/app/`、不污染 System 核心
 
 ### 阶段二：框架产品化（底座稳定后 → 约 1～2 个月）
 
@@ -299,7 +299,7 @@ interface PluginConfigStoreInterface
 - [x] Plugin 模型迁入 Core
 - [x] `backend/bootstrap/providers.php` 仅注册 `CoreServiceProvider`
 - [x] 脚手架：`php artisan starship:module:make`、`starship:plugin:make`
-- [ ] 项目模板：`starship/admin`（`composer create-project`）
+- [ ] 项目模板：`starship/admin`（独立仓库 + `composer create-project`；Packagist 可选）
 - [x] 框架级 Feature Test（启动、模块、插件、ping；`packages/core` 包测试已独立）
 
 ### 阶段三：生态与工具（长期）
@@ -314,26 +314,35 @@ interface PluginConfigStoreInterface
 ## 9. 新业务项目启动流程（目标态）
 
 ```bash
-# 1. 从模板创建
+# 1. 从模板创建（独立仓库 starship/admin；也可 Packagist）
 composer create-project starship/admin my-erp-admin
-cd my-erp-admin
+# 或未上架时：
+# git clone <starship-admin-template.git> my-erp-admin
+
+cd my-erp-admin/backend
 
 # 2. 环境初始化
 cp .env.example .env
+composer install
 php artisan key:generate
 php artisan migrate --seed
 
-# 3. 创建业务模块
+# 3. 前端（同仓 apps/admin，见模板 README）
+cd ../apps/admin && pnpm install && pnpm dev
+
+# 4. 创建业务模块
+cd ../../backend
 php artisan starship:module:make Erp
 
-# 4. 可选：安装官方插件
-php artisan starship:plugin:discover
+# 5. 可选插件（安装会自动发现入库）
+php artisan starship:plugin:install sms-aliyun
 php artisan starship:plugin:enable sms-aliyun
 
-# 5. 用 Generator 生成 CRUD
+# 6. Generator
 php artisan starship:generator:crud erp_orders
 ```
 
+模板文件清单见 [skeleton-backend.md](./skeleton-backend.md)。前端建议与模板同仓交付，见该文「前端」小节。
 ---
 
 ## 10. 代码归属速查

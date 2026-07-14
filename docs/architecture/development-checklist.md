@@ -33,7 +33,7 @@
 | Contract 体系 | ✅ | `SmsSenderInterface`、`StorageInterface` 已落地；System 默认实现可被插件覆盖 |
 | Event / Hook | ❌ | 阶段三 |
 | ThemeManager | ❌ | 阶段二 |
-| 脚手架 `starship/admin` | ❌ | `composer create-project` 模板 |
+| 脚手架 `starship/admin` | ❌ | 独立模板仓库 + `composer create-project`（未建仓/未发包） |
 | 框架 Feature Test | ✅ | `FrameworkSmokeTest`：ping / 模块 / 插件扫描 / Contract 绑定 |
 | `packages/core` 包测试 | ✅ | `cd packages/core && composer test` |
 
@@ -68,7 +68,7 @@
 - [x] 最小 Contract（`StorageInterface` ✅；`SmsSenderInterface` ✅）
 - [x] 框架级 Feature Test（`php artisan test` 冒烟，仅 backend 应用壳）
 - [x] `packages/core` 包测试（`cd packages/core && composer test`）
-- [ ] 项目模板 `starship/admin`
+- [ ] 项目模板 `starship/admin`（独立仓 + create-project；Packagist 可选）
 
 ### 阶段二：主题体系（底座稳定后，约 1～2 个月）
 
