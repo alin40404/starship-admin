@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit;
+namespace Modules\System\Tests\Unit;
 
 use Illuminate\Support\Facades\Storage;
 use Modules\System\App\Support\Storage\LocalStorage;

@@ -7,9 +7,13 @@
     <testsuites>
         <testsuite name="Unit">
             <directory>tests/Unit</directory>
+            <directory suffix="Test.php">../modules/System/tests/Unit</directory>
+            <directory suffix="Test.php">../modules/Generator/tests/Unit</directory>
         </testsuite>
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
+            <directory suffix="Test.php">../modules/Member/tests/Feature</directory>
+            <directory suffix="Test.php">../modules/Generator/tests/Feature</directory>
         </testsuite>
     </testsuites>
     <source>

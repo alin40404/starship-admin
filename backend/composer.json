@@ -52,7 +52,10 @@
     ],
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests/"
+            "Tests\\": "tests/",
+            "Modules\\System\\Tests\\": "../modules/System/tests/",
+            "Modules\\Member\\Tests\\": "../modules/Member/tests/",
+            "Modules\\Generator\\Tests\\": "../modules/Generator/tests/"
         }
     },
     "scripts": {

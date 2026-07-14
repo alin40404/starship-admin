@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Modules\Member\Tests\Feature;
 
 use Illuminate\Support\Facades\DB;
 use Modules\Member\App\Models\Member;
@@ -17,10 +17,11 @@ class MemberModuleSmokeTest extends TestCase
     {
         parent::setUp();
 
+        // phpunit.xml 默认 sqlite；本机无 pdo_sqlite 时回退 .env 的 mysql
         if (! in_array('sqlite', \PDO::getAvailableDrivers(), true)) {
             $connection = $this->dotenvValue('DB_CONNECTION') ?: 'mysql';
             if ($connection === 'sqlite') {
-                return;
+                $connection = 'mysql';
             }
 
             config([

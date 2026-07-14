@@ -151,7 +151,7 @@ my-admin/
 | `tests/Feature/FrameworkSmokeTest.php` | 应用壳冒烟：`/admin-api/ping`、模块、插件清单、Contract 绑定 |
 | `tests/Unit/ExampleTest.php` | 可选 |
 
-> **Core / 模块测试不放 backend**：`packages/core/tests/`、`modules/*/tests/` 各自独立运行；backend 仅保留应用壳冒烟。
+> **Core / 模块测试不放 backend 源码目录**：用例放 `packages/core/tests/`、`modules/*/tests/`；backend `phpunit.xml` 可一并收集模块测试，仍用壳层 `Tests\TestCase` 启动应用。
 
 ---
 

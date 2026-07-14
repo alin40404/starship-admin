@@ -9,5 +9,10 @@
             "Modules\\Member\\App\\": "app/",
             "Modules\\Member\\Database\\Seeders\\": "database/seeders/"
         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Member\\Tests\\": "tests/"
+        }
     }
 }

@@ -8,5 +8,10 @@
         "psr-4": {
             "Modules\\Generator\\App\\": "app/"
         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Generator\\Tests\\": "tests/"
+        }
     }
 }
