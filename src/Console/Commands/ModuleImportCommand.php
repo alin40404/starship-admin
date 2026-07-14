@@ -6,18 +6,23 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Starship\Core\Console\Concerns\LinksModuleToComposer;
 use Starship\Core\Module\ModuleLocator;
 use Starship\Core\Module\ModulePackageBuilder;
 use Throwable;
 
 class ModuleImportCommand extends Command
 {
+    use LinksModuleToComposer;
+
     protected $signature = 'starship:module:import
                             {path : 模块包目录或 .zip 路径}
                             {--force : 覆盖已存在的 backend / admin-ui}
                             {--migrate : 导入后运行该模块 migrations}
                             {--seed : 导入后运行 manifest 中的 seeders}
-                            {--no-admin-ui : 不导入前端 admin-ui}';
+                            {--no-admin-ui : 不导入前端 admin-ui}
+                            {--no-composer : 不自动改 backend/composer.json / 不跑 composer update}
+                            {--no-update : 只写 composer.json，不执行 composer update}';
 
     protected $description = '导入业务模块包到 modules/ 与 web-antd/src/features/';
 
@@ -67,6 +72,14 @@ class ModuleImportCommand extends Command
             );
         }
 
+        if (! $this->option('no-composer')) {
+            $link = $this->linkModuleToComposer(
+                $backendAbsolute,
+                ! $this->option('no-update'),
+            );
+            $this->reportComposerLink($link);
+        }
+
         if ($this->option('migrate')) {
             $this->runModuleMigrations($backendAbsolute);
         }
@@ -76,9 +89,14 @@ class ModuleImportCommand extends Command
         }
 
         $next = [
-            "确认 backend/composer.json 已 path 引用 starship/{$slug}，并执行 composer update starship/{$slug}",
             '确认 modules/'.$studly.'/module.json 中 enabled 为 true',
         ];
+        if ($this->option('no-composer')) {
+            array_unshift(
+                $next,
+                "确认 backend/composer.json 已 path 引用 starship/{$slug}，并执行 composer update starship/{$slug}",
+            );
+        }
         if (! $this->option('migrate')) {
             $next[] = 'php artisan migrate（或再次 import 加 --migrate）';
         }
