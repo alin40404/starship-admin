@@ -262,8 +262,8 @@ interface PluginConfigStoreInterface
 
 | 包 | 版本策略 | 说明 |
 |----|----------|------|
-| `starship/core` | SemVer 1.x | 公共 API 稳定后严格遵循 |
-| `starship/system` 等 | 独立 SemVer | 与 core 解耦发布 |
+| `starship/core` | SemVer；**Packagist** | monorepo 开发 path；发版 subtree → 独立仓 → Packagist |
+| `starship/system` 等 | 源码模块（近期） | 留在 `modules/`，不强制 Packagist |
 | `backend` Laravel 壳 | 跟随 Laravel | `laravel/framework: ^13.0` |
 | 业务项目 | 自有版本 | `composer.json` 锁定底座版本范围 |
 
@@ -299,7 +299,8 @@ interface PluginConfigStoreInterface
 - [x] Plugin 模型迁入 Core
 - [x] `backend/bootstrap/providers.php` 仅注册 `CoreServiceProvider`
 - [x] 脚手架：`php artisan starship:module:make`、`starship:plugin:make`
-- [ ] 项目模板：`starship/admin`（独立仓库 + `composer create-project`；Packagist 可选）
+- [x] 项目模板约定：开发仓兼发布（根 `composer.json`；见 [release-as-template.md](./release-as-template.md)）
+- [ ] 对外 `release` 分支 / 版本 tag
 - [x] 框架级 Feature Test（启动、模块、插件、ping；`packages/core` 包测试已独立）
 
 ### 阶段三：生态与工具（长期）
@@ -314,10 +315,9 @@ interface PluginConfigStoreInterface
 ## 9. 新业务项目启动流程（目标态）
 
 ```bash
-# 1. 从模板创建（独立仓库 starship/admin；也可 Packagist）
-composer create-project starship/admin my-erp-admin
-# 或未上架时：
-# git clone <starship-admin-template.git> my-erp-admin
+# 1. 从本仓库发布分支创建（也可 Packagist create-project）
+git clone -b release <本仓 URL> my-erp-admin
+# 或：composer create-project starship/skeleton my-erp-admin
 
 cd my-erp-admin/backend
 
@@ -342,7 +342,8 @@ php artisan starship:plugin:enable sms-aliyun
 php artisan starship:generator:crud erp_orders
 ```
 
-模板文件清单见 [skeleton-backend.md](./skeleton-backend.md)。前端建议与模板同仓交付，见该文「前端」小节。
+发布约定见 [release-as-template.md](./release-as-template.md)；backend 清单见 [skeleton-backend.md](./skeleton-backend.md)。
+
 ---
 
 ## 10. 代码归属速查
@@ -377,4 +378,4 @@ php artisan starship:generator:crud erp_orders
 - [public-storage-link.md](../deployment/public-storage-link.md) — 部署说明
 - [generator/cli.md](../generator/cli.md) — 生成器 CLI
 - [packages/core/README.md](../../packages/core/README.md) — 内核包说明
-- [skeleton-backend.md](./skeleton-backend.md) — starship/admin 中 backend/ 文件清单
+- [skeleton-backend.md](./skeleton-backend.md) — starship/skeleton 中 backend/ 文件清单

@@ -1,0 +1,22 @@
+{
+    "name": "starship/skeleton",
+    "type": "project",
+    "description": "Starship Admin application skeleton — Laravel thin shell + System + Generator + admin UI",
+    "keywords": ["starship", "skeleton", "admin", "laravel", "vue"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "allanchan"
+        }
+    ],
+    "require": {
+        "php": "^8.3"
+    },
+    "scripts": {
+        "post-create-project-cmd": [
+            "@php -r \"fwrite(STDOUT, PHP_EOL.'Starship Admin scaffold ready.' . PHP_EOL . 'Next:' . PHP_EOL . '  cd backend' . PHP_EOL . '  composer install' . PHP_EOL . '  copy .env.example .env   # or: cp .env.example .env' . PHP_EOL . '  php artisan key:generate' . PHP_EOL . '  php artisan migrate --seed' . PHP_EOL . '  cd ../apps/admin && pnpm install && pnpm dev' . PHP_EOL . PHP_EOL);\""
+        ]
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

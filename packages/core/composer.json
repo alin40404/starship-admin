@@ -3,7 +3,11 @@
     "description": "Starship Admin framework kernel — module scanner, plugin engine, contracts",
     "type": "library",
     "license": "MIT",
-    "version": "0.1.0",
+    "authors": [
+        {
+            "name": "allanchan"
+        }
+    ],
     "require": {
         "php": "^8.3",
         "laravel/framework": "^13.0",

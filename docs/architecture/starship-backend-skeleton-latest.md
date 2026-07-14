@@ -1,4 +1,4 @@
-# starship/admin backend 文件清单
+# starship/skeleton backend 文件清单
 
 > backend 是 Laravel 薄壳。
 >

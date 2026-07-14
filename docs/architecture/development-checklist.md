@@ -9,8 +9,8 @@
 
 | 项 | 决策 |
 |----|------|
-| 内核 | `packages/core` → Composer `starship/core`，业务项目只读 |
-| 底座模块 | `modules/System`、`modules/Generator`，源码在仓库内，不走 Composer 包 |
+| 内核 | `packages/core` → Packagist `starship/core`（业务只读）；monorepo 开发期仍可用 path |
+| 底座模块 | `modules/System`、`modules/Generator`，源码在仓库内，**近期不走 Packagist** |
 | 业务模块 | 新建目录放 `modules/{Name}/`，通过 `module.json` 注册 |
 | 插件 | `plugins/`，完整生命周期（发现 / 安装 / 启用 / 禁用 / 卸载） |
 | 主题 | `themes/` 占位，阶段二实现 ThemeManager |
@@ -33,7 +33,7 @@
 | Contract 体系 | ✅ | `SmsSenderInterface`、`StorageInterface` 已落地；System 默认实现可被插件覆盖 |
 | Event / Hook | ❌ | 阶段三 |
 | ThemeManager | ❌ | 阶段二 |
-| 脚手架 `starship/admin` | ❌ | 独立模板仓库 + `composer create-project`（未建仓/未发包） |
+| 脚手架 `starship/skeleton` | 🚧 | 开发仓兼发布：根 `composer.json` 已备；待维护 `release` 分支 |
 | 框架 Feature Test | ✅ | `FrameworkSmokeTest`：ping / 模块 / 插件扫描 / Contract 绑定 |
 | `packages/core` 包测试 | ✅ | `cd packages/core && composer test` |
 
@@ -68,7 +68,9 @@
 - [x] 最小 Contract（`StorageInterface` ✅；`SmsSenderInterface` ✅）
 - [x] 框架级 Feature Test（`php artisan test` 冒烟，仅 backend 应用壳）
 - [x] `packages/core` 包测试（`cd packages/core && composer test`）
-- [ ] 项目模板 `starship/admin`（独立仓 + create-project；Packagist 可选）
+- [x] 项目模板约定：开发仓兼发布（根 `composer.json` + [release-as-template.md](./release-as-template.md)）
+- [x] `starship/core` Packagist 约定（[packagist.md](./packagist.md)；待独立仓上架与首个 tag）
+- [ ] 对外发布分支 `release`：core 改版本约束 + clone 可起步
 
 ### 阶段二：主题体系（底座稳定后，约 1～2 个月）
 
@@ -218,3 +220,5 @@ php artisan starship:generator:crud {table}
 - [Starship_Plugin_开发规范.md](../deployment/Starship_Plugin_开发规范.md)
 - [permissions.md](../api/permissions.md) — 权限码与 module.json 绑定
 - [routes.md](../api/routes.md) — 管理端 API 路由参考
+- [release-as-template.md](./release-as-template.md) — 开发仓兼发布仓约定
+- [packagist.md](./packagist.md) — starship/core Packagist 与 subtree

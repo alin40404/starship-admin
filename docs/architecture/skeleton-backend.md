@@ -1,13 +1,13 @@
-# starship/admin 中 backend/ 文件清单
+# starship/skeleton 中 backend/ 文件清单
 
-> 本文说明：从 monorepo 抽取 `starship/admin` 时，`backend/` 应保留什么、可删什么、与标准 Laravel 的差异在哪里。  
+> 本文说明：从 monorepo 抽取 `starship/skeleton` 时，`backend/` 应保留什么、可删什么、与标准 Laravel 的差异在哪里。  
 > 原则：**backend 是模板复制，不是命令生成。**
 
 ---
 
 ## 1. 目标结构
 
-别人执行 `composer create-project starship/admin my-admin` 后，应得到：
+别人执行 `composer create-project starship/skeleton my-admin` 后，应得到：
 
 ```
 my-admin/
@@ -21,15 +21,15 @@ my-admin/
 
 `backend/` 职责：**HTTP 入口 + 环境配置 + 注册 Starship Core**，不含业务逻辑。
 
-### 1.1 交付形态（替代 monorepo sync）
+### 1.1 交付形态（开发仓兼发布仓）
 
 | 方式 | 说明 |
 |------|------|
-| **独立模板仓库**（推荐现阶段） | 新建 `starship-admin`（或同名）Git 仓，内容即上表整棵树；用户 `git clone` 或 `composer create-project`（VCS / Packagist） |
-| Packagist | 上架 `starship/admin` 后：`composer create-project starship/admin my-admin` |
-| **不要** | 在框架 monorepo 内用 sync 脚本再生成一份重复骨架 |
+| **本仓库 + `release` 分支**（推荐） | `master` 研发；`release`（或 tag）给下游 clone / create-project |
+| Packagist | 上架同一仓库的 `starship/skeleton` 后：`composer create-project starship/skeleton my-admin` |
+| **不要** | 再开第二套模板仓做长期双份维护；不要 monorepo sync 第二份树 |
 
-现阶段 **做成独立仓库就够用**；Packagist 可后补，不影响下游开工。
+约定详见 [release-as-template.md](./release-as-template.md)。
 
 ### 1.2 前端 `apps/admin` 怎么处理
 
@@ -190,27 +190,30 @@ my-admin/
 }
 ```
 
-### 5.2 未来 skeleton（Packagist）
+### 5.2 发布形态（core → Packagist；模块仍 path）
 
 ```json
 {
-  "name": "starship/admin",
-  "type": "project",
   "require": {
     "php": "^8.3",
     "laravel/framework": "^13.0",
     "laravel/sanctum": "^4.3",
-    "starship/core": "^1.0",
-    "starship/system": "^1.0",
-    "starship/generator": "^1.0"
-  }
+    "starship/core": "^0.1",
+    "starship/system": "@dev",
+    "starship/generator": "@dev"
+  },
+  "repositories": [
+    { "type": "path", "url": "../modules/System" },
+    { "type": "path", "url": "../modules/Generator" }
+  ]
 }
 ```
 
-无 `repositories` path，全部从 Packagist 拉。
+- **core**：Packagist，无 path  
+- **System / Generator**：同仓源码 + path（可二开，近期不上 Packagist）  
+- **前端**：`apps/admin` 同仓  
 
-下游安装 `starship/core` 的逐步说明见 [packages/core/README.md](../../packages/core/README.md)。
-
+详见 [packagist.md](./packagist.md)、[release-as-template.md](./release-as-template.md)。
 ### 5.3 可选依赖
 
 | 包 | skeleton 默认 | 说明 |
@@ -299,7 +302,7 @@ php artisan starship:plugin:enable sms-aliyun
 
 ## 10. 从 monorepo 抽取 checklist
 
-抽取 `starship/admin` 前，在 monorepo 确认：
+抽取 `starship/skeleton` 前，在 monorepo 确认：
 
 - [ ] `backend/app/` 无业务代码（仅 3 个文件级）
 - [ ] `packages/core` 已稳定，Plugin 模型在 core 内
@@ -307,7 +310,8 @@ php artisan starship:plugin:enable sms-aliyun
 - [ ] `bootstrap/providers.php` 只注册 App + Core
 - [ ] 文档中 CORS、DB_PREFIX、storage:link 已说明
 - [x] Feature 测试至少覆盖 `GET /admin-api/ping`（见 `tests/Feature/FrameworkSmokeTest.php`）
-- [ ] 独立模板仓库 `starship/admin`（create-project / git clone）；前端 `apps/admin` 同仓裁剪纳入
+- [x] 根 `composer.json` 声明 `starship/skeleton`（project）
+- [ ] 维护 `release` 分支并向外提供 clone / create-project；前端可在发布分支裁剪
 
 ---
 
