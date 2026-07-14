@@ -13,7 +13,8 @@ class ModuleMakeCommand extends Command
     use LinksModuleToComposer;
 
     protected $signature = 'starship:module:make
-                            {name : 模块名称（StudlyCase，如 Shop 或 Erp）}
+                            {name : 模块名称（可小写，如 shop / Shop；目录与命名空间均为 StudlyCase）}
+                            {--title= : 显示名称，写入 module.json title 与语言包，默认与模块名相同}
                             {--force : 覆盖已存在的 module.json 与 Provider}
                             {--no-composer : 不自动改 backend/composer.json / 不跑 composer update}
                             {--no-update : 只写 composer.json，不执行 composer update}';
@@ -29,6 +30,11 @@ class ModuleMakeCommand extends Command
             return self::FAILURE;
         }
 
+        $title = trim((string) $this->option('title'));
+        if ($title === '') {
+            $title = $studlyName;
+        }
+
         $modulePath = rtrim((string) config('starship.modules_path'), '/\\')
             .DIRECTORY_SEPARATOR.$studlyName;
         $slug = Str::kebab($studlyName);
@@ -40,7 +46,7 @@ class ModuleMakeCommand extends Command
         }
 
         try {
-            $this->scaffoldModule($studlyName, $modulePath);
+            $this->scaffoldModule($studlyName, $modulePath, $title);
         } catch (InvalidArgumentException $exception) {
             $this->components->error($exception->getMessage());
 
@@ -52,6 +58,7 @@ class ModuleMakeCommand extends Command
         $this->newLine();
         $this->components->twoColumnDetail('名称', $studlyName);
         $this->components->twoColumnDetail('Slug', $slug);
+        $this->components->twoColumnDetail('标题', $title);
 
         if (! $this->option('no-composer')) {
             $link = $this->linkModuleToComposer(
@@ -77,7 +84,7 @@ class ModuleMakeCommand extends Command
         return self::SUCCESS;
     }
 
-    protected function scaffoldModule(string $studlyName, string $modulePath): void
+    protected function scaffoldModule(string $studlyName, string $modulePath, string $title): void
     {
         $slug = Str::kebab($studlyName);
         $providerClass = "{$studlyName}ServiceProvider";
@@ -87,18 +94,19 @@ class ModuleMakeCommand extends Command
         File::ensureDirectoryExists($modulePath.'/app/Providers');
         File::ensureDirectoryExists($modulePath.'/routes');
         File::ensureDirectoryExists($modulePath.'/database/migrations');
+        File::ensureDirectoryExists($modulePath.'/database/seeders');
         File::ensureDirectoryExists($modulePath.'/resources/lang/zh-CN');
         File::ensureDirectoryExists($modulePath.'/resources/lang/en');
 
         $this->writeFile(
             "{$modulePath}/composer.json",
-            $this->composerJsonStub($studlyName, $slug),
+            $this->composerJsonStub($studlyName, $slug, $title),
             $this->option('force'),
         );
 
         $this->writeFile(
             "{$modulePath}/module.json",
-            $this->moduleJsonStub($slug, $studlyName, $providerFqn),
+            $this->moduleJsonStub($slug, $title, $providerFqn),
             $this->option('force'),
         );
 
@@ -114,20 +122,22 @@ class ModuleMakeCommand extends Command
             $this->option('force'),
         );
 
-        $gitkeep = "{$modulePath}/database/migrations/.gitkeep";
-        if (! File::exists($gitkeep)) {
-            File::put($gitkeep, '');
+        foreach (['database/migrations/.gitkeep', 'database/seeders/.gitkeep'] as $relative) {
+            $gitkeep = "{$modulePath}/{$relative}";
+            if (! File::exists($gitkeep)) {
+                File::put($gitkeep, '');
+            }
         }
 
         $this->writeFile(
             "{$modulePath}/resources/lang/zh-CN/messages.php",
-            $this->langStub($studlyName),
+            $this->langStub($title),
             $this->option('force'),
         );
 
         $this->writeFile(
             "{$modulePath}/resources/lang/en/messages.php",
-            $this->langStub($studlyName),
+            $this->langStub($title),
             $this->option('force'),
         );
     }
@@ -141,54 +151,48 @@ class ModuleMakeCommand extends Command
         File::put($path, $content);
     }
 
-    protected function composerJsonStub(string $studlyName, string $slug): string
+    protected function composerJsonStub(string $studlyName, string $slug, string $title): string
     {
-        return <<<JSON
-{
-    "name": "starship/{$slug}",
-    "description": "Starship Admin {$studlyName} module",
-    "type": "library",
-    "license": "MIT",
-    "version": "0.1.0",
-    "autoload": {
-        "psr-4": {
-            "Modules\\\\{$studlyName}\\\\App\\\\": "app/"
-        }
+        return json_encode([
+            'name' => "starship/{$slug}",
+            'description' => "Starship Admin {$title} module",
+            'type' => 'library',
+            'license' => 'MIT',
+            'version' => '0.1.0',
+            'autoload' => [
+                'psr-4' => [
+                    "Modules\\{$studlyName}\\App\\" => 'app/',
+                    "Modules\\{$studlyName}\\Database\\Seeders\\" => 'database/seeders/',
+                ],
+            ],
+            'autoload-dev' => [
+                'psr-4' => [
+                    "Modules\\{$studlyName}\\Tests\\" => 'tests/',
+                ],
+            ],
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES).PHP_EOL;
     }
-}
 
-JSON;
-    }
-
-    protected function moduleJsonStub(string $slug, string $studlyName, string $providerFqn): string
+    protected function moduleJsonStub(string $slug, string $title, string $providerFqn): string
     {
-        $title = $studlyName;
-
-        return <<<JSON
-{
-  "name": "{$slug}",
-  "title": "{$title}",
-  "version": "0.1.0",
-  "enabled": false,
-  "providers": [
-    "{$providerFqn}"
-  ],
-  "seeders": [],
-  "require": {
-    "modules": ["system"]
-  },
-  "menus": {
-    "paths": []
-  },
-  "permissions": {
-    "prefixes": [
-      "{$slug}."
-    ],
-    "exact": []
-  }
-}
-
-JSON;
+        return json_encode([
+            'name' => $slug,
+            'title' => $title,
+            'version' => '0.1.0',
+            'enabled' => false,
+            'providers' => [$providerFqn],
+            'seeders' => [],
+            'require' => [
+                'modules' => ['system'],
+            ],
+            'menus' => [
+                'paths' => [],
+            ],
+            'permissions' => [
+                'prefixes' => ["{$slug}."],
+                'exact' => [],
+            ],
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES).PHP_EOL;
     }
 
     protected function providerStub(
@@ -238,13 +242,15 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
 PHP;
     }
 
-    protected function langStub(string $studlyName): string
+    protected function langStub(string $title): string
     {
+        $exported = var_export($title, true);
+
         return <<<PHP
 <?php
 
 return [
-    'title' => '{$studlyName}',
+    'title' => {$exported},
 ];
 
 PHP;

@@ -157,7 +157,7 @@ composer require starship/system starship/generator
 | `php artisan starship:module:make {Name}` | 在 `modules/{Name}/` 生成脚手架，并默认挂载到 `backend/composer.json`（path + require `@dev`）后执行 `composer update` |
 | `php artisan starship:module:import {path}` | 导入模块包；同样默认自动挂载 Composer |
 
-选项：`--no-composer` 跳过挂载；`--no-update` 只改 `composer.json` 不跑 `composer update`。
+选项：`--title=` 显示名；`--no-composer` 跳过挂载；`--no-update` 只改 `composer.json` 不跑 `composer update`。删除模块时在 `backend/` 执行 `composer remove starship/{slug}`，并清理残留 path `repositories`。
 
 挂载后在 `module.json` 设 `enabled: true` 并重启服务。
 
