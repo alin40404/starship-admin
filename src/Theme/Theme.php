@@ -103,6 +103,23 @@ class Theme
         return is_string($layout) && $layout !== '' ? $layout : null;
     }
 
+    public function homeEntry(): ?string
+    {
+        $home = $this->entry()['home'] ?? 'pages.home';
+
+        return is_string($home) && $home !== '' ? $home : 'pages.home';
+    }
+
+    /**
+     * Blade 视图根目录：优先 `{theme}/views`，否则主题根目录。
+     */
+    public function viewsPath(): string
+    {
+        $withViews = $this->directory.DIRECTORY_SEPARATOR.'views';
+
+        return is_dir($withViews) ? $withViews : $this->directory;
+    }
+
     /**
      * 封面相对路径（相对主题根目录），优先 theme.json 的 cover，其次常见文件名。
      */
