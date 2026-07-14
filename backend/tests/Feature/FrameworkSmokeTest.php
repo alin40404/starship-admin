@@ -52,7 +52,7 @@ class FrameworkSmokeTest extends TestCase
         $decoded = json_decode((string) file_get_contents($manifest), true);
         $this->assertIsArray($decoded);
         $this->assertSame('sms-aliyun', $decoded['slug'] ?? null);
-        $this->assertSame('adapter', $decoded['type'] ?? null);
+        $this->assertSame('sms', $decoded['type'] ?? null);
     }
 
     #[Test]
