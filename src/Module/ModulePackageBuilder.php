@@ -189,11 +189,6 @@ class ModulePackageBuilder
                 File::copyDirectory($adminSource, $adminAbsolute);
             }
         }
-
-        File::put(
-            $backendAbsolute.DIRECTORY_SEPARATOR.'manifest.export.json',
-            json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)."\n",
-        );
     }
 
     /**
