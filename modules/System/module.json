@@ -1,53 +1,53 @@
 {
-  "name": "system",
-  "title": "系统管理",
-  "version": "0.1.0",
-  "enabled": true,
-  "providers": [
-    "Modules\\System\\App\\Providers\\SystemServiceProvider"
-  ],
-  "seeders": [
-    "Modules\\System\\Database\\Seeders\\StarshipFoundationSeeder"
-  ],
-  "menus": {
-    "paths": [
-      "/dashboard",
-      "/dashboard/console",
-      "/dashboard/overview",
-      "/dashboard/todos",
-      "/dashboard/quick-entry",
-      "/dashboard/favorites",
-      "/dashboard/inbox",
-      "/permission",
-      "/permission/menus",
-      "/permission/roles",
-      "/permission/admins",
-      "/org",
-      "/org/departments",
-      "/org/posts",
-      "/org/user-groups",
-      "/platform",
-      "/platform/configs",
-      "/platform/dicts",
-      "/platform/categories",
-      "/platform/regions",
-      "/resource/attachments",
-      "/monitor",
-      "/monitor/operation-logs",
-      "/monitor/login-logs",
-      "/monitor/exception-logs",
-      "/dev",
-      "/dev/modules",
-      "/dev/plugins",
-      "/dev/themes"
-    ]
-  },
-  "permissions": {
-    "prefixes": [
-      "system.",
-      "dashboard.",
-      "monitor."
+    "name": "system",
+    "title": "系统管理",
+    "version": "0.1.0",
+    "enabled": true,
+    "providers": [
+        "Modules\\System\\App\\Providers\\SystemServiceProvider"
     ],
-    "exact": []
-  }
+    "seeders": [
+        "Modules\\System\\Database\\Seeders\\StarshipFoundationSeeder"
+    ],
+    "menus": {
+        "paths": [
+            "/dashboard",
+            "/dashboard/console",
+            "/dashboard/overview",
+            "/dashboard/todos",
+            "/dashboard/quick-entry",
+            "/dashboard/favorites",
+            "/dashboard/inbox",
+            "/permission",
+            "/permission/menus",
+            "/permission/roles",
+            "/permission/admins",
+            "/org",
+            "/org/departments",
+            "/org/posts",
+            "/org/user-groups",
+            "/platform",
+            "/platform/configs",
+            "/platform/dicts",
+            "/platform/categories",
+            "/platform/regions",
+            "/resource/attachments",
+            "/monitor",
+            "/monitor/operation-logs",
+            "/monitor/login-logs",
+            "/monitor/exception-logs",
+            "/dev",
+            "/dev/modules",
+            "/dev/plugins",
+            "/dev/themes"
+        ]
+    },
+    "permissions": {
+        "prefixes": [
+            "system.",
+            "dashboard.",
+            "monitor."
+        ],
+        "exact": []
+    }
 }
