@@ -11,10 +11,34 @@
   ],
   "menus": {
     "paths": [
+      "/dashboard",
+      "/dashboard/console",
+      "/dashboard/overview",
+      "/dashboard/todos",
+      "/dashboard/quick-entry",
+      "/dashboard/favorites",
+      "/dashboard/inbox",
+      "/permission",
+      "/permission/menus",
+      "/permission/roles",
+      "/permission/admins",
+      "/org",
+      "/org/departments",
+      "/org/posts",
+      "/org/user-groups",
+      "/platform",
+      "/platform/configs",
+      "/platform/dicts",
+      "/platform/categories",
+      "/platform/regions",
+      "/resource/attachments",
       "/monitor",
       "/monitor/operation-logs",
       "/monitor/login-logs",
-      "/monitor/exception-logs"
+      "/monitor/exception-logs",
+      "/dev",
+      "/dev/modules",
+      "/dev/plugins"
     ]
   },
   "permissions": {

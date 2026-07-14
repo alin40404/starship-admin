@@ -60,7 +60,7 @@
 
 - [x] `starship:plugin:make` 脚手架
 - [x] 同步 `docs/deployment/Starship_Module_开发规范.md` 与真实目录（Providers 在 `app/Providers/`）
-- [ ] API / 权限码文档与 `module.json` 保持一致
+- [x] API / 权限码文档与 `module.json` 保持一致（`docs/api/permissions.md`、`docs/api/routes.md`；System/Generator `menus.paths` 已补全）
 - [x] System 插件管理页对接 uninstall
 
 #### P2 — 框架产品化前置
@@ -150,7 +150,7 @@ Composer 包名：`starship/shop`（需在 `backend/composer.json` 添加 path �
 2. `starship:generator:import demo_products --module=System --business=演示产品`
 3. `starship:generator:crud demo_products --module=System --business=演示产品 --force`
 4. 菜单 / 权限自动注册（menu:131～136）
-5. 管理端访问 `/org/products`（超管 `admin` 登录后可见）
+5. 管理端访问 `/generator/products`（超管 `admin` 登录后可见）
 
 > 修复：`SchemaReader::physicalTableName()` 解决 DB 前缀下 `inspect`/字段推断为空的问题。
 
@@ -216,3 +216,5 @@ php artisan starship:generator:crud {table}
 - [starship-framework-latest.md](./starship-framework-latest.md)
 - [Starship_Module_开发规范.md](../deployment/Starship_Module_开发规范.md)
 - [Starship_Plugin_开发规范.md](../deployment/Starship_Plugin_开发规范.md)
+- [permissions.md](../api/permissions.md) — 权限码与 module.json 绑定
+- [routes.md](../api/routes.md) — 管理端 API 路由参考

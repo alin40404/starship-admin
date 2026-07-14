@@ -1042,22 +1042,33 @@ modules/System/
 
 ## 11. `module.json` 规范
 
-每个模块都应该有自己的 `module.json`。
+每个模块都应该有自己的 `module.json`。权威字段以当前仓库为准，权限与菜单路径见 [docs/api/permissions.md](docs/api/permissions.md)。
 
-示例：
+示例（与 `modules/System/module.json` 结构一致）：
 
 ```json
 {
-  "name": "System",
-  "slug": "system",
-  "namespace": "Modules\\System",
-  "version": "1.0.0",
-  "description": "系统基础模块",
+  "name": "system",
+  "title": "系统管理",
+  "version": "0.1.0",
+  "enabled": true,
   "providers": [
     "Modules\\System\\App\\Providers\\SystemServiceProvider"
   ],
-  "enabled": true,
-  "order": 100
+  "seeders": [
+    "Modules\\System\\Database\\Seeders\\StarshipFoundationSeeder"
+  ],
+  "menus": {
+    "paths": [
+      "/permission/admins",
+      "/dev/modules",
+      "/monitor/operation-logs"
+    ]
+  },
+  "permissions": {
+    "prefixes": ["system.", "dashboard.", "monitor."],
+    "exact": []
+  }
 }
 ```
 
@@ -1065,14 +1076,16 @@ modules/System/
 
 | 字段 | 说明 |
 |---|---|
-| `name` | 模块名称，使用大驼峰 |
-| `slug` | 模块标识，使用小写 |
-| `namespace` | PHP 命名空间 |
+| `name` | 模块标识（小写） |
+| `title` | 展示名称 |
 | `version` | 模块版本 |
-| `description` | 模块说明 |
-| `providers` | 模块服务提供者 |
 | `enabled` | 是否启用 |
-| `order` | 模块加载顺序 |
+| `dev_only` | 可选；仅开发环境可用（如 Generator） |
+| `require.modules` | 可选；依赖的其它模块 `name` |
+| `providers` | 模块服务提供者 |
+| `seeders` | 可选；安装/初始化 seeder |
+| `menus.paths` | 归属本模块的前端菜单 path（禁用时过滤） |
+| `permissions.prefixes` / `exact` | 归属本模块的权限码规则 |
 
 ---
 
@@ -1107,29 +1120,41 @@ Modules\Generator
 
 ### 12.4 前端路由路径
 
-使用小写短横线：
+使用小写短横线，与菜单 `path` 一致：
 
 ```text
-/system/user
-/system/role
-/system/menu
+/permission/admins
+/permission/roles
+/permission/menus
+/org/departments
+/platform/configs
+/resource/attachments
 /monitor/operation-logs
-/generator/table
+/dev/codegen
+/dev/modules
+/dev/plugins
+/generator/products
 ```
 
 > 监控中心页面路由仍使用 `/monitor/*`；对应权限码为 `monitor.*`（定义于 `modules/System/app/Support/*LogPermissions.php`）。
 
 ### 12.5 权限节点
 
-使用点分结构：
+使用点分结构 `{模块}.{资源}.{操作}`，按钮操作为 `query` 等（非 `index`）：
 
 ```text
-system.user.index
-system.user.create
-system.user.update
-system.user.delete
-system.user.export
+system.admins
+system.admins.query
+system.admins.create
+system.admins.update
+system.admins.delete
+
+system.roles.query
+generator.codegen
+generator.products.query
 ```
+
+完整清单见 [docs/api/permissions.md](docs/api/permissions.md)。
 
 ---
 
@@ -1209,12 +1234,17 @@ Database
 示例：
 
 ```text
-POST   /admin-api/system/auth/login
-GET    /admin-api/system/user
-POST   /admin-api/system/user
-PUT    /admin-api/system/user/{id}
-DELETE /admin-api/system/user/{id}
+POST   /admin-api/auth/login
+GET    /admin-api/auth/permissions
+GET    /admin-api/system/admins
+POST   /admin-api/system/admins
+PUT    /admin-api/system/admins/{id}
+DELETE /admin-api/system/admins/{id}
+GET    /admin-api/dev/plugins
+GET    /admin-api/generator/tables
 ```
+
+完整路由见 [docs/api/routes.md](docs/api/routes.md)。
 
 ### 14.2 统一响应结构
 
@@ -1294,23 +1324,24 @@ Starship Admin 建议采用 RBAC 权限模型。
 ### 15.3 权限节点示例
 
 ```text
-system.admin.index
-system.admin.create
-system.admin.update
-system.admin.delete
-system.admin.export
+system.admins
+system.admins.query
+system.admins.create
+system.admins.update
+system.admins.delete
 
-system.role.index
-system.role.create
-system.role.update
-system.role.delete
-system.role.permission
+system.roles.query
+system.roles.create
+system.roles.update
+system.roles.delete
 
-system.menu.index
-system.menu.create
-system.menu.update
-system.menu.delete
+system.menus.query
+system.menus.create
+system.menus.update
+system.menus.delete
 ```
+
+详见 [docs/api/permissions.md](docs/api/permissions.md)。
 
 ### 15.4 前端权限控制
 
@@ -1818,9 +1849,11 @@ docs/
 │  └─ generator-tables.md             # Generator 模块表设计
 │
 ├─ api/
+│  ├─ permissions.md                  # 权限码与 module.json 绑定（已建）
+│  ├─ routes.md                       # 管理端 API 路由参考（已建）
 │  ├─ response.md                     # 响应结构规范
 │  ├─ auth.md                         # 登录认证接口
-│  └─ permission.md                   # 权限接口
+│  └─ permission.md                   # 权限接口（规划）
 │
 ├─ generator/
 │  ├─ design.md                       # 生成器设计

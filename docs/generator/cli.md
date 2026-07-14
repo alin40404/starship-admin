@@ -147,6 +147,17 @@ require __DIR__.'/admin-generator/_loader.php';
 
 卸载 `--delete` 时会删除实体独立翻译文件，并从 `{module}.json` 移除对应菜单 key，不影响同模块其他实体。
 
+## 权限码约定
+
+生成权限格式：`{module}.{entity}.{action}`，例如 `generator.products.query`。
+
+- 页面权限常与菜单 `permission` 一致（如 `generator.codegen`）
+- API 与按钮使用 `query` / `create` / `update` / `delete` / `batch_*` 等
+- CRUD API 前缀：`/admin-api/{module}/...`（Generator Demo 为 `/admin-api/generator/products`）
+- `sync_menu` 开启时：页面 `route_path` 会精确写入对应模块 `module.json` 的 `menus.paths`；删除时仅移除该项
+
+详见 [`docs/api/permissions.md`](../api/permissions.md)。
+
 **后端语言包（首次生成时自动 ensure）**
 - `resources/lang/zh_CN/messages.php`
 - `resources/lang/en/messages.php`

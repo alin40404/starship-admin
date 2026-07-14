@@ -19,6 +19,7 @@ class CodegenService
         protected TemplateRenderer $renderer,
         protected FileWriter $fileWriter,
         protected MenuPermissionSync $menuPermissionSync,
+        protected ModuleJsonMenuPathSync $moduleJsonMenuPathSync,
         protected GeneratorAuditLogger $auditLogger,
         protected ModulePathResolver $modulePathResolver,
         protected TableConfigService $tableConfigService,
@@ -50,6 +51,10 @@ class CodegenService
 
         if (($options['sync_menu'] ?? $config->options['sync_menu'] ?? true) && empty($result['conflicts'])) {
             $result['menu'] = $this->menuPermissionSync->sync($config);
+            $result['module_json_menu_path'] = $this->moduleJsonMenuPathSync->add(
+                $config->module_slug,
+                $config->route_path,
+            );
         }
 
         $config->update([
@@ -154,6 +159,9 @@ class CodegenService
 
         $fileResult = $this->fileWriter->deleteMany($paths, $force);
         $menu = $syncMenu ? $this->menuPermissionSync->remove($config) : [];
+        $moduleJsonMenuPath = $syncMenu
+            ? $this->moduleJsonMenuPathSync->remove($config->module_slug, $config->route_path)
+            : 'skipped';
 
         if ($syncMenu) {
             $this->removeMenuLocaleKeys($config, $viewData);
@@ -170,6 +178,7 @@ class CodegenService
         return array_merge($fileResult, [
             'config' => $config,
             'menu' => $menu,
+            'module_json_menu_path' => $moduleJsonMenuPath,
             'table_dropped' => $dropTable,
             'config_deleted' => $persisted,
         ]);

@@ -13,7 +13,8 @@
   "seeders": [],
   "menus": {
     "paths": [
-      "/dev/codegen"
+      "/dev/codegen",
+      "/generator/products"
     ]
   },
   "permissions": {

@@ -251,8 +251,10 @@ interface PluginConfigStoreInterface
 | 路由前缀 | `/admin-api` |
 | 响应结构 | `{ code, message, data }`，`ApiResponse` 统一出口 |
 | 认证 | Sanctum Bearer Token |
-| 权限码 | `{模块}.{资源}.{操作}`，如 `system.admins.create` |
+| 权限码 | `{模块}.{资源}.{操作}`，如 `system.admins.create`（按钮用 `query` 非 `index`） |
 | 表前缀 | `DB_PREFIX`（默认 `sa_`），Model 用逻辑表名 `protected $table = 'admins'` |
+
+权威清单：[permissions.md](../api/permissions.md)、[routes.md](../api/routes.md)。
 
 ---
 
@@ -288,7 +290,7 @@ interface PluginConfigStoreInterface
 - [ ] System（含监控日志）/ Generator 核心功能完整
 - [ ] Generator 端到端：表 → 后端 + 前端 + 菜单 + 权限
 - [ ] 插件全流程：发现 / 安装 / 启用 / 配置 / 路由
-- [ ] 文档：API、权限码、描述文件规范稳定
+- [x] 文档：API、权限码、描述文件规范稳定
 - [ ] **纪律**：新业务不进 `backend/app/`、不污染 System 核心
 
 ### 阶段二：框架产品化（底座稳定后 → 约 1～2 个月）

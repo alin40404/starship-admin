@@ -125,43 +125,76 @@ Model：
 
     模块.资源.操作
 
+按钮操作使用 `query` / `create` / `update` / `delete` 等，**不要**用 `index`。
+
 例如：
+
+    system.admins.query
 
     shop.goods.create
 
-    shop.goods.update
-
     shop.order.refund
+
+实现约定：
+
+- 后端：`app/Support/*Permissions.php` 常量类
+- 前端：`apps/admin/apps/web-antd/src/constants/*-permissions.ts`
+- 路由：`->middleware('admin.permission:'.XxxPermissions::QUERY)`
+
+完整清单：[docs/api/permissions.md](../api/permissions.md)
 
 ------------------------------------------------------------------------
 
 # 6. 菜单规范
 
-module.json声明：
+在 `module.json` 中声明本模块菜单 path 与权限归属，供禁用模块时过滤：
 
-    菜单
+```json
+{
+  "menus": {
+    "paths": [
+      "/dev/codegen",
+      "/generator/products"
+    ]
+  },
+  "permissions": {
+    "prefixes": ["generator."],
+    "exact": []
+  }
+}
+```
 
-    路由
+要求：
 
-    权限
+- `menus.paths` 须覆盖该模块全部页面 path（与 MenuSeeder / 生成菜单一致）
+- 共享父目录（如 `/dev`）归 System；子页 `/dev/codegen` 归 Generator
+- 由 `starship:generator:crud` 生成的业务页 path：在 `sync_menu` 开启时会**精确追加**到目标模块 `module.json`；`--delete` 时**仅删除该实体的 `route_path`**，不会清掉其它 path（如 `/dev/codegen`）
 
 例如：
 
-    商城管理
+    开发工具
 
-     ├ 商品管理
-
-     └ 订单管理
+     ├ 代码生成   → Generator
+     ├ 模块管理   → System
+     └ 插件管理   → System
 
 ------------------------------------------------------------------------
 
 # 7. API规范
 
-统一：
+统一前缀：
+
+    /admin-api/{模块或业务资源}
+
+例如：
 
     /admin-api/shop/products
 
-    /admin-api/shop/orders
+    /admin-api/system/admins
+
+    /admin-api/auth/login
+
+详见：[docs/api/routes.md](../api/routes.md)
 
 响应：
 

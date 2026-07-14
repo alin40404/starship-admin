@@ -1,5 +1,7 @@
 # Starship 权限与菜单体系设计方案
 
+> **实现状态（2026-07-14）**：当前落地为 **MenuSeeder + `*Permissions.php` + `module.json` 的 menus/permissions 过滤**（`ModuleMenuFilter`），并不是本文早期设计的「各模块 `menu.json` 自动写入」。权限码与 API 的权威参考：[`docs/api/permissions.md`](../api/permissions.md)、[`docs/api/routes.md`](../api/routes.md)。下文保留为设计演进稿，示例中的 `system.admin.create` 等旧命名以权威文档为准。
+
 ## 1. 设计目标
 
 Starship 是模块化平台，因此权限和菜单不能写死在 System 中。
