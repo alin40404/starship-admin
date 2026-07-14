@@ -18,6 +18,7 @@ use Modules\System\App\Http\Controllers\Admin\InboxMessageController;
 use Modules\System\App\Http\Controllers\Admin\MenuController;
 use Modules\System\App\Http\Controllers\Admin\PluginController;
 use Modules\System\App\Http\Controllers\Admin\PostController;
+use Modules\System\App\Http\Controllers\Admin\ThemeController;
 use Modules\System\App\Http\Controllers\Admin\RoleController;
 use Modules\System\App\Http\Controllers\Admin\UserGroupController;
 use Modules\System\App\Support\AdminPermissions;
@@ -36,6 +37,7 @@ use Modules\System\App\Support\ModulePermissions;
 use Modules\System\App\Support\PluginPermissions;
 use Modules\System\App\Support\PostPermissions;
 use Modules\System\App\Support\RolePermissions;
+use Modules\System\App\Support\ThemePermissions;
 use Modules\System\App\Support\UserGroupPermissions;
 
 Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('admin-api')->group(function () {
@@ -303,6 +305,23 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
             ->middleware('admin.permission:'.PluginPermissions::CONFIG);
         Route::put('plugins/{slug}/config', [PluginController::class, 'updateConfig'])
             ->middleware('admin.permission:'.PluginPermissions::CONFIG);
+
+        Route::get('themes', [ThemeController::class, 'index'])
+            ->middleware('admin.permission:'.ThemePermissions::QUERY);
+        Route::post('themes/discover', [ThemeController::class, 'discover'])
+            ->middleware('admin.permission:'.ThemePermissions::DISCOVER);
+        Route::get('themes/{slug}', [ThemeController::class, 'show'])
+            ->middleware('admin.permission:'.ThemePermissions::QUERY);
+        Route::post('themes/{slug}/install', [ThemeController::class, 'install'])
+            ->middleware('admin.permission:'.ThemePermissions::INSTALL);
+        Route::post('themes/{slug}/enable', [ThemeController::class, 'enable'])
+            ->middleware('admin.permission:'.ThemePermissions::ENABLE);
+        Route::post('themes/{slug}/disable', [ThemeController::class, 'disable'])
+            ->middleware('admin.permission:'.ThemePermissions::DISABLE);
+        Route::post('themes/{slug}/uninstall', [ThemeController::class, 'uninstall'])
+            ->middleware('admin.permission:'.ThemePermissions::UNINSTALL);
+        Route::post('themes/{slug}/switch', [ThemeController::class, 'switch'])
+            ->middleware('admin.permission:'.ThemePermissions::SWITCH);
     });
 
     // --- start: 监控中心（monitor/*） ---

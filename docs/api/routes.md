@@ -66,6 +66,7 @@
 |------|------|------|
 | GET/PUT 等 | `/admin-api/dev/modules` | `system.modules.*` |
 | GET/POST 等 | `/admin-api/dev/plugins`、`.../discover`、`.../{slug}/install` 等 | `system.plugins.*` |
+| GET/POST 等 | `/admin-api/dev/themes`、`.../discover`、`.../{slug}/switch` 等 | `system.themes.*` |
 
 ## 5. Monitor
 

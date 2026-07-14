@@ -60,6 +60,7 @@
         "Codegen": "代码生成",
         "ModuleMgmt": "模块管理",
         "PluginMgmt": "插件管理",
+        "ThemeMgmt": "主题管理",
         "Query": "查询",
         "Create": "新增",
         "Update": "编辑",

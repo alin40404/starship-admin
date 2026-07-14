@@ -48,6 +48,7 @@ trait SeedsMenus
             '/dev/codegen' => '/dev/codegen/index',
             '/dev/modules' => '/dev/modules/index',
             '/dev/plugins' => '/dev/plugins/index',
+            '/dev/themes' => '/dev/themes/index',
             '/monitor/operation-logs' => '/monitor/operation-log/index',
             '/monitor/login-logs' => '/monitor/login-log/index',
             '/monitor/exception-logs' => '/monitor/exception-log/index',

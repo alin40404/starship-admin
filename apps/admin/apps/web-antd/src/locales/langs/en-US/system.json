@@ -60,6 +60,7 @@
         "Codegen": "Code Generator",
         "ModuleMgmt": "Modules",
         "PluginMgmt": "Plugins",
+        "ThemeMgmt": "Themes",
         "Query": "Query",
         "Create": "Create",
         "Update": "Edit",

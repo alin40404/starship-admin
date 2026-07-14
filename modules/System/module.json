@@ -38,7 +38,8 @@
       "/monitor/exception-logs",
       "/dev",
       "/dev/modules",
-      "/dev/plugins"
+      "/dev/plugins",
+      "/dev/themes"
     ]
   },
   "permissions": {

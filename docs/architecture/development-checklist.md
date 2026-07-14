@@ -76,6 +76,7 @@
 
 - [x] ThemeManager + `theme.json` 解析
 - [x] 主题发现 / 启用 / 切换（`starship:theme:*` CLI；`themes` 表 `is_active`）
+- [x] 后台主题管理页（`/dev/themes`，镜像插件管理）
 - [ ] CMS / 商城前台主题 Demo（ThemeLoader / 视图渲染）
 - [x] `themes/` 目录规范落地（`default` / `corporate` 种子 `theme.json`）
 

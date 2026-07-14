@@ -16,7 +16,9 @@ use Modules\System\App\Support\ModulePermissions;
 use Modules\System\App\Support\PluginPermissions;
 use Modules\System\App\Support\PostPermissions;
 use Modules\System\App\Support\RolePermissions;
+use Modules\System\App\Support\ThemePermissions;
 use Modules\System\App\Support\UserGroupPermissions;
+use Modules\System\App\Models\Role;
 use Modules\System\Database\Seeders\Concerns\SeedsMenus;
 use Modules\Generator\App\Support\GeneratorPermissions;
 use Modules\System\App\Support\ExceptionLogPermissions;
@@ -31,6 +33,8 @@ class MenuSeeder extends Seeder
     {
 
         if (Menu::query()->exists()) {
+            $this->ensureThemeMgmtMenu();
+
             return;
         }
 
@@ -516,6 +520,7 @@ class MenuSeeder extends Seeder
                 ['name' => 'Codegen', 'title' => '代码生成', 'path' => '/dev/codegen', 'permission' => GeneratorPermissions::MANAGE, 'sort' => 601, 'icon' => 'ep:magic-stick'],
                 ['name' => 'ModuleMgmt', 'title' => '模块管理', 'path' => '/dev/modules', 'permission' => 'system.modules', 'sort' => 602, 'icon' => 'ep:grid'],
                 ['name' => 'PluginMgmt', 'title' => '插件管理', 'path' => '/dev/plugins', 'permission' => 'system.plugins', 'sort' => 603, 'icon' => 'ep:connection'],
+                ['name' => 'ThemeMgmt', 'title' => '主题管理', 'path' => '/dev/themes', 'permission' => 'system.themes', 'sort' => 604, 'icon' => 'ep:brush'],
             ] as $m
         ) {
             $devMenu = Menu::query()->create([
@@ -585,6 +590,77 @@ class MenuSeeder extends Seeder
                     ]);
                 }
             }
+
+            if ($m['path'] === '/dev/themes') {
+                foreach (ThemePermissions::buttonDefinitions() as $btn) {
+                    Menu::query()->create([
+                        'parent_id' => $devMenu->id,
+                        'type' => 3,
+                        'name' => $btn['name'],
+                        'title' => $btn['title'],
+                        'path' => null,
+                        'component' => null,
+                        'permission' => $btn['permission'],
+                        'icon' => null,
+                        'sort' => $btn['sort'],
+                        'other_settings' => $this->menuOther(0),
+                        'status' => 1,
+                    ]);
+                }
+            }
         }
+    }
+
+    /**
+     * 已有菜单库时补齐主题管理（避免全量重种）。
+     */
+    protected function ensureThemeMgmtMenu(): void
+    {
+        if (Menu::query()->where('path', '/dev/themes')->exists()) {
+            return;
         }
+
+        $dev = Menu::query()->where('name', 'DevTools')->where('path', '/dev')->first();
+        if ($dev === null) {
+            return;
+        }
+
+        $themeMenu = Menu::query()->create([
+            'parent_id' => $dev->id,
+            'type' => 2,
+            'name' => 'ThemeMgmt',
+            'title' => '主题管理',
+            'path' => '/dev/themes',
+            'component' => $this->defaultComponentForMenuPath('/dev/themes'),
+            'permission' => 'system.themes',
+            'icon' => 'ep:brush',
+            'sort' => 604,
+            'other_settings' => $this->menuOther(1, 1),
+            'status' => 1,
+        ]);
+
+        $menuIds = [(int) $themeMenu->id];
+
+        foreach (ThemePermissions::buttonDefinitions() as $btn) {
+            $button = Menu::query()->create([
+                'parent_id' => $themeMenu->id,
+                'type' => 3,
+                'name' => $btn['name'],
+                'title' => $btn['title'],
+                'path' => null,
+                'component' => null,
+                'permission' => $btn['permission'],
+                'icon' => null,
+                'sort' => $btn['sort'],
+                'other_settings' => $this->menuOther(0),
+                'status' => 1,
+            ]);
+            $menuIds[] = (int) $button->id;
+        }
+
+        $role = Role::query()->where('code', 'super_admin')->first();
+        if ($role !== null) {
+            $role->menus()->syncWithoutDetaching($menuIds);
+        }
+    }
 }

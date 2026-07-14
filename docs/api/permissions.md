@@ -17,7 +17,7 @@
 
 | 模块 | prefixes | menus.paths（摘要） |
 |------|----------|---------------------|
-| System | `system.` `dashboard.` `monitor.` | `/dashboard/*` `/permission/*` `/org/*` `/platform/*` `/resource/attachments` `/monitor/*` `/dev` `/dev/modules` `/dev/plugins` |
+| System | `system.` `dashboard.` `monitor.` | `/dashboard/*` `/permission/*` `/org/*` `/platform/*` `/resource/attachments` `/monitor/*` `/dev` `/dev/modules` `/dev/plugins` `/dev/themes` |
 | Generator | `generator.` | `/dev/codegen`；业务 CRUD 如 `/generator/products` 由 codegen 在 `sync_menu` 时自动写入 |
 
 完整清单见各自 `modules/*/module.json`。
@@ -52,6 +52,7 @@
 | `system.attachments` | `/resource/attachments` |
 | `system.modules` | `/dev/modules` |
 | `system.plugins` | `/dev/plugins` |
+| `system.themes` | `/dev/themes` |
 
 ### monitor.*（页面）
 
@@ -87,6 +88,7 @@
 | `AttachmentPermissions` | `system.attachments.query/upload/delete/batch_delete` |
 | `ModulePermissions` | `system.modules.query/update` |
 | `PluginPermissions` | `system.plugins.query/discover/install/enable/disable/uninstall/config` |
+| `ThemePermissions` | `system.themes.query/discover/install/enable/disable/uninstall/switch` |
 | `InboxPermissions` | `dashboard.inbox`（消息接口） |
 | `OperationLogPermissions` | `monitor.operation_logs` + `.query/.delete/.batch_delete` |
 | `LoginLogPermissions` | `monitor.login_logs` + `.query/.delete/.batch_delete` |
