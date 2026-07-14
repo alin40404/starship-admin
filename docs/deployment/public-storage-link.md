@@ -104,7 +104,7 @@ New-Item -ItemType SymbolicLink -Path storage -Target ..\storage\app\public
 
 ## 与前端开发的关系
 
-本地前后端分离开发时，前端 Vite 会将 `/storage` 代理到 Laravel 后端（见 `apps/admin/apps/web-antd/vite.config.ts`）：
+本地前后端分离开发时，前端 Vite 会将 `/storage` 代理到 Laravel 后端（见 `apps/admin/web-antd/vite.config.ts`）：
 
 ```text
 前端 http://localhost:5173/storage/...  →  后端 http://127.0.0.1:8000/storage/...

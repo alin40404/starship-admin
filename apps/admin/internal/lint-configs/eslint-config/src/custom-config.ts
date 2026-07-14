@@ -12,7 +12,8 @@ const customConfig: Linter.Config[] = [
   },
   {
     files: [
-      'apps/**/**',
+      'web-antd/**/**',
+      'backend-mock/**/**',
       'packages/effects/**/**',
       'packages/utils/**/**',
       'packages/types/**/**',
@@ -24,8 +25,8 @@ const customConfig: Linter.Config[] = [
     },
   },
   {
-    // apps内部的一些基础规则
-    files: ['apps/**/**'],
+    // 应用内部的一些基础规则
+    files: ['web-antd/**/**', 'backend-mock/**/**'],
     ignores: restrictedImportIgnores,
     rules: {
       'no-restricted-imports': [
@@ -126,7 +127,7 @@ const customConfig: Linter.Config[] = [
   },
   // 后端模拟代码，不需要太多规则
   {
-    files: ['apps/backend-mock/**/**', 'docs/**/**'],
+    files: ['backend-mock/**/**', 'docs/**/**'],
     rules: {
       'no-console': 'off',
     },

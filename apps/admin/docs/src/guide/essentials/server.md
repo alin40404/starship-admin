@@ -34,7 +34,7 @@ VITE_GLOB_API_URL=/api
 开发环境时候，如果需要处理跨域，接口地址在对应的应用目录下的 `vite.config.mts` 文件中配置：
 
 ```ts{8-16}
-// apps/web-antd/vite.config.mts
+// web-antd/vite.config.mts
 import { defineConfig } from '@vben/vite-config';
 
 export default defineConfig(async () => {
@@ -373,7 +373,7 @@ Mock 数据是前端开发过程中必不可少的一环，是分离前后端开
 
 ### Nitro 使用
 
-Mock 服务代码位于`apps/backend-mock`目录下，无需手动启动，已经集成在项目中，只需要在项目根目录下运行`pnpm dev`即可，运行成功之后，控制台会打印 `http://localhost:5320/api`, 访问该地址即可查看 mock 服务。
+Mock 服务代码位于`backend-mock`目录下，无需手动启动，已经集成在项目中，只需要在项目根目录下运行`pnpm dev`即可，运行成功之后，控制台会打印 `http://localhost:5320/api`, 访问该地址即可查看 mock 服务。
 
 [Nitro](https://nitro.unjs.io/) 语法简单，可以根据自己的需求进行配置及开发，具体配置可以查看 [Nitro 文档](https://nitro.unjs.io/)。
 

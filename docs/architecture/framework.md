@@ -122,7 +122,7 @@ Layer 0  Laravel 壳  backend/（bootstrap、config、artisan，尽量保持官�
 
 ```
 apps/admin/
-└── apps/web-antd/          # 官方管理端 UI 实现（Vben Admin 5.x）
+└── web-antd/               # 官方管理端 UI 实现（Vben Admin 5.x）
     └── src/
         ├── views/          # 底座页面（随 System/Generator）
         ├── api/            # 底座 API 封装
@@ -133,7 +133,7 @@ apps/admin/
 **约定**：
 
 - 底座页面路径与后端菜单 `path`、Generator 产出路径一致
-- 插件前端放在 `plugins/{Name}/front/` 或 `apps/web-antd/src/plugins/{slug}/`
+- 插件前端放在 `plugins/{Name}/front/` 或 `apps/admin/web-antd/src/plugins/{slug}/`
 - 业务项目可 fork `web-antd` 或仅覆盖 `views/` 子集
 
 ---
@@ -360,7 +360,7 @@ php artisan starship:generator:crud erp_orders
 | 开发商城订单管理 | 业务仓库 `modules/Shop/` |
 | 改模块扫描、插件引擎 | `packages/core/` |
 | 改 Laravel 配置 | `backend/config/` |
-| 改管理端 UI 布局 | `apps/admin/apps/web-antd/` |
+| 改管理端 UI 布局 | `apps/admin/web-antd/` |
 
 ---
 

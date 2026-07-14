@@ -39,7 +39,7 @@ my-admin/
 | 子模块 / 双仓 | 前端独立仓，模板 README 写 `git clone` / submodule；升级解耦但上手成本高 |
 | 仅后端模板 | 最快，但下游必须自己接前端，体验差 |
 
-从本 monorepo 抽前端时建议保留：`apps/admin/apps/web-antd` + 工作区必要包；去掉演示与文档站。CORS 默认指向前端 dev 端口即可。
+从本 monorepo 抽前端时建议保留：`apps/admin/web-antd` + 工作区必要包；去掉演示与文档站。CORS 默认指向前端 dev 端口即可。
 
 ---
 

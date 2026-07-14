@@ -106,6 +106,6 @@ final class ModulePathResolver
 
     public function frontendRoot(): string
     {
-        return base_path('../apps/admin/apps/web-antd/src');
+        return base_path('../apps/admin/web-antd/src');
     }
 }

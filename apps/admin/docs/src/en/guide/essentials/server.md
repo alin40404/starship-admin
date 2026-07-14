@@ -34,7 +34,7 @@ VITE_GLOB_API_URL=/api
 In the development environment, if you need to handle CORS, configure the API endpoint in the `vite.config.mts` file under the corresponding application directory:
 
 ```ts{8-16}
-// apps/web-antd/vite.config.mts
+// web-antd/vite.config.mts
 import { defineConfig } from '@vben/vite-config';
 
 export default defineConfig(async () => {
@@ -342,7 +342,7 @@ The project uses [Nitro](https://nitro.unjs.io/) for local mock data processing.
 
 ### Using Nitro
 
-The mock service code is located in the `apps/backend-mock` directory. It does not need to be started manually and is already integrated into the project. You only need to run `pnpm dev` in the project root directory. After running successfully, the console will print `http://localhost:5320/api`, and you can access this address to view the mock service.
+The mock service code is located in the `backend-mock` directory. It does not need to be started manually and is already integrated into the project. You only need to run `pnpm dev` in the project root directory. After running successfully, the console will print `http://localhost:5320/api`, and you can access this address to view the mock service.
 
 [Nitro](https://nitro.unjs.io/) syntax is simple, and you can configure and develop according to your needs. For specific configurations, you can refer to the [Nitro documentation](https://nitro.unjs.io/).
 
