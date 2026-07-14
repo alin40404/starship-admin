@@ -94,6 +94,7 @@
   "plugins": {
     "entity": "插件",
     "hint": "扫描 plugins/ 目录下的 plugin.json，在此统一管理插件的安装、启用、禁用与配置。直接安装即可（无需先发现）；「发现插件」用于同步目录变更与元数据。启用/禁用后新 Web 请求将自动按最新状态加载插件。",
+    "searchPlaceholder": "搜索标识 / 名称 / 描述",
     "columnSlug": "插件标识",
     "columnName": "插件名称",
     "detailTitle": "插件详情",

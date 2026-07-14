@@ -1,7 +1,11 @@
+import type {
+  CrudGridColumn,
+  MobileCrudListConfig,
+} from '#/adapter/mobile-list';
 import type { OnActionClickFn } from '#/adapter/vxe-table';
-
 import type { PluginRow } from '#/api/dev-plugin';
 
+import { buildMobileCrudFromColumns } from '#/adapter/mobile-list';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
 import {
   getPluginStatusTagOptions,
@@ -14,10 +18,30 @@ export type PluginAccessChecker = {
   can: (code: string) => boolean;
 };
 
+export function buildPluginMobileCrudConfig(params: {
+  columns: CrudGridColumn<PluginRow>[];
+  query: MobileCrudListConfig<PluginRow>['query'];
+}): MobileCrudListConfig<PluginRow> {
+  return buildMobileCrudFromColumns({
+    columns: params.columns,
+    defaultPageSize: 50,
+    query: params.query,
+    rowKey: 'slug',
+    search: {
+      keywordFields: ['slug', 'name', 'description'],
+      placeholder: $t('dev.plugins.searchPlaceholder'),
+      submitOnChange: true,
+    },
+    selection: {
+      enabled: true,
+    },
+  });
+}
+
 export function useColumns(
   onActionClick: OnActionClickFn<PluginRow>,
   access: PluginAccessChecker,
-) {
+): CrudGridColumn<PluginRow>[] {
   return [
     { align: 'center', fixed: 'left', type: 'checkbox', width: 48 },
     {
@@ -59,6 +83,9 @@ export function useColumns(
         options: [...getPluginStatusTagOptions()],
       },
       field: 'status',
+      mobile: {
+        format: (row) => row.status_label || TABLE_CELL_EMPTY,
+      },
       title: $t('dev.shared.status'),
       width: 100,
     },

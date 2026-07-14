@@ -10,7 +10,7 @@ import { IconifyIcon } from '@vben/icons';
 
 import { Alert, Button, message, Modal } from 'ant-design-vue';
 
-import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { useResponsiveCrud } from '#/adapter/mobile-list';
 import {
   disablePlugin,
   discoverPlugins,
@@ -22,14 +22,13 @@ import {
 import { PLUGIN_PERMISSIONS, PLUGIN_STATUS } from '#/constants/plugin-permissions';
 import { $t } from '#/locales';
 
-import { useColumns } from './data';
+import { buildPluginMobileCrudConfig, useColumns } from './data';
 import ConfigDrawer from './modules/config-drawer.vue';
 import DetailDrawer from './modules/detail-drawer.vue';
 
 const detailDrawerRef = ref<InstanceType<typeof DetailDrawer>>();
 const configDrawerRef = ref<InstanceType<typeof ConfigDrawer>>();
 const discovering = ref(false);
-const selectedRows = ref<PluginRow[]>([]);
 
 const { hasAccessByCodes } = useAccess();
 
@@ -37,16 +36,6 @@ const pluginAccess = {
   can: (code: string) =>
     hasAccessByCodes([PLUGIN_PERMISSIONS.MANAGE, code]),
 };
-
-function syncSelection() {
-  const records = gridApi?.grid?.getCheckboxRecords?.() ?? [];
-  selectedRows.value = records as PluginRow[];
-}
-
-function clearSelection() {
-  gridApi?.grid?.clearCheckboxRow?.();
-  selectedRows.value = [];
-}
 
 function filterEligibleRows(statuses: number[]) {
   return selectedRows.value.filter((row) => statuses.includes(row.status));
@@ -76,7 +65,7 @@ async function runBatchAction(
   }
 
   clearSelection();
-  await gridApi.reload();
+  await reload();
 }
 
 function confirmBatchAction(
@@ -153,13 +142,12 @@ function onBatchUninstall() {
 }
 
 async function runAction(
-  slug: string,
   action: () => Promise<unknown>,
   successMessage: string,
 ) {
   await action();
   message.success(successMessage);
-  await gridApi.reload();
+  await reload();
 }
 
 function confirmAction(
@@ -189,7 +177,6 @@ function onActionClick({ code, row }: OnActionClickParams<PluginRow>) {
 
   if (code === 'install') {
     void runAction(
-      row.slug,
       () => installPlugin(row.slug),
       $t('dev.shared.installSuccess'),
     );
@@ -198,7 +185,6 @@ function onActionClick({ code, row }: OnActionClickParams<PluginRow>) {
 
   if (code === 'enable') {
     void runAction(
-      row.slug,
       () => enablePlugin(row.slug),
       $t('dev.plugins.enabledSuccess'),
     );
@@ -211,7 +197,6 @@ function onActionClick({ code, row }: OnActionClickParams<PluginRow>) {
       $t('dev.shared.disablePluginConfirm', [row.name]),
       async () => {
         await runAction(
-          row.slug,
           () => disablePlugin(row.slug),
           $t('dev.plugins.disabledSuccess'),
         );
@@ -226,7 +211,6 @@ function onActionClick({ code, row }: OnActionClickParams<PluginRow>) {
       $t('dev.shared.uninstallPluginConfirm', [row.name]),
       async () => {
         await runAction(
-          row.slug,
           () => uninstallPlugin(row.slug),
           $t('dev.shared.uninstallSuccess'),
         );
@@ -246,7 +230,7 @@ async function onDiscover() {
         result.updated,
       ]),
     );
-    await gridApi.reload();
+    await reload();
   } finally {
     discovering.value = false;
   }
@@ -254,11 +238,7 @@ async function onDiscover() {
 
 const columns = useColumns(onActionClick, pluginAccess);
 
-const [Grid, gridApi] = useVbenVxeGrid<PluginRow>({
-  gridEvents: {
-    checkboxAll: syncSelection,
-    checkboxChange: syncSelection,
-  },
+const [CrudView, crudApi] = useResponsiveCrud<PluginRow>({
   gridOptions: {
     checkboxConfig: { highlight: true },
     columns: columns as VxeTableGridOptions<PluginRow>['columns'],
@@ -272,7 +252,34 @@ const [Grid, gridApi] = useVbenVxeGrid<PluginRow>({
     rowConfig: { keyField: 'slug' },
     toolbarConfig: { custom: true, refresh: true, zoom: true },
   } as VxeTableGridOptions<PluginRow>,
+  mobile: buildPluginMobileCrudConfig({
+    columns,
+    query: async ({ keyword, page, pageSize }) => {
+      let data = await fetchPlugins();
+      const key = keyword?.trim().toLowerCase();
+      if (key) {
+        data = data.filter((row) => {
+          const haystack = [
+            row.slug,
+            row.name,
+            row.description ?? '',
+            row.type ?? '',
+          ]
+            .join(' ')
+            .toLowerCase();
+          return haystack.includes(key);
+        });
+      }
+      const start = (page - 1) * pageSize;
+      return {
+        data: data.slice(start, start + pageSize),
+        total: data.length,
+      };
+    },
+  }),
 });
+
+const { clearSelection, reload, selectedRows } = crudApi;
 </script>
 
 <template>
@@ -289,11 +296,11 @@ const [Grid, gridApi] = useVbenVxeGrid<PluginRow>({
       <ConfigDrawer
         ref="configDrawerRef"
         :access="pluginAccess"
-        @success="gridApi.reload()"
+        @success="reload()"
       />
 
       <div class="min-h-0 flex-1">
-        <Grid class="h-full">
+        <CrudView class="h-full">
           <template #toolbar-actions>
             <div
               v-if="selectedRows.length > 0"
@@ -342,45 +349,50 @@ const [Grid, gridApi] = useVbenVxeGrid<PluginRow>({
               {{ $t('dev.shared.discoverPlugins') }}
             </Button>
           </template>
-        </Grid>
+        </CrudView>
       </div>
     </div>
   </Page>
 </template>
 
 <style scoped>
-/** 批量安装 / 启用 / 禁用（工具栏） */
-.vxe-grid .plugin-batch-btn-install.ant-btn {
+.vxe-grid .plugin-batch-btn-install.ant-btn,
+.mobile-crud-list .plugin-batch-btn-install.ant-btn {
   color: #fff;
   background-color: #1677ff;
   border-color: #1677ff;
 }
 
-.vxe-grid .plugin-batch-btn-install.ant-btn:not(:disabled):hover {
+.vxe-grid .plugin-batch-btn-install.ant-btn:not(:disabled):hover,
+.mobile-crud-list .plugin-batch-btn-install.ant-btn:not(:disabled):hover {
   color: #fff;
   background-color: #4096ff;
   border-color: #4096ff;
 }
 
-.vxe-grid .plugin-batch-btn-enable.ant-btn {
+.vxe-grid .plugin-batch-btn-enable.ant-btn,
+.mobile-crud-list .plugin-batch-btn-enable.ant-btn {
   color: #fff;
   background-color: #52c41a;
   border-color: #52c41a;
 }
 
-.vxe-grid .plugin-batch-btn-enable.ant-btn:not(:disabled):hover {
+.vxe-grid .plugin-batch-btn-enable.ant-btn:not(:disabled):hover,
+.mobile-crud-list .plugin-batch-btn-enable.ant-btn:not(:disabled):hover {
   color: #fff;
   background-color: #73d13d;
   border-color: #73d13d;
 }
 
-.vxe-grid .plugin-batch-btn-disable.ant-btn {
+.vxe-grid .plugin-batch-btn-disable.ant-btn,
+.mobile-crud-list .plugin-batch-btn-disable.ant-btn {
   color: #fff;
   background-color: #fa8c16;
   border-color: #fa8c16;
 }
 
-.vxe-grid .plugin-batch-btn-disable.ant-btn:not(:disabled):hover {
+.vxe-grid .plugin-batch-btn-disable.ant-btn:not(:disabled):hover,
+.mobile-crud-list .plugin-batch-btn-disable.ant-btn:not(:disabled):hover {
   color: #fff;
   background-color: #ffa940;
   border-color: #ffa940;

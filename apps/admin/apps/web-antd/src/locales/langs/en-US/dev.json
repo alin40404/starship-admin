@@ -94,6 +94,7 @@
   "plugins": {
     "entity": "Plugin",
     "hint": "Scans plugin.json under plugins/ to manage install, enable, disable and configuration. Install auto-registers missing plugins; Discover syncs directory changes and metadata. After enable/disable, new web requests automatically load plugins with the latest status.",
+    "searchPlaceholder": "Search slug / name / description",
     "columnSlug": "Plugin Slug",
     "columnName": "Plugin Name",
     "detailTitle": "Plugin Detail",
