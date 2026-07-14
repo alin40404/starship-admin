@@ -69,46 +69,88 @@ async function handleConfirm(popupApi: PopupApi) {
   }
 }
 
-const [Modal, modalApi] = useVbenModal({
-  onConfirm: async () => handleConfirm(modalApi),
-});
+async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
+  if (!isOpen) return;
 
-const [Drawer, drawerApi] = useVbenDrawer({
-  onConfirm: async () => handleConfirm(drawerApi),
-});
-
-async function open(data?: MemberRow | Record<string, never>) {
-  const id = data && 'id' in data ? Number(data.id) : null;
-  editingId.value = id && !Number.isNaN(id) ? id : null;
-
-  formApi.setState({ schema: buildMemberFormSchema(!!editingId.value) });
+  formApi.setState({ schema: buildMemberFormSchema(false) });
   formApi.resetForm();
 
-  if (editingId.value) {
-    const detail = await fetchMember(editingId.value);
+  const data = popupApi.getData<MemberRow | Record<string, never>>();
+  const id =
+    data && typeof (data as MemberRow).id === 'number'
+      ? (data as MemberRow).id
+      : null;
+  editingId.value = id;
+
+  formApi.setState({ schema: buildMemberFormSchema(!!id) });
+
+  if (id) {
+    const detail = await fetchMember(id);
     await formApi.setValues({
       username: detail.username,
-      nickname: detail.nickname,
-      email: detail.email,
-      mobile: detail.mobile,
+      nickname: detail.nickname ?? '',
+      email: detail.email ?? '',
+      mobile: detail.mobile ?? '',
       status: detail.status,
-      remark: detail.remark,
+      remark: detail.remark ?? '',
       password: '',
     });
   } else {
-    await formApi.setValues({ status: 1 });
+    await formApi.setValues({
+      username: '',
+      nickname: '',
+      email: '',
+      mobile: '',
+      status: 1,
+      remark: '',
+      password: '',
+    });
   }
+}
 
-  const popup = isMobile.value ? modalApi : drawerApi;
-  popup.setData(data ?? {});
-  popup.open();
+const [Modal, modalApi] = useVbenModal({
+  destroyOnClose: true,
+  fullscreenButton: false,
+  async onConfirm() {
+    await handleConfirm(modalApi as PopupApi);
+  },
+  async onOpenChange(isOpen: boolean) {
+    await handleOpenChange(isOpen, modalApi as PopupApi);
+  },
+});
+
+const [Drawer, drawerApi] = useVbenDrawer({
+  destroyOnClose: true,
+  async onConfirm() {
+    await handleConfirm(drawerApi as PopupApi);
+  },
+  async onOpenChange(isOpen: boolean) {
+    await handleOpenChange(isOpen, drawerApi as PopupApi);
+  },
+});
+
+function getActivePopupApi() {
+  return (isMobile.value ? drawerApi : modalApi) as PopupApi;
+}
+
+function open(data: MemberRow | Record<string, never> = {}) {
+  const api = getActivePopupApi();
+  api.setData(data);
+  api.open();
 }
 
 defineExpose({ open });
 </script>
 
 <template>
-  <component :is="isMobile ? Modal : Drawer" :title="formTitle">
+  <Modal
+    v-if="!isMobile"
+    :title="formTitle"
+    class="w-full max-w-full md:w-[640px] md:max-w-[640px]"
+  >
     <Form />
-  </component>
+  </Modal>
+  <Drawer v-else :title="formTitle" class="w-full">
+    <Form />
+  </Drawer>
 </template>

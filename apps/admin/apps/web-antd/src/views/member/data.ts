@@ -217,7 +217,7 @@ export function useColumns(
       },
       field: 'operation',
       fixed: 'right',
-      title: $t('common.action'),
+      title: $t('crud.columnActions'),
       width: 140,
     },
   ];
