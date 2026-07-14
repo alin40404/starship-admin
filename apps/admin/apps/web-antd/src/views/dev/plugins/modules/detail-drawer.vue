@@ -3,12 +3,16 @@ import type { PluginDetail, PluginRow } from '#/api/dev-plugin';
 
 import { computed, ref } from 'vue';
 
+import { usePreferences } from '@vben/preferences';
 import { formatDateTime } from '@vben/utils';
 
 import { Descriptions, Drawer } from 'ant-design-vue';
 
 import { fetchPlugin } from '#/api/dev-plugin';
 import { $t } from '#/locales';
+
+const { isMobile } = usePreferences();
+const drawerWidth = computed(() => (isMobile.value ? '100%' : 'min(92vw, 880px)'));
 
 const descriptionsLabelStyle = {
   minWidth: '148px',
@@ -79,7 +83,7 @@ defineExpose({ open: show });
     v-model:open="open"
     :loading="loading"
     :title="drawerTitle"
-    width="min(92vw, 880px)"
+    :width="drawerWidth"
   >
     <Descriptions
       v-if="detail"

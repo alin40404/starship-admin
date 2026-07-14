@@ -127,7 +127,7 @@
   },
   "themes": {
     "entity": "主题",
-    "hint": "扫描 themes/ 目录下的 theme.json，管理主题的安装、启用、禁用与当前主题切换。直接安装即可（无需先发现）；「切换当前」在同 type 下互斥生效。前台渲染层（ThemeLoader）尚未接入时，此处仅维护注册状态。",
+    "hint": "可同时安装多个主题；同一 type（如 frontend）只能有一个「当前」主题。「切换当前」会启用并激活该主题。封面读取主题目录 cover 图（theme.json 的 cover 字段）。",
     "columnSlug": "主题标识",
     "columnTitle": "主题名称",
     "columnActive": "当前",
@@ -158,6 +158,10 @@
     "batchNoEligible": "所选主题均不符合该操作条件",
     "batchPartial": "成功 {0} 个，失败 {1} 个",
     "enabledSuccess": "已启用",
-    "disabledSuccess": "已禁用"
+    "disabledSuccess": "已禁用",
+    "empty": "未发现主题，请先在 themes/ 放置 theme.json 后点击「发现主题」",
+    "flowCount": "共 {0} 个主题",
+    "activeBadge": "当前使用",
+    "noDescription": "暂无描述"
   }
 }

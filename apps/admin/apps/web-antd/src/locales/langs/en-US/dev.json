@@ -127,7 +127,7 @@
   },
   "themes": {
     "entity": "Theme",
-    "hint": "Scans theme.json under themes/ to manage install, enable, disable and active theme switching. Install auto-registers missing themes; Switch is mutually exclusive per type. ThemeLoader / frontend rendering is not wired yet — this page maintains registry state only.",
+    "hint": "Multiple themes can be installed. Only one theme can be active per type (e.g. frontend). Switch enables and activates that theme. Cover images come from each theme's cover file (theme.json cover field).",
     "columnSlug": "Theme Slug",
     "columnTitle": "Theme Title",
     "columnActive": "Active",
@@ -158,6 +158,10 @@
     "batchNoEligible": "None of the selected themes are eligible for this action",
     "batchPartial": "{0} succeeded, {1} failed",
     "enabledSuccess": "Enabled",
-    "disabledSuccess": "Disabled"
+    "disabledSuccess": "Disabled",
+    "empty": "No themes found. Add theme.json under themes/ and click Discover Themes.",
+    "flowCount": "{0} theme(s)",
+    "activeBadge": "Active",
+    "noDescription": "No description"
   }
 }

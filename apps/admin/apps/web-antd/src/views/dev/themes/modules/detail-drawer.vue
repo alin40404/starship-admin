@@ -3,12 +3,18 @@ import type { ThemeDetail, ThemeRow } from '#/api/dev-theme';
 
 import { computed, ref } from 'vue';
 
+import { usePreferences } from '@vben/preferences';
 import { formatDateTime } from '@vben/utils';
 
 import { Descriptions, Drawer } from 'ant-design-vue';
 
 import { fetchTheme } from '#/api/dev-theme';
 import { $t } from '#/locales';
+
+import ThemeCover from './theme-cover.vue';
+
+const { isMobile } = usePreferences();
+const drawerWidth = computed(() => (isMobile.value ? '100%' : 'min(92vw, 880px)'));
 
 const descriptionsLabelStyle = {
   minWidth: '148px',
@@ -78,8 +84,16 @@ defineExpose({ open: show });
     v-model:open="open"
     :loading="loading"
     :title="drawerTitle"
-    width="min(92vw, 880px)"
+    :width="drawerWidth"
   >
+    <div v-if="detail" class="mb-4 overflow-hidden rounded-lg border">
+      <ThemeCover
+        :cover-url="detail.cover_url"
+        :slug="detail.slug"
+        :title="detail.title"
+      />
+    </div>
+
     <Descriptions
       v-if="detail"
       :column="1"

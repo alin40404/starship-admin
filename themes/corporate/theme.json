@@ -5,6 +5,7 @@
   "version": "1.0.0",
   "type": "frontend",
   "description": "Starship 企业前台主题占位",
+  "cover": "cover.svg",
   "require": {
     "modules": []
   },

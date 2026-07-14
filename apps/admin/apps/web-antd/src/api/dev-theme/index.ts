@@ -15,6 +15,8 @@ export interface ThemeRow {
   installed: boolean;
   is_active: boolean;
   layout: string | null;
+  cover: string | null;
+  cover_url: string | null;
   installed_at: string | null;
   enabled_at: string | null;
 }
@@ -43,6 +45,13 @@ export function fetchTheme(slug: string) {
   return requestClient.get<ThemeDetail>(`/dev/themes/${slug}`);
 }
 
+export function fetchThemeCoverBlob(slug: string) {
+  return requestClient.get<Blob>(`/dev/themes/${slug}/cover`, {
+    responseType: 'blob',
+    responseReturn: 'body',
+  } as Record<string, unknown>);
+}
+
 export function installTheme(slug: string) {
   return requestClient.post<ThemeRow>(`/dev/themes/${slug}/install`);
 }
@@ -60,5 +69,8 @@ export function uninstallTheme(slug: string) {
 }
 
 export function switchTheme(slug: string, type?: string) {
-  return requestClient.post<ThemeRow>(`/dev/themes/${slug}/switch`, type ? { type } : {});
+  return requestClient.post<ThemeRow>(
+    `/dev/themes/${slug}/switch`,
+    type ? { type } : {},
+  );
 }

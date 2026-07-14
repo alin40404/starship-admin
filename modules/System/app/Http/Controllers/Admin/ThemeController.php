@@ -5,9 +5,11 @@ namespace Modules\System\App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Response;
 use InvalidArgumentException;
 use Modules\System\App\Services\ThemeService;
 use Starship\Core\Support\ApiResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ThemeController extends Controller
 {
@@ -80,6 +82,27 @@ class ThemeController extends Controller
             );
         } catch (InvalidArgumentException $exception) {
             return ApiResponse::error($exception->getMessage(), 422);
+        }
+    }
+
+    public function cover(string $slug, ThemeService $themeService): BinaryFileResponse|JsonResponse
+    {
+        try {
+            $path = $themeService->coverAbsolutePath($slug);
+            $mime = match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+                'svg' => 'image/svg+xml',
+                'png' => 'image/png',
+                'webp' => 'image/webp',
+                'jpg', 'jpeg' => 'image/jpeg',
+                default => 'application/octet-stream',
+            };
+
+            return Response::file($path, [
+                'Content-Type' => $mime,
+                'Cache-Control' => 'private, max-age=3600',
+            ]);
+        } catch (InvalidArgumentException $exception) {
+            return ApiResponse::error($exception->getMessage(), 404);
         }
     }
 }

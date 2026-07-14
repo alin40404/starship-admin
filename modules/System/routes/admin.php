@@ -312,6 +312,8 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
             ->middleware('admin.permission:'.ThemePermissions::DISCOVER);
         Route::get('themes/{slug}', [ThemeController::class, 'show'])
             ->middleware('admin.permission:'.ThemePermissions::QUERY);
+        Route::get('themes/{slug}/cover', [ThemeController::class, 'cover'])
+            ->middleware('admin.permission:'.ThemePermissions::QUERY);
         Route::post('themes/{slug}/install', [ThemeController::class, 'install'])
             ->middleware('admin.permission:'.ThemePermissions::INSTALL);
         Route::post('themes/{slug}/enable', [ThemeController::class, 'enable'])

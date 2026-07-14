@@ -5,6 +5,8 @@ import type { PluginDetail, PluginRow } from '#/api/dev-plugin';
 
 import { computed, reactive, ref } from 'vue';
 
+import { usePreferences } from '@vben/preferences';
+
 import { Button, Drawer, Form, Input, message, Tabs } from 'ant-design-vue';
 
 import {
@@ -14,6 +16,9 @@ import {
 } from '#/api/dev-plugin';
 import { PLUGIN_PERMISSIONS } from '#/constants/plugin-permissions';
 import { $t } from '#/locales';
+
+const { isMobile } = usePreferences();
+const drawerWidth = computed(() => (isMobile.value ? '100%' : 'min(90vw, 640px)'));
 
 const props = defineProps<{
   access: PluginAccessChecker;
@@ -138,7 +143,7 @@ defineExpose({ open: show });
   <Drawer
     v-model:open="open"
     :title="drawerTitle"
-    width="min(90vw, 640px)"
+    :width="drawerWidth"
   >
     <Tabs v-if="detail">
       <Tabs.TabPane key="config" :tab="$t('dev.plugins.configTab')">

@@ -117,9 +117,24 @@ class ThemeService
             'installed' => $theme->isInstalled(),
             'is_active' => $theme->isActive(),
             'layout' => $theme->layoutEntry(),
+            'cover' => $theme->coverRelativePath(),
+            'cover_url' => $theme->coverAbsolutePath() !== null
+                ? '/dev/themes/'.$theme->slug().'/cover'
+                : null,
             'installed_at' => $theme->record()['installed_at'] ?? null,
             'enabled_at' => $theme->record()['enabled_at'] ?? null,
         ];
+    }
+
+    public function coverAbsolutePath(string $slug): string
+    {
+        $theme = $this->requireTheme($slug);
+        $path = $theme->coverAbsolutePath();
+        if ($path === null) {
+            throw new \InvalidArgumentException("主题封面不存在：{$slug}");
+        }
+
+        return $path;
     }
 
     protected function relativeManifestPath(string $manifestPath): string
