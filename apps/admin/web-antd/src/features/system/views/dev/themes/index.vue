@@ -7,7 +7,7 @@ import { useAccess } from '@vben/access';
 import { Page } from '@vben/common-ui';
 import { IconifyIcon } from '@vben/icons';
 
-import { Alert, Button, Input, message, Modal, Spin } from 'ant-design-vue';
+import { Button, Input, message, Modal, Spin } from 'ant-design-vue';
 
 import {
   disableTheme,
@@ -159,13 +159,6 @@ onMounted(() => {
 <template>
   <Page auto-content-height>
     <div class="flex h-full min-h-0 flex-col">
-      <Alert
-        class="mb-4 shrink-0"
-        :message="$t('dev.themes.hint')"
-        show-icon
-        type="info"
-      />
-
       <DetailDrawer ref="detailDrawerRef" />
 
       <div

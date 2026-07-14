@@ -143,11 +143,12 @@ function switchLabel(row: PluginRow) {
               <span>·</span>
               <span>v{{ row.version }}</span>
             </p>
-            <p class="plugin-card__desc">
-              {{ row.description || $t('dev.themes.noDescription') }}
-            </p>
           </div>
         </div>
+
+        <p class="plugin-card__desc">
+          {{ row.description || $t('dev.themes.noDescription') }}
+        </p>
 
         <div class="plugin-card__footer">
           <div class="plugin-card__switch">
@@ -222,15 +223,18 @@ function switchLabel(row: PluginRow) {
 
 .plugin-flow__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 16px;
+  /* min(100%, 340px) 避免窄屏下强制 340px 横向溢出 */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: 20px;
 }
 
 .plugin-card {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px;
+  gap: 14px;
+  min-width: 0;
+  min-height: 200px;
+  padding: 20px 22px;
   border: 1px solid hsl(var(--border));
   border-radius: 12px;
   background: hsl(var(--card));
@@ -251,18 +255,18 @@ function switchLabel(row: PluginRow) {
 
 .plugin-card__main {
   display: flex;
-  gap: 14px;
+  gap: 16px;
   min-width: 0;
 }
 
 .plugin-card__icon {
   position: relative;
   display: flex;
-  flex: 0 0 56px;
+  flex: 0 0 64px;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   padding: 0;
   overflow: hidden;
   border: 1px solid hsl(var(--border));
@@ -277,7 +281,7 @@ function switchLabel(row: PluginRow) {
 
 .plugin-card__icon-glyph {
   color: hsl(var(--foreground) / 0.72);
-  font-size: 1.25rem;
+  font-size: 1.45rem;
   font-weight: 700;
   line-height: 1;
 }
@@ -297,21 +301,24 @@ function switchLabel(row: PluginRow) {
   min-width: 0;
   flex: 1;
   flex-direction: column;
+  justify-content: center;
   gap: 6px;
 }
 
 .plugin-card__title-row {
   display: flex;
   gap: 8px;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
+  min-width: 0;
 }
 
 .plugin-card__title {
   margin: 0;
+  min-width: 0;
   overflow: hidden;
   color: hsl(var(--foreground));
-  font-size: 1rem;
+  font-size: 1.125rem;
   font-weight: 600;
   line-height: 1.35;
   text-overflow: ellipsis;
@@ -324,23 +331,26 @@ function switchLabel(row: PluginRow) {
 }
 
 .plugin-card__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
   margin: 0;
+  min-width: 0;
+  overflow: hidden;
   color: hsl(var(--muted-foreground));
   font-size: 12px;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .plugin-card__desc {
   display: -webkit-box;
+  flex: 1;
   margin: 0;
   overflow: hidden;
   color: hsl(var(--muted-foreground));
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.55;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
 }
 
 .plugin-card__footer {
@@ -349,7 +359,8 @@ function switchLabel(row: PluginRow) {
   gap: 10px;
   align-items: center;
   justify-content: space-between;
-  padding-top: 12px;
+  margin-top: auto;
+  padding-top: 14px;
   border-top: 1px solid hsl(var(--border));
 }
 
@@ -419,5 +430,39 @@ function switchLabel(row: PluginRow) {
 .plugin-card__btn--danger:hover {
   border-color: hsl(0 84% 60% / 0.55);
   color: hsl(0 72% 45%);
+}
+
+@media (max-width: 768px) {
+  .plugin-flow {
+    padding: 0 0 12px;
+  }
+
+  .plugin-flow__grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .plugin-card {
+    min-height: 0;
+    padding: 16px;
+  }
+
+  .plugin-card__icon {
+    flex: 0 0 52px;
+    width: 52px;
+    height: 52px;
+  }
+
+  .plugin-card__icon-glyph {
+    font-size: 1.25rem;
+  }
+
+  .plugin-card__title {
+    font-size: 1rem;
+  }
+
+  .plugin-card__footer {
+    gap: 8px;
+  }
 }
 </style>
