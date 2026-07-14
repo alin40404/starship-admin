@@ -302,7 +302,8 @@ interface PluginConfigStoreInterface
 - [x] 项目模板约定：开发仓兼发布（根 `composer.json`；见 [release-as-template.md](./release-as-template.md)）
 - [ ] 对外 `release` 分支 / 版本 tag
 - [x] 框架级 Feature Test（启动、模块、插件、ping；`packages/core` 包测试已独立）
-- [x] ThemeManager MVP：`theme.json` 发现 / 安装 / 启用 / 切换（渲染层 Demo 另计）
+- [x] ThemeManager MVP：`theme.json` 发现 / 安装 / 启用 / 切换
+- [x] ThemeLoader 最小 Demo：Blade 前台首页（`GET /`）；Vue 前台属后续
 
 ### 阶段三：生态与工具（长期）
 

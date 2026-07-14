@@ -68,6 +68,17 @@ class FrameworkSmokeTest extends TestCase
         $this->assertIsArray($decoded);
         $this->assertSame('default', $decoded['slug'] ?? null);
         $this->assertSame('frontend', $decoded['type'] ?? null);
+        $this->assertSame('layouts.app', $decoded['entry']['layout'] ?? null);
+    }
+
+    #[Test]
+    public function frontend_home_renders_current_theme(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('默认主题', false)
+            ->assertSee('data-theme-slug', false)
+            ->assertSee('default', false);
     }
 
     #[Test]

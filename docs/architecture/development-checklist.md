@@ -77,8 +77,12 @@
 - [x] ThemeManager + `theme.json` 解析
 - [x] 主题发现 / 启用 / 切换（`starship:theme:*` CLI；`themes` 表 `is_active`）
 - [x] 后台主题管理页（`/dev/themes`，镜像插件管理）
-- [ ] CMS / 商城前台主题 Demo（ThemeLoader / 视图渲染）
+- [x] 前台主题最小 Blade Demo（ThemeLoader + `GET /`；CMS/商城业务另计）
 - [x] `themes/` 目录规范落地（`default` / `corporate` 种子 `theme.json`）
+
+### 阶段二补充：会员模块（ThemeLoader 就绪后）
+
+- [ ] 独立 `modules/Member`（不进 System）：`members` 表、独立 `member` guard、后台会员 CRUD；前台登录/注册由 Theme 或 Module 默认 Blade 提供
 
 ### 阶段三：生态扩展（长期）
 

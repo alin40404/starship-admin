@@ -4,12 +4,13 @@
   "title": "企业主题",
   "version": "1.0.0",
   "type": "frontend",
-  "description": "Starship 企业前台主题占位",
+  "description": "Starship 企业前台主题（Blade Demo）",
   "cover": "cover.svg",
   "require": {
     "modules": []
   },
   "entry": {
-    "layout": "layouts/default.vue"
+    "layout": "layouts.app",
+    "home": "pages.home"
   }
 }

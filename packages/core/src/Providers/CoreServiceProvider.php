@@ -25,6 +25,7 @@ use Starship\Core\Plugin\PluginLifecycle;
 use Starship\Core\Plugin\PluginLoader;
 use Starship\Core\Plugin\PluginManager;
 use Starship\Core\Theme\ThemeLifecycle;
+use Starship\Core\Theme\ThemeLoader;
 use Starship\Core\Theme\ThemeManager;
 
 class CoreServiceProvider extends ServiceProvider
@@ -49,6 +50,7 @@ class CoreServiceProvider extends ServiceProvider
         $this->app->singleton(PluginConfigRepository::class);
         $this->app->singleton(PluginLifecycle::class);
         $this->app->singleton(ThemeLifecycle::class);
+        $this->app->singleton(ThemeLoader::class);
 
         $this->registerModules();
     }
@@ -57,6 +59,12 @@ class CoreServiceProvider extends ServiceProvider
     {
         $this->loadTranslationsFrom(__DIR__.'/../../resources/lang', 'core');
         $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
+
+        try {
+            $this->app->make(ThemeLoader::class)->register('frontend');
+        } catch (\Throwable) {
+            // 数据库未就绪或主题目录缺失时忽略
+        }
 
         // 须在 System 等模块 boot 完成（admin.permission 中间件别名）后再加载插件路由
         $this->app->booted(function (): void {

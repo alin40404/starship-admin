@@ -17,6 +17,8 @@ Theme 是展示层扩展。
 -   数据处理
 -   权限
 
+> MVP 渲染使用 Blade（`ThemeLoader` + `theme::` 命名空间）；Vue 前台属后续能力，不在当前 Demo 范围。
+
 ------------------------------------------------------------------------
 
 # 2. 使用场景
@@ -43,37 +45,28 @@ Theme 是展示层扩展。
 
 # 3. Theme目录结构
 
-    themes/ShopFashion/
+MVP（Blade）示例：
+
+    themes/default/
 
 
     ├── theme.json
 
 
-    ├── layouts/
-
-    │   └── default.vue
+    ├── cover.svg
 
 
-    ├── pages/
+    └── views/
 
-    │   ├── home.vue
+        ├── layouts/
 
-    │   ├── product.vue
+        │   └── app.blade.php
 
+        └── pages/
 
-    ├── components/
+            └── home.blade.php
 
-
-    ├── assets/
-
-    │   ├── css
-
-    │   ├── js
-
-    │   └── images
-
-
-    └── config/
+后续 Vue 前台可扩展 `layouts/`、`pages/`、`components/`、`assets/` 等（仍以 `theme.json` entry 声明入口）。
 
 ------------------------------------------------------------------------
 
@@ -101,7 +94,9 @@ Theme 是展示层扩展。
 
 "entry":{
 
-"layout":"layouts/default.vue"
+"layout":"layouts.app",
+
+"home":"pages.home"
 
 }
 
