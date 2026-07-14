@@ -123,6 +123,44 @@ class Plugin
     }
 
     /**
+     * 可公开 URL 访问的静态资源根目录：`{plugin}/assets`。
+     */
+    public function assetsPath(): string
+    {
+        return $this->directory.DIRECTORY_SEPARATOR.'assets';
+    }
+
+    /**
+     * 解析 assets/ 下相对路径为绝对文件路径；越界或不存在返回 null。
+     */
+    public function resolveAssetPath(string $relative): ?string
+    {
+        $relative = str_replace('\\', '/', $relative);
+        $relative = ltrim($relative, '/');
+        if ($relative === '' || str_contains($relative, '..')) {
+            return null;
+        }
+
+        $assetsRoot = realpath($this->assetsPath());
+        if ($assetsRoot === false || ! is_dir($assetsRoot)) {
+            return null;
+        }
+
+        $candidate = $assetsRoot.DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $relative);
+        $real = realpath($candidate);
+        if ($real === false || ! is_file($real)) {
+            return null;
+        }
+
+        $rootPrefix = $assetsRoot.DIRECTORY_SEPARATOR;
+        if ($real !== $assetsRoot && ! str_starts_with($real, $rootPrefix)) {
+            return null;
+        }
+
+        return $real;
+    }
+
+    /**
      * @return list<string>
      */
     public function providers(): array

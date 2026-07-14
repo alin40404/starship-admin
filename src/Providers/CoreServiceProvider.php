@@ -10,6 +10,7 @@ use Starship\Core\Console\Commands\PluginDisableCommand;
 use Starship\Core\Console\Commands\PluginDiscoverCommand;
 use Starship\Core\Console\Commands\PluginEnableCommand;
 use Starship\Core\Console\Commands\PluginInstallCommand;
+use Starship\Core\Console\Commands\PluginLinkCommand;
 use Starship\Core\Console\Commands\PluginListCommand;
 use Starship\Core\Console\Commands\PluginMakeCommand;
 use Starship\Core\Console\Commands\PluginUninstallCommand;
@@ -25,6 +26,7 @@ use Starship\Core\Module\ModuleLocator;
 use Starship\Core\Module\ModuleManager;
 use Starship\Core\Module\ModulePackageBuilder;
 use Starship\Core\Module\ModuleValidator;
+use Starship\Core\Plugin\PluginAssetLinker;
 use Starship\Core\Plugin\PluginConfigRepository;
 use Starship\Core\Plugin\PluginLifecycle;
 use Starship\Core\Plugin\PluginLoader;
@@ -63,6 +65,7 @@ class CoreServiceProvider extends ServiceProvider
         $this->app->singleton(PluginLoader::class);
         $this->app->singleton(PluginConfigRepository::class);
         $this->app->singleton(PluginLifecycle::class);
+        $this->app->singleton(PluginAssetLinker::class);
         $this->app->singleton(ThemeLifecycle::class);
         $this->app->singleton(ThemeLoader::class);
         $this->app->singleton(ThemeAssetLinker::class);
@@ -99,6 +102,7 @@ class CoreServiceProvider extends ServiceProvider
                 PluginDisableCommand::class,
                 PluginUninstallCommand::class,
                 PluginMakeCommand::class,
+                PluginLinkCommand::class,
                 ThemeDiscoverCommand::class,
                 ThemeListCommand::class,
                 ThemeInstallCommand::class,

@@ -1,6 +1,7 @@
 <?php
 
 use Starship\Core\Plugin\PluginConfigRepository;
+use Starship\Core\Plugin\PluginManager;
 use Starship\Core\Theme\ThemeLoader;
 
 if (! function_exists('plugin_config')) {
@@ -20,7 +21,7 @@ if (! function_exists('theme_asset')) {
      * 当前前台主题 assets/ 下的资源 URL（相对路径，如 css/app.css）。
      *
      * 路径：themes/{slug}/assets/{path}
-     * - STARSHIP_THEME_ASSET_URL：专用 CDN / 静态域名（优先）
+     * - STARSHIP_ASSET_URL：Theme/Plugin 共用 CDN（优先）
      * - 否则 asset()：尊重 Laravel ASSET_URL
      * - 本机未上 CDN：软链到 public 或 ThemeAssetController 回落
      */
@@ -58,7 +59,60 @@ if (! function_exists('theme_asset')) {
         }
 
         $relative = 'themes/'.$slug.'/assets/'.$path;
-        $cdnBase = rtrim((string) config('starship.theme_asset_url', ''), '/');
+        $cdnBase = rtrim((string) config('starship.asset_url', ''), '/');
+        $url = $cdnBase !== ''
+            ? $cdnBase.'/'.$relative
+            : asset($relative);
+
+        if (is_string($versionFile) && is_file($versionFile)) {
+            $url .= (str_contains($url, '?') ? '&' : '?').'v='.filemtime($versionFile);
+        }
+
+        return $url;
+    }
+}
+
+if (! function_exists('plugin_asset')) {
+    /**
+     * 指定插件 assets/ 下的资源 URL（相对路径，如 images/logo.svg）。
+     *
+     * 路径：plugins/{slug}/assets/{path}
+     * - STARSHIP_ASSET_URL：Theme/Plugin 共用 CDN（优先）
+     * - 否则 asset()：尊重 Laravel ASSET_URL
+     * - 本机未上 CDN：软链到 public 或 PluginAssetController 回落
+     */
+    function plugin_asset(string $slug, string $path): string
+    {
+        $path = ltrim(str_replace('\\', '/', $path), '/');
+        if (str_starts_with($path, 'assets/')) {
+            $path = substr($path, strlen('assets/'));
+        }
+
+        $slug = trim(str_replace('\\', '/', $slug), '/');
+        $versionFile = null;
+
+        try {
+            $plugin = app(PluginManager::class)->findBySlug($slug)
+                ?? app(PluginManager::class)->findByName($slug);
+            if ($plugin !== null) {
+                $slug = $plugin->slug() !== '' ? $plugin->slug() : $plugin->directoryName();
+            }
+
+            $publicFile = public_path('plugins/'.$slug.'/assets/'.$path);
+            if (is_file($publicFile)) {
+                $versionFile = $publicFile;
+            } else {
+                $versionFile = $plugin?->resolveAssetPath($path);
+            }
+        } catch (\Throwable) {
+            $publicFile = public_path('plugins/'.$slug.'/assets/'.$path);
+            if (is_file($publicFile)) {
+                $versionFile = $publicFile;
+            }
+        }
+
+        $relative = 'plugins/'.$slug.'/assets/'.$path;
+        $cdnBase = rtrim((string) config('starship.asset_url', ''), '/');
         $url = $cdnBase !== ''
             ? $cdnBase.'/'.$relative
             : asset($relative);

@@ -108,6 +108,7 @@ class PluginMakeCommand extends Command
         File::ensureDirectoryExists($pluginPath.'/src/Providers');
         File::ensureDirectoryExists($pluginPath.'/config');
         File::ensureDirectoryExists($pluginPath.'/routes');
+        File::ensureDirectoryExists($pluginPath.'/assets');
         File::ensureDirectoryExists($pluginPath.'/resources/lang/zh_CN');
         File::ensureDirectoryExists($pluginPath.'/resources/lang/en');
 
