@@ -300,7 +300,7 @@ interface PluginConfigStoreInterface
 - [x] `backend/bootstrap/providers.php` 仅注册 `CoreServiceProvider`
 - [x] 脚手架：`php artisan starship:module:make`、`starship:plugin:make`
 - [ ] 项目模板：`starship/admin`（`composer create-project`）
-- [ ] 框架级 Feature Test（启动、模块、插件、ping；`packages/core` 包测试已独立）
+- [x] 框架级 Feature Test（启动、模块、插件、ping；`packages/core` 包测试已独立）
 
 ### 阶段三：生态与工具（长期）
 

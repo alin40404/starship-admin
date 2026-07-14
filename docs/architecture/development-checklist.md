@@ -34,7 +34,7 @@
 | Event / Hook | ❌ | 阶段三 |
 | ThemeManager | ❌ | 阶段二 |
 | 脚手架 `starship/admin` | ❌ | `composer create-project` 模板 |
-| 框架 Feature Test | ❌ | 启动、模块、插件冒烟 |
+| 框架 Feature Test | ✅ | `FrameworkSmokeTest`：ping / 模块 / 插件扫描 / Contract 绑定 |
 | `packages/core` 包测试 | ✅ | `cd packages/core && composer test` |
 
 图例：✅ 已完成 · 🚧 进行中 · ⚠️ 部分可用 · ❌ 未开始
@@ -66,7 +66,7 @@
 #### P2 — 框架产品化前置
 
 - [x] 最小 Contract（`StorageInterface` ✅；`SmsSenderInterface` ✅）
-- [ ] 框架级 Feature Test（`php artisan test` 冒烟，仅 backend 应用壳）
+- [x] 框架级 Feature Test（`php artisan test` 冒烟，仅 backend 应用壳）
 - [x] `packages/core` 包测试（`cd packages/core && composer test`）
 - [ ] 项目模板 `starship/admin`
 

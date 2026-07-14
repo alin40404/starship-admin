@@ -128,7 +128,7 @@ my-admin/
 | 文件 | 说明 |
 |------|------|
 | `tests/TestCase.php` | 标准 |
-| `tests/Feature/ExampleTest.php` | 可改为 `/admin-api/ping` 冒烟测试 |
+| `tests/Feature/FrameworkSmokeTest.php` | 应用壳冒烟：`/admin-api/ping`、模块、插件清单、Contract 绑定 |
 | `tests/Unit/ExampleTest.php` | 可选 |
 
 > **Core / 模块测试不放 backend**：`packages/core/tests/`、`modules/*/tests/` 各自独立运行；backend 仅保留应用壳冒烟。
@@ -286,7 +286,7 @@ php artisan starship:plugin:enable sms-aliyun
 - [ ] `modules/*` 可独立 composer 包或复制到 skeleton 的 `modules/`
 - [ ] `bootstrap/providers.php` 只注册 App + Core
 - [ ] 文档中 CORS、DB_PREFIX、storage:link 已说明
-- [ ] Feature 测试至少覆盖 `GET /admin-api/ping`
+- [x] Feature 测试至少覆盖 `GET /admin-api/ping`（见 `tests/Feature/FrameworkSmokeTest.php`）
 
 ---
 

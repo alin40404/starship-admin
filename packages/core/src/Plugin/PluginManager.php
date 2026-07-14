@@ -28,9 +28,7 @@ class PluginManager
             return collect();
         }
 
-        $records = Schema::hasTable('plugins')
-            ? PluginModel::query()->get()->keyBy(static fn (PluginModel $plugin) => $plugin->slug)
-            : collect();
+        $records = $this->pluginRecordsBySlug();
 
         $plugins = [];
 
@@ -52,6 +50,28 @@ class PluginManager
         }
 
         return collect($plugins)->sortBy(static fn (Plugin $plugin) => $plugin->slug())->values();
+    }
+
+    /**
+     * @return Collection<string, PluginModel>
+     */
+    protected function pluginRecordsBySlug(): Collection
+    {
+        try {
+            $connection = (string) config('database.default');
+            $driver = (string) config("database.connections.{$connection}.driver", $connection);
+            if ($driver !== '' && ! in_array($driver, \PDO::getAvailableDrivers(), true)) {
+                return collect();
+            }
+
+            if (! Schema::hasTable('plugins')) {
+                return collect();
+            }
+
+            return PluginModel::query()->get()->keyBy(static fn (PluginModel $plugin) => $plugin->slug);
+        } catch (\Throwable) {
+            return collect();
+        }
     }
 
     /**
