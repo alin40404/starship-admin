@@ -73,6 +73,26 @@
   color: var(--e-global-color-primary);
 }
 
+.site-nav__logout {
+  display: inline;
+  margin: 0;
+}
+
+.site-nav__logout button {
+  border: 0;
+  background: transparent;
+  color: #0c0d0e;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0;
+  cursor: pointer;
+}
+
+.site-nav__logout button:hover {
+  color: var(--e-global-color-primary);
+}
+
 .site-footer {
   margin-top: auto;
   border-top: 1px solid #e4e6eb;

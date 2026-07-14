@@ -4,7 +4,13 @@
         <div>
             <a href="{{ url('/') }}">首页</a>
             ·
-            <a href="{{ url('/member/account') }}">会员中心</a>
+            @auth('member')
+                <a href="{{ route('member.account') }}">会员中心</a>
+            @else
+                <a href="{{ route('member.login') }}">会员登录</a>
+                ·
+                <a href="{{ route('member.register') }}">注册</a>
+            @endauth
         </div>
     </div>
 </footer>

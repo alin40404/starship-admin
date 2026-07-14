@@ -12,8 +12,16 @@
                 样式与图片通过 <code>theme_asset()</code> 从 <code>themes/default/assets</code> 加载。
             </p>
             <div class="btn-row">
-                <a class="btn btn--primary" href="{{ url('/member/login') }}">会员登录</a>
-                <a class="btn btn--ghost" href="{{ url('/member/register') }}">注册账号</a>
+                @auth('member')
+                    <a class="btn btn--primary" href="{{ route('member.account') }}">会员中心</a>
+                    <form method="post" action="{{ route('member.logout') }}">
+                        @csrf
+                        <button class="btn btn--ghost" type="submit">退出登录</button>
+                    </form>
+                @else
+                    <a class="btn btn--primary" href="{{ route('member.login') }}">会员登录</a>
+                    <a class="btn btn--ghost" href="{{ route('member.register') }}">注册账号</a>
+                @endauth
             </div>
         </div>
     </section>

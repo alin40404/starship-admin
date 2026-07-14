@@ -28,7 +28,11 @@ return Application::configure(basePath: dirname(__DIR__))
                 return null;
             }
 
-            // web：当前无鉴权路由；若将来有 Blade 登录页，改为 return route('login')
+            // 会员前台：未登录跳转会员登录页
+            if ($request->is('member', 'member/*')) {
+                return route('member.login');
+            }
+
             return null;
         });
     })

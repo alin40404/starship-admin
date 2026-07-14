@@ -15,12 +15,33 @@
             <li>
                 <a href="{{ url('/') }}" @class(['is-active' => request()->is('/')])>首页</a>
             </li>
-            <li>
-                <a href="{{ url('/member/login') }}" @class(['is-active' => request()->is('member/login')])>登录</a>
-            </li>
-            <li>
-                <a href="{{ url('/member/register') }}" @class(['is-active' => request()->is('member/register')])>注册</a>
-            </li>
+            @auth('member')
+                <li>
+                    <a
+                        href="{{ route('member.account') }}"
+                        @class(['is-active' => request()->is('member/account')])
+                    >会员中心</a>
+                </li>
+                <li>
+                    <form class="site-nav__logout" method="post" action="{{ route('member.logout') }}">
+                        @csrf
+                        <button type="submit">退出</button>
+                    </form>
+                </li>
+            @else
+                <li>
+                    <a
+                        href="{{ route('member.login') }}"
+                        @class(['is-active' => request()->is('member/login')])
+                    >登录</a>
+                </li>
+                <li>
+                    <a
+                        href="{{ route('member.register') }}"
+                        @class(['is-active' => request()->is('member/register')])
+                    >注册</a>
+                </li>
+            @endauth
         </ul>
     </div>
 </header>

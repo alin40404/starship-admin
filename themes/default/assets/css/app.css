@@ -173,6 +173,10 @@ p {
   margin-top: 1.25rem;
 }
 
+.btn-row form {
+  display: contents;
+}
+
 /* Auth forms */
 .auth-shell {
   width: min(100% - 2rem, 420px);
