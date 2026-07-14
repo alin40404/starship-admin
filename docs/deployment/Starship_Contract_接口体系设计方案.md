@@ -1,5 +1,7 @@
 # Starship Contract 接口体系设计方案
 
+> **实现状态（2026-07-14）**：已落地 `Starship\Core\Contracts\Sms\SmsSenderInterface`、`Starship\Core\Contracts\Storage\StorageInterface`。System 分别提供 `SmsGateway`、`LocalStorage` 默认绑定；插件可覆盖容器绑定。`StorageInterface` 在设计四方法基础上增加了 `exists()`。
+
 ## 1. 设计目标
 
 Contract 是 Starship 解耦 Module、Plugin、Theme 的核心机制。

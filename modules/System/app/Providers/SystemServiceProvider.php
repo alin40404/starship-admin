@@ -17,8 +17,10 @@ use Modules\System\App\Http\Middleware\RenewAdminTokenExpiration;
 use Modules\System\App\Services\ExceptionLogWriter;
 use Modules\System\App\Support\MailConfigRegistrar;
 use Modules\System\App\Support\Sms\SmsGateway;
+use Modules\System\App\Support\Storage\LocalStorage;
 use Modules\System\App\Support\StorageConfigRegistrar;
 use Starship\Core\Contracts\Sms\SmsSenderInterface;
+use Starship\Core\Contracts\Storage\StorageInterface;
 use Throwable;
 
 class SystemServiceProvider extends ServiceProvider
@@ -26,6 +28,8 @@ class SystemServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(SmsSenderInterface::class, SmsGateway::class);
+        $this->app->singleton(LocalStorage::class);
+        $this->app->singleton(StorageInterface::class, fn ($app) => $app->make(LocalStorage::class));
     }
 
     public function boot(): void

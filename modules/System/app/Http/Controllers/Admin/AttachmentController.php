@@ -7,11 +7,12 @@ use Starship\Core\Support\ApiResponse;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Modules\System\App\Models\Attachment;
 use Modules\System\App\Support\AdminRuntimeConfig;
 use Modules\System\App\Support\AttachmentCategory;
+use Modules\System\App\Support\Storage\LocalStorage;
 use Modules\System\App\Support\StorageConfigRegistrar;
+use Starship\Core\Contracts\Storage\StorageInterface;
 
 class AttachmentController extends Controller
 {
@@ -151,7 +152,7 @@ class AttachmentController extends Controller
             'category' => $category,
             'file_name' => $file->getClientOriginalName(),
             'file_path' => $path,
-            'file_url' => Storage::disk($disk)->url($path),
+            'file_url' => $this->storage($disk)->url($path),
             'file_ext' => $file->getClientOriginalExtension(),
             'mime_type' => $file->getClientMimeType(),
             'file_size' => $file->getSize(),
@@ -196,13 +197,21 @@ class AttachmentController extends Controller
 
     private function deletePhysicalFile(Attachment $attachment): void
     {
-        StorageConfigRegistrar::apply();
-
         $disk = $attachment->storage ?: StorageConfigRegistrar::defaultDisk();
         $path = $attachment->file_path;
+        $storage = $this->storage($disk);
 
-        if ($path && Storage::disk($disk)->exists($path)) {
-            Storage::disk($disk)->delete($path);
+        if ($path && $storage->exists($path)) {
+            $storage->delete($path);
         }
+    }
+
+    private function storage(?string $disk = null): StorageInterface
+    {
+        $storage = app(StorageInterface::class);
+
+        return $storage instanceof LocalStorage
+            ? $storage->onDisk($disk)
+            : $storage;
     }
 }

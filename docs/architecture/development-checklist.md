@@ -30,7 +30,7 @@
 | `starship:module:make` | ✅ | 模块脚手架 |
 | `starship:plugin:make` | ✅ | 插件脚手架 |
 | Generator 端到端 Demo | ✅ | `sa_demo_products` 表 + CLI 全流程已验收 |
-| Contract 体系 | ⚠️ | `SmsSenderInterface` 已落地；`StorageInterface` 待实现 |
+| Contract 体系 | ✅ | `SmsSenderInterface`、`StorageInterface` 已落地；System 默认实现可被插件覆盖 |
 | Event / Hook | ❌ | 阶段三 |
 | ThemeManager | ❌ | 阶段二 |
 | 脚手架 `starship/admin` | ❌ | `composer create-project` 模板 |
@@ -65,7 +65,7 @@
 
 #### P2 — 框架产品化前置
 
-- [ ] 最小 Contract（`StorageInterface` 等待实现；`SmsSenderInterface` ✅）
+- [x] 最小 Contract（`StorageInterface` ✅；`SmsSenderInterface` ✅）
 - [ ] 框架级 Feature Test（`php artisan test` 冒烟，仅 backend 应用壳）
 - [x] `packages/core` 包测试（`cd packages/core && composer test`）
 - [ ] 项目模板 `starship/admin`

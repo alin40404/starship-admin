@@ -4,8 +4,9 @@ namespace Modules\System\App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Storage;
+use Modules\System\App\Support\Storage\LocalStorage;
 use Modules\System\App\Support\StorageConfigRegistrar;
+use Starship\Core\Contracts\Storage\StorageInterface;
 
 class Attachment extends Model
 {
@@ -20,11 +21,14 @@ class Attachment extends Model
             return $value;
         }
 
-        StorageConfigRegistrar::apply();
-
         $disk = $this->storage ?: StorageConfigRegistrar::defaultDisk();
+        $storage = app(StorageInterface::class);
 
-        return Storage::disk($disk)->url($this->file_path);
+        if ($storage instanceof LocalStorage) {
+            return $storage->onDisk($disk)->url($this->file_path);
+        }
+
+        return $storage->url($this->file_path);
     }
 
     public function admin(): BelongsTo
