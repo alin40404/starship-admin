@@ -227,6 +227,7 @@ function canSwitch(row: ThemeRow) {
 .theme-card__cover {
   position: relative;
   cursor: pointer;
+  border-bottom: 1px solid hsl(var(--border));
 }
 
 .theme-card__badge {
