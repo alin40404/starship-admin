@@ -4,6 +4,7 @@ import type { ThemeRow } from '#/features/system/api/dev-theme';
 import { Tag } from 'ant-design-vue';
 
 import {
+  getThemeStatusTagColor,
   THEME_PERMISSIONS,
   THEME_STATUS,
 } from '#/features/system/constants/theme-permissions';
@@ -24,23 +25,6 @@ const props = defineProps<{
 const emit = defineEmits<{
   action: [code: string, row: ThemeRow];
 }>();
-
-function statusColor(status: number) {
-  switch (status) {
-    case THEME_STATUS.ENABLED: {
-      return 'success';
-    }
-    case THEME_STATUS.INSTALLED: {
-      return 'processing';
-    }
-    case THEME_STATUS.DISABLED: {
-      return 'warning';
-    }
-    default: {
-      return 'default';
-    }
-  }
-}
 
 function canInstall(row: ThemeRow) {
   return (
@@ -111,14 +95,7 @@ function canSwitch(row: ThemeRow) {
         <div class="theme-card__body">
           <div class="theme-card__title-row">
             <h3 class="theme-card__title" :title="row.title">{{ row.title }}</h3>
-            <Tag
-              :color="statusColor(row.status)"
-              class="theme-card__status !m-0 shrink-0"
-              :class="{
-                'theme-card__status--enabled':
-                  row.status === THEME_STATUS.ENABLED,
-              }"
-            >
+            <Tag :color="getThemeStatusTagColor(row.status)" class="!m-0 shrink-0">
               {{ row.status_label }}
             </Tag>
           </div>
@@ -251,14 +228,6 @@ function canSwitch(row: ThemeRow) {
   font-weight: 600;
   line-height: 1.5;
   letter-spacing: 0.02em;
-}
-
-/* 已启用：实心绿底白字（覆盖 Ant Design success 浅绿描边样式） */
-.theme-card__status--enabled {
-  border-color: transparent !important;
-  background: #52c41a !important;
-  color: #fff !important;
-  font-weight: 600;
 }
 
 .theme-card__body {

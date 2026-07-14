@@ -6,6 +6,7 @@ import { IconifyIcon } from '@vben/icons';
 import { Switch, Tag } from 'ant-design-vue';
 
 import {
+  getPluginStatusTagColor,
   PLUGIN_PERMISSIONS,
   PLUGIN_STATUS,
 } from '#/features/system/constants/plugin-permissions';
@@ -26,23 +27,6 @@ const emit = defineEmits<{
   action: [code: string, row: PluginRow];
   statusChange: [enabled: boolean, row: PluginRow];
 }>();
-
-function statusColor(status: number) {
-  switch (status) {
-    case PLUGIN_STATUS.ENABLED: {
-      return 'success';
-    }
-    case PLUGIN_STATUS.INSTALLED: {
-      return 'processing';
-    }
-    case PLUGIN_STATUS.DISABLED: {
-      return 'warning';
-    }
-    default: {
-      return 'default';
-    }
-  }
-}
 
 function canInstall(row: PluginRow) {
   return (
@@ -140,7 +124,10 @@ function switchLabel(row: PluginRow) {
               >
                 {{ row.name }}
               </h3>
-              <Tag :color="statusColor(row.status)" class="!m-0 shrink-0">
+              <Tag
+                :color="getPluginStatusTagColor(row.status)"
+                class="!m-0 shrink-0"
+              >
                 {{ row.status_label }}
               </Tag>
             </div>

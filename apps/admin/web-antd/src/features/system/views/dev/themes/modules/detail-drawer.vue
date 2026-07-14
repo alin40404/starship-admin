@@ -9,7 +9,10 @@ import { formatDateTime } from '@vben/utils';
 import { Descriptions, Drawer, Tag } from 'ant-design-vue';
 
 import { fetchTheme } from '#/features/system/api/dev-theme';
-import { THEME_STATUS } from '#/features/system/constants/theme-permissions';
+import {
+  getThemeStatusTagColor,
+  THEME_STATUS_TAG_ENABLED,
+} from '#/features/system/constants/theme-permissions';
 import { $t } from '#/locales';
 
 import ThemeCover from './theme-cover.vue';
@@ -47,23 +50,6 @@ const manifestText = computed(() =>
 
 function formatTime(value: string | null) {
   return value ? formatDateTime(value) : '—';
-}
-
-function statusColor(status: number) {
-  switch (status) {
-    case THEME_STATUS.ENABLED: {
-      return 'success';
-    }
-    case THEME_STATUS.INSTALLED: {
-      return 'processing';
-    }
-    case THEME_STATUS.DISABLED: {
-      return 'warning';
-    }
-    default: {
-      return 'default';
-    }
-  }
 }
 
 function buildThemePreview(row: ThemeRow): ThemeDetail {
@@ -136,7 +122,10 @@ defineExpose({ open: show });
         {{ detail.type || '—' }}
       </Descriptions.Item>
       <Descriptions.Item :label="$t('dev.themes.columnActive')">
-        <Tag :color="detail.is_active ? 'success' : 'default'" class="!m-0">
+        <Tag
+          :color="detail.is_active ? THEME_STATUS_TAG_ENABLED : 'default'"
+          class="!m-0"
+        >
           {{
             detail.is_active
               ? $t('dev.themes.activeYes')
@@ -157,7 +146,7 @@ defineExpose({ open: show });
         {{ detail.layout || '—' }}
       </Descriptions.Item>
       <Descriptions.Item :label="$t('dev.shared.status')">
-        <Tag :color="statusColor(detail.status)" class="!m-0">
+        <Tag :color="getThemeStatusTagColor(detail.status)" class="!m-0">
           {{ detail.status_label }}
         </Tag>
       </Descriptions.Item>

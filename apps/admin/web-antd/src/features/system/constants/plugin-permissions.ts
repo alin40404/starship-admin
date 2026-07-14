@@ -24,6 +24,26 @@ export const PLUGIN_STATUS = {
   DISABLED: 3,
 } as const;
 
+/** Ant Design Tag 传 hex 时为实心绿底白字 */
+export const PLUGIN_STATUS_TAG_ENABLED = '#52c41a';
+
+export function getPluginStatusTagColor(status: number): string {
+  switch (status) {
+    case PLUGIN_STATUS.ENABLED: {
+      return PLUGIN_STATUS_TAG_ENABLED;
+    }
+    case PLUGIN_STATUS.INSTALLED: {
+      return 'processing';
+    }
+    case PLUGIN_STATUS.DISABLED: {
+      return 'warning';
+    }
+    default: {
+      return 'default';
+    }
+  }
+}
+
 export function getPluginStatusTagOptions() {
   return [
     {
@@ -37,7 +57,7 @@ export function getPluginStatusTagOptions() {
       value: PLUGIN_STATUS.INSTALLED,
     },
     {
-      color: 'success',
+      color: PLUGIN_STATUS_TAG_ENABLED,
       label: $t('dev.plugins.statusEnabled'),
       value: PLUGIN_STATUS.ENABLED,
     },

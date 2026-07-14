@@ -24,6 +24,26 @@ export const THEME_STATUS = {
   DISABLED: 3,
 } as const;
 
+/** Ant Design Tag 传 hex 时为实心绿底白字 */
+export const THEME_STATUS_TAG_ENABLED = '#52c41a';
+
+export function getThemeStatusTagColor(status: number): string {
+  switch (status) {
+    case THEME_STATUS.ENABLED: {
+      return THEME_STATUS_TAG_ENABLED;
+    }
+    case THEME_STATUS.INSTALLED: {
+      return 'processing';
+    }
+    case THEME_STATUS.DISABLED: {
+      return 'warning';
+    }
+    default: {
+      return 'default';
+    }
+  }
+}
+
 export function getThemeStatusTagOptions() {
   return [
     {
@@ -37,7 +57,7 @@ export function getThemeStatusTagOptions() {
       value: THEME_STATUS.INSTALLED,
     },
     {
-      color: 'success',
+      color: THEME_STATUS_TAG_ENABLED,
       label: $t('dev.themes.statusEnabled'),
       value: THEME_STATUS.ENABLED,
     },
