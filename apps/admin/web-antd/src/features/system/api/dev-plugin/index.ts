@@ -6,11 +6,17 @@ export interface PluginPageMeta {
   permission?: string;
 }
 
+export interface PluginTypeOption {
+  value: string;
+  label: string;
+}
+
 export interface PluginRow {
   name: string;
   slug: string;
   title: string;
   type: string | null;
+  type_label: string;
   version: string;
   description: string | null;
   author: string | null;
@@ -35,6 +41,11 @@ export interface PluginDetail extends PluginRow {
   config_schema: string[];
 }
 
+export interface PluginListResult {
+  items: PluginRow[];
+  types: PluginTypeOption[];
+}
+
 export interface PluginDiscoverResult {
   discovered: number;
   created: number;
@@ -42,7 +53,7 @@ export interface PluginDiscoverResult {
 }
 
 export function fetchPlugins() {
-  return requestClient.get<PluginRow[]>('/dev/plugins');
+  return requestClient.get<PluginListResult>('/dev/plugins');
 }
 
 export function discoverPlugins() {

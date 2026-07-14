@@ -1,7 +1,7 @@
 {
   "name": "SmsAliyun",
   "slug": "sms-aliyun",
-  "type": "adapter",
+  "type": "sms",
   "namespace": "Plugins\\SmsAliyun",
   "version": "1.0.0",
   "description": "阿里云短信服务适配插件",

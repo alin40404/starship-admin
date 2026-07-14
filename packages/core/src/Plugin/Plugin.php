@@ -40,6 +40,11 @@ class Plugin
         return is_string($type) && $type !== '' ? $type : null;
     }
 
+    public function typeLabel(): string
+    {
+        return PluginTypeCatalog::label($this->type());
+    }
+
     public function version(): string
     {
         return (string) ($this->manifest['version'] ?? '1.0.0');

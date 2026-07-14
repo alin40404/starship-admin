@@ -6,6 +6,7 @@ use Starship\Core\Plugin\Plugin;
 use Starship\Core\Plugin\PluginConfigRepository;
 use Starship\Core\Plugin\PluginLifecycle;
 use Starship\Core\Plugin\PluginManager;
+use Starship\Core\Plugin\PluginTypeCatalog;
 
 class PluginService
 {
@@ -16,14 +17,19 @@ class PluginService
     ) {}
 
     /**
-     * @return list<array<string, mixed>>
+     * @return array{items: list<array<string, mixed>>, types: list<array{value: string, label: string}>}
      */
     public function list(): array
     {
-        return $this->pluginManager->allFromFilesystem()
+        $items = $this->pluginManager->allFromFilesystem()
             ->map(fn (Plugin $plugin) => $this->formatPlugin($plugin))
             ->values()
             ->all();
+
+        return [
+            'items' => $items,
+            'types' => $this->resolveTypeOptions($items),
+        ];
     }
 
     /**
@@ -131,6 +137,7 @@ class PluginService
             'slug' => $plugin->slug(),
             'title' => $plugin->title(),
             'type' => $plugin->type(),
+            'type_label' => $plugin->typeLabel(),
             'version' => $plugin->version(),
             'description' => $plugin->description(),
             'author' => $plugin->author(),
@@ -154,5 +161,32 @@ class PluginService
         $root = dirname(base_path());
 
         return str_replace('\\', '/', str_replace($root.DIRECTORY_SEPARATOR, '', $manifestPath));
+    }
+
+    /**
+     * 侧栏类型：完整目录（文案由后端语言包提供）+ 扫描到的未知 type。
+     *
+     * @param  list<array<string, mixed>>  $items
+     * @return list<array{value: string, label: string}>
+     */
+    protected function resolveTypeOptions(array $items): array
+    {
+        $result = PluginTypeCatalog::options();
+        $known = array_fill_keys(PluginTypeCatalog::keys(), true);
+
+        foreach ($items as $item) {
+            $type = is_string($item['type'] ?? null) ? trim((string) $item['type']) : '';
+            if ($type === '' || isset($known[strtolower($type)])) {
+                continue;
+            }
+
+            $known[strtolower($type)] = true;
+            $result[] = [
+                'value' => $type,
+                'label' => PluginTypeCatalog::label($type),
+            ];
+        }
+
+        return $result;
     }
 }

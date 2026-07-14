@@ -116,7 +116,10 @@
     "batchNoEligible": "None of the selected plugins are eligible for this action",
     "batchPartial": "{0} succeeded, {1} failed",
     "enabledSuccess": "Enabled",
-    "disabledSuccess": "Disabled"
+    "disabledSuccess": "Disabled",
+    "empty": "No plugins found. Add plugin.json under plugins/ and refresh.",
+    "typeAll": "All types",
+    "switchOff": "Off"
   },
   "modules": {
     "entity": "Module",

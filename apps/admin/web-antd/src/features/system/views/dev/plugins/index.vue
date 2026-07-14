@@ -1,18 +1,17 @@
 <script lang="ts" setup>
-import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { PluginRow } from '#/features/system/api/dev-plugin';
+import type {
+  PluginRow,
+  PluginTypeOption,
+} from '#/features/system/api/dev-plugin';
 
-import { ref, watch } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { Page } from '@vben/common-ui';
 import { IconifyIcon } from '@vben/icons';
-import { usePreferences } from '@vben/preferences';
 
-import { useDebounceFn } from '@vueuse/core';
-import { Alert, Button, Input, message, Modal } from 'ant-design-vue';
+import { Button, Input, message, Modal, Spin } from 'ant-design-vue';
 
-import { useResponsiveCrud } from '#/adapter/mobile-list';
 import {
   disablePlugin,
   enablePlugin,
@@ -20,19 +19,25 @@ import {
   installPlugin,
   uninstallPlugin,
 } from '#/features/system/api/dev-plugin';
-import { PLUGIN_PERMISSIONS, PLUGIN_STATUS } from '#/features/system/constants/plugin-permissions';
+import {
+  PLUGIN_PERMISSIONS,
+  PLUGIN_STATUS,
+} from '#/features/system/constants/plugin-permissions';
 import { $t } from '#/locales';
 
-import { buildPluginMobileCrudConfig, useColumns } from './data';
 import ConfigDrawer from './modules/config-drawer.vue';
 import DetailDrawer from './modules/detail-drawer.vue';
+import FlowView from './modules/flow-view.vue';
 
 const detailDrawerRef = ref<InstanceType<typeof DetailDrawer>>();
 const configDrawerRef = ref<InstanceType<typeof ConfigDrawer>>();
+const loading = ref(false);
 const keyword = ref('');
-const pluginTotal = ref(0);
+const typeFilter = ref('all');
+const allRows = ref<PluginRow[]>([]);
+const typeCatalog = ref<PluginTypeOption[]>([]);
+const statusLoading = ref<Record<string, boolean>>({});
 
-const { isMobile } = usePreferences();
 const { hasAccessByCodes } = useAccess();
 
 const pluginAccess = {
@@ -40,133 +45,67 @@ const pluginAccess = {
     hasAccessByCodes([PLUGIN_PERMISSIONS.MANAGE, code]),
 };
 
-function filterPlugins(rows: PluginRow[], search?: string) {
-  const key = search?.trim().toLowerCase();
+const typeOptions = computed(() => [
+  { label: $t('dev.plugins.typeAll'), value: 'all' },
+  ...typeCatalog.value,
+]);
+
+const keywordMatchedRows = computed(() => {
+  const key = keyword.value.trim().toLowerCase();
   if (!key) {
-    return rows;
+    return allRows.value;
   }
 
-  return rows.filter((row) => {
+  return allRows.value.filter((row) => {
     const haystack = [
       row.slug,
       row.name,
       row.description ?? '',
       row.type ?? '',
+      row.type_label ?? '',
+      row.author ?? '',
     ]
       .join(' ')
       .toLowerCase();
     return haystack.includes(key);
   });
-}
+});
 
-async function loadPluginRows(search?: string) {
-  const all = await fetchPlugins();
-  pluginTotal.value = all.length;
-  return filterPlugins(all, search);
-}
+const typeCounts = computed(() => {
+  const counts: Record<string, number> = {
+    all: keywordMatchedRows.value.length,
+  };
 
-function filterEligibleRows(statuses: number[]) {
-  return selectedRows.value.filter((row) => statuses.includes(row.status));
-}
-
-async function runBatchAction(
-  rows: PluginRow[],
-  action: (slug: string) => Promise<unknown>,
-  successMessage: string,
-) {
-  let succeeded = 0;
-  let failed = 0;
-
-  for (const row of rows) {
-    try {
-      await action(row.slug);
-      succeeded += 1;
-    } catch {
-      failed += 1;
+  for (const row of keywordMatchedRows.value) {
+    const type = row.type?.trim();
+    if (!type) {
+      continue;
     }
+    counts[type] = (counts[type] ?? 0) + 1;
   }
 
-  if (failed > 0) {
-    message.warning($t('dev.plugins.batchPartial', [succeeded, failed]));
-  } else {
-    message.success(successMessage);
+  return counts;
+});
+
+const filteredRows = computed(() => {
+  if (typeFilter.value === 'all') {
+    return keywordMatchedRows.value;
   }
 
-  clearSelection();
-  await reload();
-}
+  return keywordMatchedRows.value.filter(
+    (row) => row.type === typeFilter.value,
+  );
+});
 
-function confirmBatchAction(
-  title: string,
-  content: string,
-  rows: PluginRow[],
-  action: (slug: string) => Promise<unknown>,
-  successMessage: string,
-) {
-  if (rows.length === 0) {
-    message.warning($t('dev.plugins.batchNoEligible'));
-    return;
+async function reload() {
+  loading.value = true;
+  try {
+    const result = await fetchPlugins();
+    allRows.value = result.items;
+    typeCatalog.value = result.types;
+  } finally {
+    loading.value = false;
   }
-
-  Modal.confirm({
-    title,
-    content,
-    okText: $t('common.confirm'),
-    cancelText: $t('common.cancel'),
-    async onOk() {
-      await runBatchAction(rows, action, successMessage);
-    },
-  });
-}
-
-function onBatchInstall() {
-  const rows = filterEligibleRows([PLUGIN_STATUS.DISCOVERED]);
-  confirmBatchAction(
-    $t('dev.shared.install'),
-    $t('dev.plugins.batchInstallConfirm', [rows.length]),
-    rows,
-    installPlugin,
-    $t('dev.shared.installSuccess'),
-  );
-}
-
-function onBatchEnable() {
-  const rows = filterEligibleRows([
-    PLUGIN_STATUS.INSTALLED,
-    PLUGIN_STATUS.DISABLED,
-  ]);
-  confirmBatchAction(
-    $t('system.shared.batchEnable'),
-    $t('dev.plugins.batchEnableConfirm', [rows.length]),
-    rows,
-    enablePlugin,
-    $t('dev.plugins.enabledSuccess'),
-  );
-}
-
-function onBatchDisable() {
-  const rows = filterEligibleRows([PLUGIN_STATUS.ENABLED]);
-  confirmBatchAction(
-    $t('system.shared.batchDisable'),
-    $t('dev.plugins.batchDisableConfirm', [rows.length]),
-    rows,
-    disablePlugin,
-    $t('dev.plugins.disabledSuccess'),
-  );
-}
-
-function onBatchUninstall() {
-  const rows = filterEligibleRows([
-    PLUGIN_STATUS.INSTALLED,
-    PLUGIN_STATUS.DISABLED,
-  ]);
-  confirmBatchAction(
-    $t('dev.shared.uninstall'),
-    $t('dev.plugins.batchUninstallConfirm', [rows.length]),
-    rows,
-    uninstallPlugin,
-    $t('dev.shared.uninstallSuccess'),
-  );
 }
 
 async function runAction(
@@ -192,7 +131,7 @@ function confirmAction(
   });
 }
 
-function onActionClick({ code, row }: OnActionClickParams<PluginRow>) {
+function onAction(code: string, row: PluginRow) {
   if (code === 'detail') {
     detailDrawerRef.value?.open(row);
     return;
@@ -211,28 +150,6 @@ function onActionClick({ code, row }: OnActionClickParams<PluginRow>) {
     return;
   }
 
-  if (code === 'enable') {
-    void runAction(
-      () => enablePlugin(row.slug),
-      $t('dev.plugins.enabledSuccess'),
-    );
-    return;
-  }
-
-  if (code === 'disable') {
-    confirmAction(
-      $t('dev.shared.disablePluginTitle'),
-      $t('dev.shared.disablePluginConfirm', [row.name]),
-      async () => {
-        await runAction(
-          () => disablePlugin(row.slug),
-          $t('dev.plugins.disabledSuccess'),
-        );
-      },
-    );
-    return;
-  }
-
   if (code === 'uninstall') {
     confirmAction(
       $t('dev.shared.uninstallPluginTitle'),
@@ -247,59 +164,60 @@ function onActionClick({ code, row }: OnActionClickParams<PluginRow>) {
   }
 }
 
-const columns = useColumns(onActionClick, pluginAccess);
-
-const [CrudView, crudApi] = useResponsiveCrud<PluginRow>({
-  gridOptions: {
-    checkboxConfig: { highlight: true },
-    columns: columns as VxeTableGridOptions<PluginRow>['columns'],
-    height: 'auto',
-    pagerConfig: { enabled: false },
-    proxyConfig: {
-      ajax: {
-        query: async () => await loadPluginRows(keyword.value),
-      },
-    },
-    rowConfig: { keyField: 'slug' },
-    toolbarConfig: { custom: true, refresh: true, zoom: true },
-  } as VxeTableGridOptions<PluginRow>,
-  mobile: buildPluginMobileCrudConfig({
-    columns,
-    query: async ({ keyword: mobileKeyword, page, pageSize }) => {
-      const data = await loadPluginRows(mobileKeyword);
-      const start = (page - 1) * pageSize;
-      return {
-        data: data.slice(start, start + pageSize),
-        total: data.length,
-      };
-    },
-  }),
-});
-
-const { clearSelection, reload, selectedRows } = crudApi;
-
-const debouncedReload = useDebounceFn(() => {
-  void reload();
-}, 300);
-
-watch(keyword, () => {
-  if (isMobile.value) {
+async function onStatusChange(enabled: boolean, row: PluginRow) {
+  if (statusLoading.value[row.slug]) {
     return;
   }
-  debouncedReload();
+
+  const nextEnabled = enabled;
+  const currentlyEnabled = row.status === PLUGIN_STATUS.ENABLED;
+
+  if (nextEnabled === currentlyEnabled) {
+    return;
+  }
+
+  if (!nextEnabled) {
+    confirmAction(
+      $t('dev.shared.disablePluginTitle'),
+      $t('dev.shared.disablePluginConfirm', [row.name]),
+      async () => {
+        statusLoading.value = { ...statusLoading.value, [row.slug]: true };
+        try {
+          await runAction(
+            () => disablePlugin(row.slug),
+            $t('dev.plugins.disabledSuccess'),
+          );
+        } finally {
+          const next = { ...statusLoading.value };
+          delete next[row.slug];
+          statusLoading.value = next;
+        }
+      },
+    );
+    return;
+  }
+
+  statusLoading.value = { ...statusLoading.value, [row.slug]: true };
+  try {
+    await runAction(
+      () => enablePlugin(row.slug),
+      $t('dev.plugins.enabledSuccess'),
+    );
+  } finally {
+    const next = { ...statusLoading.value };
+    delete next[row.slug];
+    statusLoading.value = next;
+  }
+}
+
+onMounted(() => {
+  void reload();
 });
 </script>
 
 <template>
   <Page auto-content-height>
     <div class="flex h-full min-h-0 flex-col">
-      <Alert
-        class="mb-4 shrink-0"
-        :message="$t('dev.plugins.hint')"
-        show-icon
-        type="info"
-      />
-
       <DetailDrawer ref="detailDrawerRef" />
       <ConfigDrawer
         ref="configDrawerRef"
@@ -307,97 +225,208 @@ watch(keyword, () => {
         @success="reload()"
       />
 
-      <div class="min-h-0 flex-1">
-        <CrudView class="h-full">
-          <template #toolbar-actions>
-            <div
-              v-if="selectedRows.length > 0"
-              class="vxe-grid-batch-toolbar"
+      <div class="plugin-shell bg-card">
+        <aside class="plugin-type-aside">
+          <!-- 标题：插件（不可点击，字号加大） -->
+          <div class="plugin-type-aside__title">
+            {{ $t('dev.plugins.entity') }}
+          </div>
+          <!-- 类型菜单：往下显示，保持不变 -->
+          <nav class="plugin-type-aside__list">
+            <button
+              v-for="item in typeOptions"
+              :key="item.value"
+              class="plugin-type-aside__item"
+              :class="{ 'is-active': typeFilter === item.value }"
+              type="button"
+              @click="typeFilter = item.value"
             >
-              <Button
-                v-if="pluginAccess.can(PLUGIN_PERMISSIONS.INSTALL)"
-                class="plugin-batch-btn-install"
-                @click="onBatchInstall"
-              >
-                {{ $t('dev.plugins.batchInstall') }}
-              </Button>
-              <Button
-                v-if="pluginAccess.can(PLUGIN_PERMISSIONS.ENABLE)"
-                class="plugin-batch-btn-enable ml-2"
-                @click="onBatchEnable"
-              >
-                {{ $t('system.shared.batchEnable') }}
-              </Button>
-              <Button
-                v-if="pluginAccess.can(PLUGIN_PERMISSIONS.DISABLE)"
-                class="plugin-batch-btn-disable ml-2"
-                @click="onBatchDisable"
-              >
-                {{ $t('system.shared.batchDisable') }}
-              </Button>
-              <Button
-                v-if="pluginAccess.can(PLUGIN_PERMISSIONS.UNINSTALL)"
-                class="ml-2"
-                danger
-                @click="onBatchUninstall"
-              >
-                {{ $t('dev.plugins.batchUninstall') }}
-              </Button>
-              <Button class="ml-2" type="link" @click="clearSelection">
-                {{ $t('system.shared.clearSelection') }}
-              </Button>
-            </div>
-            <div v-else class="plugin-toolbar-search">
+              <span class="plugin-type-aside__label">{{ item.label }}</span>
+              <span class="plugin-type-aside__count">
+                {{ typeCounts[item.value] ?? 0 }}
+              </span>
+            </button>
+          </nav>
+        </aside>
+
+        <div class="plugin-main">
+          <div class="plugin-toolbar-row">
+            <div class="plugin-toolbar">
               <Input
-                v-if="!isMobile"
                 v-model:value="keyword"
                 allow-clear
-                class="plugin-toolbar-search__input"
+                class="plugin-toolbar__input"
                 :placeholder="$t('dev.plugins.searchPlaceholder')"
-                @press-enter="reload()"
               >
                 <template #prefix>
                   <IconifyIcon
-                    class="plugin-toolbar-search__prefix-icon"
+                    class="plugin-toolbar__prefix-icon"
                     icon="lucide:search"
                   />
                 </template>
               </Input>
-              <span class="plugin-toolbar-search__total">
-                {{ $t('dev.plugins.totalCount', [pluginTotal]) }}
+              <span class="plugin-toolbar__total">
+                {{ $t('dev.plugins.totalCount', [filteredRows.length]) }}
               </span>
             </div>
-          </template>
-        </CrudView>
+            <Button :loading="loading" @click="reload">
+              <IconifyIcon class="size-4" icon="lucide:refresh-cw" />
+              {{ $t('common.refresh') }}
+            </Button>
+          </div>
+
+          <div class="plugin-content relative min-h-0 flex-1 p-4">
+            <div
+              v-if="loading && allRows.length === 0"
+              class="absolute inset-0 z-10 flex items-center justify-center bg-card/60"
+            >
+              <Spin />
+            </div>
+            <FlowView
+              :access="pluginAccess"
+              :loading="loading && allRows.length === 0"
+              :rows="filteredRows"
+              :status-loading="statusLoading"
+              @action="onAction"
+              @status-change="onStatusChange"
+            />
+          </div>
+        </div>
       </div>
     </div>
   </Page>
 </template>
 
 <style scoped>
-.plugin-toolbar-search {
+.plugin-shell {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+}
+
+.plugin-type-aside {
+  display: flex;
+  width: 200px;
+  flex-shrink: 0;
+  flex-direction: column;
+  overflow: auto;
+  border-right: 1px solid hsl(var(--border));
+  background: hsl(var(--background));
+}
+
+.plugin-type-aside__title {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  min-height: 56px;
+  padding: 0 16px;
+  border-bottom: 1px solid hsl(var(--border));
+  color: hsl(var(--foreground));
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+  pointer-events: none;
+  user-select: none;
+}
+
+.plugin-type-aside__list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 8px;
+}
+
+.plugin-type-aside__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 40px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: transparent;
+  color: hsl(var(--foreground));
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+}
+
+.plugin-type-aside__item:hover {
+  background: hsl(var(--accent));
+}
+
+.plugin-type-aside__item.is-active {
+  background: hsl(var(--primary) / 0.12);
+  color: hsl(var(--primary));
+}
+
+.plugin-type-aside__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.plugin-type-aside__count {
+  flex-shrink: 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.plugin-type-aside__item.is-active .plugin-type-aside__count {
+  color: hsl(var(--primary) / 0.8);
+}
+
+.plugin-main {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.plugin-toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 16px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.plugin-toolbar {
   display: flex;
   align-items: center;
   gap: 12px;
   min-width: 0;
+  flex: 1;
 }
 
-.plugin-toolbar-search__input {
+.plugin-toolbar__input {
   width: min(280px, 46vw);
 }
 
-.plugin-toolbar-search__input.ant-input-affix-wrapper {
+.plugin-toolbar__input.ant-input-affix-wrapper {
   height: 32px;
   border-radius: var(--radius);
 }
 
-.plugin-toolbar-search__prefix-icon {
+.plugin-toolbar__prefix-icon {
   width: 0.875rem;
   height: 0.875rem;
   color: hsl(var(--muted-foreground));
 }
 
-.plugin-toolbar-search__total {
+.plugin-toolbar__total {
   flex-shrink: 0;
   color: hsl(var(--muted-foreground));
   font-size: 0.875rem;
@@ -405,45 +434,52 @@ watch(keyword, () => {
   white-space: nowrap;
 }
 
-.vxe-grid .plugin-batch-btn-install.ant-btn,
-.mobile-crud-list .plugin-batch-btn-install.ant-btn {
-  color: #fff;
-  background-color: #1677ff;
-  border-color: #1677ff;
+.plugin-content {
+  min-width: 0;
 }
 
-.vxe-grid .plugin-batch-btn-install.ant-btn:not(:disabled):hover,
-.mobile-crud-list .plugin-batch-btn-install.ant-btn:not(:disabled):hover {
-  color: #fff;
-  background-color: #4096ff;
-  border-color: #4096ff;
-}
+@media (max-width: 768px) {
+  .plugin-shell {
+    flex-direction: column;
+  }
 
-.vxe-grid .plugin-batch-btn-enable.ant-btn,
-.mobile-crud-list .plugin-batch-btn-enable.ant-btn {
-  color: #fff;
-  background-color: #52c41a;
-  border-color: #52c41a;
-}
+  .plugin-type-aside {
+    width: 100%;
+    border-right: 0;
+    border-bottom: 1px solid hsl(var(--border));
+    overflow: hidden;
+  }
 
-.vxe-grid .plugin-batch-btn-enable.ant-btn:not(:disabled):hover,
-.mobile-crud-list .plugin-batch-btn-enable.ant-btn:not(:disabled):hover {
-  color: #fff;
-  background-color: #73d13d;
-  border-color: #73d13d;
-}
+  .plugin-type-aside__title {
+    display: none;
+  }
 
-.vxe-grid .plugin-batch-btn-disable.ant-btn,
-.mobile-crud-list .plugin-batch-btn-disable.ant-btn {
-  color: #fff;
-  background-color: #fa8c16;
-  border-color: #fa8c16;
-}
+  .plugin-type-aside__list {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 6px;
+    padding: 8px 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
 
-.vxe-grid .plugin-batch-btn-disable.ant-btn:not(:disabled):hover,
-.mobile-crud-list .plugin-batch-btn-disable.ant-btn:not(:disabled):hover {
-  color: #fff;
-  background-color: #ffa940;
-  border-color: #ffa940;
+  .plugin-type-aside__list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .plugin-type-aside__item {
+    flex: 0 0 auto;
+    width: auto;
+    min-height: 36px;
+    padding: 6px 12px;
+    border-color: hsl(var(--border));
+    white-space: nowrap;
+  }
+
+  .plugin-type-aside__item.is-active {
+    border-color: hsl(var(--primary) / 0.35);
+  }
 }
 </style>

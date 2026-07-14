@@ -96,7 +96,9 @@ defineExpose({ open: show });
       <Descriptions.Item :label="$t('dev.plugins.columnSlug')">{{ detail.slug }}</Descriptions.Item>
       <Descriptions.Item :label="$t('dev.plugins.columnName')">{{ detail.name }}</Descriptions.Item>
       <Descriptions.Item :label="$t('dev.shared.version')">{{ detail.version }}</Descriptions.Item>
-      <Descriptions.Item :label="$t('dev.shared.type')">{{ detail.type || '—' }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('dev.shared.type')">
+        {{ detail.type_label || detail.type || '—' }}
+      </Descriptions.Item>
       <Descriptions.Item :label="$t('dev.shared.description')">{{ detail.description || '—' }}</Descriptions.Item>
       <Descriptions.Item :label="$t('dev.shared.author')">{{ detail.author || '—' }}</Descriptions.Item>
       <Descriptions.Item :label="$t('dev.shared.directory')">{{ detail.directory }}</Descriptions.Item>

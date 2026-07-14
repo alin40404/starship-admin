@@ -41,16 +41,23 @@ Plugin 不承载大型业务。
 
 # 2. Plugin 类型规范
 
-plugin.json 中 type：
+plugin.json 中 `type` 为英文标识；**中文文案由后端** `core::plugin.types.*` 维护（见 `packages/core/src/Plugin/PluginTypeCatalog.php`），接口下发 `type_label` / `types`。
 
-    payment
-    storage
-    sms
-    email
-    oauth
-    ai
-    map
-    search
+约定类型示例：
+
+    payment（支付方式）
+    shipping（配送方式）
+    marketing（营销推广）
+    sms（短信）
+    email（邮件）
+    oauth（社交登录）
+    storage（存储）
+    ai（人工智能）
+    theme（主题模板）
+    analysis（数据分析）
+    service（客户服务）
+    feature（功能模块）
+    other（其他功能）
 
 示例：
 

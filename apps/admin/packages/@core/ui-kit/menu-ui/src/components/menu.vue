@@ -495,17 +495,18 @@ $namespace: vben;
   &.is-rounded {
     --menu-item-margin-x: 8px;
     --menu-item-collapse-margin-x: 6px;
-    --menu-item-radius: 8px;
+    /* 跟随系统圆角（偏好设置写入的 --radius），勿写死 px */
+    --menu-item-radius: var(--radius);
   }
 
   &.is-horizontal:not(.is-rounded) {
     --menu-item-height: 40px;
-    --menu-item-radius: 6px;
+    --menu-item-radius: var(--radius);
   }
 
   &.is-horizontal.is-rounded {
     --menu-item-height: 40px;
-    --menu-item-radius: 6px;
+    --menu-item-radius: var(--radius);
     --menu-item-padding-x: 12px;
   }
 

@@ -71,7 +71,8 @@ function menuIcon(menu: MenuRecordRaw) {
 }
 
 .vben-normal-menu.is-rounded {
-  --menu-item-radius: 6px;
+  /* 跟随系统圆角（偏好设置写入的 --radius），勿写死 px */
+  --menu-item-radius: var(--radius);
   --menu-item-margin-x: 8px;
 }
 

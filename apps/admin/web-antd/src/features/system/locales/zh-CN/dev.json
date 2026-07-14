@@ -116,7 +116,10 @@
     "batchNoEligible": "所选插件均不符合该操作条件",
     "batchPartial": "成功 {0} 个，失败 {1} 个",
     "enabledSuccess": "已启用",
-    "disabledSuccess": "已禁用"
+    "disabledSuccess": "已禁用",
+    "empty": "未发现插件，请先在 plugins/ 放置 plugin.json 后刷新",
+    "typeAll": "全部类型",
+    "switchOff": "未启用"
   },
   "modules": {
     "entity": "模块",
