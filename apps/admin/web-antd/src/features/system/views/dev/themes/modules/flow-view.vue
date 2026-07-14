@@ -92,7 +92,10 @@ function canSwitch(row: ThemeRow) {
         v-for="row in rows"
         :key="row.slug"
         class="theme-card"
-        :class="{ 'is-active': row.is_active }"
+        :class="{
+          'is-enabled': row.status === THEME_STATUS.ENABLED,
+          'is-active': row.is_active,
+        }"
       >
         <div class="theme-card__cover" @click="emit('action', 'detail', row)">
           <ThemeCover
@@ -124,14 +127,6 @@ function canSwitch(row: ThemeRow) {
           </p>
 
           <div class="theme-card__actions">
-            <button
-              v-if="access.can(THEME_PERMISSIONS.QUERY)"
-              class="theme-card__btn"
-              type="button"
-              @click="emit('action', 'detail', row)"
-            >
-              {{ $t('dev.shared.detail') }}
-            </button>
             <button
               v-if="canInstall(row)"
               class="theme-card__btn theme-card__btn--primary"
@@ -219,9 +214,16 @@ function canSwitch(row: ThemeRow) {
   box-shadow: 0 8px 24px hsl(var(--foreground) / 0.06);
 }
 
+.theme-card.is-enabled {
+  border-color: hsl(142 71% 45% / 0.5);
+  box-shadow: 0 0 0 1px hsl(142 71% 45% / 0.14);
+}
+
 .theme-card.is-active {
-  border-color: hsl(142 71% 45% / 0.55);
-  box-shadow: 0 0 0 1px hsl(142 71% 45% / 0.2);
+  border-color: hsl(142 71% 42% / 0.75);
+  box-shadow:
+    0 0 0 1px hsl(142 71% 42% / 0.28),
+    0 8px 20px hsl(142 71% 35% / 0.12);
 }
 
 .theme-card__cover {
@@ -234,12 +236,14 @@ function canSwitch(row: ThemeRow) {
   position: absolute;
   top: 10px;
   left: 10px;
-  padding: 2px 8px;
+  padding: 3px 10px;
   border-radius: 999px;
   background: hsl(142 71% 35%);
   color: #fff;
   font-size: 12px;
+  font-weight: 600;
   line-height: 1.5;
+  letter-spacing: 0.02em;
 }
 
 .theme-card__body {

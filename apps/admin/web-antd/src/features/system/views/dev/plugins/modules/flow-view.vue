@@ -175,14 +175,6 @@ function switchLabel(row: PluginRow) {
 
           <div class="plugin-card__actions">
             <button
-              v-if="access.can(PLUGIN_PERMISSIONS.QUERY)"
-              class="plugin-card__btn"
-              type="button"
-              @click="emit('action', 'detail', row)"
-            >
-              {{ $t('dev.shared.detail') }}
-            </button>
-            <button
               v-if="canConfig(row)"
               class="plugin-card__btn plugin-card__btn--primary"
               type="button"

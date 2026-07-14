@@ -6,9 +6,10 @@ import { computed, ref } from 'vue';
 import { usePreferences } from '@vben/preferences';
 import { formatDateTime } from '@vben/utils';
 
-import { Descriptions, Drawer } from 'ant-design-vue';
+import { Descriptions, Drawer, Tag } from 'ant-design-vue';
 
 import { fetchPlugin } from '#/features/system/api/dev-plugin';
+import { PLUGIN_STATUS } from '#/features/system/constants/plugin-permissions';
 import { $t } from '#/locales';
 
 import PluginCover from './plugin-cover.vue';
@@ -46,6 +47,23 @@ const manifestText = computed(() =>
 
 function formatTime(value: string | null) {
   return value ? formatDateTime(value) : '—';
+}
+
+function statusColor(status: number) {
+  switch (status) {
+    case PLUGIN_STATUS.ENABLED: {
+      return 'success';
+    }
+    case PLUGIN_STATUS.INSTALLED: {
+      return 'processing';
+    }
+    case PLUGIN_STATUS.DISABLED: {
+      return 'warning';
+    }
+    default: {
+      return 'default';
+    }
+  }
 }
 
 function buildPluginPreview(row: PluginRow): PluginDetail {
@@ -117,7 +135,11 @@ defineExpose({ open: show });
       <Descriptions.Item :label="$t('dev.shared.author')">{{ detail.author || '—' }}</Descriptions.Item>
       <Descriptions.Item :label="$t('dev.shared.directory')">{{ detail.directory }}</Descriptions.Item>
       <Descriptions.Item :label="$t('dev.shared.namespace')">{{ detail.namespace || '—' }}</Descriptions.Item>
-      <Descriptions.Item :label="$t('dev.shared.status')">{{ detail.status_label }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('dev.shared.status')">
+        <Tag :color="statusColor(detail.status)" class="!m-0">
+          {{ detail.status_label }}
+        </Tag>
+      </Descriptions.Item>
       <Descriptions.Item :label="$t('dev.shared.installedAt')">
         {{ formatTime(detail.installed_at) }}
       </Descriptions.Item>
