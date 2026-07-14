@@ -15,6 +15,8 @@
 | 插件 | `plugins/`，完整生命周期（发现 / 安装 / 启用 / 禁用 / 卸载） |
 | 主题 | ThemeManager MVP 已落地；渲染层 / CMS Demo 待做 |
 | Monitor | 已并入 System，API `/admin-api/monitor/*`，权限 `monitor.*` |
+| 前端 feature 目录 | `apps/admin/web-antd/src/features/{module}`，与后端 Module 对应 |
+| 模块导出/导入 | 先手工验收再做 CLI；清单见 [module-export-import-acceptance.md](../deployment/module-export-import-acceptance.md) |
 | 暂不做 | 多租户 Module、Module/Plugin 市场、`modules/` 改名 |
 
 ---
@@ -83,6 +85,8 @@
 ### 阶段二补充：会员模块（ThemeLoader 就绪后）
 
 - [x] 独立 `modules/Member` MVP（不进 System）：`members` 表、`member` session guard、后台会员 CRUD（查询/启停/增删改）、前台登录/注册 Blade（Theme 可覆盖）
+- [ ] 模块导出/导入验收（Member 试点）：[module-export-import-acceptance.md](../deployment/module-export-import-acceptance.md)
+- [x] `starship:module:export` / `import` CLI：[module-cli.md](../deployment/module-cli.md)
 - [ ] 第三方登录、会员等级/积分、商城订单绑定（明确延后）
 
 ### 阶段三：生态扩展（长期）

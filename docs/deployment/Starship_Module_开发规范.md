@@ -282,7 +282,16 @@ Event。
 
 ------------------------------------------------------------------------
 
-# 11. Module版本规划
+# 11. Module 导出 / 导入
+
+当前目标：项目间复用（A 导出 → B 导入），**不上市场、不强制 Composer**。
+
+- 后端：`modules/{Name}/`
+- 管理端前端：`apps/admin/web-antd/src/features/{name}/`
+- 验收清单（Member 试点）：[module-export-import-acceptance.md](./module-export-import-acceptance.md)
+- CLI：`starship:module:export` / `import`，见 [module-cli.md](./module-cli.md)
+
+# 12. Module版本规划
 
 当前：
 
@@ -302,7 +311,7 @@ Composer包。
 
 ------------------------------------------------------------------------
 
-# 12. 最终原则
+# 13. 最终原则
 
 Module负责：
 

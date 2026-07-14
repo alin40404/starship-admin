@@ -47,9 +47,17 @@ abstract class TestCase extends OrchestraTestCase
     {
         $repoRoot = dirname(__DIR__, 3);
 
+        $app['config']->set('starship.repo_root', $repoRoot);
         $app['config']->set('starship.modules_path', $repoRoot.DIRECTORY_SEPARATOR.'modules');
         $app['config']->set('starship.plugins_path', $repoRoot.DIRECTORY_SEPARATOR.'plugins');
         $app['config']->set('starship.themes_path', $repoRoot.DIRECTORY_SEPARATOR.'themes');
+        $app['config']->set(
+            'starship.admin_frontend_src',
+            $repoRoot.DIRECTORY_SEPARATOR.'apps'
+                .DIRECTORY_SEPARATOR.'admin'
+                .DIRECTORY_SEPARATOR.'web-antd'
+                .DIRECTORY_SEPARATOR.'src'
+        );
     }
 
     protected function configureTestingDatabase(mixed $app): void
