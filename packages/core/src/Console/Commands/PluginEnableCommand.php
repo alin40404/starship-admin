@@ -17,11 +17,12 @@ class PluginEnableCommand extends PluginActionCommand
         try {
             $slug = $this->resolveSlug($pluginManager);
             $pluginLifecycle->enable($slug);
-            $this->info("插件 {$slug} 已启用");
+            $this->components->info('插件已启用');
+            $this->components->twoColumnDetail('Slug', $slug);
 
             return self::SUCCESS;
         } catch (InvalidArgumentException $exception) {
-            $this->error($exception->getMessage());
+            $this->components->error($exception->getMessage());
 
             return self::FAILURE;
         }

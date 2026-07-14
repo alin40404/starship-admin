@@ -17,7 +17,7 @@ class ThemeListCommand extends Command
         $themes = $themeManager->allFromFilesystem();
 
         if ($themes->isEmpty()) {
-            $this->warn('未发现任何主题');
+            $this->components->warn('未发现任何主题');
 
             return self::SUCCESS;
         }
@@ -31,7 +31,8 @@ class ThemeListCommand extends Command
             $theme->directoryName(),
         ])->all();
 
-        $this->table(['Slug', 'Title', 'Type', 'Version', 'Status', 'Directory'], $rows);
+        $this->components->info('主题列表');
+        $this->table(['Slug', '标题', '类型', '版本', '状态', '目录'], $rows);
 
         return self::SUCCESS;
     }

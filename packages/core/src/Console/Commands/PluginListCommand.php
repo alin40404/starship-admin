@@ -17,7 +17,7 @@ class PluginListCommand extends Command
         $plugins = $pluginManager->allFromFilesystem();
 
         if ($plugins->isEmpty()) {
-            $this->warn('未发现任何插件');
+            $this->components->warn('未发现任何插件');
 
             return self::SUCCESS;
         }
@@ -30,7 +30,8 @@ class PluginListCommand extends Command
             $plugin->directoryName(),
         ])->all();
 
-        $this->table(['Slug', 'Name', 'Version', 'Status', 'Directory'], $rows);
+        $this->components->info('插件列表');
+        $this->table(['Slug', '名称', '版本', '状态', '目录'], $rows);
 
         return self::SUCCESS;
     }

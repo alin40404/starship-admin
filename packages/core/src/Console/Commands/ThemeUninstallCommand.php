@@ -17,11 +17,12 @@ class ThemeUninstallCommand extends ThemeActionCommand
         try {
             $slug = $this->resolveSlug($themeManager);
             $themeLifecycle->uninstall($slug);
-            $this->info("主题 {$slug} 已卸载");
+            $this->components->info('主题已卸载');
+            $this->components->twoColumnDetail('Slug', $slug);
 
             return self::SUCCESS;
         } catch (InvalidArgumentException $exception) {
-            $this->error($exception->getMessage());
+            $this->components->error($exception->getMessage());
 
             return self::FAILURE;
         }

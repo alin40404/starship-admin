@@ -17,11 +17,12 @@ class ThemeDisableCommand extends ThemeActionCommand
         try {
             $slug = $this->resolveSlug($themeManager);
             $themeLifecycle->disable($slug);
-            $this->info("主题 {$slug} 已禁用");
+            $this->components->info('主题已禁用');
+            $this->components->twoColumnDetail('Slug', $slug);
 
             return self::SUCCESS;
         } catch (InvalidArgumentException $exception) {
-            $this->error($exception->getMessage());
+            $this->components->error($exception->getMessage());
 
             return self::FAILURE;
         }

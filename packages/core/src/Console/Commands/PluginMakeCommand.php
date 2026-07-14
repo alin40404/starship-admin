@@ -37,14 +37,14 @@ class PluginMakeCommand extends Command
     {
         $studlyName = Str::studly((string) $this->argument('name'));
         if ($studlyName === '') {
-            $this->error('插件名称不能为空');
+            $this->components->error('插件名称不能为空');
 
             return self::FAILURE;
         }
 
         $type = strtolower(trim((string) $this->option('type')));
         if (! in_array($type, self::VALID_TYPES, true)) {
-            $this->error('无效的插件类型，可选：'.implode(', ', self::VALID_TYPES));
+            $this->components->error('无效的插件类型，可选：'.implode(', ', self::VALID_TYPES));
 
             return self::FAILURE;
         }
@@ -63,7 +63,7 @@ class PluginMakeCommand extends Command
         $pluginPath = $pluginsPath.DIRECTORY_SEPARATOR.$studlyName;
 
         if (File::isDirectory($pluginPath) && ! $this->option('force')) {
-            $this->error("插件目录已存在：{$pluginPath}，使用 --force 覆盖关键文件");
+            $this->components->error("插件目录已存在：{$pluginPath}，使用 --force 覆盖关键文件");
 
             return self::FAILURE;
         }
@@ -71,16 +71,24 @@ class PluginMakeCommand extends Command
         try {
             $this->scaffoldPlugin($studlyName, $slug, $type, $description, $pluginPath);
         } catch (InvalidArgumentException $exception) {
-            $this->error($exception->getMessage());
+            $this->components->error($exception->getMessage());
 
             return self::FAILURE;
         }
 
-        $this->info("插件 {$studlyName} 已创建：{$pluginPath}");
-        $this->line('下一步：');
-        $this->line("  1. 执行 php artisan starship:plugin:install {$slug}（会自动发现入库）");
-        $this->line("  2. 执行 php artisan starship:plugin:enable {$slug}");
-        $this->line('  3. 重启后端服务后在管理端「插件管理」中配置');
+        $this->components->info('插件已创建');
+        $this->line('  '.$pluginPath);
+        $this->newLine();
+        $this->components->twoColumnDetail('名称', $studlyName);
+        $this->components->twoColumnDetail('Slug', $slug);
+        $this->components->twoColumnDetail('类型', $type);
+        $this->newLine();
+        $this->components->info('建议下一步');
+        $this->components->bulletList([
+            "执行 php artisan starship:plugin:install {$slug}（会自动发现入库）",
+            "执行 php artisan starship:plugin:enable {$slug}",
+            '重启后端服务后在管理端「插件管理」中配置',
+        ]);
 
         return self::SUCCESS;
     }

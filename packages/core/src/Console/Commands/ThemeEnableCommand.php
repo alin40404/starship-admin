@@ -17,11 +17,12 @@ class ThemeEnableCommand extends ThemeActionCommand
         try {
             $slug = $this->resolveSlug($themeManager);
             $themeLifecycle->enable($slug);
-            $this->info("主题 {$slug} 已启用");
+            $this->components->info('主题已启用');
+            $this->components->twoColumnDetail('Slug', $slug);
 
             return self::SUCCESS;
         } catch (InvalidArgumentException $exception) {
-            $this->error($exception->getMessage());
+            $this->components->error($exception->getMessage());
 
             return self::FAILURE;
         }
