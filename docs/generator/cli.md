@@ -135,15 +135,15 @@ php artisan starship:generator:crud {table} --module=system --delete --force
 require __DIR__.'/admin-generator/_loader.php';
 ```
 
-**前端**
-- `api/system/{entity}.ts`
+**前端**（落在 `apps/admin/web-antd/src/features/{module}/`）
+- `api/{entity}.ts`（扁平，与 System 一致；HTTP 仍走 `/admin-api/{module}/...`）
 - `constants/{entity}-permissions.ts`
-- `views/{group}/{entity}/index.vue`
+- `views/{group}/{entity}/index.vue`（`{group}` 为 route_group；Generator 默认 `dev`）
 - `views/{group}/{entity}/data.ts`
 - `views/{group}/{entity}/modules/form.vue`
-- `locales/langs/zh-CN/{module}.{entity}.json`（实体独立翻译，如 `system.products.json`）
-- `locales/langs/en-US/{module}.{entity}.json`
-- `locales/langs/zh-CN/{module}.json`（仅合并菜单名 `menu.*`，不写入实体字段）
+- `locales/zh-CN/{module}.{entity}.json`（实体独立翻译，如 `generator.products.json`）
+- `locales/en-US/{module}.{entity}.json`
+- `locales/zh-CN/{module}.json`（仅合并菜单名 `menu.*`，不写入实体字段）
 
 卸载 `--delete` 时会删除实体独立翻译文件，并从 `{module}.json` 移除对应菜单 key，不影响同模块其他实体。
 

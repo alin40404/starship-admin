@@ -154,7 +154,7 @@ Model：
   "menus": {
     "paths": [
       "/dev/codegen",
-      "/generator/products"
+      "/dev/products"
     ]
   },
   "permissions": {

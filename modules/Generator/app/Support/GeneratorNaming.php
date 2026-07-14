@@ -68,6 +68,7 @@ final class GeneratorNaming
         return match (Str::lower($moduleSlug)) {
             'system' => 'org',
             'monitor' => 'monitor',
+            'generator' => 'dev',
             default => Str::kebab($moduleSlug),
         };
     }

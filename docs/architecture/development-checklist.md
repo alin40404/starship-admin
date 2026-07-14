@@ -158,7 +158,7 @@ Composer 包名：`starship/shop`（需在 `backend/composer.json` 添加 path �
 2. `starship:generator:import demo_products --module=System --business=演示产品`
 3. `starship:generator:crud demo_products --module=System --business=演示产品 --force`
 4. 菜单 / 权限自动注册（menu:131～136）
-5. 管理端访问 `/generator/products`（超管 `admin` 登录后可见）
+5. 管理端访问 `/dev/products`（超管 `admin` 登录后可见）
 
 > 修复：`SchemaReader::physicalTableName()` 解决 DB 前缀下 `inspect`/字段推断为空的问题。
 

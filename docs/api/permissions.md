@@ -18,7 +18,7 @@
 | 模块 | prefixes | menus.paths（摘要） |
 |------|----------|---------------------|
 | System | `system.` `dashboard.` `monitor.` | `/dashboard/*` `/permission/*` `/org/*` `/platform/*` `/resource/attachments` `/monitor/*` `/dev` `/dev/modules` `/dev/plugins` `/dev/themes` |
-| Generator | `generator.` | `/dev/codegen`；业务 CRUD 如 `/generator/products` 由 codegen 在 `sync_menu` 时自动写入 |
+| Generator | `generator.` | `/dev/codegen`；业务 CRUD 如 `/dev/products` 由 codegen 在 `sync_menu` 时自动写入 |
 
 完整清单见各自 `modules/*/module.json`。
 
@@ -67,7 +67,7 @@
 | 权限码 | 前端 path |
 |--------|-----------|
 | `generator.codegen` | `/dev/codegen` |
-| （按钮见下） | `/generator/products` |
+| （按钮见下） | `/dev/products` |
 
 ## 4. 按钮 / API 权限常量
 

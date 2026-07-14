@@ -131,9 +131,9 @@ final class FormSchemaBuilder
                 continue;
             }
 
-            $importPath = $apiRoutePrefix === 'system'
-                ? "#/features/system/api/{$apiEntity}"
-                : '#/features/'.strtolower((string) $moduleSlug)."/api/{$apiRoutePrefix}/{$apiEntity}";
+            // feature 已按模块切分，api 文件扁平落在 features/{module}/api/{entity}.ts
+            $featureSlug = strtolower($apiRoutePrefix !== '' ? $apiRoutePrefix : (string) $moduleSlug);
+            $importPath = "#/features/{$featureSlug}/api/{$apiEntity}";
 
             $imports[$importPath][] = $apiFn;
             foreach ($options['extra_imports'] ?? [] as $extraImport) {

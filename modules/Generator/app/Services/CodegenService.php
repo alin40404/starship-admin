@@ -421,6 +421,7 @@ class CodegenService
             'config' => $config,
             'api_route_prefix' => $apiRoutePrefix,
             'module_namespace' => $moduleNamespace,
+            'module_slug' => $translationNs,
             'model_class' => $config->class_name,
             'controller_class' => GeneratorNaming::controllerClassName($config->class_name),
             'permissions_class' => GeneratorNaming::permissionsClassName($config->class_name),
@@ -521,7 +522,7 @@ class CodegenService
                 ),
             ],
             [
-                'path' => $featureRoot.'/api/'.$viewData['api_route_prefix'].'/'.$viewData['entity_kebab'].'.ts',
+                'path' => $featureRoot.'/api/'.$viewData['entity_kebab'].'.ts',
                 'content' => $this->renderer->render('frontend/api.stub', $viewData),
             ],
             [

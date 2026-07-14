@@ -6,7 +6,7 @@ import type {
 import { buildMobileCrudFromColumns } from '#/adapter/mobile-list';
 import type { OnActionClickFn } from '#/adapter/vxe-table';
 
-import type { {{ $model_class }}Row } from '#/features/{{ $module_slug }}/api/{{ $api_route_prefix }}/{{ $entity_kebab }}';
+import type { {{ $model_class }}Row } from '#/features/{{ $module_slug }}/api/{{ $entity_kebab }}';
 
 import { $t } from '#/locales';
 import { formatDateTime } from '@vben/utils';
