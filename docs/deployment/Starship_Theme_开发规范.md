@@ -47,26 +47,88 @@ Theme 是展示层扩展。
 
 MVP（Blade）示例：
 
-    themes/default/
+```text
+themes/default/
+├── theme.json
+├── cover.svg                 # 管理端封面（API 直读）
+├── assets/                   # 前台 JS / CSS / 图片
+│   ├── css/
+│   │   ├── app.css
+│   │   └── header-footer.css
+│   ├── js/                   # 可选
+│   └── images/
+│       └── logo.svg
+└── views/
+    ├── layouts/
+    │   └── app.blade.php
+    ├── partials/
+    │   ├── header.blade.php
+    │   └── footer.blade.php
+    └── pages/
+        ├── home.blade.php
+        └── member/…          # 可选：覆盖模块前台页
+```
 
+Blade 中引用资源（相对 `assets/`）：
 
-    ├── theme.json
+```blade
+<link rel="stylesheet" href="{{ theme_asset('css/app.css') }}">
+<img src="{{ theme_asset('images/logo.svg') }}" alt="">
+```
 
+- URL 形如 `/themes/{slug}/assets/css/app.css`  
+- 参数写 `css/app.css` 即可，不必带 `assets/` 或主题 slug  
 
-    ├── cover.svg
+### 3.1 开发 vs 生产（assets）
 
+| 场景 | 磁盘 | 谁响应 `/themes/{slug}/assets/...` |
+|------|------|-------------------------------------|
+| 未 link | 仓库 `themes/{slug}/assets` | Laravel `ThemeAssetController` 回落 |
+| 已 link（推荐） | `public/themes/{slug}/assets` → 软链到源目录 | Web 服务器按静态文件访问；没有链再回落 Laravel |
 
-    └── views/
+创建软链接（在 `backend/`，类似 `storage:link`）：
 
-        ├── layouts/
+```bash
+php artisan starship:theme:link default
+php artisan starship:theme:link --all
+```
 
-        │   └── app.blade.php
+效果：
 
-        └── pages/
+```text
+backend/public/themes/default/assets  →  themes/default/assets
+```
 
-            └── home.blade.php
+改源码 assets 即时生效，无需复制。`public/themes` 已加入 `.gitignore`，各环境部署后执行一次 link。
 
-后续 Vue 前台可扩展 `layouts/`、`pages/`、`components/`、`assets/` 等（仍以 `theme.json` entry 声明入口）。
+> Windows 需开启「开发人员模式」，或以管理员身份运行，否则 `symlink` 可能失败。
+
+生产环境将站点根目录指向 `backend/public`，并对 `/themes/` 优先按静态文件提供即可（未命中再交 Laravel）。  
+本地 `php artisan serve`：即使已 link，也可能仍走 Laravel 回落，属正常。
+
+### 3.2 CDN / 静态域名（可选）
+
+`theme_asset()` 已预留两级外链：
+
+| 配置 | 环境变量 | 效果 |
+|------|----------|------|
+| 专用主题 CDN | `STARSHIP_THEME_ASSET_URL` | `{该域名}/themes/{slug}/assets/...` |
+| 全站静态域名 | Laravel `ASSET_URL` | `asset()` 自动加前缀（未设专用 CDN 时） |
+
+示例：
+
+```env
+# 仅主题资源走 CDN（推荐）
+STARSHIP_THEME_ASSET_URL=https://cdn.example.com
+
+# 或全站静态前缀（后台 build、主题等一并）
+ASSET_URL=https://cdn.example.com
+```
+
+CDN 桶内路径须与本地一致：`themes/default/assets/css/app.css`。  
+同步方式自定（CI 上传、OSS 镜像、对象存储绑定等）；应用侧只换域名，Blade 仍写 `theme_asset('css/app.css')`。
+
+后续 Vue 前台可扩展 `components/` 等（仍以 `theme.json` entry 声明入口）。
 
 ------------------------------------------------------------------------
 

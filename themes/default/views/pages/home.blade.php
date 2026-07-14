@@ -1,21 +1,30 @@
 @extends('theme::layouts.app')
 
+@section('title', ($theme['title'] ?? '默认主题').' — Starship')
+
 @section('content')
-    <div class="brand">Starship · Default</div>
-    <h1>{{ $theme['title'] ?? '默认主题' }}</h1>
-    <p class="lede">
-        这是默认前台主题首页（Blade Demo）。后台切换主题后刷新本页即可看到差异。
-    </p>
-    <div class="panel">
-        <ul class="meta">
-            <li><span>主题 slug</span> · <strong data-theme-slug>{{ $theme['slug'] ?? 'default' }}</strong></li>
-            <li><span>目录</span> · <strong>{{ $theme['directory'] ?? 'default' }}</strong></li>
-            <li><span>类型</span> · <strong>{{ $theme['type'] ?? 'frontend' }}</strong></li>
-        </ul>
-        <p style="margin: 1.25rem 0 0; font-size: 0.95rem;">
-            <a href="{{ url('/member/login') }}" style="color: var(--theme-accent);">会员登录</a>
-            ·
-            <a href="{{ url('/member/register') }}" style="color: var(--theme-accent);">注册</a>
-        </p>
+    <section class="page-hero">
+        <div class="container">
+            <p class="page-hero__eyebrow">Hello Elementor style</p>
+            <h1>{{ $theme['title'] ?? '默认主题' }}</h1>
+            <p class="page-hero__lede">
+                轻量默认前台主题：白底、站点顶栏与页脚、内容宽约 1140px，视觉参考 Hello Elementor。
+                样式与图片通过 <code>theme_asset()</code> 从 <code>themes/default/assets</code> 加载。
+            </p>
+            <div class="btn-row">
+                <a class="btn btn--primary" href="{{ url('/member/login') }}">会员登录</a>
+                <a class="btn btn--ghost" href="{{ url('/member/register') }}">注册账号</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+        <div class="panel">
+            <ul class="meta-list">
+                <li><span>主题 slug</span> · <strong data-theme-slug>{{ $theme['slug'] ?? 'default' }}</strong></li>
+                <li><span>目录</span> · <strong>{{ $theme['directory'] ?? 'default' }}</strong></li>
+                <li><span>类型</span> · <strong>{{ $theme['type'] ?? 'frontend' }}</strong></li>
+            </ul>
+        </div>
     </div>
 @endsection

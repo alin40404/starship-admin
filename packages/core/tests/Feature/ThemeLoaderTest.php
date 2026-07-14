@@ -31,5 +31,6 @@ class ThemeLoaderTest extends TestCase
         $this->assertStringContainsString('默认主题', $html);
         $this->assertStringContainsString('data-theme-slug', $html);
         $this->assertStringContainsString('default', $html);
+        $this->assertStringContainsString('/themes/default/assets/css/app.css', $html);
     }
 }

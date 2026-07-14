@@ -121,6 +121,44 @@ class Theme
     }
 
     /**
+     * 前台静态资源根目录：`{theme}/assets`。
+     */
+    public function assetsPath(): string
+    {
+        return $this->directory.DIRECTORY_SEPARATOR.'assets';
+    }
+
+    /**
+     * 解析 assets/ 下相对路径为绝对文件路径；越界或不存在返回 null。
+     */
+    public function resolveAssetPath(string $relative): ?string
+    {
+        $relative = str_replace('\\', '/', $relative);
+        $relative = ltrim($relative, '/');
+        if ($relative === '' || str_contains($relative, '..')) {
+            return null;
+        }
+
+        $assetsRoot = realpath($this->assetsPath());
+        if ($assetsRoot === false || ! is_dir($assetsRoot)) {
+            return null;
+        }
+
+        $candidate = $assetsRoot.DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $relative);
+        $real = realpath($candidate);
+        if ($real === false || ! is_file($real)) {
+            return null;
+        }
+
+        $rootPrefix = $assetsRoot.DIRECTORY_SEPARATOR;
+        if ($real !== $assetsRoot && ! str_starts_with($real, $rootPrefix)) {
+            return null;
+        }
+
+        return $real;
+    }
+
+    /**
      * 封面相对路径（相对主题根目录），优先 theme.json 的 cover，其次常见文件名。
      */
     public function coverRelativePath(): ?string

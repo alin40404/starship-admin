@@ -1,23 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-label="Default theme cover">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0f766e"/>
-      <stop offset="55%" stop-color="#134e4a"/>
-      <stop offset="100%" stop-color="#042f2e"/>
-    </linearGradient>
-    <linearGradient id="accent" x1="0" y1="1" x2="1" y2="0">
-      <stop offset="0%" stop-color="#5eead4" stop-opacity="0.85"/>
-      <stop offset="100%" stop-color="#99f6e4" stop-opacity="0.2"/>
-    </linearGradient>
-  </defs>
-  <rect width="960" height="540" fill="url(#bg)"/>
-  <circle cx="780" cy="80" r="160" fill="url(#accent)"/>
-  <circle cx="120" cy="460" r="180" fill="#2dd4bf" fill-opacity="0.12"/>
-  <rect x="72" y="108" width="280" height="18" rx="9" fill="#ccfbf1" fill-opacity="0.9"/>
-  <rect x="72" y="148" width="420" height="12" rx="6" fill="#99f6e4" fill-opacity="0.45"/>
-  <rect x="72" y="220" width="520" height="240" rx="18" fill="#042f2e" fill-opacity="0.45" stroke="#5eead4" stroke-opacity="0.25"/>
-  <rect x="104" y="256" width="180" height="12" rx="6" fill="#99f6e4" fill-opacity="0.55"/>
-  <rect x="104" y="288" width="280" height="10" rx="5" fill="#99f6e4" fill-opacity="0.28"/>
-  <rect x="104" y="320" width="240" height="10" rx="5" fill="#99f6e4" fill-opacity="0.22"/>
-  <text x="72" y="88" fill="#ecfdf5" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="36" font-weight="700">Default</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-label="Default theme">
+  <rect width="640" height="360" fill="#ffffff"/>
+  <rect width="640" height="56" fill="#ffffff" stroke="#e4e6eb"/>
+  <rect x="32" y="18" width="28" height="28" rx="4" fill="#93003C"/>
+  <rect x="72" y="24" width="96" height="12" rx="2" fill="#0c0d0e"/>
+  <rect x="420" y="24" width="48" height="10" rx="2" fill="#54595f"/>
+  <rect x="480" y="24" width="48" height="10" rx="2" fill="#54595f"/>
+  <rect x="540" y="24" width="48" height="10" rx="2" fill="#93003C"/>
+  <rect x="64" y="110" width="220" height="18" rx="3" fill="#0c0d0e"/>
+  <rect x="64" y="144" width="320" height="10" rx="2" fill="#54595f"/>
+  <rect x="64" y="164" width="280" height="10" rx="2" fill="#54595f"/>
+  <rect x="64" y="200" width="120" height="36" rx="3" fill="#93003C"/>
+  <rect x="196" y="200" width="120" height="36" rx="3" fill="#ffffff" stroke="#d5d8dc"/>
+  <text x="32" y="330" fill="#93003C" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">Hello · Default</text>
 </svg>
