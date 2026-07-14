@@ -82,7 +82,8 @@
 
 ### 阶段二补充：会员模块（ThemeLoader 就绪后）
 
-- [ ] 独立 `modules/Member`（不进 System）：`members` 表、独立 `member` guard、后台会员 CRUD；前台登录/注册由 Theme 或 Module 默认 Blade 提供
+- [x] 独立 `modules/Member` MVP（不进 System）：`members` 表、`member` session guard、后台会员 CRUD（查询/启停/增删改）、前台登录/注册 Blade（Theme 可覆盖）
+- [ ] 第三方登录、会员等级/积分、商城订单绑定（明确延后）
 
 ### 阶段三：生态扩展（长期）
 

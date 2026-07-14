@@ -1,0 +1,29 @@
+{
+  "name": "member",
+  "title": "会员中心",
+  "version": "0.1.0",
+  "enabled": true,
+  "providers": [
+    "Modules\\Member\\App\\Providers\\MemberServiceProvider"
+  ],
+  "seeders": [
+    "Modules\\Member\\Database\\Seeders\\MemberMenuSeeder"
+  ],
+  "require": {
+    "modules": [
+      "system"
+    ]
+  },
+  "menus": {
+    "paths": [
+      "/member",
+      "/member/members"
+    ]
+  },
+  "permissions": {
+    "prefixes": [
+      "member."
+    ],
+    "exact": []
+  }
+}

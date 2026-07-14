@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9ac16ac980528f62c415c8dbdffb2c6b",
+    "content-hash": "80e51b7bdc3d364a357a4b2c4495e0f0",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -4716,16 +4716,20 @@
         },
         {
             "name": "starship/core",
-            "version": "0.1.0",
+            "version": "dev-master",
             "dist": {
                 "type": "path",
                 "url": "../packages/core",
-                "reference": "fd2cf50c90ef1d9c5c70e5e161679aff19a101c9"
+                "reference": "989fa7202c0f0544b1695d3d9ede6fc75fe0227b"
             },
             "require": {
                 "composer/composer": "^2.7",
                 "laravel/framework": "^13.0",
                 "php": "^8.3"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^11.1",
+                "phpunit/phpunit": "^12.5.12"
             },
             "type": "library",
             "autoload": {
@@ -4736,10 +4740,26 @@
                     "src/helpers.php"
                 ]
             },
+            "autoload-dev": {
+                "psr-4": {
+                    "Starship\\Core\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "phpunit"
+                ]
+            },
             "license": [
                 "MIT"
             ],
-            "description": "Starship Admin framework kernel — module scanner, plugin engine, contracts",
+            "authors": [
+                {
+                    "name": "allanchan",
+                    "email": "alin40404@gmail.com"
+                }
+            ],
+            "description": "Starship Admin framework kernel — module scanner, plugin engine, theme manager, contracts",
             "transport-options": {
                 "relative": true
             }
@@ -4762,6 +4782,29 @@
                 "MIT"
             ],
             "description": "Starship Admin Generator module",
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "starship/member",
+            "version": "0.1.0",
+            "dist": {
+                "type": "path",
+                "url": "../modules/Member",
+                "reference": "233d0d9c452d11f773e3d62711aed05d5b26c397"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Modules\\Member\\App\\": "app/",
+                    "Modules\\Member\\Database\\Seeders\\": "database/seeders/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Starship Admin Member module",
             "transport-options": {
                 "relative": true
             }
@@ -9865,6 +9908,7 @@
     "stability-flags": {
         "starship/core": 20,
         "starship/generator": 20,
+        "starship/member": 20,
         "starship/system": 20
     },
     "prefer-stable": true,

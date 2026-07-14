@@ -12,5 +12,10 @@
             <li><span>目录</span> · <strong>{{ $theme['directory'] ?? 'corporate' }}</strong></li>
             <li><span>类型</span> · <strong>{{ $theme['type'] ?? 'frontend' }}</strong></li>
         </ul>
+        <p style="margin: 1.25rem 0 0; font-size: 0.95rem;">
+            <a href="{{ url('/member/login') }}" style="color: var(--theme-accent);">会员登录</a>
+            ·
+            <a href="{{ url('/member/register') }}" style="color: var(--theme-accent);">注册</a>
+        </p>
     </div>
 @endsection

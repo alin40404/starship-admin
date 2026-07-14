@@ -304,6 +304,7 @@ interface PluginConfigStoreInterface
 - [x] 框架级 Feature Test（启动、模块、插件、ping；`packages/core` 包测试已独立）
 - [x] ThemeManager MVP：`theme.json` 发现 / 安装 / 启用 / 切换
 - [x] ThemeLoader 最小 Demo：Blade 前台首页（`GET /`）；Vue 前台属后续
+- [x] Member 模块 MVP：`modules/Member` + `member` guard + 后台会员管理 + 前台登录/注册
 
 ### 阶段三：生态与工具（长期）
 

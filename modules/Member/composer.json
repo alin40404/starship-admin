@@ -1,0 +1,13 @@
+{
+    "name": "starship/member",
+    "description": "Starship Admin Member module",
+    "type": "library",
+    "license": "MIT",
+    "version": "0.1.0",
+    "autoload": {
+        "psr-4": {
+            "Modules\\Member\\App\\": "app/",
+            "Modules\\Member\\Database\\Seeders\\": "database/seeders/"
+        }
+    }
+}
