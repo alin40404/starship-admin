@@ -52,7 +52,7 @@ final class FormFieldInferencer
                 'form_component' => $upload['component'],
                 'dict_code' => null,
                 'form_options' => $upload,
-                'validation_rules' => $this->appendUploadRules($baseRules, $upload['kind']),
+                'validation_rules' => $this->appendUploadRules($baseRules, $upload, $type),
             ];
         }
 
@@ -189,20 +189,50 @@ final class FormFieldInferencer
 
     /**
      * @param  list<string>  $rules
+     * @param  array{kind: string, max_count?: int}  $upload
      * @return list<string>
      */
-    protected function appendUploadRules(array $rules, string $kind): array
+    protected function appendUploadRules(array $rules, array $upload, string $columnType): array
     {
-        if ($kind === 'image') {
-            $rules[] = 'string';
-            $rules[] = 'max:500';
+        $kind = $upload['kind'];
+        if (! in_array($kind, ['image', 'attachment', 'file'], true)) {
+            return array_values(array_unique($rules));
         }
 
-        if ($kind === 'attachment' || $kind === 'file') {
-            $rules[] = 'string';
-            $rules[] = 'max:1000';
-        }
+        $rules = array_values(array_filter(
+            $rules,
+            static fn (string $rule): bool => ! str_starts_with($rule, 'max:'),
+        ));
+        $rules[] = 'string';
+        $rules[] = 'max:'.$this->resolveUploadMaxLength($upload, $columnType);
 
         return array_values(array_unique($rules));
+    }
+
+    /**
+     * @param  array{kind: string, max_count?: int}  $upload
+     */
+    protected function resolveUploadMaxLength(array $upload, string $columnType): int
+    {
+        $type = strtolower($columnType);
+
+        if (preg_match('/varchar\((\d+)\)/', $type, $matches)) {
+            return max(1, (int) $matches[1]);
+        }
+
+        if (str_contains($type, 'longtext')) {
+            return 65535;
+        }
+
+        // text / 多图多附件：放宽到 16KB，避免逗号拼接 URL 被 max:500 误杀
+        if (
+            str_contains($type, 'text')
+            || ! isset($upload['max_count'])
+            || (int) ($upload['max_count'] ?? 1) > 1
+        ) {
+            return 16384;
+        }
+
+        return $upload['kind'] === 'image' ? 500 : 1000;
     }
 }

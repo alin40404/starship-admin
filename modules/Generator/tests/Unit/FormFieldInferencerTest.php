@@ -47,6 +47,26 @@ class FormFieldInferencerTest extends TestCase
 
         $this->assertSame('PictureUploadField', $result['form_component']);
         $this->assertSame('image', $result['form_options']['kind']);
+        $this->assertContains('max:255', $result['validation_rules']);
+    }
+
+    #[Test]
+    public function infers_multi_image_text_field_with_relaxed_max(): void
+    {
+        $inferencer = $this->makeInferencer();
+        $result = $inferencer->infer([
+            'name' => 'images',
+            'type' => 'text',
+            'nullable' => true,
+            'key' => '',
+            'default' => null,
+            'extra' => '',
+            'comment' => '图片相册',
+        ], 'demo_items', [], []);
+
+        $this->assertSame('PictureUploadField', $result['form_component']);
+        $this->assertContains('max:16384', $result['validation_rules']);
+        $this->assertNotContains('max:500', $result['validation_rules']);
     }
 
     #[Test]
