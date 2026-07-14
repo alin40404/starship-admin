@@ -69,36 +69,81 @@ plugin.json 中 `type` 为英文标识；**中文文案由后端** `core::plugin
 
 # 3. Plugin 目录结构
 
-    plugins/PaymentWechat/
+```text
+plugins/PaymentWechat/
+├── plugin.json
+├── cover.svg                 # 可选封面（或 plugin.json cover 指定）；管理端 API 直读
+├── assets/                   # 可公开 URL 访问：JS / CSS / 图片
+│   ├── css/
+│   ├── js/
+│   └── images/
+├── src/
+│   ├── Providers
+│   ├── Services
+│   ├── Contracts
+│   └── Drivers
+├── config/
+├── routes/
+├── database/
+│   └── migrations
+├── resources/                # 服务端资源：lang、Blade 等（不直接暴露 URL）
+└── README.md
+```
 
+原则：
 
-    ├── plugin.json
+-   **要浏览器直接访问的** → 放 `assets/`
+-   **仅服务端使用的** → 放 `resources/`
+-   密钥、配置、源码不要放进 `assets/`
 
-    ├── cover.svg                 # 可选封面（或 plugin.json cover 指定）
+### 3.1 静态资源 URL
 
-    ├── src/
+Blade / 后端生成 URL（相对 `assets/`）：
 
-    │   ├── Providers
+```php
+plugin_asset('payment-wechat', 'images/logo.svg');
+plugin_asset('payment-wechat', 'js/checkout.js');
+```
 
-    │   ├── Services
+-   URL 形如 `/plugins/{slug}/assets/images/logo.svg`
+-   参数写 `images/logo.svg` 即可，不必带 `assets/` 前缀
 
-    │   ├── Contracts
+| 场景 | 磁盘 | 谁响应 `/plugins/{slug}/assets/...` |
+|------|------|-------------------------------------|
+| 未 link | 仓库 `plugins/{slug}/assets` | Laravel `PluginAssetController` 回落 |
+| 已 link（推荐） | `public/plugins/{slug}/assets` → 软链到源目录 | Web 服务器按静态文件访问；没有链再回落 Laravel |
 
-    │   └── Drivers
+创建软链接（在 `backend/`，类似 `starship:theme:link`）：
 
+```bash
+php artisan starship:plugin:link payment-wechat
+php artisan starship:plugin:link --all
+```
 
-    ├── config/
+效果：
 
-    ├── routes/
+```text
+backend/public/plugins/payment-wechat/assets  →  plugins/PaymentWechat/assets
+```
 
-    ├── database/
+`public/plugins` 已加入 `.gitignore`，各环境部署后执行一次 link。
 
-    │   └── migrations
+> Windows 需开启「开发人员模式」，或以管理员身份运行，否则 `symlink` 可能失败（也会尝试 `mklink /J`）。
 
+### 3.2 CDN / 静态域名（可选）
 
-    ├── resources/
+与 Theme 共用同一配置：
 
-    └── README.md
+| 配置 | 环境变量 | 效果 |
+|------|----------|------|
+| Theme/Plugin CDN | `STARSHIP_ASSET_URL` | `{该域名}/plugins/{slug}/assets/...` |
+| 全站静态域名 | Laravel `ASSET_URL` | `asset()` 自动加前缀（未设专用 CDN 时） |
+
+```env
+STARSHIP_ASSET_URL=https://cdn.example.com
+```
+
+CDN 桶内路径须与本地一致：`plugins/payment-wechat/assets/...`。
 
 ------------------------------------------------------------------------
 

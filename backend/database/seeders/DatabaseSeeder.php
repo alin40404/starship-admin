@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
 
     /**
      * 按各模块 module.json 中的 seeders 声明，依次执行启用模块的种子。
+     * 模块顺序遵循 require.modules（如 system 先于 member）。
      */
     public function run(): void
     {

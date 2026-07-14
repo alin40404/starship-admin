@@ -29,7 +29,7 @@ class ThemeAssetPathTest extends TestCase
 
     public function test_theme_asset_respects_cdn_base(): void
     {
-        config(['starship.theme_asset_url' => 'https://cdn.example.com/static']);
+        config(['starship.asset_url' => 'https://cdn.example.com/static']);
 
         $url = theme_asset('css/app.css');
         $this->assertStringStartsWith('https://cdn.example.com/static/themes/default/assets/css/app.css', $url);

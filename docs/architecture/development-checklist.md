@@ -64,6 +64,7 @@
 - [x] 同步 `docs/deployment/Starship_Module_开发规范.md` 与真实目录（Providers 在 `app/Providers/`）
 - [x] API / 权限码文档与 `module.json` 保持一致（`docs/api/permissions.md`、`docs/api/routes.md`；System/Generator `menus.paths` 已补全）
 - [x] System 插件管理页对接 uninstall
+- [x] 插件静态资源 URL（`plugin_asset` / `starship:plugin:link`，对齐 Theme assets）
 
 #### P2 — 框架产品化前置
 

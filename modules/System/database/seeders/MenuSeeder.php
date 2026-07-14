@@ -32,7 +32,9 @@ class MenuSeeder extends Seeder
     public function run(): void
     {
 
-        if (Menu::query()->exists()) {
+        // 勿用「表里有任意菜单」判断：业务模块先 seed 会误跳过 System 整树。
+        // 只认自己的根节点 /dashboard；已存在则只走下方增量 ensure*。
+        if ($this->systemMenuTreeSeeded()) {
             $this->ensureThemeMgmtMenu();
 
             return;
@@ -609,6 +611,14 @@ class MenuSeeder extends Seeder
                 }
             }
         }
+    }
+
+    /**
+     * System 菜单树是否已初始化（以工作台根节点为准，勿用「表内任意菜单」）。
+     */
+    protected function systemMenuTreeSeeded(): bool
+    {
+        return Menu::query()->where('path', '/dashboard')->where('type', 1)->exists();
     }
 
     /**

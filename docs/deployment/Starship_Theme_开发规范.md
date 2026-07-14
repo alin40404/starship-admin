@@ -108,20 +108,20 @@ backend/public/themes/default/assets  →  themes/default/assets
 
 ### 3.2 CDN / 静态域名（可选）
 
-`theme_asset()` 已预留两级外链：
+`theme_asset()` / `plugin_asset()` 共用前缀：
 
 | 配置 | 环境变量 | 效果 |
 |------|----------|------|
-| 专用主题 CDN | `STARSHIP_THEME_ASSET_URL` | `{该域名}/themes/{slug}/assets/...` |
+| Theme/Plugin CDN | `STARSHIP_ASSET_URL` | `{该域名}/themes|plugins/{slug}/assets/...` |
 | 全站静态域名 | Laravel `ASSET_URL` | `asset()` 自动加前缀（未设专用 CDN 时） |
 
 示例：
 
 ```env
-# 仅主题资源走 CDN（推荐）
-STARSHIP_THEME_ASSET_URL=https://cdn.example.com
+# 仅 Theme / Plugin 资源走 CDN（推荐）
+STARSHIP_ASSET_URL=https://cdn.example.com
 
-# 或全站静态前缀（后台 build、主题等一并）
+# 或全站静态前缀（后台 build、主题、插件等一并）
 ASSET_URL=https://cdn.example.com
 ```
 
