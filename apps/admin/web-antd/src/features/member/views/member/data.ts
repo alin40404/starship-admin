@@ -66,10 +66,14 @@ export function buildMemberFormSchema(isEdit: boolean): VbenFormSchema[] {
       rules: 'required',
     },
     {
-      component: 'Input',
-      componentProps: { type: 'password' },
+      component: 'InputPassword',
+      componentProps: {
+        class: 'w-full',
+        placeholder: isEdit ? '留空不改' : undefined,
+      },
       fieldName: 'password',
-      label: isEdit ? '密码（留空不改）' : '密码',
+      help: isEdit ? '留空不改' : undefined,
+      label: '密码',
       rules: isEdit ? undefined : 'required',
     },
     {
