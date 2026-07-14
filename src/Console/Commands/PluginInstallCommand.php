@@ -17,11 +17,12 @@ class PluginInstallCommand extends PluginActionCommand
         try {
             $slug = $this->resolveSlug($pluginManager);
             $pluginLifecycle->install($slug);
-            $this->info("插件 {$slug} 安装成功");
+            $this->components->info('插件已安装');
+            $this->components->twoColumnDetail('Slug', $slug);
 
             return self::SUCCESS;
         } catch (InvalidArgumentException $exception) {
-            $this->error($exception->getMessage());
+            $this->components->error($exception->getMessage());
 
             return self::FAILURE;
         }

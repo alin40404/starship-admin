@@ -35,7 +35,7 @@ class ModuleImportCommand extends Command
                 ! (bool) $this->option('no-admin-ui'),
             );
         } catch (Throwable $e) {
-            $this->error($e->getMessage());
+            $this->components->error($e->getMessage());
 
             return self::FAILURE;
         } finally {
@@ -54,7 +54,18 @@ class ModuleImportCommand extends Command
                 (string) ($manifest['backend_target'] ?? ('modules/'.$studly)),
             );
 
-        $this->info("模块 {$slug} 已导入到 {$backendAbsolute}");
+        $this->components->info('模块已导入');
+        $this->line('  '.$backendAbsolute);
+        $this->newLine();
+        $this->components->twoColumnDetail('名称', $slug);
+        $this->components->twoColumnDetail('版本', (string) ($manifest['version'] ?? ''));
+        $this->components->twoColumnDetail('后端目录', (string) ($manifest['backend_target'] ?? ('modules/'.$studly)));
+        if (! (bool) $this->option('no-admin-ui')) {
+            $this->components->twoColumnDetail(
+                '前端目录',
+                (string) ($manifest['admin_ui_target'] ?? ''),
+            );
+        }
 
         if ($this->option('migrate')) {
             $this->runModuleMigrations($backendAbsolute);
@@ -64,18 +75,21 @@ class ModuleImportCommand extends Command
             $this->runModuleSeeders($manifest);
         }
 
-        $this->newLine();
-        $this->line('建议下一步：');
-        $this->line("  1. 确认 backend/composer.json 已 path 引用 starship/{$slug}，并执行 composer update starship/{$slug}");
-        $this->line('  2. 确认 modules/'.$studly.'/module.json 中 enabled 为 true');
+        $next = [
+            "确认 backend/composer.json 已 path 引用 starship/{$slug}，并执行 composer update starship/{$slug}",
+            '确认 modules/'.$studly.'/module.json 中 enabled 为 true',
+        ];
         if (! $this->option('migrate')) {
-            $this->line('  3. php artisan migrate（或再次 import 加 --migrate）');
+            $next[] = 'php artisan migrate（或再次 import 加 --migrate）';
         }
         if (! $this->option('seed')) {
-            $this->line('  4. 按需 db:seed 菜单 Seeder（或 --seed）');
+            $next[] = '按需 db:seed 菜单 Seeder（或 --seed）';
         }
-        $this->line('  5. 重启后端；前端执行 pnpm -F @vben/web-antd run dev / build');
-        $this->line('验收清单：docs/deployment/module-export-import-acceptance.md');
+        $next[] = '重启后端；前端执行 pnpm -F @vben/web-antd run dev / build';
+
+        $this->newLine();
+        $this->components->info('建议下一步');
+        $this->components->bulletList($next);
 
         return self::SUCCESS;
     }
@@ -84,18 +98,23 @@ class ModuleImportCommand extends Command
     {
         $migrationPath = $backendAbsolute.DIRECTORY_SEPARATOR.'database'.DIRECTORY_SEPARATOR.'migrations';
         if (! File::isDirectory($migrationPath)) {
-            $this->warn('无 migrations 目录，跳过 --migrate');
+            $this->components->warn('无 migrations 目录，跳过 --migrate');
 
             return;
         }
 
         $relative = str_replace(base_path().DIRECTORY_SEPARATOR, '', $migrationPath);
-        $this->info("运行迁移：{$migrationPath}");
+        $this->newLine();
+        $this->components->info('运行迁移');
+        $this->line('  '.$migrationPath);
         Artisan::call('migrate', [
             '--path' => $relative,
             '--force' => true,
         ]);
-        $this->line(Artisan::output());
+        $output = trim(Artisan::output());
+        if ($output !== '') {
+            $this->line($output);
+        }
     }
 
     /**
@@ -109,15 +128,20 @@ class ModuleImportCommand extends Command
                 continue;
             }
             if (! class_exists($seeder)) {
-                $this->warn("Seeder 类不存在（可能尚未 composer dump-autoload）：{$seeder}");
+                $this->components->warn("Seeder 类不存在（可能尚未 composer dump-autoload）：{$seeder}");
                 continue;
             }
-            $this->info("运行 Seeder：{$seeder}");
+            $this->newLine();
+            $this->components->info('运行 Seeder');
+            $this->line('  '.$seeder);
             Artisan::call('db:seed', [
                 '--class' => $seeder,
                 '--force' => true,
             ]);
-            $this->line(Artisan::output());
+            $output = trim(Artisan::output());
+            if ($output !== '') {
+                $this->line($output);
+            }
         }
     }
 }

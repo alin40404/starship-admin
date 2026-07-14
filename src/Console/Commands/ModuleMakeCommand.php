@@ -19,7 +19,7 @@ class ModuleMakeCommand extends Command
     {
         $studlyName = Str::studly((string) $this->argument('name'));
         if ($studlyName === '') {
-            $this->error('模块名称不能为空');
+            $this->components->error('模块名称不能为空');
 
             return self::FAILURE;
         }
@@ -29,7 +29,7 @@ class ModuleMakeCommand extends Command
         $slug = Str::kebab($studlyName);
 
         if (File::isDirectory($modulePath) && ! $this->option('force')) {
-            $this->error("模块目录已存在：{$modulePath}，使用 --force 覆盖关键文件");
+            $this->components->error("模块目录已存在：{$modulePath}，使用 --force 覆盖关键文件");
 
             return self::FAILURE;
         }
@@ -37,17 +37,24 @@ class ModuleMakeCommand extends Command
         try {
             $this->scaffoldModule($studlyName, $modulePath);
         } catch (InvalidArgumentException $exception) {
-            $this->error($exception->getMessage());
+            $this->components->error($exception->getMessage());
 
             return self::FAILURE;
         }
 
-        $this->info("模块 {$studlyName} 已创建：{$modulePath}");
-        $this->line('下一步：');
-        $this->line("  1. 在 backend/composer.json 的 repositories 添加：{\"type\":\"path\",\"url\":\"../modules/{$studlyName}\"}");
-        $this->line("  2. 在 require 添加：\"starship/{$slug}\": \"@dev\"");
-        $this->line('  3. 执行 composer update starship/'.$slug);
-        $this->line('  4. 将 module.json 中 enabled 设为 true 后重启服务');
+        $this->components->info('模块已创建');
+        $this->line('  '.$modulePath);
+        $this->newLine();
+        $this->components->twoColumnDetail('名称', $studlyName);
+        $this->components->twoColumnDetail('Slug', $slug);
+        $this->newLine();
+        $this->components->info('建议下一步');
+        $this->components->bulletList([
+            "在 backend/composer.json 的 repositories 添加：{\"type\":\"path\",\"url\":\"../modules/{$studlyName}\"}",
+            "在 require 添加：\"starship/{$slug}\": \"@dev\"",
+            '执行 composer update starship/'.$slug,
+            '将 module.json 中 enabled 设为 true 后重启服务',
+        ]);
 
         return self::SUCCESS;
     }

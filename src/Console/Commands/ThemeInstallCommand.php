@@ -17,11 +17,12 @@ class ThemeInstallCommand extends ThemeActionCommand
         try {
             $slug = $this->resolveSlug($themeManager);
             $themeLifecycle->install($slug);
-            $this->info("主题 {$slug} 安装成功");
+            $this->components->info('主题已安装');
+            $this->components->twoColumnDetail('Slug', $slug);
 
             return self::SUCCESS;
         } catch (InvalidArgumentException $exception) {
-            $this->error($exception->getMessage());
+            $this->components->error($exception->getMessage());
 
             return self::FAILURE;
         }

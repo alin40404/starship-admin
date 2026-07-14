@@ -18,11 +18,13 @@ class ThemeSwitchCommand extends ThemeActionCommand
             $slug = $this->resolveSlug($themeManager);
             $type = $this->option('type');
             $theme = $themeLifecycle->switch($slug, is_string($type) && $type !== '' ? $type : null);
-            $this->info("已切换当前 {$theme->type()} 主题为 {$slug}");
+            $this->components->info('主题已切换');
+            $this->components->twoColumnDetail('Slug', $slug);
+            $this->components->twoColumnDetail('类型', $theme->type());
 
             return self::SUCCESS;
         } catch (InvalidArgumentException $exception) {
-            $this->error($exception->getMessage());
+            $this->components->error($exception->getMessage());
 
             return self::FAILURE;
         }

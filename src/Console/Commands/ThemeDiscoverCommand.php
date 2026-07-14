@@ -15,7 +15,10 @@ class ThemeDiscoverCommand extends Command
     {
         $result = $themeLifecycle->discover();
 
-        $this->info("发现 {$result['discovered']} 个主题，新建 {$result['created']} 个，更新 {$result['updated']} 个");
+        $this->components->info('主题发现完成');
+        $this->components->twoColumnDetail('扫描到', (string) $result['discovered']);
+        $this->components->twoColumnDetail('新建', (string) $result['created']);
+        $this->components->twoColumnDetail('更新', (string) $result['updated']);
 
         return self::SUCCESS;
     }

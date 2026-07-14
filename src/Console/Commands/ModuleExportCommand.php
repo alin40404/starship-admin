@@ -21,7 +21,7 @@ class ModuleExportCommand extends Command
         $name = (string) $this->argument('name');
         $found = $locator->find($name);
         if ($found === null) {
-            $this->error("未找到模块：{$name}");
+            $this->components->error("未找到模块：{$name}");
 
             return self::FAILURE;
         }
@@ -32,20 +32,23 @@ class ModuleExportCommand extends Command
         try {
             $result = $builder->export($found, $output, $asZip);
         } catch (Throwable $e) {
-            $this->error($e->getMessage());
+            $this->components->error($e->getMessage());
 
             return self::FAILURE;
         }
 
         $manifest = $result['manifest'];
-        $this->info('模块已导出：'.($result['zip'] ?? $result['package_root']));
-        $this->line('  name: '.$manifest['name']);
-        $this->line('  version: '.$manifest['version']);
-        $this->line('  backend_target: '.$manifest['backend_target']);
-        $this->line('  admin_ui_target: '.$manifest['admin_ui_target']);
-        $this->line('  has_admin_ui: '.(($manifest['has_admin_ui'] ?? false) ? 'yes' : 'no'));
+        $this->components->info('模块已导出');
+        $this->line('  '.($result['zip'] ?? $result['package_root']));
         $this->newLine();
-        $this->line('验收：见 docs/deployment/module-export-import-acceptance.md');
+        $this->components->twoColumnDetail('名称', $manifest['name']);
+        $this->components->twoColumnDetail('版本', (string) $manifest['version']);
+        $this->components->twoColumnDetail('后端目录', $manifest['backend_target']);
+        $this->components->twoColumnDetail('前端目录', $manifest['admin_ui_target']);
+        $this->components->twoColumnDetail(
+            '含管理端 UI',
+            ($manifest['has_admin_ui'] ?? false) ? '是' : '否',
+        );
 
         return self::SUCCESS;
     }
