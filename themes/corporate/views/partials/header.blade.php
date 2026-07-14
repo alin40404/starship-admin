@@ -13,29 +13,41 @@
 
         <ul class="site-nav">
             <li>
-                <a href="{{ url('/') }}" @class(['is-active' => request()->is('/')])>首页</a>
+                <a href="{{ url('/') }}" @class(['is-active' => request()->is('/')])>{{ __('theme::ui.nav_home') }}</a>
             </li>
             <li>
-                <a href="{{ url('/') }}#solutions">方案</a>
+                <a href="{{ url('/') }}#solutions">{{ __('theme::ui.nav_solutions') }}</a>
             </li>
             <li>
-                <a href="{{ url('/') }}#cases">案例</a>
+                <a href="{{ url('/') }}#cases">{{ __('theme::ui.nav_cases') }}</a>
             </li>
             <li>
-                <a href="{{ url('/') }}#about">关于</a>
+                <a href="{{ url('/') }}#about">{{ __('theme::ui.nav_about') }}</a>
             </li>
         </ul>
 
         <div class="site-header__actions">
+            <div class="site-locale" aria-label="Language">
+                <a
+                    href="{{ route('starship.locale', ['locale' => 'zh_CN']) }}"
+                    @class(['is-active' => app()->getLocale() === 'zh_CN'])
+                >{{ __('theme::ui.locale_zh') }}</a>
+                <span class="site-locale__sep">/</span>
+                <a
+                    href="{{ route('starship.locale', ['locale' => 'en']) }}"
+                    @class(['is-active' => app()->getLocale() === 'en'])
+                >{{ __('theme::ui.locale_en') }}</a>
+            </div>
+
             @auth('member')
                 <a
                     class="site-header__login"
                     href="{{ route('member.account') }}"
                     @class(['is-active' => request()->is('member/account')])
-                >会员中心</a>
+                >{{ __('theme::ui.nav_account') }}</a>
                 <form class="site-header__logout" method="post" action="{{ route('member.logout') }}">
                     @csrf
-                    <button type="submit">退出</button>
+                    <button type="submit">{{ __('theme::ui.nav_logout') }}</button>
                 </form>
             @else
                 <a
@@ -48,7 +60,7 @@
                         <path d="M15 12H3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
                         <path d="M15 4h4a2 2 0 012 2v12a2 2 0 01-2 2h-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
                     </svg>
-                    会员登录
+                    {{ __('theme::ui.nav_login') }}
                 </a>
             @endauth
         </div>

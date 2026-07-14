@@ -21,6 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prependToGroup('api', SetLocale::class);
+        // web 组末尾挂载，确保 Cookie / Session 已就绪
+        $middleware->appendToGroup('web', SetLocale::class);
 
         $middleware->redirectGuestsTo(function (Request $request) {
             // admin-api：纯 JSON 接口，未登录返回 401，不重定向

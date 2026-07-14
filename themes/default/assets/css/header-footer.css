@@ -73,6 +73,31 @@
   color: var(--e-global-color-primary);
 }
 
+.site-locale {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: 0.35rem;
+  padding-left: 0.85rem;
+  border-left: 1px solid #e4e6eb;
+  font-size: 0.85rem;
+}
+
+.site-locale a {
+  color: var(--e-global-color-secondary);
+  font-weight: 600;
+}
+
+.site-locale a.is-active,
+.site-locale a:hover {
+  color: var(--e-global-color-primary);
+}
+
+.site-locale__sep {
+  color: #c5c9d0;
+  user-select: none;
+}
+
 .site-nav__logout {
   display: inline;
   margin: 0;

@@ -1,29 +1,29 @@
 @extends('theme::layouts.app')
 
-@section('title', '会员中心 — '.($theme['title'] ?? 'Starship'))
+@section('title', __('theme::ui.auth_account_title').' — Starship')
 @section('body_class', 'is-member-page')
 
 @section('content')
     <div class="member-page">
-        <div class="brand">Starship · Member</div>
-        <h1>会员中心</h1>
-        <p class="lede">当前已登录</p>
+        <div class="brand">{{ __('theme::ui.auth_member') }}</div>
+        <h1>{{ __('theme::ui.auth_account_title') }}</h1>
+        <p class="lede">{{ __('theme::ui.auth_account_lede') }}</p>
 
         <div class="panel">
             <div class="member-meta">
-                <div><strong>用户名</strong>：{{ $member->username }}</div>
-                <div><strong>昵称</strong>：{{ $member->nickname ?: '—' }}</div>
-                <div><strong>邮箱</strong>：{{ $member->email ?: '—' }}</div>
-                <div><strong>手机</strong>：{{ $member->mobile ?: '—' }}</div>
+                <div><strong>{{ __('theme::ui.auth_field_username') }}</strong>：{{ $member->username }}</div>
+                <div><strong>{{ __('theme::ui.auth_field_nickname') }}</strong>：{{ $member->nickname ?: '—' }}</div>
+                <div><strong>{{ __('theme::ui.auth_field_email') }}</strong>：{{ $member->email ?: '—' }}</div>
+                <div><strong>{{ __('theme::ui.auth_field_mobile') }}</strong>：{{ $member->mobile ?: '—' }}</div>
             </div>
 
             <form class="member-form" method="post" action="{{ route('member.logout') }}">
                 @csrf
-                <button type="submit">退出登录</button>
+                <button type="submit">{{ __('theme::ui.auth_logout') }}</button>
             </form>
 
             <p class="member-links">
-                <a href="{{ url('/') }}">返回首页</a>
+                <a href="{{ url('/') }}">{{ __('theme::ui.auth_back_home') }}</a>
             </p>
         </div>
     </div>

@@ -101,6 +101,30 @@
   justify-self: end;
 }
 
+.site-locale {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-right: 0.25rem;
+  font-size: 0.82rem;
+}
+
+.site-locale a {
+  color: var(--c-muted);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.site-locale a.is-active,
+.site-locale a:hover {
+  color: var(--c-cyan);
+}
+
+.site-locale__sep {
+  color: rgba(255, 255, 255, 0.28);
+  user-select: none;
+}
+
 .site-header__login {
   display: inline-flex;
   align-items: center;

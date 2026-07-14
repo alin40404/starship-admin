@@ -1,17 +1,17 @@
 <footer class="site-footer">
     <div class="site-footer__inner">
-        <div>© {{ date('Y') }} Starship · Corporate</div>
+        <div>© {{ date('Y') }} {{ __('theme::ui.footer_brand') }}</div>
         <div>
-            <a href="{{ url('/') }}#solutions">方案</a>
+            <a href="{{ url('/') }}#solutions">{{ __('theme::ui.nav_solutions') }}</a>
             ·
-            <a href="{{ url('/') }}#cases">案例</a>
+            <a href="{{ url('/') }}#cases">{{ __('theme::ui.nav_cases') }}</a>
             ·
-            <a href="{{ url('/') }}#about">关于</a>
+            <a href="{{ url('/') }}#about">{{ __('theme::ui.nav_about') }}</a>
             ·
             @auth('member')
-                <a href="{{ route('member.account') }}">会员中心</a>
+                <a href="{{ route('member.account') }}">{{ __('theme::ui.nav_account') }}</a>
             @else
-                <a href="{{ route('member.login') }}">会员登录</a>
+                <a href="{{ route('member.login') }}">{{ __('theme::ui.nav_login') }}</a>
             @endauth
         </div>
     </div>
