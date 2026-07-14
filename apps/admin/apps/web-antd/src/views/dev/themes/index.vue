@@ -1,17 +1,16 @@
 <script lang="ts" setup>
 import type { ThemeRow } from '#/api/dev-theme';
 
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { Page } from '@vben/common-ui';
 import { IconifyIcon } from '@vben/icons';
 
-import { Alert, Button, message, Modal, Spin } from 'ant-design-vue';
+import { Alert, Button, Input, message, Modal, Spin } from 'ant-design-vue';
 
 import {
   disableTheme,
-  discoverThemes,
   enableTheme,
   fetchThemes,
   installTheme,
@@ -25,9 +24,9 @@ import DetailDrawer from './modules/detail-drawer.vue';
 import FlowView from './modules/flow-view.vue';
 
 const detailDrawerRef = ref<InstanceType<typeof DetailDrawer>>();
-const discovering = ref(false);
 const loading = ref(false);
-const rows = ref<ThemeRow[]>([]);
+const keyword = ref('');
+const allRows = ref<ThemeRow[]>([]);
 
 const { hasAccessByCodes } = useAccess();
 
@@ -36,10 +35,30 @@ const themeAccess = {
     hasAccessByCodes([THEME_PERMISSIONS.MANAGE, code]),
 };
 
+const filteredRows = computed(() => {
+  const key = keyword.value.trim().toLowerCase();
+  if (!key) {
+    return allRows.value;
+  }
+
+  return allRows.value.filter((row) => {
+    const haystack = [
+      row.slug,
+      row.title,
+      row.name,
+      row.description ?? '',
+      row.type,
+    ]
+      .join(' ')
+      .toLowerCase();
+    return haystack.includes(key);
+  });
+});
+
 async function reload() {
   loading.value = true;
   try {
-    rows.value = await fetchThemes();
+    allRows.value = await fetchThemes();
   } finally {
     loading.value = false;
   }
@@ -132,23 +151,6 @@ function onAction(code: string, row: ThemeRow) {
   }
 }
 
-async function onDiscover() {
-  discovering.value = true;
-  try {
-    const result = await discoverThemes();
-    message.success(
-      $t('dev.themes.discoverResult', [
-        result.discovered,
-        result.created,
-        result.updated,
-      ]),
-    );
-    await reload();
-  } finally {
-    discovering.value = false;
-  }
-}
-
 onMounted(() => {
   void reload();
 });
@@ -172,37 +174,41 @@ onMounted(() => {
         <div
           class="flex shrink-0 items-center justify-between gap-3 border-b border-border px-4 py-3"
         >
-          <div class="text-sm text-muted-foreground">
-            {{ $t('dev.themes.flowCount', [rows.length]) }}
-          </div>
-          <div class="flex items-center gap-2">
-            <Button
-              v-if="themeAccess.can(THEME_PERMISSIONS.DISCOVER)"
-              :loading="discovering"
-              type="primary"
-              @click="onDiscover"
+          <div class="theme-toolbar-search">
+            <Input
+              v-model:value="keyword"
+              allow-clear
+              class="theme-toolbar-search__input"
+              :placeholder="$t('dev.themes.searchPlaceholder')"
             >
-              <IconifyIcon class="size-4" icon="ep:search" />
-              {{ $t('dev.themes.discoverThemes') }}
-            </Button>
-            <Button :loading="loading" @click="reload">
-              <IconifyIcon class="size-4" icon="lucide:refresh-cw" />
-              {{ $t('common.refresh') }}
-            </Button>
+              <template #prefix>
+                <IconifyIcon
+                  class="theme-toolbar-search__prefix-icon"
+                  icon="lucide:search"
+                />
+              </template>
+            </Input>
+            <span class="theme-toolbar-search__total">
+              {{ $t('dev.themes.totalCount', [allRows.length]) }}
+            </span>
           </div>
+          <Button :loading="loading" @click="reload">
+            <IconifyIcon class="size-4" icon="lucide:refresh-cw" />
+            {{ $t('common.refresh') }}
+          </Button>
         </div>
 
         <div class="relative min-h-0 flex-1 p-4">
           <div
-            v-if="loading && rows.length === 0"
+            v-if="loading && allRows.length === 0"
             class="absolute inset-0 z-10 flex items-center justify-center bg-card/60"
           >
             <Spin />
           </div>
           <FlowView
             :access="themeAccess"
-            :loading="loading && rows.length === 0"
-            :rows="rows"
+            :loading="loading && allRows.length === 0"
+            :rows="filteredRows"
             @action="onAction"
           />
         </div>
@@ -210,3 +216,36 @@ onMounted(() => {
     </div>
   </Page>
 </template>
+
+<style scoped>
+.theme-toolbar-search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.theme-toolbar-search__input {
+  width: min(280px, 46vw);
+}
+
+.theme-toolbar-search__input.ant-input-affix-wrapper {
+  height: 32px;
+  border-radius: var(--radius);
+}
+
+.theme-toolbar-search__prefix-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.theme-toolbar-search__total {
+  flex-shrink: 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.875rem;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+</style>

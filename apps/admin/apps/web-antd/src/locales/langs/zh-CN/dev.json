@@ -93,8 +93,9 @@
   },
   "plugins": {
     "entity": "插件",
-    "hint": "扫描 plugins/ 目录下的 plugin.json，在此统一管理插件的安装、启用、禁用与配置。直接安装即可（无需先发现）；「发现插件」用于同步目录变更与元数据。启用/禁用后新 Web 请求将自动按最新状态加载插件。",
+    "hint": "扫描 plugins/ 目录下的 plugin.json，在此统一管理插件的安装、启用、禁用与配置。直接安装即可（安装时自动发现入库）。启用/禁用后新 Web 请求将自动按最新状态加载插件。",
     "searchPlaceholder": "搜索标识 / 名称 / 描述",
+    "totalCount": "共 {0} 个插件",
     "columnSlug": "插件标识",
     "columnName": "插件名称",
     "detailTitle": "插件详情",
@@ -128,7 +129,9 @@
   },
   "themes": {
     "entity": "主题",
-    "hint": "可同时安装多个主题；同一 type（如 frontend）只能有一个「当前」主题。「切换当前」会启用并激活该主题。封面读取主题目录 cover 图（theme.json 的 cover 字段）。",
+    "hint": "可同时安装多个主题；同一 type（如 frontend）只能有一个「当前」主题。「切换当前」会启用并激活该主题。封面读取主题目录 cover 图（theme.json 的 cover 字段）。直接安装即可（安装时自动发现入库）。",
+    "searchPlaceholder": "搜索标识 / 名称 / 描述",
+    "totalCount": "共 {0} 个主题",
     "columnSlug": "主题标识",
     "columnTitle": "主题名称",
     "columnActive": "当前",

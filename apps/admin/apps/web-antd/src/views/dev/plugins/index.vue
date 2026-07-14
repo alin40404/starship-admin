@@ -2,18 +2,19 @@
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { PluginRow } from '#/api/dev-plugin';
 
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { Page } from '@vben/common-ui';
 import { IconifyIcon } from '@vben/icons';
+import { usePreferences } from '@vben/preferences';
 
-import { Alert, Button, message, Modal } from 'ant-design-vue';
+import { useDebounceFn } from '@vueuse/core';
+import { Alert, Button, Input, message, Modal } from 'ant-design-vue';
 
 import { useResponsiveCrud } from '#/adapter/mobile-list';
 import {
   disablePlugin,
-  discoverPlugins,
   enablePlugin,
   fetchPlugins,
   installPlugin,
@@ -28,14 +29,41 @@ import DetailDrawer from './modules/detail-drawer.vue';
 
 const detailDrawerRef = ref<InstanceType<typeof DetailDrawer>>();
 const configDrawerRef = ref<InstanceType<typeof ConfigDrawer>>();
-const discovering = ref(false);
+const keyword = ref('');
+const pluginTotal = ref(0);
 
+const { isMobile } = usePreferences();
 const { hasAccessByCodes } = useAccess();
 
 const pluginAccess = {
   can: (code: string) =>
     hasAccessByCodes([PLUGIN_PERMISSIONS.MANAGE, code]),
 };
+
+function filterPlugins(rows: PluginRow[], search?: string) {
+  const key = search?.trim().toLowerCase();
+  if (!key) {
+    return rows;
+  }
+
+  return rows.filter((row) => {
+    const haystack = [
+      row.slug,
+      row.name,
+      row.description ?? '',
+      row.type ?? '',
+    ]
+      .join(' ')
+      .toLowerCase();
+    return haystack.includes(key);
+  });
+}
+
+async function loadPluginRows(search?: string) {
+  const all = await fetchPlugins();
+  pluginTotal.value = all.length;
+  return filterPlugins(all, search);
+}
 
 function filterEligibleRows(statuses: number[]) {
   return selectedRows.value.filter((row) => statuses.includes(row.status));
@@ -219,23 +247,6 @@ function onActionClick({ code, row }: OnActionClickParams<PluginRow>) {
   }
 }
 
-async function onDiscover() {
-  discovering.value = true;
-  try {
-    const result = await discoverPlugins();
-    message.success(
-      $t('dev.shared.discoverResult', [
-        result.discovered,
-        result.created,
-        result.updated,
-      ]),
-    );
-    await reload();
-  } finally {
-    discovering.value = false;
-  }
-}
-
 const columns = useColumns(onActionClick, pluginAccess);
 
 const [CrudView, crudApi] = useResponsiveCrud<PluginRow>({
@@ -246,7 +257,7 @@ const [CrudView, crudApi] = useResponsiveCrud<PluginRow>({
     pagerConfig: { enabled: false },
     proxyConfig: {
       ajax: {
-        query: async () => await fetchPlugins(),
+        query: async () => await loadPluginRows(keyword.value),
       },
     },
     rowConfig: { keyField: 'slug' },
@@ -254,22 +265,8 @@ const [CrudView, crudApi] = useResponsiveCrud<PluginRow>({
   } as VxeTableGridOptions<PluginRow>,
   mobile: buildPluginMobileCrudConfig({
     columns,
-    query: async ({ keyword, page, pageSize }) => {
-      let data = await fetchPlugins();
-      const key = keyword?.trim().toLowerCase();
-      if (key) {
-        data = data.filter((row) => {
-          const haystack = [
-            row.slug,
-            row.name,
-            row.description ?? '',
-            row.type ?? '',
-          ]
-            .join(' ')
-            .toLowerCase();
-          return haystack.includes(key);
-        });
-      }
+    query: async ({ keyword: mobileKeyword, page, pageSize }) => {
+      const data = await loadPluginRows(mobileKeyword);
       const start = (page - 1) * pageSize;
       return {
         data: data.slice(start, start + pageSize),
@@ -280,6 +277,17 @@ const [CrudView, crudApi] = useResponsiveCrud<PluginRow>({
 });
 
 const { clearSelection, reload, selectedRows } = crudApi;
+
+const debouncedReload = useDebounceFn(() => {
+  void reload();
+}, 300);
+
+watch(keyword, () => {
+  if (isMobile.value) {
+    return;
+  }
+  debouncedReload();
+});
 </script>
 
 <template>
@@ -339,15 +347,26 @@ const { clearSelection, reload, selectedRows } = crudApi;
                 {{ $t('system.shared.clearSelection') }}
               </Button>
             </div>
-            <Button
-              v-else-if="pluginAccess.can(PLUGIN_PERMISSIONS.DISCOVER)"
-              :loading="discovering"
-              type="primary"
-              @click="onDiscover"
-            >
-              <IconifyIcon class="size-4" icon="ep:search" />
-              {{ $t('dev.shared.discoverPlugins') }}
-            </Button>
+            <div v-else class="plugin-toolbar-search">
+              <Input
+                v-if="!isMobile"
+                v-model:value="keyword"
+                allow-clear
+                class="plugin-toolbar-search__input"
+                :placeholder="$t('dev.plugins.searchPlaceholder')"
+                @press-enter="reload()"
+              >
+                <template #prefix>
+                  <IconifyIcon
+                    class="plugin-toolbar-search__prefix-icon"
+                    icon="lucide:search"
+                  />
+                </template>
+              </Input>
+              <span class="plugin-toolbar-search__total">
+                {{ $t('dev.plugins.totalCount', [pluginTotal]) }}
+              </span>
+            </div>
           </template>
         </CrudView>
       </div>
@@ -356,6 +375,36 @@ const { clearSelection, reload, selectedRows } = crudApi;
 </template>
 
 <style scoped>
+.plugin-toolbar-search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.plugin-toolbar-search__input {
+  width: min(280px, 46vw);
+}
+
+.plugin-toolbar-search__input.ant-input-affix-wrapper {
+  height: 32px;
+  border-radius: var(--radius);
+}
+
+.plugin-toolbar-search__prefix-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.plugin-toolbar-search__total {
+  flex-shrink: 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.875rem;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
 .vxe-grid .plugin-batch-btn-install.ant-btn,
 .mobile-crud-list .plugin-batch-btn-install.ant-btn {
   color: #fff;

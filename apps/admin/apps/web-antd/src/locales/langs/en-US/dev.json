@@ -93,8 +93,9 @@
   },
   "plugins": {
     "entity": "Plugin",
-    "hint": "Scans plugin.json under plugins/ to manage install, enable, disable and configuration. Install auto-registers missing plugins; Discover syncs directory changes and metadata. After enable/disable, new web requests automatically load plugins with the latest status.",
+    "hint": "Scans plugin.json under plugins/ to manage install, enable, disable and configuration. Install auto-registers missing plugins. After enable/disable, new web requests automatically load plugins with the latest status.",
     "searchPlaceholder": "Search slug / name / description",
+    "totalCount": "{0} plugin(s)",
     "columnSlug": "Plugin Slug",
     "columnName": "Plugin Name",
     "detailTitle": "Plugin Detail",
@@ -128,7 +129,9 @@
   },
   "themes": {
     "entity": "Theme",
-    "hint": "Multiple themes can be installed. Only one theme can be active per type (e.g. frontend). Switch enables and activates that theme. Cover images come from each theme's cover file (theme.json cover field).",
+    "hint": "Multiple themes can be installed. Only one theme can be active per type (e.g. frontend). Switch enables and activates that theme. Cover images come from each theme's cover file (theme.json cover field). Install auto-registers missing themes.",
+    "searchPlaceholder": "Search slug / title / description",
+    "totalCount": "{0} theme(s)",
     "columnSlug": "Theme Slug",
     "columnTitle": "Theme Title",
     "columnActive": "Active",
