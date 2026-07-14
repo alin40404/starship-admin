@@ -6,12 +6,17 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
+use Starship\Core\Console\Concerns\LinksModuleToComposer;
 
 class ModuleMakeCommand extends Command
 {
+    use LinksModuleToComposer;
+
     protected $signature = 'starship:module:make
                             {name : 模块名称（StudlyCase，如 Shop 或 Erp）}
-                            {--force : 覆盖已存在的 module.json 与 Provider}';
+                            {--force : 覆盖已存在的 module.json 与 Provider}
+                            {--no-composer : 不自动改 backend/composer.json / 不跑 composer update}
+                            {--no-update : 只写 composer.json，不执行 composer update}';
 
     protected $description = '创建新的 Starship 业务模块脚手架';
 
@@ -47,14 +52,27 @@ class ModuleMakeCommand extends Command
         $this->newLine();
         $this->components->twoColumnDetail('名称', $studlyName);
         $this->components->twoColumnDetail('Slug', $slug);
+
+        if (! $this->option('no-composer')) {
+            $link = $this->linkModuleToComposer(
+                $modulePath,
+                ! $this->option('no-update'),
+            );
+            $this->reportComposerLink($link);
+        }
+
         $this->newLine();
         $this->components->info('建议下一步');
-        $this->components->bulletList([
-            "在 backend/composer.json 的 repositories 添加：{\"type\":\"path\",\"url\":\"../modules/{$studlyName}\"}",
-            "在 require 添加：\"starship/{$slug}\": \"@dev\"",
-            '执行 composer update starship/'.$slug,
-            '将 module.json 中 enabled 设为 true 后重启服务',
-        ]);
+        $next = ['将 module.json 中 enabled 设为 true 后重启服务'];
+        if ($this->option('no-composer')) {
+            array_unshift(
+                $next,
+                "在 backend/composer.json 的 repositories 添加：{\"type\":\"path\",\"url\":\"../modules/{$studlyName}\"}",
+                "在 require 添加：\"starship/{$slug}\": \"@dev\"",
+                '执行 composer update starship/'.$slug,
+            );
+        }
+        $this->components->bulletList($next);
 
         return self::SUCCESS;
     }

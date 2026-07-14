@@ -154,22 +154,12 @@ composer require starship/system starship/generator
 
 | 命令 | 说明 |
 |------|------|
-| `php artisan starship:module:make {Name}` | 在 `modules/{Name}/` 生成脚手架 |
+| `php artisan starship:module:make {Name}` | 在 `modules/{Name}/` 生成脚手架，并默认挂载到 `backend/composer.json`（path + require `@dev`）后执行 `composer update` |
+| `php artisan starship:module:import {path}` | 导入模块包；同样默认自动挂载 Composer |
 
-生成后需将模块注册到项目 `composer.json`（path 仓库示例）：
+选项：`--no-composer` 跳过挂载；`--no-update` 只改 `composer.json` 不跑 `composer update`。
 
-```json
-{
-  "repositories": [
-    { "type": "path", "url": "../modules/Shop" }
-  ],
-  "require": {
-    "starship/shop": "@dev"
-  }
-}
-```
-
-然后 `composer update starship/shop`，并在 `module.json` 设 `enabled: true` 后重启服务。
+挂载后在 `module.json` 设 `enabled: true` 并重启服务。
 
 ### 插件
 
