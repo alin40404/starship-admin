@@ -62,6 +62,15 @@ class SystemServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__.'/../../resources/views', 'system');
         $this->loadTranslationsFrom(__DIR__.'/../../resources/lang', 'system');
 
+        // 全局校验 / auth 语言包（validation.*、auth.*），与 system:: 业务文案同目录
+        $langPath = __DIR__.'/../../resources/lang';
+        $this->callAfterResolving('translator', function ($translator) use ($langPath): void {
+            $loader = $translator->getLoader();
+            if (method_exists($loader, 'addPath')) {
+                $loader->addPath($langPath);
+            }
+        });
+
         $this->app->booted(static function (): void {
             try {
                 StorageConfigRegistrar::apply();
