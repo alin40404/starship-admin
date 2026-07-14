@@ -1,7 +1,7 @@
 import type { OnActionClickFn, VxeTableGridColumns } from '#/adapter/vxe-table';
 import type { VbenFormSchema } from '#/adapter/form';
 
-import type { AttachmentRow } from '#/api/system/attachment';
+import type { AttachmentRow } from '#/features/system/api/attachment';
 
 import { $t } from '#/locales';
 import {
@@ -12,7 +12,7 @@ import {
   getAttachmentFileIconClass,
   getFileExtTagColor,
   isImageAttachment,
-} from '#/views/resource/attachment/data';
+} from '#/features/system/views/resource/attachment/data';
 
 export function usePickerGridFormSchema(): VbenFormSchema[] {
   return [

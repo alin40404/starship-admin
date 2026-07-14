@@ -8,7 +8,7 @@ import { ProfileBaseSetting, z } from '@vben/common-ui';
 import { message } from 'ant-design-vue';
 
 import { getMyProfileApi, updateMyProfileApi } from '#/api';
-import { uploadAttachment } from '#/api/system/attachment';
+import { uploadAttachment } from '#/features/system/api/attachment';
 import { validateUploadFile } from '#/utils/upload-policy';
 import { useAuthStore } from '#/store';
 

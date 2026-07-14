@@ -1,5 +1,5 @@
-import type { AttachmentRow } from '#/api/system/attachment';
-import { isImageAttachment } from '#/views/resource/attachment/data';
+import type { AttachmentRow } from '#/features/system/api/attachment';
+import { isImageAttachment } from '#/features/system/views/resource/attachment/data';
 
 import type { AttachmentAcceptMode } from './types';
 

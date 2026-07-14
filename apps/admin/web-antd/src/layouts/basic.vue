@@ -23,13 +23,13 @@ import { preferences } from '@vben/preferences';
 import { useAccessStore, useUserStore } from '@vben/stores';
 import { formatRelativeTime, openWindow } from '@vben/utils';
 
-import type { InboxCategoryStats, InboxMessageRow } from '#/api/inbox';
+import type { InboxCategoryStats, InboxMessageRow } from '#/features/system/api/inbox';
 import {
   clearReadInboxMessages,
   deleteInboxMessage,
   markAllInboxMessagesRead,
   markInboxMessageRead,
-} from '#/api/inbox';
+} from '#/features/system/api/inbox';
 import {
   getInboxCategoryMeta,
   getVisibleInboxCategoryOptions,
@@ -37,11 +37,12 @@ import {
   INBOX_ALL_CATEGORY_OPTION,
   INBOX_MENU_PERMISSION,
   resolveInboxCategory,
-} from '#/constants/inbox-permissions';
+} from '#/features/system/constants/inbox-permissions';
 import { $t } from '#/locales';
-import { useAuthStore, useInboxStore } from '#/store';
+import { useAuthStore } from '#/store';
+import { useInboxStore } from '#/features/system/store/inbox';
 import LoginForm from '#/views/_core/authentication/login.vue';
-import DetailDrawer from '#/views/inbox/message/modules/detail-drawer.vue';
+import DetailDrawer from '#/features/system/views/inbox/message/modules/detail-drawer.vue';
 
 const inboxStore = useInboxStore();
 const {

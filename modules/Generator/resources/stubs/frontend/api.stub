@@ -1,4 +1,4 @@
-import type { LaravelPaginate } from '#/api/system/types';
+import type { LaravelPaginate } from '#/features/system/api/types';
 
 import { requestClient } from '#/api/request';
 

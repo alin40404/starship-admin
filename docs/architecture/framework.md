@@ -124,17 +124,21 @@ Layer 0  Laravel 壳  backend/（bootstrap、config、artisan，尽量保持官�
 apps/admin/
 └── web-antd/               # 官方管理端 UI 实现（Vben Admin 5.x）
     └── src/
-        ├── views/          # 底座页面（随 System/Generator）
-        ├── api/            # 底座 API 封装
-        ├── components/     # 可复用组件（如 AttachmentField）
+        ├── views/          # 壳页面（登录/仪表盘/_core）
+        ├── api/            # 壳请求（request / core）
+        ├── features/       # 按后端 Module 切分的可搬运前端
+        │   ├── system/
+        │   ├── generator/
+        │   └── member/
+        ├── components/     # 跨 feature 组件（如 AttachmentField）
         └── plugins/        # 插件前端扩展点（规划）
 ```
 
 **约定**：
 
-- 底座页面路径与后端菜单 `path`、Generator 产出路径一致
+- 业务前端落在 `src/features/{module}/`（`api` / `constants` / `views` / `locales`），与后端 `modules/{Module}` 对应；引用用 `#/features/{module}/...`
+- 菜单 `component` 仍为 `/permission/admin/index` 等形式；`access.ts` 将 `features/*/views/**` 映射为原 `views/**` key
 - 插件前端放在 `plugins/{Name}/front/` 或 `apps/admin/web-antd/src/plugins/{slug}/`
-- 业务项目可 fork `web-antd` 或仅覆盖 `views/` 子集
 
 ---
 

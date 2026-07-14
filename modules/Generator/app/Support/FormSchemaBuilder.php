@@ -115,7 +115,7 @@ final class FormSchemaBuilder
     /**
      * @return list<string>
      */
-    public function buildRelationImportsBody($formColumns): array
+    public function buildRelationImportsBody($formColumns, ?string $moduleSlug = null): array
     {
         $imports = [];
         foreach ($formColumns as $column) {
@@ -131,9 +131,13 @@ final class FormSchemaBuilder
                 continue;
             }
 
-            $imports["#/api/{$apiRoutePrefix}/{$apiEntity}"][] = $apiFn;
+            $importPath = $apiRoutePrefix === 'system'
+                ? "#/features/system/api/{$apiEntity}"
+                : '#/features/'.strtolower((string) $moduleSlug)."/api/{$apiRoutePrefix}/{$apiEntity}";
+
+            $imports[$importPath][] = $apiFn;
             foreach ($options['extra_imports'] ?? [] as $extraImport) {
-                $imports["#/api/{$apiRoutePrefix}/{$apiEntity}"][] = (string) $extraImport;
+                $imports[$importPath][] = (string) $extraImport;
             }
         }
 

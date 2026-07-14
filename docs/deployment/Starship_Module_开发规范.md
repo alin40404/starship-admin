@@ -138,7 +138,7 @@ Model：
 实现约定：
 
 - 后端：`app/Support/*Permissions.php` 常量类
-- 前端：`apps/admin/web-antd/src/constants/*-permissions.ts`
+- 前端：`apps/admin/web-antd/src/features/{module}/constants/*-permissions.ts`
 - 路由：`->middleware('admin.permission:'.XxxPermissions::QUERY)`
 
 完整清单：[docs/api/permissions.md](../api/permissions.md)

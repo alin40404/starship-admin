@@ -19,23 +19,65 @@ import dayjs from 'dayjs';
 
 const antdLocale = ref<Locale>(antdDefaultLocale);
 
-const modules = import.meta.glob('./langs/**/*.json');
+const shellModules = import.meta.glob('./langs/**/*.json');
+const featureModules = import.meta.glob('../features/*/locales/**/*.json');
 
-const localesMap = loadLocalesMapFromDir(
+const shellLocalesMap = loadLocalesMapFromDir(
   /\.\/langs\/([^/]+)\/(.*)\.json$/,
-  modules,
+  shellModules,
 );
+
+const featureLocalesMap = loadLocalesMapFromDir(
+  /\/features\/[^/]+\/locales\/([^/]+)\/(.*)\.json$/,
+  featureModules,
+);
+
+function deepMergeMessages(
+  target: Record<string, unknown>,
+  source: Record<string, unknown>,
+): Record<string, unknown> {
+  const result: Record<string, unknown> = { ...target };
+  for (const [key, value] of Object.entries(source)) {
+    const existing = result[key];
+    if (
+      existing &&
+      typeof existing === 'object' &&
+      !Array.isArray(existing) &&
+      value &&
+      typeof value === 'object' &&
+      !Array.isArray(value)
+    ) {
+      result[key] = deepMergeMessages(
+        existing as Record<string, unknown>,
+        value as Record<string, unknown>,
+      );
+    } else {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
 /**
- * 加载应用特有的语言包
- * 这里也可以改造为从服务端获取翻译数据
- * @param lang
+ * 加载应用特有的语言包（壳 + features 下各模块 locales）
  */
 async function loadMessages(lang: SupportedLanguagesType) {
-  const [appLocaleMessages] = await Promise.all([
-    localesMap[lang]?.(),
+  const [shellLocale, featureLocale] = await Promise.all([
+    shellLocalesMap[lang]?.(),
+    featureLocalesMap[lang]?.(),
     loadThirdPartyMessage(lang),
   ]);
-  return appLocaleMessages?.default;
+
+  const shellMessages = (shellLocale?.default ?? {}) as Record<string, unknown>;
+  const featureMessages = (featureLocale?.default ?? {}) as Record<
+    string,
+    unknown
+  >;
+
+  return deepMergeMessages(shellMessages, featureMessages) as Record<
+    string,
+    string
+  >;
 }
 
 /**

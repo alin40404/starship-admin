@@ -108,4 +108,14 @@ final class ModulePathResolver
     {
         return base_path('../apps/admin/web-antd/src');
     }
+
+    /**
+     * 管理端按业务切分的前端 feature 根目录：web-antd/src/features/{slug}
+     */
+    public function frontendFeatureRoot(string $moduleSlug): string
+    {
+        return $this->frontendRoot().'/features/'.strtolower(
+            $this->canonicalModuleSlug($moduleSlug),
+        );
+    }
 }

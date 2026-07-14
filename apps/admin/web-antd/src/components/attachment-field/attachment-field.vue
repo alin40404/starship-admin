@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { AttachmentRow } from '#/api/system/attachment';
+import type { AttachmentRow } from '#/features/system/api/attachment';
 
 import { computed, ref, useTemplateRef, watch } from 'vue';
 
@@ -9,8 +9,8 @@ import { $t } from '@vben/locales';
 
 import { Button, Image, message } from 'ant-design-vue';
 
-import { uploadAttachment } from '#/api/system/attachment';
-import { ATTACHMENT_PERMISSIONS } from '#/constants/attachment-permissions';
+import { uploadAttachment } from '#/features/system/api/attachment';
+import { ATTACHMENT_PERMISSIONS } from '#/features/system/constants/attachment-permissions';
 
 import AttachmentPickerModal from './attachment-picker-modal.vue';
 import type { AttachmentAcceptMode } from './types';

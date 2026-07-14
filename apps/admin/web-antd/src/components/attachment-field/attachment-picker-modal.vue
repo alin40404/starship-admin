@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { AttachmentRow } from '#/api/system/attachment';
+import type { AttachmentRow } from '#/features/system/api/attachment';
 
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 
@@ -14,12 +14,12 @@ import { useDebounceFn, useElementSize } from '@vueuse/core';
 import { Button, Input, message, Tooltip } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { fetchAttachmentPickerPage, uploadAttachment } from '#/api/system/attachment';
-import { ATTACHMENT_PERMISSIONS } from '#/constants/attachment-permissions';
+import { fetchAttachmentPickerPage, uploadAttachment } from '#/features/system/api/attachment';
+import { ATTACHMENT_PERMISSIONS } from '#/features/system/constants/attachment-permissions';
 import {
   getAdminAttachmentFlowPageSizeSync,
 } from '#/utils/admin-runtime-config';
-import AttachmentFlowView from '#/views/resource/attachment/modules/flow-view.vue';
+import AttachmentFlowView from '#/features/system/views/resource/attachment/modules/flow-view.vue';
 
 import { usePickerColumns } from './picker-data';
 import type { AttachmentAcceptMode } from './types';

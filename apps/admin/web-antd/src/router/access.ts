@@ -14,8 +14,29 @@ import { $t } from '#/locales';
 
 const forbiddenComponent = () => import('#/views/_core/fallback/forbidden.vue');
 
+/**
+ * Vben normalizeViewPath 会去掉路径前缀 `/views`。
+ * features 下页面需映射成等价的 `../views/...` key，菜单 component 才继续有效。
+ */
+function buildPageMap(): ComponentRecordType {
+  const pageMap: ComponentRecordType = {
+    ...import.meta.glob('../views/**/*.vue'),
+  };
+
+  const featureViews = import.meta.glob('../features/*/views/**/*.vue');
+  for (const [key, loader] of Object.entries(featureViews)) {
+    const matched = key.match(/\/features\/[^/]+\/views\/(.+)$/);
+    if (matched?.[1]) {
+      pageMap[`../views/${matched[1]}`] =
+        loader as ComponentRecordType[string];
+    }
+  }
+
+  return pageMap;
+}
+
 async function generateAccess(options: GenerateMenuAndRoutesOptions) {
-  const pageMap: ComponentRecordType = import.meta.glob('../views/**/*.vue');
+  const pageMap = buildPageMap();
 
   const layoutMap: ComponentRecordType = {
     BasicLayout,

@@ -105,4 +105,4 @@
 
 - 菜单种子：`modules/System/database/seeders/MenuSeeder.php`
 - 路由权限中间件：`admin.permission:{code}`（见 [routes.md](./routes.md)）
-- 前端常量：`apps/admin/web-antd/src/constants/*-permissions.ts`
+- 前端常量：`apps/admin/web-antd/src/features/{module}/constants/*-permissions.ts`

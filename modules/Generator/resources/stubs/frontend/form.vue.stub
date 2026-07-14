@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { {{ $model_class }}Row, {{ $model_class }}SavePayload } from '#/api/{{ $api_route_prefix }}/{{ $entity_kebab }}';
+import type { {{ $model_class }}Row, {{ $model_class }}SavePayload } from '#/features/{{ $module_slug }}/api/{{ $api_route_prefix }}/{{ $entity_kebab }}';
 
 import { computed, ref } from 'vue';
 
@@ -11,12 +11,12 @@ import { message } from 'ant-design-vue';
 @if($has_picture_upload_fields)
 import type { UploadFile } from 'ant-design-vue/es/upload';
 
-import { uploadAttachment } from '#/api/system/attachment';
+import { uploadAttachment } from '#/features/system/api/attachment';
 import { validateUploadFile } from '#/utils/upload-policy';
 @endif
 
 import { useVbenForm } from '#/adapter/form';
-import { create{{ $model_class }}, update{{ $model_class }} } from '#/api/{{ $api_route_prefix }}/{{ $entity_kebab }}';
+import { create{{ $model_class }}, update{{ $model_class }} } from '#/features/{{ $module_slug }}/api/{{ $api_route_prefix }}/{{ $entity_kebab }}';
 
 import { build{{ $model_class }}FormSchema } from '../data';
 

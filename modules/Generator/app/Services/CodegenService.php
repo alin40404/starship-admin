@@ -411,7 +411,10 @@ class CodegenService
             return in_array($column->form_component, ['AttachmentField', 'RichEditor', 'IconPicker'], true)
                 || in_array($formOptions['kind'] ?? null, ['attachment', 'file'], true);
         });
-        $relationImports = $this->formSchemaBuilder->buildRelationImportsBody($formColumns);
+        $relationImports = $this->formSchemaBuilder->buildRelationImportsBody(
+            $formColumns,
+            strtolower($config->module_slug),
+        );
         $relationLoaders = $this->formSchemaBuilder->buildRelationLoadersBody($formColumns);
 
         return [
@@ -496,7 +499,7 @@ class CodegenService
     protected function buildFiles(GeneratorTable $config, array $viewData): array
     {
         $moduleDir = $this->modulePathResolver->resolveModuleDirectory($config->module_slug);
-        $frontendRoot = $this->modulePathResolver->frontendRoot();
+        $featureRoot = $this->modulePathResolver->frontendFeatureRoot($config->module_slug);
 
         $files = [
             [
@@ -518,23 +521,23 @@ class CodegenService
                 ),
             ],
             [
-                'path' => $frontendRoot.'/api/'.$viewData['api_route_prefix'].'/'.$viewData['entity_kebab'].'.ts',
+                'path' => $featureRoot.'/api/'.$viewData['api_route_prefix'].'/'.$viewData['entity_kebab'].'.ts',
                 'content' => $this->renderer->render('frontend/api.stub', $viewData),
             ],
             [
-                'path' => $frontendRoot.'/constants/'.$viewData['entity_kebab'].'-permissions.ts',
+                'path' => $featureRoot.'/constants/'.$viewData['entity_kebab'].'-permissions.ts',
                 'content' => $this->renderer->render('frontend/permissions.ts.stub', $viewData),
             ],
             [
-                'path' => $frontendRoot.'/views/'.$config->route_group.'/'.$viewData['entity_kebab'].'/index.vue',
+                'path' => $featureRoot.'/views/'.$config->route_group.'/'.$viewData['entity_kebab'].'/index.vue',
                 'content' => $this->renderer->render('frontend/index.vue.stub', $viewData),
             ],
             [
-                'path' => $frontendRoot.'/views/'.$config->route_group.'/'.$viewData['entity_kebab'].'/data.ts',
+                'path' => $featureRoot.'/views/'.$config->route_group.'/'.$viewData['entity_kebab'].'/data.ts',
                 'content' => $this->renderer->render('frontend/data.ts.stub', $viewData),
             ],
             [
-                'path' => $frontendRoot.'/views/'.$config->route_group.'/'.$viewData['entity_kebab'].'/modules/form.vue',
+                'path' => $featureRoot.'/views/'.$config->route_group.'/'.$viewData['entity_kebab'].'/modules/form.vue',
                 'content' => $this->renderer->render('frontend/form.vue.stub', $viewData),
             ],
         ];
@@ -548,18 +551,18 @@ class CodegenService
      */
     protected function buildLocaleFiles(GeneratorTable $config, array $viewData): array
     {
-        $frontendRoot = $this->modulePathResolver->frontendRoot();
+        $featureRoot = $this->modulePathResolver->frontendFeatureRoot($config->module_slug);
         $moduleSlug = strtolower($config->module_slug);
         $localeBasename = $this->localeEntityBasename($config, $viewData);
         $entries = $this->buildLocaleEntityEntries($config, $viewData);
 
         $files = [
             [
-                'path' => $frontendRoot.'/locales/langs/zh-CN/'.$localeBasename.'.json',
+                'path' => $featureRoot.'/locales/zh-CN/'.$localeBasename.'.json',
                 'content' => $this->localeJsonMerger->encodeEntityFile($entries['zh-CN']),
             ],
             [
-                'path' => $frontendRoot.'/locales/langs/en-US/'.$localeBasename.'.json',
+                'path' => $featureRoot.'/locales/en-US/'.$localeBasename.'.json',
                 'content' => $this->localeJsonMerger->encodeEntityFile($entries['en-US']),
             ],
         ];
@@ -567,16 +570,16 @@ class CodegenService
         if ($config->options['sync_menu'] ?? true) {
             $menuName = Str::studly($config->api_prefix).'Mgmt';
             $files[] = [
-                'path' => $frontendRoot.'/locales/langs/zh-CN/'.$moduleSlug.'.json',
+                'path' => $featureRoot.'/locales/zh-CN/'.$moduleSlug.'.json',
                 'content' => $this->localeJsonMerger->mergeMenuKeys(
-                    $frontendRoot.'/locales/langs/zh-CN/'.$moduleSlug.'.json',
+                    $featureRoot.'/locales/zh-CN/'.$moduleSlug.'.json',
                     [$menuName => $config->business_name],
                 ),
             ];
             $files[] = [
-                'path' => $frontendRoot.'/locales/langs/en-US/'.$moduleSlug.'.json',
+                'path' => $featureRoot.'/locales/en-US/'.$moduleSlug.'.json',
                 'content' => $this->localeJsonMerger->mergeMenuKeys(
-                    $frontendRoot.'/locales/langs/en-US/'.$moduleSlug.'.json',
+                    $featureRoot.'/locales/en-US/'.$moduleSlug.'.json',
                     [
                         $menuName => (string) ($viewData['entity_title_en'] ?? $config->class_name),
                     ],
@@ -592,12 +595,12 @@ class CodegenService
      */
     protected function localeEntityPaths(GeneratorTable $config, array $viewData): array
     {
-        $frontendRoot = $this->modulePathResolver->frontendRoot();
+        $featureRoot = $this->modulePathResolver->frontendFeatureRoot($config->module_slug);
         $localeBasename = $this->localeEntityBasename($config, $viewData);
 
         return [
-            $frontendRoot.'/locales/langs/zh-CN/'.$localeBasename.'.json',
-            $frontendRoot.'/locales/langs/en-US/'.$localeBasename.'.json',
+            $featureRoot.'/locales/zh-CN/'.$localeBasename.'.json',
+            $featureRoot.'/locales/en-US/'.$localeBasename.'.json',
         ];
     }
 
@@ -612,16 +615,16 @@ class CodegenService
             return;
         }
 
-        $frontendRoot = $this->modulePathResolver->frontendRoot();
+        $featureRoot = $this->modulePathResolver->frontendFeatureRoot($config->module_slug);
         $moduleSlug = strtolower($config->module_slug);
         $menuName = Str::studly($config->api_prefix).'Mgmt';
 
         $this->localeJsonMerger->removeMenuKeys(
-            $frontendRoot.'/locales/langs/zh-CN/'.$moduleSlug.'.json',
+            $featureRoot.'/locales/zh-CN/'.$moduleSlug.'.json',
             [$menuName],
         );
         $this->localeJsonMerger->removeMenuKeys(
-            $frontendRoot.'/locales/langs/en-US/'.$moduleSlug.'.json',
+            $featureRoot.'/locales/en-US/'.$moduleSlug.'.json',
             [$menuName],
         );
     }
