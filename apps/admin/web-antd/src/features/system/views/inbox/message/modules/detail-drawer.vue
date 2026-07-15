@@ -96,6 +96,7 @@ defineExpose({ open: show });
     v-model:open="open"
     :loading="loading"
     :title="$t('inbox.detail.title')"
+    :z-index="2100"
     width="min(92vw, 560px)"
   >
     <Descriptions
