@@ -46,9 +46,12 @@ a {
   flex: 1;
 }
 
+/* 与 header/footer 同一套：max-width + padding-inline 1.5rem */
 .container {
-  width: min(100% - 3rem, var(--c-content));
+  width: 100%;
+  max-width: var(--c-content);
   margin-inline: auto;
+  padding-inline: 1.5rem;
 }
 
 /* —— Hero —— */
@@ -83,9 +86,26 @@ a {
 }
 
 .hero__inner {
-  width: min(100% - 3rem, var(--c-content));
+  width: 100%;
+  max-width: var(--c-content);
   margin-inline: auto;
-  max-width: 38rem;
+  padding-inline: 1.5rem;
+  text-align: left;
+}
+
+/* PC：垂直居中，文案块靠左 */
+@media (min-width: 768px) {
+  .hero {
+    align-items: center;
+    padding: calc(var(--c-header-h) + 2rem) 0 2rem;
+  }
+
+  .hero__brand,
+  .hero__title,
+  .hero__lede,
+  .hero__ctas {
+    max-width: 36rem;
+  }
 }
 
 .hero__brand {
