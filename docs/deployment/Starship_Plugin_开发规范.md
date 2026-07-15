@@ -43,21 +43,21 @@ Plugin 不承载大型业务。
 
 plugin.json 中 `type` 为英文标识；**中文文案由后端** `core::plugin.types.*` 维护（见 `packages/core/src/Plugin/PluginTypeCatalog.php`），接口下发 `type_label` / `types`。
 
-约定类型示例：
+约定类型（通道适配 + 兜底；侧栏按下列顺序展示）：
 
     payment（支付方式）
-    shipping（配送方式）
-    marketing（营销推广）
     sms（短信）
     email（邮件）
     oauth（社交登录）
     storage（存储）
     ai（人工智能）
-    theme（主题模板）
-    analysis（数据分析）
-    service（客户服务）
-    feature（功能模块）
+    feature（功能模块，非通道扩展如 Event 样例）
     other（其他功能）
+
+**不属于插件 type：**
+
+-   **theme（主题）** → 独立目录 [`themes/`](./Starship_Theme_开发规范.md)，由 ThemeManager 管理，勿在 `plugin.json` 写 `type=theme`
+-   shipping / marketing / analysis / service 等电商业务分类 → 待 Shop 等 Module + 对应 Contract 后再评估加回；业务主体用 Module，不塞进插件 type
 
 示例：
 
