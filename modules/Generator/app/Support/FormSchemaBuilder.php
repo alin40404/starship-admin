@@ -285,6 +285,11 @@ final class FormSchemaBuilder
                 $lines[] = '        showTime: '.($showTime ? 'true' : 'false').',';
                 $lines[] = "        valueFormat: '".($showTime ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD')."',";
                 $lines[] = '      },';
+                if ($showTime) {
+                    // 提交：展示时区墙钟 → UTC ISO；纯日期字段保持日历日字符串
+                    $lines[] = '      valueFormat: (value) =>';
+                    $lines[] = "        value ? displayWallClockToUtcIso(String(value)) : value,";
+                }
                 break;
             case 'TimePicker':
                 $lines[] = '      componentProps: {';

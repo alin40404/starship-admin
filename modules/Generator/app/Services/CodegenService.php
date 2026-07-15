@@ -386,11 +386,24 @@ class CodegenService
         $attachmentFieldNames = $this->formSchemaBuilder->attachmentFieldNames($formColumns);
         $multiAttachmentFieldNames = $this->formSchemaBuilder->multiAttachmentFieldNames($formColumns);
         $multiValueFieldNames = $this->formSchemaBuilder->multiValueFieldNames($formColumns);
+        $datetimeFormFieldNames = $formColumns
+            ->filter(function ($column): bool {
+                if ($column->form_component !== 'DatePicker') {
+                    return false;
+                }
+                $type = (string) ($column->column_type ?? '');
+
+                return str_contains($type, 'datetime') || str_contains($type, 'timestamp');
+            })
+            ->pluck('column_name')
+            ->values()
+            ->all();
         $hasPictureUploadFields = $pictureUploadFieldNames !== [];
         $hasAttachmentFields = $attachmentFieldNames !== [];
         $hasMultiAttachmentFields = $multiAttachmentFieldNames !== [];
         $hasUploadFields = $hasPictureUploadFields || $hasAttachmentFields;
         $hasMultiValueFields = $multiValueFieldNames !== [];
+        $hasDatetimeFormFields = $datetimeFormFieldNames !== [];
         $hasDictFields = $formColumns->contains(function ($column): bool {
             $options = is_array($column->form_options ?? null) ? $column->form_options : [];
 
@@ -471,6 +484,8 @@ class CodegenService
             'multi_picture_upload_field_names_ts' => implode(', ', array_map(static fn (string $field): string => "'{$field}'", $multiPictureUploadFieldNames)),
             'has_multi_picture_upload_fields' => $multiPictureUploadFieldNames !== [],
             'multi_value_field_names_ts' => implode(', ', array_map(static fn (string $field): string => "'{$field}'", $multiValueFieldNames)),
+            'has_datetime_form_fields' => $hasDatetimeFormFields,
+            'datetime_form_field_names_ts' => implode(', ', array_map(static fn (string $field): string => "'{$field}'", $datetimeFormFieldNames)),
             'api_row_fields_body' => $this->buildApiRowFieldsBody($listColumns),
             'api_page_query_fields_body' => $this->buildApiPageQueryFieldsBody($searchColumns),
             'api_save_payload_fields_body' => $this->buildApiSavePayloadFieldsBody($formColumns),

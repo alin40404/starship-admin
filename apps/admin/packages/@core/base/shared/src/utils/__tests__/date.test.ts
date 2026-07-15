@@ -4,12 +4,14 @@ import utc from 'dayjs/plugin/utc.js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  displayWallClockToUtcIso,
   formatDate,
   formatDateTime,
   getCurrentTimezone,
   getSystemTimezone,
   isDate,
   isDayjsObject,
+  parseApiTime,
   setCurrentTimezone,
 } from '../date';
 
@@ -66,6 +68,18 @@ describe('dateUtils', () => {
       const formatted = formatDate(sampleISO, 'YYYY-MM-DD HH:mm');
       expect(formatted).toMatch(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/);
     });
+
+    it('treats naive UTC datetime as UTC then formats in site timezone', () => {
+      setCurrentTimezone('Asia/Shanghai');
+      expect(formatDateTime('2024-10-30 12:34:56')).toBe('2024-10-30 20:34:56');
+    });
+
+    it('formats ISO with Z in site timezone', () => {
+      setCurrentTimezone('Asia/Shanghai');
+      expect(formatDateTime('2024-10-30T12:34:56.000000Z')).toBe(
+        '2024-10-30 20:34:56',
+      );
+    });
   });
 
   // ===============================
@@ -75,6 +89,25 @@ describe('dateUtils', () => {
     it('should format date into full datetime', () => {
       const result = formatDateTime(sampleISO);
       expect(result).toMatch(/2024-10-30 \d{2}:\d{2}:\d{2}/);
+    });
+  });
+
+  // ===============================
+  // parseApiTime / displayWallClockToUtcIso
+  // ===============================
+  describe('parseApiTime & displayWallClockToUtcIso', () => {
+    it('parses naive datetime as UTC', () => {
+      const parsed = parseApiTime('2024-10-30 12:34:56');
+      expect(parsed.utc().format('YYYY-MM-DD HH:mm:ss')).toBe(
+        '2024-10-30 12:34:56',
+      );
+    });
+
+    it('converts display wall clock to UTC ISO', () => {
+      setCurrentTimezone('Asia/Shanghai');
+      expect(displayWallClockToUtcIso('2024-10-30 20:34:56')).toBe(
+        '2024-10-30T12:34:56.000Z',
+      );
     });
   });
 

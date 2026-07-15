@@ -15,6 +15,7 @@ use Modules\System\App\Models\Post;
 use Modules\System\App\Models\Role;
 use Modules\System\App\Services\DataScopeService;
 use Modules\System\App\Support\AdminRuntimeConfig;
+use Modules\System\App\Support\SiteConfig;
 
 class AdminUserController extends Controller
 {
@@ -61,18 +62,24 @@ class AdminUserController extends Controller
                 $dept->where('name', 'like', '%'.$keyword.'%');
             });
         }
+        // 筛选「日」按站点展示时区解释，再转到 UTC 与库内时间比较
+        $displayTimezone = SiteConfig::displayTimezone();
         if ($request->filled('updated_start')) {
             $query->where(
                 'updated_at',
                 '>=',
-                Carbon::parse((string) $request->get('updated_start'))->startOfDay(),
+                Carbon::parse((string) $request->get('updated_start'), $displayTimezone)
+                    ->startOfDay()
+                    ->utc(),
             );
         }
         if ($request->filled('updated_end')) {
             $query->where(
                 'updated_at',
                 '<=',
-                Carbon::parse((string) $request->get('updated_end'))->endOfDay(),
+                Carbon::parse((string) $request->get('updated_end'), $displayTimezone)
+                    ->endOfDay()
+                    ->utc(),
             );
         }
 

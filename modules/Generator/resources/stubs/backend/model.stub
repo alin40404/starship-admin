@@ -2,7 +2,6 @@
 
 namespace {{ $module_namespace }}\Models;
 
-use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
 @if($has_soft_delete)
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -17,9 +16,4 @@ class {{ $model_class }} extends Model
     protected $table = '{{ $table_suffix }}';
 
     protected $guarded = [];
-
-    protected function serializeDate(DateTimeInterface $date): string
-    {
-        return $date->format('Y-m-d H:i:s');
-    }
 }

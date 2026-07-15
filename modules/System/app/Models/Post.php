@@ -2,7 +2,6 @@
 
 namespace Modules\System\App\Models;
 
-use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -14,11 +13,6 @@ class Post extends Model
     protected $table = 'posts';
 
     protected $guarded = [];
-
-    protected function serializeDate(DateTimeInterface $date): string
-    {
-        return $date->format('Y-m-d H:i:s');
-    }
 
     public function admins(): BelongsToMany
     {

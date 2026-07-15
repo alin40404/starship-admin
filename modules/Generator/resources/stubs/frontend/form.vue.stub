@@ -6,6 +6,9 @@ import { computed, ref } from 'vue';
 import { useVbenDrawer, useVbenModal } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 import { usePreferences } from '@vben/preferences';
+@if($has_datetime_form_fields)
+import { formatDateTime } from '@vben/utils';
+@endif
 
 import { message } from 'ant-design-vue';
 @if($has_picture_upload_fields)
@@ -38,6 +41,9 @@ const multiAttachmentFieldNames = [{{ $multi_attachment_field_names_ts }}] as co
 @endif
 @if($has_multi_value_fields)
 const multiValueFieldNames = [{{ $multi_value_field_names_ts }}] as const;
+@endif
+@if($has_datetime_form_fields)
+const datetimeFormFieldNames = [{{ $datetime_form_field_names_ts }}] as const;
 @endif
 
 @if($has_picture_upload_fields)
@@ -225,7 +231,7 @@ async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
   readonly.value = false;
   formApi.setState({ schema: buildSchema() });
   if (id) {
-@if($has_picture_upload_fields || $has_multi_attachment_fields || $has_multi_value_fields)
+@if($has_picture_upload_fields || $has_multi_attachment_fields || $has_multi_value_fields || $has_datetime_form_fields)
     const row = { ...(data as {{ $model_class }}Row) } as Record<string, unknown>;
 @endif
 @if($has_picture_upload_fields)
@@ -263,7 +269,15 @@ async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
       }
     }
 @endif
-@if($has_picture_upload_fields || $has_multi_attachment_fields || $has_multi_value_fields)
+@if($has_datetime_form_fields)
+    for (const fieldName of datetimeFormFieldNames) {
+      const value = row[fieldName];
+      if (typeof value === 'string' && value) {
+        row[fieldName] = formatDateTime(value);
+      }
+    }
+@endif
+@if($has_picture_upload_fields || $has_multi_attachment_fields || $has_multi_value_fields || $has_datetime_form_fields)
     formApi.setValues(row as {{ $model_class }}Row);
 @else
     formApi.setValues(data as {{ $model_class }}Row);

@@ -286,8 +286,8 @@ class DepartmentController extends Controller
             'sort' => $dept->sort,
             'status' => $dept->status,
             'remark' => $dept->remark,
-            'created_at' => $dept->created_at?->format('Y-m-d H:i:s'),
-            'updated_at' => $dept->updated_at?->format('Y-m-d H:i:s'),
+            'created_at' => $dept->created_at?->toJSON(),
+            'updated_at' => $dept->updated_at?->toJSON(),
         ];
     }
 
