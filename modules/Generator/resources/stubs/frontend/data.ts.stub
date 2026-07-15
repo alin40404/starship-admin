@@ -10,9 +10,9 @@ import type { {{ $model_class }}Row } from '#/features/{{ $module_slug }}/api/{{
 
 import { $t } from '#/locales';
 @if($has_datetime_form_fields)
-import { displayWallClockToUtcIso, formatDateTime } from '@vben/utils';
+import { displayWallClockToUtcIso, formatDateOnly, formatDateTime } from '@vben/utils';
 @else
-import { formatDateTime } from '@vben/utils';
+import { formatDateOnly, formatDateTime } from '@vben/utils';
 @endif
 
 import { TABLE_CELL_EMPTY } from '#/constants/table';

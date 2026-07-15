@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   displayWallClockToUtcIso,
+  formatDateOnly,
   formatDate,
   formatDateTime,
   getCurrentTimezone,
@@ -108,6 +109,17 @@ describe('dateUtils', () => {
       expect(displayWallClockToUtcIso('2024-10-30 20:34:56')).toBe(
         '2024-10-30T12:34:56.000Z',
       );
+    });
+  });
+
+  describe('formatDateOnly', () => {
+    it('keeps calendar date from ISO midnight without timezone shift', () => {
+      setCurrentTimezone('America/Los_Angeles');
+      expect(formatDateOnly('2026-07-25T00:00:00.000000Z')).toBe('2026-07-25');
+    });
+
+    it('keeps plain YYYY-MM-DD', () => {
+      expect(formatDateOnly('2026-07-17')).toBe('2026-07-17');
     });
   });
 

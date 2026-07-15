@@ -398,12 +398,25 @@ class CodegenService
             ->pluck('column_name')
             ->values()
             ->all();
+        $dateFormFieldNames = $formColumns
+            ->filter(function ($column): bool {
+                if ($column->form_component !== 'DatePicker') {
+                    return false;
+                }
+                $type = strtolower((string) ($column->column_type ?? ''));
+
+                return preg_match('/\bdate\b/', $type) === 1 && ! str_contains($type, 'datetime');
+            })
+            ->pluck('column_name')
+            ->values()
+            ->all();
         $hasPictureUploadFields = $pictureUploadFieldNames !== [];
         $hasAttachmentFields = $attachmentFieldNames !== [];
         $hasMultiAttachmentFields = $multiAttachmentFieldNames !== [];
         $hasUploadFields = $hasPictureUploadFields || $hasAttachmentFields;
         $hasMultiValueFields = $multiValueFieldNames !== [];
         $hasDatetimeFormFields = $datetimeFormFieldNames !== [];
+        $hasDateFormFields = $dateFormFieldNames !== [];
         $hasDictFields = $formColumns->contains(function ($column): bool {
             $options = is_array($column->form_options ?? null) ? $column->form_options : [];
 
@@ -488,6 +501,8 @@ class CodegenService
             'multi_value_field_names_ts' => implode(', ', array_map(static fn (string $field): string => "'{$field}'", $multiValueFieldNames)),
             'has_datetime_form_fields' => $hasDatetimeFormFields,
             'datetime_form_field_names_ts' => implode(', ', array_map(static fn (string $field): string => "'{$field}'", $datetimeFormFieldNames)),
+            'has_date_form_fields' => $hasDateFormFields,
+            'date_form_field_names_ts' => implode(', ', array_map(static fn (string $field): string => "'{$field}'", $dateFormFieldNames)),
             'api_row_fields_body' => $this->buildApiRowFieldsBody($listColumns),
             'api_page_query_fields_body' => $this->buildApiPageQueryFieldsBody($searchColumns),
             'api_save_payload_fields_body' => $this->buildApiSavePayloadFieldsBody($formColumns),
@@ -905,6 +920,19 @@ class CodegenService
                 $lines[] = "      formatter: ({ row }: { row: {$modelClass}Row }) =>";
                 $lines[] = "        row.{$column->column_name} ? formatDateTime(row.{$column->column_name}) : TABLE_CELL_EMPTY,";
                 $lines[] = '      minWidth: 170,';
+                $lines[] = '      sortable: true,';
+                $lines[] = "      title: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
+                $lines[] = '    },';
+
+                continue;
+            }
+
+            if (preg_match('/\bdate\b/', strtolower((string) $column->column_type)) && ! str_contains(strtolower((string) $column->column_type), 'datetime')) {
+                $lines[] = '    {';
+                $lines[] = "      field: '{$column->column_name}',";
+                $lines[] = "      formatter: ({ cellValue }) =>";
+                $lines[] = '        cellValue ? formatDateOnly(String(cellValue)) : TABLE_CELL_EMPTY,';
+                $lines[] = '      minWidth: 120,';
                 $lines[] = '      sortable: true,';
                 $lines[] = "      title: \$t('{$i18nPrefix}.columns.{$columnKey}'),";
                 $lines[] = '    },';

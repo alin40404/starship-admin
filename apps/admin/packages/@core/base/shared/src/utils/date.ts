@@ -84,6 +84,29 @@ export function formatDateTime(time?: FormatDate) {
 }
 
 /**
+ * 日历日字段（date）：API 常为 `YYYY-MM-DD` 或 ISO 午夜。
+ * 只取日期部分，不做展示时区换算，避免跨时区把「日」拨到前一天。
+ */
+export function formatDateOnly(time?: FormatDate) {
+  try {
+    if (typeof time === 'string') {
+      const matched = time.trim().match(/^(\d{4}-\d{2}-\d{2})/);
+      if (matched?.[1]) {
+        return matched[1];
+      }
+    }
+    const date = parseApiTime(time);
+    if (!date.isValid()) {
+      throw new Error('Invalid date');
+    }
+    return date.utc().format('YYYY-MM-DD');
+  } catch (error) {
+    console.error(`Error formatting date-only: ${error}`);
+    return String(time ?? '');
+  }
+}
+
+/**
  * 展示时区墙钟字符串 → UTC ISO（DatePicker 提交给后端用）。
  */
 export function displayWallClockToUtcIso(
