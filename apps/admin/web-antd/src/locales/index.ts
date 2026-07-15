@@ -21,6 +21,7 @@ const antdLocale = ref<Locale>(antdDefaultLocale);
 
 const shellModules = import.meta.glob('./langs/**/*.json');
 const featureModules = import.meta.glob('../features/*/locales/**/*.json');
+const pluginModules = import.meta.glob('../plugins/*/locales/**/*.json');
 
 const shellLocalesMap = loadLocalesMapFromDir(
   /\.\/langs\/([^/]+)\/(.*)\.json$/,
@@ -30,6 +31,11 @@ const shellLocalesMap = loadLocalesMapFromDir(
 const featureLocalesMap = loadLocalesMapFromDir(
   /\/features\/[^/]+\/locales\/([^/]+)\/(.*)\.json$/,
   featureModules,
+);
+
+const pluginLocalesMap = loadLocalesMapFromDir(
+  /\/plugins\/[^/]+\/locales\/([^/]+)\/(.*)\.json$/,
+  pluginModules,
 );
 
 function deepMergeMessages(
@@ -59,12 +65,13 @@ function deepMergeMessages(
 }
 
 /**
- * 加载应用特有的语言包（壳 + features 下各模块 locales）
+ * 加载应用特有的语言包（壳 + features + src/plugins locales）
  */
 async function loadMessages(lang: SupportedLanguagesType) {
-  const [shellLocale, featureLocale] = await Promise.all([
+  const [shellLocale, featureLocale, pluginLocale] = await Promise.all([
     shellLocalesMap[lang]?.(),
     featureLocalesMap[lang]?.(),
+    pluginLocalesMap[lang]?.(),
     loadThirdPartyMessage(lang),
   ]);
 
@@ -73,11 +80,15 @@ async function loadMessages(lang: SupportedLanguagesType) {
     string,
     unknown
   >;
-
-  return deepMergeMessages(shellMessages, featureMessages) as Record<
+  const pluginMessages = (pluginLocale?.default ?? {}) as Record<
     string,
-    string
+    unknown
   >;
+
+  return deepMergeMessages(
+    deepMergeMessages(shellMessages, featureMessages),
+    pluginMessages,
+  ) as Record<string, string>;
 }
 
 /**

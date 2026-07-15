@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 /**
- * MailSmtp 编译期自定义配置片段（Wave2）：由 custom-registry 注册，不运行时动态加载。
+ * MailSmtp 后台前端：apps/admin/web-antd/src/plugins/mail-smtp
+ * 文案：$t('mail-smtp.*') ← locales/{zh-CN|en-US}/mail-smtp.json
+ * 导出包内对应 backend/
  */
 import { computed } from 'vue';
 
@@ -22,13 +24,13 @@ const encryption = computed(() => String(props.config.encryption ?? 'ssl'));
     <Alert
       type="info"
       show-icon
-      :message="$t('dev.plugins.mailSmtpAdvancedTitle')"
-      :description="$t('dev.plugins.mailSmtpAdvancedHint')"
+      :message="$t('mail-smtp.advancedTitle')"
+      :description="$t('mail-smtp.advancedHint')"
     />
     <div class="text-muted-foreground text-sm">
-      <div>{{ $t('dev.plugins.mailSmtpAdvancedHost') }}: {{ host || '—' }}</div>
+      <div>{{ $t('mail-smtp.host') }}: {{ host || '—' }}</div>
       <div>
-        {{ $t('dev.plugins.mailSmtpAdvancedEncryption') }}:
+        {{ $t('mail-smtp.encryption') }}:
         {{ encryption || '—' }}
       </div>
     </div>

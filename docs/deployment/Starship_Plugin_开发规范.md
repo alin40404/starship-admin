@@ -69,31 +69,39 @@ plugin.json 中 `type` 为英文标识；**中文文案由后端** `core::plugin
 
 # 3. Plugin 目录结构
 
+**开发态（本仓库）：**
+
 ```text
-plugins/PaymentWechat/
+plugins/MailSmtp/                      # PHP + 前台
 ├── plugin.json
-├── cover.svg                 # 可选封面（或 plugin.json cover 指定）；管理端 API 直读
-├── assets/                   # 可公开 URL 访问：JS / CSS / 图片
-│   ├── css/
-│   ├── js/
-│   └── images/
+├── cover.svg
+├── config.schema.php
+├── frontend/                          # 前台前端（站点 / 主题侧，可选）
+├── backend/README.md                  # 仅占位：后台前端不在此开发
+├── assets/
 ├── src/
-│   ├── Providers
-│   ├── Services
-│   ├── Contracts
-│   └── Drivers
 ├── config/
 ├── routes/
 ├── database/
-│   └── migrations
-├── resources/                # 服务端资源：lang、Blade 等（不直接暴露 URL）
+├── resources/                         # 含 lang（后端语言包）
 └── README.md
+
+apps/admin/web-antd/src/plugins/       # 后台前端（与 features 同级）
+├── registry.ts                        # glob('./*/panel.ts')
+└── mail-smtp/
+    ├── panel.ts
+    ├── *.vue
+    └── locales/{zh-CN,en-US}/
 ```
+
+**导出包：** `plugin/` ← `plugins/{Studly}`；`backend/` ← `src/plugins/{slug}`。见 [plugin-cli.md](./plugin-cli.md)。
 
 原则：
 
--   **要浏览器直接访问的** → 放 `assets/`
--   **仅服务端使用的** → 放 `resources/`
+-   **要浏览器直接访问的** → 插件本体 `assets/`
+-   **仅服务端使用的** → `resources/`
+-   **管理端自定义 Vue** → `apps/admin/.../src/plugins/{slug}/`（可用 `#/` / `@vben`）；导出时进包内 `backend/`
+-   **站点 / 主题侧 UI** → 插件内 `frontend/`
 -   密钥、配置、源码不要放进 `assets/`
 
 ### 3.1 静态资源 URL
@@ -280,7 +288,7 @@ System     已启用 Plugin
 - `providers` 中完成 Contract 绑定。
 - 需要管理端配置 / 试发时声明 `config` 与 `pages`（`config` / `test`）。
 - `pages[].ui`：`schema`（默认）| `link` | `component` | `slots`（预留）。
-- `frontend`（可选，Wave4 预留）：`{ "entry": "@plugins/Name/admin", "routes": [] }`。
+- `frontend`（可选，L3 预留）：`{ "entry": "#/plugins/{slug}", "routes": [] }`。与导出包目录 `backend/`、插件内目录 `frontend/`（前台）不是同一概念。
 
 ## 6.3 脚手架提示
 
@@ -327,10 +335,27 @@ API `config_schema` 返回**对象数组**（`label`/`help` 已是当前语言�
 |----|------|
 | `schema` | 抽屉内按 Schema 渲染（默认） |
 | `link` | 抽屉内「打开链接」→ `pages[].href` |
-| `component` | 抽屉内渲染 `pages[].component`，须在管理端 [`custom-registry.ts`](../../apps/admin/web-antd/src/features/system/views/dev/plugins/custom-registry.ts) **编译期登记**；组件源码建议放 `plugins/{Name}/admin/*.vue`，经 Vite 别名 `@plugins` 引入 |
-| `slots` | 预留菜单注入，后续 Wave 启用 |
+| `component` | 抽屉内渲染 `pages[].component`；实现放在 **`src/plugins/{slug}/`**，由 [`registry.ts`](../../apps/admin/web-antd/src/plugins/registry.ts) glob 自动登记；导出包目录名为 `backend/` |
+| `slots` | 预留菜单注入 |
 
-禁止依赖运行时远程加载 Vue（见 6D）。样例：MailSmtp `advanced` 页。
+路径约定：
+
+```text
+apps/admin/web-antd/src/plugins/{slug}/
+├── panel.ts
+├── *.vue
+└── locales/{zh-CN,en-US}/{slug}.json
+```
+
+`id` 必须等于 `plugin.json` 的 `pages[].component`。样例：MailSmtp → `src/plugins/mail-smtp/`。
+
+**语言包：**
+
+| 侧 | 路径 | 用法 |
+|----|------|------|
+| 后端 PHP | `plugins/{Studly}/resources/lang/{zh_CN\|en}/messages.php` | `__('{slug}::messages.x')` |
+| 后台前端 | `src/plugins/{slug}/locales/{zh-CN\|en-US}/{slug}.json` | `$t('{slug}.x')` / `#/locales` |
+| 前台前端 | `plugins/{Studly}/frontend/` | 按站点 / 主题约定 |
 
 ------------------------------------------------------------------------
 
@@ -365,9 +390,9 @@ Event::listen(PluginDescriptionResolving::class, function (PluginDescriptionReso
 # 6D. 前端插件动态加载（约定预留）
 
 - `plugin.json.frontend.entry` / `routes` 已可声明。
-- 管理端 [`frontend-registry.ts`](../../apps/admin/web-antd/src/features/system/views/dev/plugins/frontend-registry.ts) 记录约定；`PLUGIN_FRONTEND_DYNAMIC_ENABLED = false`。
-- **当前**：复杂 UI 走 Wave2 `custom-registry` 编译期引入。
-- **远期**：按已启用插件的 `frontend.entry` 动态 import + 合并路由（插件市场另议）。
+- 管理端 [`frontend-registry.ts`](../../apps/admin/web-antd/src/plugins/frontend-registry.ts) 记录约定；`PLUGIN_FRONTEND_DYNAMIC_ENABLED = false`。
+- **当前 L2**：`src/plugins/*/panel.ts` 经 `registry.ts` glob 登记；导出进包内 `backend/`（见 [plugin-cli.md](./plugin-cli.md)）。
+- **远期 L3**：按已启用插件的 `frontend.entry` 动态 import（插件市场另议）。
 
 ------------------------------------------------------------------------
 

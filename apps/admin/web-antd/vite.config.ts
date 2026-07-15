@@ -1,17 +1,9 @@
-import { fileURLToPath, URL } from 'node:url';
-
 import { defineConfig } from '@vben/vite-config';
 import type { DefineApplicationOptions, VbenViteConfig } from '@vben/vite-config';
 
 const applicationConfig: DefineApplicationOptions = async () => ({
   application: {},
   vite: {
-    resolve: {
-      alias: {
-        // Wave2：编译期引入 plugins/*/admin 自定义配置片段
-        '@plugins': fileURLToPath(new URL('../../../plugins', import.meta.url)),
-      },
-    },
     server: {
       proxy: {
         // Starship Admin 后端（Laravel `php artisan serve` 默认 8000）

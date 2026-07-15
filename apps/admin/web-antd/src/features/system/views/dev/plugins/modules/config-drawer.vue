@@ -34,7 +34,7 @@ import {
 import { PLUGIN_PERMISSIONS } from '#/features/system/constants/plugin-permissions';
 import { $t } from '#/locales';
 
-import { resolvePluginCustomComponent } from '../custom-registry';
+import { resolvePluginCustomComponent } from '#/plugins/registry';
 
 const { isMobile } = usePreferences();
 const drawerWidth = computed(() => (isMobile.value ? '100%' : 'min(90vw, 640px)'));

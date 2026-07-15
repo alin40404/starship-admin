@@ -138,7 +138,7 @@ apps/admin/
 
 - 业务前端落在 `src/features/{module}/`（`api` / `constants` / `views` / `locales`），与后端 `modules/{Module}` 对应；引用用 `#/features/{module}/...`
 - 菜单 `component` 仍为 `/permission/admin/index` 等形式；`access.ts` 将 `features/*/views/**` 映射为原 `views/**` key
-- 插件前端放在 `plugins/{Name}/front/` 或 `apps/admin/web-antd/src/plugins/{slug}/`
+- 插件前端：后台 Vue 在 `apps/admin/web-antd/src/plugins/{slug}/`（导出为包内 `backend/`）；前台在 `plugins/{Name}/frontend/`
 
 ---
 

@@ -1,0 +1,6 @@
+{
+  "advancedTitle": "MailSmtp advanced",
+  "advancedHint": "Admin UI under src/plugins/mail-smtp; packaged as backend/ on export.",
+  "host": "Host",
+  "encryption": "Encryption"
+}

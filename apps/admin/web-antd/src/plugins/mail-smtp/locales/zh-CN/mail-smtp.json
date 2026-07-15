@@ -1,0 +1,6 @@
+{
+  "advancedTitle": "MailSmtp 高级信息",
+  "advancedHint": "此页演示后台前端：位于管理端 src/plugins/mail-smtp，导出时进入插件包 backend/。",
+  "host": "当前主机",
+  "encryption": "加密方式"
+}
