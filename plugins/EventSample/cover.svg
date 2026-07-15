@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-label="EventSample plugin cover">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#101816"/>
+      <stop offset="45%" stop-color="#15241f"/>
+      <stop offset="100%" stop-color="#0c1412"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="540" fill="url(#bg)"/>
+  <rect x="0" y="0" width="960" height="8" fill="url(#accent)"/>
+  <circle cx="120" cy="80" r="180" fill="#34d399" fill-opacity="0.10"/>
+  <circle cx="860" cy="460" r="200" fill="#059669" fill-opacity="0.14"/>
+
+  <rect x="210" y="200" width="120" height="72" rx="16" fill="#1a2e28" stroke="#34d399" stroke-opacity="0.5" stroke-width="3"/>
+  <text x="270" y="244" fill="#a7f3d0" font-family="Segoe UI, sans-serif" font-size="22" font-weight="600" text-anchor="middle">emit</text>
+
+  <path d="M340 236 H430" fill="none" stroke="#34d399" stroke-width="6" stroke-linecap="round"/>
+  <path d="M415 224 L435 236 L415 248" fill="none" stroke="#34d399" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="440" y="180" width="160" height="112" rx="20" fill="#1a2e28" stroke="#34d399" stroke-width="3"/>
+  <circle cx="520" cy="220" r="18" fill="#34d399"/>
+  <circle cx="480" cy="255" r="10" fill="#6ee7b7"/>
+  <circle cx="555" cy="255" r="10" fill="#6ee7b7"/>
+  <text x="520" y="312" fill="#6ee7b7" font-family="Segoe UI, sans-serif" font-size="16" text-anchor="middle">listeners</text>
+
+  <path d="M610 236 H700" fill="none" stroke="#34d399" stroke-width="6" stroke-linecap="round"/>
+  <path d="M685 224 L705 236 L685 248" fill="none" stroke="#34d399" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="710" y="200" width="120" height="72" rx="16" fill="#1a2e28" stroke="#34d399" stroke-opacity="0.5" stroke-width="3"/>
+  <text x="770" y="244" fill="#a7f3d0" font-family="Segoe UI, sans-serif" font-size="20" font-weight="600" text-anchor="middle">done</text>
+
+  <text x="480" y="420" fill="#a7f3d0" font-family="Segoe UI, sans-serif" font-size="40" font-weight="700" text-anchor="middle">EventSample</text>
+  <text x="480" y="460" fill="#6ee7b7" font-family="Segoe UI, sans-serif" font-size="18" text-anchor="middle">Laravel Event / Listener</text>
+</svg>

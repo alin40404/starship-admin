@@ -334,21 +334,31 @@ API `config_schema` 返回**对象数组**（`label`/`help` 已是当前语言�
 
 ------------------------------------------------------------------------
 
-# 6C. Hook（对齐 WordPress，与 Contract 分工）
+# 6C. Event（主干，对齐设计方案）
 
-Core 提供：
+扩展业务解耦以 **Laravel Event** 为主（见 [Starship_Event_Hook_事件扩展体系设计方案.md](./Starship_Event_Hook_事件扩展体系设计方案.md)）。
 
-- `add_action` / `do_action`
-- `add_filter` / `apply_filters`
-- 实现类：`Starship\Core\Support\Hook\Hook`
+Core：
+
+- `EventDispatcherInterface` → `EventDispatcher`（对接框架事件总线）
+- 事件类目录：`packages/core/src/Events/`（过去式命名，表示事实；Resolving 类用于可改写载荷）
 
 | 场景 | 用法 |
 |------|------|
 | 换短信/邮件/存储实现 | **Contract** 容器覆盖 |
-| 改流程中间值、打标、旁路逻辑 | **Hook** filter/action |
+| 业务事实发生后通知多方 | **Event** + Listener |
+| 链式改写中间结果（如价格） | 可先用「可变载荷 Event」；独立 Filter Hook 延后 |
 
-系统已挂接示例：`apply_filters('starship.plugin.description', $description, $plugin)`。  
-样例插件：`plugins/HookSample`（启用后给 MailSmtp 描述追加标记）。
+系统示例：组装插件描述时派发 `PluginDescriptionResolving`。  
+样例插件：`plugins/EventSample`（启用后监听该事件，给 MailSmtp 描述追加标记）。
+
+插件注册监听：
+
+```php
+Event::listen(PluginDescriptionResolving::class, function (PluginDescriptionResolving $event): void {
+    // 可修改 $event->description
+});
+```
 
 ------------------------------------------------------------------------
 
@@ -408,15 +418,13 @@ public function query();
 
 # 9. Plugin事件通信
 
-短期可用 §6C 的 `add_action` / `add_filter`。
-
 不要：
 
     OrderService 直接调用 SmsPlugin 具体类
 
 应该：
 
-    通道实现 → Contract；流程补丁 → Hook / 后续 EventBus
+    通道实现 → Contract；业务解耦 → Event / Listener
 
 ------------------------------------------------------------------------
 

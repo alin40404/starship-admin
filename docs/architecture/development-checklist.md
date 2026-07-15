@@ -34,7 +34,7 @@
 | `starship:plugin:make` | ✅ | 插件脚手架 |
 | Generator 端到端 Demo | ✅ | `sa_demo_products` 表 + CLI 全流程已验收 |
 | Contract 体系 | ✅ | `SmsSenderInterface`、`StorageInterface` 已落地；System 默认实现可被插件覆盖 |
-| Event / Hook | ✅ 最小 | `add_action` / `add_filter`（`Starship\Core\Support\Hook\Hook`）；样例 `plugins/HookSample` |
+| Event / Hook | ✅ Event 主干 | `EventDispatcherInterface` + `EventDispatcher`；样例 `plugins/EventSample`。独立 Filter Hook 延后 |
 | ThemeManager | ✅ | 发现/安装/启用/切换/卸载 + CLI |
 | 脚手架 `starship/skeleton` | 🚧 | 开发仓兼发布：根 `composer.json` 已备；待维护 `release` 分支 |
 | 框架 Feature Test | ✅ | `FrameworkSmokeTest`：ping / 模块 / 插件扫描 / Contract 绑定 |
@@ -84,7 +84,8 @@
 - [x] Contract 覆盖约定文档落地（Plugin 开发规范专节）
 - [x] 插件配置 Schema（`config.schema.php` + 抽屉按类型渲染）
 - [x] 插件配置自定义逃逸（pages.ui = schema/link/component；MailSmtp 高级页样例）
-- [x] Hook 最小集（`add_action` / `add_filter`；`plugins/HookSample`）
+- [x] Event 主干（`EventDispatcherInterface` + `PluginDescriptionResolving`；`plugins/EventSample`）
+- [ ] Filter Hook 体系（改变价格等链式改写；延后，可用可变载荷 Event 过渡）
 - [x] 前端插件动态加载约定预留（`frontend` + `frontend-registry.ts`；运行时加载暂关）
 - [ ] Payment / OAuth 等（延后）
 
@@ -105,7 +106,8 @@
 
 ### 阶段三：生态扩展（长期）
 
-- [x] EventBus + Hook 体系（最小 `Hook`：action/filter；完整 EventBus 可继续演进）
+- [x] EventBus 主干（`EventDispatcher`；样例 `EventSample`）
+- [ ] Filter Hook（辅助，延后）
 - [ ] Contract 完整目录（`packages/core/Contract/`）
 - [ ] 官方插件库（支付、存储、短信）
 - [ ] 前端插件动态加载（约定已预留；`PLUGIN_FRONTEND_DYNAMIC_ENABLED` 默认关闭）

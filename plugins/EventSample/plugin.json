@@ -1,11 +1,12 @@
 {
-  "name": "HookSample",
-  "slug": "hook-sample",
+  "name": "EventSample",
+  "slug": "event-sample",
   "type": "feature",
-  "namespace": "Plugins\\HookSample",
+  "namespace": "Plugins\\EventSample",
   "version": "1.0.0",
-  "description": "演示 apply_filters 扩展插件描述（非通道 Contract）",
+  "description": "演示 Laravel Event 扩展插件描述（非通道 Contract）",
   "author": "Starship Admin",
+  "cover": "cover.svg",
   "require": {
     "starship": ">=1.0.0",
     "php": ">=8.3",
@@ -13,7 +14,7 @@
     "plugins": []
   },
   "providers": [
-    "Plugins\\HookSample\\Providers\\HookSampleServiceProvider"
+    "Plugins\\EventSample\\Providers\\EventSampleServiceProvider"
   ],
   "routes": [],
   "migrations": false,

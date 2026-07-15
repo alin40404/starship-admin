@@ -2,6 +2,8 @@
 
 namespace Modules\System\App\Services;
 
+use Starship\Core\Event\EventDispatcherInterface;
+use Starship\Core\Events\PluginDescriptionResolving;
 use Starship\Core\Plugin\Plugin;
 use Starship\Core\Plugin\PluginConfigRepository;
 use Starship\Core\Plugin\PluginLifecycle;
@@ -14,6 +16,7 @@ class PluginService
         protected PluginManager $pluginManager,
         protected PluginLifecycle $pluginLifecycle,
         protected PluginConfigRepository $pluginConfigRepository,
+        protected EventDispatcherInterface $events,
     ) {}
 
     /**
@@ -118,6 +121,17 @@ class PluginService
         return $this->pluginConfigRepository->save($slug, $values);
     }
 
+    protected function resolveDescription(Plugin $plugin): ?string
+    {
+        /** @var PluginDescriptionResolving $event */
+        $event = $this->events->dispatch(new PluginDescriptionResolving(
+            $plugin,
+            $plugin->description(),
+        ));
+
+        return $event->description;
+    }
+
     protected function requirePlugin(string $slug): Plugin
     {
         $plugin = $this->pluginManager->findBySlug($slug);
@@ -140,7 +154,7 @@ class PluginService
             'type' => $plugin->type(),
             'type_label' => $plugin->typeLabel(),
             'version' => $plugin->version(),
-            'description' => apply_filters('starship.plugin.description', $plugin->description(), $plugin),
+            'description' => $this->resolveDescription($plugin),
             'author' => $plugin->author(),
             'directory' => $plugin->directoryName(),
             'namespace' => $plugin->namespace(),

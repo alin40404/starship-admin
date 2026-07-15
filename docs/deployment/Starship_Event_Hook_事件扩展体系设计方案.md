@@ -1,5 +1,10 @@
 # Starship Event 与 Hook 事件扩展体系设计方案
 
+> **实现状态（2026-07-15）**  
+> - **Event 主干已落地**：`EventDispatcherInterface` / `EventDispatcher`，事件示例 `PluginDescriptionResolving`，样例插件 `plugins/EventSample`。  
+> - **不再采用 WordPress 式 `add_action` / `apply_filters` 全局 Hook。**  
+> - 文档中的独立 Filter Hook（改价格等）**延后**；现阶段改写载荷优先用可变 Event 属性。
+
 ## 1. 设计目标
 
 Starship 目标：
