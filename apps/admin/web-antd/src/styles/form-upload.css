@@ -12,10 +12,11 @@
 /* 单图 / 多图空态：__body 内 flex 紧凑并排 */
 .picture-upload-field__body {
   display: flex;
-  flex-flow: row nowrap;
+  flex-flow: row wrap;
   align-items: flex-start;
   gap: var(--picture-upload-gap);
-  width: fit-content;
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
 }
 
@@ -141,8 +142,10 @@
   line-height: 1.25;
 }
 
-/* 表单项 control 区默认 overflow-hidden，会裁切旁的「选择附件」 */
-.overflow-hidden:has(.picture-upload-field),
+/*
+ * 仅放开「图片上传」表单项内部的 overflow，禁止用 :has 打穿页面级
+ * overflow-hidden（否则 configs 等页面加载出 Logo/Favicon 后会被整页横向撑开）。
+ */
 .picture-upload-form-item .overflow-hidden {
   overflow: visible !important;
 }
