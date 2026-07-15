@@ -44,7 +44,8 @@ class PluginService
             'manifest_path' => $this->relativeManifestPath($plugin->manifestPath()),
             'pages' => $plugin->pages(),
             'config' => $this->pluginConfigRepository->all($slug, masked: true),
-            'config_schema' => $this->pluginConfigRepository->schemaKeys($slug),
+            'config_schema' => $this->pluginConfigRepository->schema($slug),
+            'frontend' => $plugin->frontend(),
         ]);
     }
 
@@ -139,7 +140,7 @@ class PluginService
             'type' => $plugin->type(),
             'type_label' => $plugin->typeLabel(),
             'version' => $plugin->version(),
-            'description' => $plugin->description(),
+            'description' => apply_filters('starship.plugin.description', $plugin->description(), $plugin),
             'author' => $plugin->author(),
             'directory' => $plugin->directoryName(),
             'namespace' => $plugin->namespace(),
@@ -151,6 +152,7 @@ class PluginService
             'providers' => $plugin->providers(),
             'providers_count' => count($plugin->providers()),
             'pages' => $plugin->pages(),
+            'frontend' => $plugin->frontend(),
             'cover' => $plugin->coverRelativePath(),
             'cover_url' => $plugin->coverAbsolutePath() !== null
                 ? '/dev/plugins/'.$plugin->slug().'/cover'

@@ -17,6 +17,19 @@ class PluginConfigRepository
         'app_secret',
         'token',
         'private_key',
+        'password',
+    ];
+
+    /**
+     * @var list<string>
+     */
+    private const FIELD_TYPES = [
+        'string',
+        'password',
+        'number',
+        'select',
+        'switch',
+        'textarea',
     ];
 
     public function __construct(
@@ -42,7 +55,7 @@ class PluginConfigRepository
             return $merged;
         }
 
-        return $this->maskConfig($merged);
+        return $this->maskConfig($merged, $slug);
     }
 
     /**
@@ -67,7 +80,7 @@ class PluginConfigRepository
                 continue;
             }
 
-            $encrypted = $this->isSensitiveKey($key);
+            $encrypted = $this->shouldEncrypt($plugin, $key);
             $storedValue = is_scalar($value) || $value === null
                 ? (string) $value
                 : json_encode($value, JSON_UNESCAPED_UNICODE);
@@ -100,12 +113,216 @@ class PluginConfigRepository
      */
     public function schemaKeys(string $slug): array
     {
+        return array_values(array_map(
+            static fn (array $field): string => (string) $field['key'],
+            $this->schema($slug),
+        ));
+    }
+
+    /**
+     * 配置表单 Schema（对象数组）。无 schema 文件时回退为默认配置 key → string 字段。
+     *
+     * @return list<array{
+     *   key: string,
+     *   label: string,
+     *   type: string,
+     *   options: list<array{label: string, value: string}>,
+     *   default: mixed,
+     *   rules: list<string>,
+     *   help: string,
+     *   group: string|null,
+     *   encrypted: bool
+     * }>
+     */
+    public function schema(string $slug): array
+    {
         $plugin = $this->pluginManager->findBySlug($slug);
         if ($plugin === null) {
             return [];
         }
 
-        return array_keys($this->defaultConfig($plugin));
+        $this->ensurePluginTranslations($plugin);
+
+        $defaults = $this->defaultConfig($plugin);
+        $declared = $this->loadDeclaredSchema($plugin);
+        if ($declared !== []) {
+            return $this->normalizeSchemaFields($declared, $defaults, $plugin);
+        }
+
+        $fields = [];
+        foreach (array_keys($defaults) as $key) {
+            $fields[] = $this->normalizeSchemaField([
+                'key' => $key,
+                'type' => $this->isSensitiveKey((string) $key) ? 'password' : 'string',
+                'default' => $defaults[$key] ?? '',
+            ], $defaults, $plugin);
+        }
+
+        return $fields;
+    }
+
+    protected function ensurePluginTranslations(Plugin $plugin): void
+    {
+        $path = $plugin->directory().DIRECTORY_SEPARATOR.'resources'.DIRECTORY_SEPARATOR.'lang';
+        if (! is_dir($path)) {
+            return;
+        }
+
+        app('translator')->addNamespace($plugin->slug(), $path);
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    protected function loadDeclaredSchema(Plugin $plugin): array
+    {
+        $path = $plugin->configSchemaPath();
+        if ($path === null) {
+            return [];
+        }
+
+        $schema = require $path;
+
+        return is_array($schema) ? array_values(array_filter($schema, 'is_array')) : [];
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $fields
+     * @param  array<string, mixed>  $defaults
+     * @return list<array<string, mixed>>
+     */
+    protected function normalizeSchemaFields(array $fields, array $defaults, Plugin $plugin): array
+    {
+        $normalized = [];
+        foreach ($fields as $field) {
+            $item = $this->normalizeSchemaField($field, $defaults, $plugin);
+            if ($item !== null) {
+                $normalized[] = $item;
+            }
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * @param  array<string, mixed>  $field
+     * @param  array<string, mixed>  $defaults
+     * @return array<string, mixed>|null
+     */
+    protected function normalizeSchemaField(array $field, array $defaults, Plugin $plugin): ?array
+    {
+        $key = $field['key'] ?? null;
+        if (! is_string($key) || $key === '') {
+            return null;
+        }
+
+        $type = strtolower((string) ($field['type'] ?? 'string'));
+        if (! in_array($type, self::FIELD_TYPES, true)) {
+            $type = 'string';
+        }
+
+        $encrypted = array_key_exists('encrypted', $field)
+            ? (bool) $field['encrypted']
+            : $this->isSensitiveKey($key);
+
+        if ($encrypted && $type === 'string') {
+            $type = 'password';
+        }
+
+        $options = [];
+        foreach (($field['options'] ?? []) as $option) {
+            if (is_array($option)) {
+                $value = (string) ($option['value'] ?? '');
+                $label = $this->resolveLocalizedText($option['label'] ?? $value);
+                if ($value !== '') {
+                    $options[] = ['label' => $label, 'value' => $value];
+                }
+
+                continue;
+            }
+
+            if (is_string($option) || is_int($option)) {
+                $options[] = ['label' => (string) $option, 'value' => (string) $option];
+            }
+        }
+
+        $rules = [];
+        foreach (($field['rules'] ?? []) as $rule) {
+            if (is_string($rule) && $rule !== '') {
+                $rules[] = $rule;
+            }
+        }
+
+        $group = $field['group'] ?? null;
+
+        return [
+            'key' => $key,
+            'label' => $this->resolveLocalizedText($field['label'] ?? $key),
+            'type' => $type,
+            'options' => $options,
+            'default' => $field['default'] ?? ($defaults[$key] ?? ''),
+            'rules' => $rules,
+            'help' => $this->resolveLocalizedText($field['help'] ?? ''),
+            'group' => is_string($group) && $group !== '' ? $group : null,
+            'encrypted' => $encrypted,
+        ];
+    }
+
+    protected function resolveLocalizedText(mixed $value): string
+    {
+        if (is_string($value)) {
+            if ($value === '') {
+                return '';
+            }
+
+            // 语言包键：如 sms-aliyun::messages.fields.access_key_label
+            if (str_contains($value, '::')) {
+                $translated = __($value);
+
+                return $translated !== $value ? (string) $translated : $value;
+            }
+
+            return $value;
+        }
+
+        if (! is_array($value)) {
+            return '';
+        }
+
+        $locale = str_replace('-', '_', (string) app()->getLocale());
+        $candidates = [
+            $locale,
+            strtolower($locale),
+            explode('_', $locale)[0] ?? '',
+            'zh_CN',
+            'zh_cn',
+            'en',
+        ];
+
+        foreach ($candidates as $candidate) {
+            if ($candidate !== '' && isset($value[$candidate]) && is_scalar($value[$candidate])) {
+                return (string) $value[$candidate];
+            }
+        }
+
+        foreach ($value as $text) {
+            if (is_scalar($text)) {
+                return (string) $text;
+            }
+        }
+
+        return '';
+    }
+
+    protected function shouldEncrypt(Plugin $plugin, string $key): bool
+    {
+        foreach ($this->schema($plugin->slug()) as $field) {
+            if (($field['key'] ?? null) === $key) {
+                return (bool) ($field['encrypted'] ?? false);
+            }
+        }
+
+        return $this->isSensitiveKey($key);
     }
 
     /**
@@ -169,12 +386,22 @@ class PluginConfigRepository
      * @param  array<string, mixed>  $config
      * @return array<string, mixed>
      */
-    protected function maskConfig(array $config): array
+    protected function maskConfig(array $config, ?string $slug = null): array
     {
+        $encryptedKeys = [];
+        if ($slug !== null) {
+            foreach ($this->schema($slug) as $field) {
+                if (! empty($field['encrypted'])) {
+                    $encryptedKeys[(string) $field['key']] = true;
+                }
+            }
+        }
+
         $masked = [];
 
         foreach ($config as $key => $value) {
-            if ($this->isSensitiveKey((string) $key)) {
+            $keyString = (string) $key;
+            if (isset($encryptedKeys[$keyString]) || $this->isSensitiveKey($keyString)) {
                 $masked[$key] = $value !== null && $value !== '' ? '__configured__' : '';
             } else {
                 $masked[$key] = $value;

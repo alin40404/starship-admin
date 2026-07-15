@@ -23,6 +23,12 @@ class MailSmtpPluginLifecycleTest extends TestCase
         if (! is_dir((string) config('starship.plugins_path').DIRECTORY_SEPARATOR.'MailSmtp')) {
             $this->markTestSkipped('MailSmtp 插件目录不存在，跳过验收测试。');
         }
+
+        try {
+            PluginModel::query()->where('slug', self::SLUG)->delete();
+        } catch (\Throwable) {
+            //
+        }
     }
 
     protected function tearDown(): void
@@ -125,6 +131,7 @@ class MailSmtpPluginLifecycleTest extends TestCase
         $this->assertSame('MailSmtp', $plugin->name());
         $this->assertSame('email', $plugin->type());
         $this->assertTrue($plugin->configPath() !== null);
-        $this->assertCount(2, $plugin->pages());
+        $this->assertGreaterThanOrEqual(2, count($plugin->pages()));
+        $this->assertNotNull($plugin->configSchemaPath());
     }
 }

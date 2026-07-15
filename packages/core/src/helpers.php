@@ -2,6 +2,7 @@
 
 use Starship\Core\Plugin\PluginConfigRepository;
 use Starship\Core\Plugin\PluginManager;
+use Starship\Core\Support\Hook\Hook;
 use Starship\Core\Theme\ThemeLoader;
 
 if (! function_exists('plugin_config')) {
@@ -13,6 +14,34 @@ if (! function_exists('plugin_config')) {
         }
 
         return app(PluginConfigRepository::class)->get($slug, $configKey, $default);
+    }
+}
+
+if (! function_exists('add_action')) {
+    function add_action(string $hook, callable $callback, int $priority = 10): void
+    {
+        Hook::addAction($hook, $callback, $priority);
+    }
+}
+
+if (! function_exists('do_action')) {
+    function do_action(string $hook, mixed ...$args): void
+    {
+        Hook::doAction($hook, ...$args);
+    }
+}
+
+if (! function_exists('add_filter')) {
+    function add_filter(string $hook, callable $callback, int $priority = 10): void
+    {
+        Hook::addFilter($hook, $callback, $priority);
+    }
+}
+
+if (! function_exists('apply_filters')) {
+    function apply_filters(string $hook, mixed $value, mixed ...$args): mixed
+    {
+        return Hook::applyFilters($hook, $value, ...$args);
     }
 }
 

@@ -192,13 +192,32 @@ class Plugin
         return $this->directory.DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $config);
     }
 
+    /**
+     * 配置 Schema 文件路径（可选）。优先 config.schema.php，其次 columns.php（对齐 BeikeShop）。
+     */
+    public function configSchemaPath(): ?string
+    {
+        $candidates = [
+            $this->directory.DIRECTORY_SEPARATOR.'config.schema.php',
+            $this->directory.DIRECTORY_SEPARATOR.'columns.php',
+        ];
+
+        foreach ($candidates as $path) {
+            if (is_file($path)) {
+                return $path;
+            }
+        }
+
+        return null;
+    }
+
     public function configKey(): string
     {
         return str_replace('-', '_', $this->slug());
     }
 
     /**
-     * @return list<array{key: string, title: string, permission?: string}>
+     * @return list<array{key: string, title: string, permission?: string, ui?: string, href?: string, component?: string}>
      */
     public function pages(): array
     {
@@ -225,10 +244,40 @@ class Plugin
                 $item['permission'] = $page['permission'];
             }
 
+            $ui = $page['ui'] ?? null;
+            if (is_string($ui) && $ui !== '') {
+                $item['ui'] = $ui;
+            } else {
+                $item['ui'] = 'schema';
+            }
+
+            if (isset($page['href']) && is_string($page['href']) && $page['href'] !== '') {
+                $item['href'] = $page['href'];
+            }
+
+            if (isset($page['component']) && is_string($page['component']) && $page['component'] !== '') {
+                $item['component'] = $page['component'];
+            }
+
             $result[] = $item;
         }
 
         return $result;
+    }
+
+    /**
+     * 插件前端包约定（Wave4 预留）：manifest.frontend。
+     *
+     * @return array{entry?: string, routes?: list<array<string, mixed>>}|null
+     */
+    public function frontend(): ?array
+    {
+        $frontend = $this->manifest['frontend'] ?? null;
+        if (! is_array($frontend) || $frontend === []) {
+            return null;
+        }
+
+        return $frontend;
     }
 
     /**

@@ -1,0 +1,22 @@
+{
+  "name": "HookSample",
+  "slug": "hook-sample",
+  "type": "feature",
+  "namespace": "Plugins\\HookSample",
+  "version": "1.0.0",
+  "description": "演示 apply_filters 扩展插件描述（非通道 Contract）",
+  "author": "Starship Admin",
+  "require": {
+    "starship": ">=1.0.0",
+    "php": ">=8.3",
+    "modules": ["System"],
+    "plugins": []
+  },
+  "providers": [
+    "Plugins\\HookSample\\Providers\\HookSampleServiceProvider"
+  ],
+  "routes": [],
+  "migrations": false,
+  "enabled": false,
+  "order": 900
+}

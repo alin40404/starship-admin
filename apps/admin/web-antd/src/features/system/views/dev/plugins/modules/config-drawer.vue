@@ -1,13 +1,29 @@
 <script lang="ts" setup>
 import type { PluginAccessChecker } from '../data';
 
-import type { PluginDetail, PluginRow } from '#/features/system/api/dev-plugin';
+import type {
+  PluginConfigField,
+  PluginDetail,
+  PluginPageMeta,
+  PluginRow,
+} from '#/features/system/api/dev-plugin';
 
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive, ref, type Component } from 'vue';
 
 import { usePreferences } from '@vben/preferences';
 
-import { Button, Drawer, Form, Input, message, Tabs } from 'ant-design-vue';
+import {
+  Button,
+  Drawer,
+  Form,
+  Input,
+  InputNumber,
+  message,
+  Select,
+  Switch,
+  Tabs,
+  Textarea,
+} from 'ant-design-vue';
 
 import {
   fetchPlugin,
@@ -17,6 +33,8 @@ import {
 } from '#/features/system/api/dev-plugin';
 import { PLUGIN_PERMISSIONS } from '#/features/system/constants/plugin-permissions';
 import { $t } from '#/locales';
+
+import { resolvePluginCustomComponent } from '../custom-registry';
 
 const { isMobile } = usePreferences();
 const drawerWidth = computed(() => (isMobile.value ? '100%' : 'min(90vw, 640px)'));
@@ -30,19 +48,51 @@ const loading = ref(false);
 const submitting = ref(false);
 const testing = ref(false);
 const detail = ref<PluginDetail | null>(null);
-const configForm = reactive<Record<string, string>>({});
+const configForm = reactive<Record<string, string | number | boolean>>({});
 const testMobile = ref('');
 const testEmail = ref('');
+const activeTab = ref('config');
 
 const canConfig = computed(() => props.access.can(PLUGIN_PERMISSIONS.CONFIG));
-const configFields = computed(() => detail.value?.config_schema ?? []);
+const configFields = computed<PluginConfigField[]>(
+  () => detail.value?.config_schema ?? [],
+);
+
+const schemaPages = computed(() =>
+  (detail.value?.pages ?? []).filter(
+    (p) => (p.ui ?? 'schema') === 'schema' && p.key !== 'test',
+  ),
+);
+
+const extraPages = computed(() =>
+  (detail.value?.pages ?? []).filter((p) => {
+    const ui = p.ui ?? 'schema';
+    return ui === 'link' || ui === 'component';
+  }),
+);
+
 const showSmsTestTab = computed(
   () => detail.value?.slug === 'sms-aliyun' && detail.value.enabled,
 );
 const showMailTestTab = computed(
   () => detail.value?.slug === 'mail-smtp' && detail.value.enabled,
 );
-const showTestTab = computed(() => showSmsTestTab.value || showMailTestTab.value);
+const showTestTab = computed(
+  () =>
+    (detail.value?.pages ?? []).some((p) => p.key === 'test') &&
+    (showSmsTestTab.value || showMailTestTab.value),
+);
+
+const fieldGroups = computed(() => {
+  const groups = new Map<string, PluginConfigField[]>();
+  for (const field of configFields.value) {
+    const groupKey = field.group || '_default';
+    const list = groups.get(groupKey) ?? [];
+    list.push(field);
+    groups.set(groupKey, list);
+  }
+  return [...groups.entries()];
+});
 
 const drawerTitle = computed(() =>
   detail.value
@@ -80,9 +130,23 @@ function syncConfigForm() {
     return;
   }
 
-  for (const key of detail.value.config_schema) {
-    const value = detail.value.config[key];
-    configForm[key] =
+  for (const field of detail.value.config_schema) {
+    const value = detail.value.config[field.key];
+    if (field.type === 'switch') {
+      configForm[field.key] =
+        value === true || value === 1 || value === '1' || value === 'true';
+      continue;
+    }
+
+    if (field.type === 'number') {
+      configForm[field.key] =
+        value === '__configured__' || value === null || value === undefined
+          ? ''
+          : Number(value);
+      continue;
+    }
+
+    configForm[field.key] =
       value === '__configured__' || value === null || value === undefined
         ? ''
         : String(value);
@@ -91,6 +155,7 @@ function syncConfigForm() {
 
 async function show(row: PluginRow) {
   open.value = true;
+  activeTab.value = 'config';
   testMobile.value = '';
   testEmail.value = '';
   detail.value = buildPluginPreview(row);
@@ -102,13 +167,22 @@ async function onSaveConfig() {
   if (!detail.value) return;
   submitting.value = true;
   try {
-    const payload: Record<string, string> = {};
-    for (const key of configFields.value) {
-      const value = configForm[key]?.trim() ?? '';
-      payload[key] =
-        value === '' && detail.value.config[key] === '__configured__'
+    const payload: Record<string, string | number | boolean> = {};
+    for (const field of configFields.value) {
+      let value = configForm[field.key];
+      if (field.type === 'switch') {
+        payload[field.key] = Boolean(value);
+        continue;
+      }
+
+      if (typeof value === 'string') {
+        value = value.trim();
+      }
+
+      payload[field.key] =
+        value === '' && detail.value.config[field.key] === '__configured__'
           ? '__configured__'
-          : value;
+          : (value as string | number | boolean);
     }
     await updatePluginConfig(detail.value.slug, payload);
     message.success($t('dev.shared.configSaved'));
@@ -147,12 +221,41 @@ async function onTestMail() {
   }
 }
 
-function isSensitiveField(key: string) {
-  return /access_key|secret_key|app_secret|token|private_key|password/i.test(key);
+function isEncryptedField(field: PluginConfigField) {
+  return field.encrypted || field.type === 'password';
 }
 
-function fieldLabel(key: string) {
-  return key.replace(/_/g, ' ');
+function fieldPlaceholder(field: PluginConfigField) {
+  if (
+    detail.value &&
+    isEncryptedField(field) &&
+    detail.value.config[field.key] === '__configured__'
+  ) {
+    return $t('dev.shared.configuredKeepEmpty');
+  }
+  return $t('dev.shared.enterField', [field.label]);
+}
+
+function resolveCustomComponent(page: PluginPageMeta): Component | null {
+  if (!page.component) {
+    return null;
+  }
+  return resolvePluginCustomComponent(page.component);
+}
+
+function openLink(page: PluginPageMeta) {
+  if (!page.href) {
+    message.warning($t('dev.plugins.linkMissing'));
+    return;
+  }
+  window.open(page.href, '_blank', 'noopener,noreferrer');
+}
+
+function groupTitle(groupKey: string) {
+  if (groupKey === '_default') {
+    return '';
+  }
+  return groupKey;
 }
 
 const emit = defineEmits<{ success: [] }>();
@@ -166,25 +269,63 @@ defineExpose({ open: show });
     :title="drawerTitle"
     :width="drawerWidth"
   >
-    <Tabs v-if="detail">
-      <Tabs.TabPane key="config" :tab="$t('dev.plugins.configTab')">
+    <Tabs v-if="detail" v-model:active-key="activeTab">
+      <Tabs.TabPane
+        v-if="schemaPages.length > 0 || configFields.length > 0"
+        key="config"
+        :tab="$t('dev.plugins.configTab')"
+      >
         <Form v-if="configFields.length > 0" layout="vertical">
-          <Form.Item
-            v-for="key in configFields"
-            :key="key"
-            :label="fieldLabel(key)"
-          >
-            <Input
-              v-model:value="configForm[key]"
-              :disabled="!canConfig"
-              :placeholder="
-                isSensitiveField(key) && detail.config[key] === '__configured__'
-                  ? $t('dev.shared.configuredKeepEmpty')
-                  : $t('dev.shared.enterField', [fieldLabel(key)])
-              "
-              :type="isSensitiveField(key) ? 'password' : 'text'"
-            />
-          </Form.Item>
+          <template v-for="[groupKey, fields] in fieldGroups" :key="groupKey">
+            <div
+              v-if="groupTitle(groupKey)"
+              class="text-muted-foreground mb-2 mt-4 text-xs font-medium uppercase tracking-wide first:mt-0"
+            >
+              {{ groupTitle(groupKey) }}
+            </div>
+            <Form.Item
+              v-for="field in fields"
+              :key="field.key"
+              :label="field.label"
+              :extra="field.help || undefined"
+            >
+              <Select
+                v-if="field.type === 'select'"
+                v-model:value="configForm[field.key]"
+                :disabled="!canConfig"
+                :options="field.options"
+                :placeholder="fieldPlaceholder(field)"
+                allow-clear
+              />
+              <Switch
+                v-else-if="field.type === 'switch'"
+                :checked="Boolean(configForm[field.key])"
+                :disabled="!canConfig"
+                @update:checked="(v) => (configForm[field.key] = v)"
+              />
+              <InputNumber
+                v-else-if="field.type === 'number'"
+                v-model:value="configForm[field.key] as number"
+                class="w-full"
+                :disabled="!canConfig"
+                :placeholder="fieldPlaceholder(field)"
+              />
+              <Textarea
+                v-else-if="field.type === 'textarea'"
+                v-model:value="configForm[field.key] as string"
+                :disabled="!canConfig"
+                :placeholder="fieldPlaceholder(field)"
+                :rows="4"
+              />
+              <Input
+                v-else
+                v-model:value="configForm[field.key] as string"
+                :disabled="!canConfig"
+                :placeholder="fieldPlaceholder(field)"
+                :type="isEncryptedField(field) ? 'password' : 'text'"
+              />
+            </Form.Item>
+          </template>
           <Button
             v-if="canConfig"
             :loading="submitting"
@@ -196,6 +337,30 @@ defineExpose({ open: show });
         </Form>
         <p v-else class="text-muted-foreground text-sm">
           {{ $t('dev.shared.noConfigFields') }}
+        </p>
+      </Tabs.TabPane>
+
+      <Tabs.TabPane
+        v-for="page in extraPages"
+        :key="page.key"
+        :tab="page.title"
+      >
+        <template v-if="page.ui === 'link'">
+          <p class="text-muted-foreground mb-3 text-sm">
+            {{ $t('dev.plugins.linkTabHint') }}
+          </p>
+          <Button type="primary" @click="openLink(page)">
+            {{ $t('dev.plugins.openLink') }}
+          </Button>
+        </template>
+        <component
+          :is="resolveCustomComponent(page)"
+          v-else-if="page.ui === 'component' && resolveCustomComponent(page)"
+          :slug="detail.slug"
+          :config="detail.config"
+        />
+        <p v-else class="text-muted-foreground text-sm">
+          {{ $t('dev.plugins.customComponentMissing') }}
         </p>
       </Tabs.TabPane>
 

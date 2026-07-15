@@ -279,10 +279,85 @@ System     已启用 Plugin
 - `type` 与能力一致（如 `sms` / `email` / `storage`）。
 - `providers` 中完成 Contract 绑定。
 - 需要管理端配置 / 试发时声明 `config` 与 `pages`（`config` / `test`）。
+- `pages[].ui`：`schema`（默认）| `link` | `component` | `slots`（预留）。
+- `frontend`（可选，Wave4 预留）：`{ "entry": "@plugins/Name/admin", "routes": [] }`。
 
 ## 6.3 脚手架提示
 
-`starship:plugin:make` 生成的 ServiceProvider `register()` 内含 Contract 绑定注释示例，复制后改成真实接口即可。
+`starship:plugin:make` 生成的 ServiceProvider `register()` 内含 Contract 绑定注释示例，并生成 `config.schema.php` 模板。
+
+------------------------------------------------------------------------
+
+# 6A. 配置 Schema（对齐 FastAdmin / BeikeShop）
+
+默认值仍在 `config/{slug}.php`；表单描述放在插件根目录：
+
+- 优先：`config.schema.php`
+- 兼容：`columns.php`（BeikeShop 命名）
+
+无 Schema 文件时，管理端按默认配置的 **key 列表**回退为 `string` 输入框。
+
+字段形状示例：
+
+```php
+[
+    'key' => 'host',
+    'label' => __('mail-smtp::messages.fields.host_label'),
+    'type' => 'string', // string|password|number|select|switch|textarea
+    'options' => [],
+    'default' => '',
+    'rules' => ['required'],
+    'help' => __('mail-smtp::messages.fields.host_help'),
+    'group' => 'connection',
+    'encrypted' => false,
+]
+```
+
+文案放在 `resources/lang/{locale}/messages.php`。加载 `config.schema.php` **之前**会 `addNamespace(插件slug)`，因此可直接写 `__('slug::messages...')`。仍兼容语言包键字符串与内联 `['zh_CN'=>..., 'en'=>...]`。
+
+API `config_schema` 返回**对象数组**（`label`/`help` 已是当前语言文案）。保存仍写入 `plugin_configs` 表。
+
+参考：`plugins/MailSmtp/config.schema.php`、`plugins/SmsAliyun/config.schema.php`。
+
+------------------------------------------------------------------------
+
+# 6B. 自定义配置逃逸（SPA）
+
+| ui | 行为 |
+|----|------|
+| `schema` | 抽屉内按 Schema 渲染（默认） |
+| `link` | 抽屉内「打开链接」→ `pages[].href` |
+| `component` | 抽屉内渲染 `pages[].component`，须在管理端 [`custom-registry.ts`](../../apps/admin/web-antd/src/features/system/views/dev/plugins/custom-registry.ts) **编译期登记**；组件源码建议放 `plugins/{Name}/admin/*.vue`，经 Vite 别名 `@plugins` 引入 |
+| `slots` | 预留菜单注入，后续 Wave 启用 |
+
+禁止依赖运行时远程加载 Vue（见 6D）。样例：MailSmtp `advanced` 页。
+
+------------------------------------------------------------------------
+
+# 6C. Hook（对齐 WordPress，与 Contract 分工）
+
+Core 提供：
+
+- `add_action` / `do_action`
+- `add_filter` / `apply_filters`
+- 实现类：`Starship\Core\Support\Hook\Hook`
+
+| 场景 | 用法 |
+|------|------|
+| 换短信/邮件/存储实现 | **Contract** 容器覆盖 |
+| 改流程中间值、打标、旁路逻辑 | **Hook** filter/action |
+
+系统已挂接示例：`apply_filters('starship.plugin.description', $description, $plugin)`。  
+样例插件：`plugins/HookSample`（启用后给 MailSmtp 描述追加标记）。
+
+------------------------------------------------------------------------
+
+# 6D. 前端插件动态加载（约定预留）
+
+- `plugin.json.frontend.entry` / `routes` 已可声明。
+- 管理端 [`frontend-registry.ts`](../../apps/admin/web-antd/src/features/system/views/dev/plugins/frontend-registry.ts) 记录约定；`PLUGIN_FRONTEND_DYNAMIC_ENABLED = false`。
+- **当前**：复杂 UI 走 Wave2 `custom-registry` 编译期引入。
+- **远期**：按已启用插件的 `frontend.entry` 动态 import + 合并路由（插件市场另议）。
 
 ------------------------------------------------------------------------
 
@@ -321,43 +396,27 @@ public function query();
 
 # 8. Plugin配置管理
 
-统一：
+统一存储：`plugin_configs` 表（见 §6A Schema）。
 
-    sa_plugin_configs
+例如：`mail-smtp` / `host`、`password`（敏感字段可加密）。
 
-例如：
+不要：插件自己另起一套配置持久化。
 
-    payment-wechat
-
-    appid
-
-    secret
-
-    mch_id
-
-不要：
-
-插件自己创建配置体系。
+管理端 UI：优先 Schema 自动表单；复杂页用 §6B 逃逸。
 
 ------------------------------------------------------------------------
 
 # 9. Plugin事件通信
 
+短期可用 §6C 的 `add_action` / `add_filter`。
+
 不要：
 
-    OrderService
-
-    调用
-
-    SmsPlugin
+    OrderService 直接调用 SmsPlugin 具体类
 
 应该：
 
-    OrderCreatedEvent
-
-    ↓
-
-    Plugin监听
+    通道实现 → Contract；流程补丁 → Hook / 后续 EventBus
 
 ------------------------------------------------------------------------
 

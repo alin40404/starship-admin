@@ -4,6 +4,27 @@ export interface PluginPageMeta {
   key: string;
   title: string;
   permission?: string;
+  /** schema | link | component | slots */
+  ui?: string;
+  href?: string;
+  component?: string;
+}
+
+export interface PluginConfigField {
+  key: string;
+  label: string;
+  type: 'string' | 'password' | 'number' | 'select' | 'switch' | 'textarea' | string;
+  options: Array<{ label: string; value: string }>;
+  default: string | number | boolean | null;
+  rules: string[];
+  help: string;
+  group: string | null;
+  encrypted: boolean;
+}
+
+export interface PluginFrontendManifest {
+  entry?: string;
+  routes?: Array<Record<string, unknown>>;
 }
 
 export interface PluginTypeOption {
@@ -30,6 +51,7 @@ export interface PluginRow {
   providers: string[];
   providers_count: number;
   pages: PluginPageMeta[];
+  frontend?: PluginFrontendManifest | null;
   cover: string | null;
   cover_url: string | null;
   installed_at: string | null;
@@ -40,7 +62,7 @@ export interface PluginDetail extends PluginRow {
   manifest: Record<string, unknown>;
   manifest_path: string;
   config: Record<string, string | number | boolean | null>;
-  config_schema: string[];
+  config_schema: PluginConfigField[];
 }
 
 export interface PluginListResult {
