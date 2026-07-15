@@ -10,6 +10,15 @@
 
 在 Laravel `backend/` 目录下执行。
 
+### 脚手架
+
+```bash
+php artisan starship:theme:make acme-landing
+php artisan starship:theme:make Acme --title="Acme 官网" --description="企业落地页"
+```
+
+生成 `themes/{slug}/`（theme.json、layouts、home、assets、lang）。再按生命周期 install / enable / link。
+
 ### 导出
 
 ```bash

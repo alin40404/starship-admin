@@ -47,6 +47,12 @@ Theme 是展示层扩展。
 
 # 3. Theme目录结构
 
+新建主题推荐：
+
+```bash
+php artisan starship:theme:make my-theme
+```
+
 MVP（Blade）示例：
 
 ```text

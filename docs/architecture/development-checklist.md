@@ -100,6 +100,7 @@
 - [x] 前台主题最小 Blade Demo（ThemeLoader + `GET /`；CMS/商城业务另计）
 - [x] `themes/` 目录规范落地（`default` / `corporate` 种子 `theme.json`）
 - [x] 主题 export / import CLI（[theme-cli.md](../deployment/theme-cli.md)）
+- [x] `starship:theme:make` 脚手架（Blade 最小主题）
 
 ### 阶段二补充：会员模块（ThemeLoader 就绪后）
 
