@@ -16,16 +16,11 @@ final class PluginTypeCatalog
     {
         return [
             'payment',
-            'shipping',
-            'marketing',
             'sms',
             'email',
             'oauth',
             'storage',
             'ai',
-            'theme',
-            'analysis',
-            'service',
             'feature',
             'other',
         ];
