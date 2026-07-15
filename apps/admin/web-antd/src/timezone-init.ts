@@ -3,10 +3,6 @@ import { setTimezoneHandler } from '@vben/stores';
 import { batchUpsertConfigs, fetchConfigs } from '#/features/system/api/config';
 import { fetchDictOptions } from '#/features/system/api/dict';
 import {
-  SITE_TIMEZONE_DICT_CODE,
-  SITE_TIMEZONE_KEY,
-} from '#/features/system/views/platform/config/data';
-import {
   mapDictItemOptions,
   DICT_TYPE_CODE,
 } from '#/features/system/views/platform/dict/i18n';
@@ -15,6 +11,10 @@ import {
   fetchSiteBranding,
   resolveSiteDisplayTimezone,
 } from '#/utils/site-branding';
+
+/** 与 platform/config/data.ts 保持一致；勿从该文件导入，以免拉起 menu/data → router 过早初始化 */
+const SITE_TIMEZONE_KEY = 'site.timezone';
+const SITE_TIMEZONE_DICT_CODE = 'site_timezone';
 
 /**
  * 将顶栏时区与基础配置 site.timezone / 字典 site_timezone 打通。

@@ -35,7 +35,9 @@ const coreRoutes: RouteRecordRaw[] = [
     },
     name: 'Root',
     path: '/',
-    redirect: preferences.app.defaultHomePath,
+    // 必须用函数：preferences 启动后会被 site branding / overrides 改写；
+    // 若写成静态字符串，会被过早导入链（如 timezone-init → menu/data → routes）冻成框架默认 `/analytics`。
+    redirect: () => preferences.app.defaultHomePath,
     children: [
       {
         name: 'Profile',
