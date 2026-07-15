@@ -321,7 +321,7 @@ const columns = computed<TableColumnsType<SmsTemplateRow>>(() => [
 </script>
 
 <template>
-  <div class="sms-aliyun-templates flex flex-col gap-3">
+  <div class="sms-aliyun-templates plugin-form flex flex-col gap-3">
     <div class="flex items-start justify-between gap-3">
       <div class="min-w-0 flex-1">
         <div class="text-foreground text-sm font-medium">
@@ -414,14 +414,16 @@ const columns = computed<TableColumnsType<SmsTemplateRow>>(() => [
       :title="templateModalTitle"
       class="w-full max-w-full md:w-[520px] md:max-w-[520px]"
     >
-      <TemplateForm />
+      <div class="plugin-form">
+        <TemplateForm />
+      </div>
     </TemplateModal>
   </div>
 </template>
 
 <style scoped>
 .sms-aliyun-templates__table :deep(.ant-table) {
-  font-size: 12px;
+  font-size: calc(var(--font-size-base, 16px) * 0.75);
 }
 
 .sms-aliyun-templates__table :deep(.ant-table-thead > tr > th) {

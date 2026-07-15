@@ -356,7 +356,7 @@ const columns = computed<TableColumnsType<RecipientRow>>(() => [
 </script>
 
 <template>
-  <div class="mail-smtp-advanced flex flex-col gap-4">
+  <div class="mail-smtp-advanced plugin-form flex flex-col gap-4">
     <div>
       <div class="text-foreground text-base font-medium">
         {{ $t('mail-smtp.title') }}
@@ -415,7 +415,7 @@ const columns = computed<TableColumnsType<RecipientRow>>(() => [
       <Card size="small" class="mail-smtp-advanced__options-card" :bordered="true">
         <Form
           layout="vertical"
-          class="mail-smtp-advanced__controls"
+          class="mail-smtp-advanced__options"
           :colon="false"
         >
           <div
@@ -515,7 +515,9 @@ const columns = computed<TableColumnsType<RecipientRow>>(() => [
       :title="recipientModalTitle"
       class="w-full max-w-full md:w-[480px] md:max-w-[480px]"
     >
-      <RecipientForm />
+      <div class="plugin-form">
+        <RecipientForm />
+      </div>
     </RecipientModal>
   </div>
 </template>
@@ -523,57 +525,19 @@ const columns = computed<TableColumnsType<RecipientRow>>(() => [
 <style scoped>
 .mail-smtp-advanced__desc :deep(.ant-descriptions-item-label),
 .mail-smtp-advanced__desc :deep(.ant-descriptions-item-content) {
-  font-size: 12px;
+  font-size: calc(var(--font-size-base, 16px) * 0.75);
 }
 
 .mail-smtp-advanced__options-card :deep(.ant-card-body) {
   padding: 12px;
 }
 
-.mail-smtp-advanced__controls :deep(.ant-form-item-label) {
-  padding-bottom: 2px;
-}
-
-.mail-smtp-advanced__controls :deep(.ant-form-item-label > label) {
-  height: auto;
-  font-size: 12px;
-}
-
-/* 与系统表单一致：统一 Input / InputNumber / Select 控件高度 */
-.mail-smtp-advanced__controls :deep(.ant-input:not(textarea)),
-.mail-smtp-advanced__controls :deep(.ant-input-affix-wrapper),
-.mail-smtp-advanced__controls :deep(.ant-input-number),
-.mail-smtp-advanced__controls
-  :deep(.ant-select-single:not(.ant-select-customize-input) .ant-select-selector) {
-  height: 32px;
-  font-size: 13px;
-}
-
-.mail-smtp-advanced__controls :deep(.ant-input-number) {
-  width: 100%;
-}
-
-.mail-smtp-advanced__controls :deep(.ant-input-number-input) {
-  height: 30px;
-  padding-block: 0;
-  line-height: 30px;
-}
-
-.mail-smtp-advanced__controls
-  :deep(.ant-select-single .ant-select-selector .ant-select-selection-item),
-.mail-smtp-advanced__controls
-  :deep(
-    .ant-select-single .ant-select-selector .ant-select-selection-placeholder
-  ) {
-  line-height: 30px;
-}
-
 .mail-smtp-advanced__btn :deep(span) {
-  font-size: 12px;
+  font-size: calc(var(--font-size-base, 16px) * 0.75);
 }
 
 .mail-smtp-advanced__table :deep(.ant-table) {
-  font-size: 12px;
+  font-size: calc(var(--font-size-base, 16px) * 0.75);
 }
 
 .mail-smtp-advanced__table :deep(.ant-table-thead > tr > th) {

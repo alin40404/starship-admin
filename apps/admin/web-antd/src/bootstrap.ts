@@ -18,6 +18,7 @@ import { router } from './router';
 
 import '#/styles/table-action.css';
 import '#/styles/form-upload.css';
+import '#/styles/plugin-form.css';
 
 async function bootstrap(namespace: string) {
   // 初始化组件适配器

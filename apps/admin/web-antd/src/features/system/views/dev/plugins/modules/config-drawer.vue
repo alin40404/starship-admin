@@ -279,7 +279,7 @@ defineExpose({ open: show });
       >
         <Form
           v-if="configFields.length > 0"
-          class="plugin-config-form"
+          class="plugin-form"
           layout="vertical"
         >
           <template v-for="[groupKey, fields] in fieldGroups" :key="groupKey">
@@ -376,7 +376,7 @@ defineExpose({ open: show });
       <Tabs.TabPane v-if="showTestTab" key="test" :tab="$t('dev.plugins.testTab')">
         <Form
           v-if="showSmsTestTab"
-          class="plugin-config-form"
+          class="plugin-form"
           layout="vertical"
         >
           <Form.Item :label="$t('dev.shared.testMobile')">
@@ -392,7 +392,7 @@ defineExpose({ open: show });
         </Form>
         <Form
           v-else-if="showMailTestTab"
-          class="plugin-config-form"
+          class="plugin-form"
           layout="vertical"
         >
           <Form.Item :label="$t('dev.shared.testEmail')">
@@ -417,64 +417,3 @@ defineExpose({ open: show });
     </Tabs>
   </Drawer>
 </template>
-
-<style scoped>
-/* 标签与控件共用同一动态字号，随 preferences.theme.fontSize（--font-size-base）缩放 */
-.plugin-config-form {
-  --plugin-form-font-size: calc(var(--font-size-base, 16px) * 0.875);
-}
-
-.plugin-config-form :deep(.ant-form-item-label) {
-  padding: 0 0 2px;
-}
-
-.plugin-config-form :deep(.ant-form-item-label > label) {
-  height: auto;
-  font-size: var(--plugin-form-font-size);
-}
-
-.plugin-config-form :deep(.ant-input),
-.plugin-config-form :deep(.ant-input-affix-wrapper),
-.plugin-config-form :deep(.ant-input-number),
-.plugin-config-form :deep(.ant-input-number-input),
-.plugin-config-form :deep(.ant-select),
-.plugin-config-form :deep(.ant-select-selection-item),
-.plugin-config-form :deep(.ant-select-selection-placeholder) {
-  font-size: var(--plugin-form-font-size);
-}
-
-.plugin-config-form :deep(.ant-form-item-extra) {
-  font-size: calc(var(--font-size-base, 16px) * 0.75);
-}
-
-.plugin-config-form :deep(.ant-input:not(textarea)),
-.plugin-config-form :deep(.ant-input-affix-wrapper),
-.plugin-config-form :deep(.ant-input-number),
-.plugin-config-form
-  :deep(.ant-select-single:not(.ant-select-customize-input) .ant-select-selector) {
-  height: 32px;
-}
-
-.plugin-config-form :deep(.ant-input-number) {
-  width: 100%;
-}
-
-.plugin-config-form :deep(.ant-input-number-input) {
-  height: 30px;
-  padding-block: 0;
-  line-height: 30px;
-}
-
-.plugin-config-form
-  :deep(.ant-select-single .ant-select-selector .ant-select-selection-item),
-.plugin-config-form
-  :deep(
-    .ant-select-single .ant-select-selector .ant-select-selection-placeholder
-  ) {
-  line-height: 30px;
-}
-
-.plugin-config-form :deep(.ant-select) {
-  width: 100%;
-}
-</style>

@@ -83,10 +83,11 @@
 - [x] Mail：`MailSenderInterface` + System 默认实现 + 样例插件覆盖（本轮）
 - [x] Contract 覆盖约定文档落地（Plugin 开发规范专节）
 - [x] 插件配置 Schema（`config.schema.php` + 抽屉按类型渲染）
-- [x] 插件配置自定义逃逸（pages.ui = schema/link/component；MailSmtp 高级页样例）
+- [x] 插件配置自定义逃逸（pages.ui = schema/link/component；MailSmtp「高级」L2 样例 + SmsAliyun「模板」L2 样例）
 - [x] Event 主干（`EventDispatcherInterface` + `PluginDescriptionResolving`；`plugins/EventSample`）
 - [ ] Filter Hook 体系（改变价格等链式改写；延后，可用可变载荷 Event 过渡）
 - [x] 管理端插件 UI：`src/plugins/{slug}`（后台前端）+ 插件内 `frontend/`（前台）；导出 `backend/`
+- [x] 插件表单公共样式（`styles/plugin-form.css`，配置/测试/自定义 Tab 共用 `--plugin-form-font-size`）
 - [x] 插件 export / import CLI（[plugin-cli.md](../deployment/plugin-cli.md)）
 - [x] 前端插件动态加载约定预留（`frontend` + `frontend-registry.ts`；运行时加载暂关）
 - [ ] Payment / OAuth 等（延后）

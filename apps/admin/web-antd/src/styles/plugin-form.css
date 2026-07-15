@@ -1,0 +1,72 @@
+/**
+ * 插件配置抽屉表单 / 自定义 Tab 表单公共样式。
+ * 标签与控件共用 --plugin-form-font-size，随 preferences.theme.fontSize（--font-size-base）缩放。
+ * 用法：在表单或面板根节点加 class="plugin-form"
+ */
+.plugin-form {
+  --plugin-form-font-size: calc(var(--font-size-base, 16px) * 0.875);
+}
+
+/* Ant Design Form */
+.plugin-form .ant-form-item-label {
+  padding: 0 0 2px;
+}
+
+.plugin-form .ant-form-item-label > label {
+  height: auto;
+  font-size: var(--plugin-form-font-size);
+}
+
+.plugin-form .ant-form-item-extra {
+  font-size: calc(var(--font-size-base, 16px) * 0.75);
+}
+
+/* useVbenForm 标签 */
+.plugin-form .relative.flex > label.flex {
+  font-size: var(--plugin-form-font-size);
+}
+
+/* 控件 */
+.plugin-form .ant-input,
+.plugin-form .ant-input-affix-wrapper,
+.plugin-form .ant-input-number,
+.plugin-form .ant-input-number-input,
+.plugin-form .ant-select,
+.plugin-form .ant-select-selection-item,
+.plugin-form .ant-select-selection-placeholder {
+  font-size: var(--plugin-form-font-size);
+}
+
+.plugin-form .ant-input:not(textarea),
+.plugin-form .ant-input-affix-wrapper,
+.plugin-form .ant-input-number,
+.plugin-form
+  .ant-select-single:not(.ant-select-customize-input)
+  .ant-select-selector {
+  height: 32px;
+}
+
+.plugin-form .ant-input-number {
+  width: 100%;
+}
+
+.plugin-form .ant-input-number-input {
+  height: 30px;
+  padding-block: 0;
+  line-height: 30px;
+}
+
+.plugin-form
+  .ant-select-single
+  .ant-select-selector
+  .ant-select-selection-item,
+.plugin-form
+  .ant-select-single
+  .ant-select-selector
+  .ant-select-selection-placeholder {
+  line-height: 30px;
+}
+
+.plugin-form .ant-select {
+  width: 100%;
+}
