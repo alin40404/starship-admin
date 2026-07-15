@@ -1,7 +1,9 @@
 import { VBEN_LOGO_URL } from '@vben/constants';
 import { useAppConfig } from '@vben/hooks';
 import { preferences, updatePreferences } from '@vben/preferences';
+import { useTimezoneStore } from '@vben/stores';
 import { setCurrentTimezone } from '@vben/utils';
+import { getActivePinia } from 'pinia';
 
 import { overridesPreferences } from '#/preferences';
 
@@ -33,7 +35,24 @@ export function resolveSiteDisplayTimezone(timezone?: string): string {
 export function applySiteDisplayTimezone(timezone?: string): string {
   const resolved = resolveSiteDisplayTimezone(timezone);
   setCurrentTimezone(resolved);
+  syncTimezoneStore(resolved);
   return resolved;
+}
+
+/** 同步 Pinia 展示值（不调 setTimezone，避免二次写入配置） */
+function syncTimezoneStore(timezone: string) {
+  if (!getActivePinia()) {
+    return;
+  }
+
+  try {
+    const store = useTimezoneStore();
+    if (store.timezone !== timezone) {
+      store.timezone = timezone;
+    }
+  } catch {
+    // Pinia / store 尚未就绪时忽略
+  }
 }
 
 function normalizeHomePath(path: string, fallback: string): string {

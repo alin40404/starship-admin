@@ -16,6 +16,7 @@ import {
   BasicLayout,
   LockScreen,
   Notification,
+  TimezoneButton,
   UserDropdown,
 } from '@vben/layouts';
 import { useAccess } from '@vben/access';
@@ -38,6 +39,7 @@ import {
   INBOX_MENU_PERMISSION,
   resolveInboxCategory,
 } from '#/features/system/constants/inbox-permissions';
+import { CONFIG_PERMISSIONS } from '#/features/system/constants/config-permissions';
 import { $t } from '#/locales';
 import { useAuthStore } from '#/store';
 import { useInboxStore } from '#/features/system/store/inbox';
@@ -63,6 +65,9 @@ const authStore = useAuthStore();
 const accessStore = useAccessStore();
 const { hasAccessByCodes } = useAccess();
 const canUseInbox = computed(() => hasAccessByCodes([INBOX_MENU_PERMISSION]));
+const canUpdateSiteTimezone = computed(() =>
+  hasAccessByCodes([CONFIG_PERMISSIONS.UPDATE]),
+);
 const { destroyWatermark, updateWatermark } = useWatermark();
 const showDot = computed(() => unreadCount.value > 0);
 
@@ -320,6 +325,12 @@ watch(
         :description="userEmail"
         :tag-text="userTagText"
         @logout="handleLogout"
+      />
+    </template>
+    <template #timezone>
+      <TimezoneButton
+        v-if="canUpdateSiteTimezone"
+        class="mt-0.5 mr-1"
       />
     </template>
     <template v-if="canUseInbox" #notification>
