@@ -214,6 +214,8 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
             ->middleware('admin.permission:'.ConfigPermissions::UPDATE);
         Route::post('configs/sms-test', [ConfigController::class, 'testSms'])
             ->middleware('admin.permission:'.ConfigPermissions::UPDATE);
+        Route::post('configs/mail-test', [ConfigController::class, 'testMail'])
+            ->middleware('admin.permission:'.ConfigPermissions::UPDATE);
         Route::post('configs/batch-destroy', [ConfigController::class, 'batchDestroy'])
             ->middleware('admin.permission:'.ConfigPermissions::BATCH_DELETE);
         Route::delete('configs/{id}', [ConfigController::class, 'destroy'])

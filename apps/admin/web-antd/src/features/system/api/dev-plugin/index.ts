@@ -99,3 +99,7 @@ export function updatePluginConfig(slug: string, payload: Record<string, unknown
 export function testSmsAliyunPlugin(payload: { mobile: string }) {
   return requestClient.post<{ message: string }>('/plugin/sms-aliyun/test', payload);
 }
+
+export function testMailSmtpPlugin(payload: { email: string }) {
+  return requestClient.post<{ message: string }>('/plugin/mail-smtp/test', payload);
+}

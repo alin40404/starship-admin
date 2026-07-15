@@ -27,6 +27,8 @@
     "test": "Test",
     "testMobile": "Test Mobile",
     "testMobilePlaceholder": "Enter mobile number",
+    "testEmail": "Test Email",
+    "testEmailPlaceholder": "Enter email address",
     "sendTest": "Send Test",
     "saveConfig": "Save Configuration",
     "configSaved": "Configuration saved",

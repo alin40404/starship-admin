@@ -17,7 +17,12 @@ import {
 } from 'ant-design-vue';
 import type { DefaultOptionType } from 'ant-design-vue/es/select';
 
-import { batchUpsertConfigs, fetchConfigs, testSmsConfig } from '#/features/system/api/config';
+import {
+  batchUpsertConfigs,
+  fetchConfigs,
+  testMailConfig,
+  testSmsConfig,
+} from '#/features/system/api/config';
 import { fetchDictOptions } from '#/features/system/api/dict';
 import { uploadAttachment } from '#/features/system/api/attachment';
 import { PictureUploadField } from '#/components/picture-upload-field';
@@ -64,6 +69,8 @@ const homePathCascaderOptions = ref<HomePathCascaderOption[]>([]);
 const siteTimezoneOptions = ref<{ label: string; value: string }[]>([]);
 const smsTestMobile = ref('');
 const smsTesting = ref(false);
+const mailTestEmail = ref('');
+const mailTesting = ref(false);
 
 const scrollStyle = computed(() => ({
   height: `${Math.max(Math.floor(scrollWrapHeight.value), 280)}px`,
@@ -211,6 +218,22 @@ async function onSmsTest() {
     message.success($t('platform.config.smsTest.sent'));
   } finally {
     smsTesting.value = false;
+  }
+}
+
+async function onMailTest() {
+  const email = mailTestEmail.value.trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    message.warning($t('platform.config.mailTest.emailPlaceholder'));
+    return;
+  }
+
+  mailTesting.value = true;
+  try {
+    await testMailConfig(email);
+    message.success($t('platform.config.mailTest.sent'));
+  } finally {
+    mailTesting.value = false;
   }
 }
 
@@ -392,6 +415,29 @@ defineExpose({
                   @click="onSmsTest"
                 >
                   {{ $t('platform.config.smsTest.send') }}
+                </Button>
+              </div>
+            </div>
+
+            <div v-if="props.groupName === 'email'" class="config-mail-test mt-6">
+              <div class="config-mail-test__label mb-2 text-sm font-medium">
+                {{ $t('platform.config.mailTest.title') }}
+              </div>
+              <div class="config-mail-test__actions flex w-full items-center gap-2">
+                <Input
+                  v-model:value="mailTestEmail"
+                  class="config-mail-test__input config-field-control min-w-0 flex-1"
+                  :disabled="!props.canManage || mailTesting"
+                  :placeholder="$t('platform.config.mailTest.emailPlaceholder')"
+                />
+                <Button
+                  class="config-mail-test__button shrink-0"
+                  :disabled="!props.canManage"
+                  :loading="mailTesting"
+                  type="primary"
+                  @click="onMailTest"
+                >
+                  {{ $t('platform.config.mailTest.send') }}
                 </Button>
               </div>
             </div>

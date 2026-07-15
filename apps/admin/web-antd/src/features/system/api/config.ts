@@ -50,3 +50,7 @@ export function batchDeleteConfigs(ids: number[]) {
 export function testSmsConfig(mobile: string) {
   return requestClient.post<null>('/system/configs/sms-test', { mobile });
 }
+
+export function testMailConfig(email: string) {
+  return requestClient.post<null>('/system/configs/mail-test', { email });
+}

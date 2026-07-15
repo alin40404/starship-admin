@@ -4,15 +4,18 @@ namespace Modules\System\App\Services;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-use Modules\System\App\Mail\AdminPasswordResetMail;
 use Modules\System\App\Models\Admin;
 use Modules\System\App\Support\MailConfigRegistrar;
+use Starship\Core\Contracts\Mail\MailSenderInterface;
 
 class AdminPasswordResetService
 {
     public const TOKEN_TTL_MINUTES = 60;
+
+    public function __construct(
+        protected MailSenderInterface $mailSender,
+    ) {}
 
     public function ensureMailReady(): void
     {
@@ -51,8 +54,24 @@ class AdminPasswordResetService
         );
 
         $resetUrl = $this->buildResetUrl($email, $plainToken);
+        $siteName = trim((string) config('mail.from.name', config('app.name')));
+        $subject = __('system::messages.password_reset_mail_subject', ['site' => $siteName]);
+        $html = view('system::emails.admin-password-reset', [
+            'resetUrl' => $resetUrl,
+            'admin' => $admin,
+            'siteName' => $siteName,
+        ])->render();
 
-        Mail::to($email)->send(new AdminPasswordResetMail($resetUrl, $admin));
+        try {
+            $this->mailSender->send($email, $subject, $html, ['html' => true]);
+        } catch (\Throwable $exception) {
+            throw new \RuntimeException(
+                $exception->getMessage() !== ''
+                    ? $exception->getMessage()
+                    : __('system::messages.password_reset_mail_failed'),
+                previous: $exception,
+            );
+        }
     }
 
     public function verifyResetToken(string $email, string $token): void

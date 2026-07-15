@@ -1,6 +1,15 @@
 # Starship Contract 接口体系设计方案
 
-> **实现状态（2026-07-14）**：已落地 `Starship\Core\Contracts\Sms\SmsSenderInterface`、`Starship\Core\Contracts\Storage\StorageInterface`。System 分别提供 `SmsGateway`、`LocalStorage` 默认绑定；插件可覆盖容器绑定。`StorageInterface` 在设计四方法基础上增加了 `exists()`。
+> **实现状态（2026-07-15）**
+>
+> | Contract | Core | System 默认 | 插件覆盖样例 |
+> |----------|------|-------------|--------------|
+> | `SmsSenderInterface` | ✅ | `SmsGateway` | `plugins/SmsAliyun` |
+> | `StorageInterface` | ✅（含 `exists()`） | `LocalStorage` | （延后 OSS） |
+> | `MailSenderInterface` | ✅ | `MailGateway` | `plugins/MailSmtp` |
+>
+> **第一批范围**：Sms / Storage / Mail。Payment / OAuth / Notification 聚合等**延后**。  
+> **暂缓**：Packagist / `release` 分支（先把插件 Contract 约定跑通）。
 
 ## 1. 设计目标
 
@@ -406,15 +415,11 @@ v1:
 
     StorageInterface
 
-    PaymentInterface
+    SmsSenderInterface
 
-    NotificationInterface
+    MailSenderInterface
 
-    UserProviderInterface
-
-    ConfigInterface
-
-    PermissionInterface
+    （延后）PaymentInterface / NotificationInterface / UserProviderInterface / ConfigInterface / PermissionInterface
 
 第二阶段：
 
@@ -426,6 +431,7 @@ v1:
 
     AIInterface
 
+    OAuth / Payment 具体落地
 ------------------------------------------------------------------------
 
 # 14. 最终架构

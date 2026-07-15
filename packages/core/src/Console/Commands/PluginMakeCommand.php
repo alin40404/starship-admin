@@ -222,7 +222,9 @@ class {$providerClass} extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        // 若本插件要覆盖 Core Contract，在此绑定，例如：
+        // use Starship\Core\Contracts\Mail\MailSenderInterface;
+        // \$this->app->singleton(MailSenderInterface::class, YourMailSender::class);
     }
 
     public function boot(): void

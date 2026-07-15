@@ -249,7 +249,44 @@ CDN 桶内路径须与本地一致：`plugins/payment-wechat/assets/...`。
 
 ------------------------------------------------------------------------
 
-# 6. Plugin接口设计
+# 6. Plugin 与 Contract 覆盖约定
+
+能力替换走 **Core Contract + 容器绑定**，不要在 Module 里 `new` 具体插件类。
+
+## 6.1 标准链路
+
+```text
+Module / System 业务代码
+        │
+        ▼
+  app(XxxInterface::class)     ← 只依赖接口
+        │
+   ┌────┴────┐
+   ▼         ▼
+System     已启用 Plugin
+默认绑定    ServiceProvider::register 里 singleton 覆盖
+```
+
+1. **System** 在 `SystemServiceProvider::register` 中 `singleton(Contract::class, DefaultImpl::class)`。
+2. **Plugin** 启用后加载 Provider，再次 `singleton(Contract::class, PluginImpl::class)` **覆盖**默认实现。
+3. **禁用 / 卸载** 后 Provider 不再加载；下一请求由 System 默认实现承接（无残留绑定）。
+4. 业务发送入口（短信、邮件、存储等）一律注入 Contract，禁止写死 `Plugins\Foo\...`。
+
+参考：`SmsSenderInterface` + `SmsGateway` + `plugins/SmsAliyun`；`MailSenderInterface` + `MailGateway` + `plugins/MailSmtp`。
+
+## 6.2 plugin.json
+
+- `type` 与能力一致（如 `sms` / `email` / `storage`）。
+- `providers` 中完成 Contract 绑定。
+- 需要管理端配置 / 试发时声明 `config` 与 `pages`（`config` / `test`）。
+
+## 6.3 脚手架提示
+
+`starship:plugin:make` 生成的 ServiceProvider `register()` 内含 Contract 绑定注释示例，复制后改成真实接口即可。
+
+------------------------------------------------------------------------
+
+# 7. Plugin接口设计
 
 例如支付：
 
@@ -282,7 +319,7 @@ public function query();
 
 ------------------------------------------------------------------------
 
-# 7. Plugin配置管理
+# 8. Plugin配置管理
 
 统一：
 
@@ -304,7 +341,7 @@ public function query();
 
 ------------------------------------------------------------------------
 
-# 8. Plugin事件通信
+# 9. Plugin事件通信
 
 不要：
 
@@ -324,7 +361,7 @@ public function query();
 
 ------------------------------------------------------------------------
 
-# 9. Plugin安全规范
+# 10. Plugin安全规范
 
 第三方插件：
 
@@ -337,7 +374,7 @@ public function query();
 
 ------------------------------------------------------------------------
 
-# 10. 最终原则
+# 11. 最终原则
 
 Plugin：
 

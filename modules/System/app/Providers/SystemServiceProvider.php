@@ -19,10 +19,12 @@ use Modules\System\App\Http\Middleware\RenewAdminTokenExpiration;
 use Modules\System\App\Http\Middleware\SetLocale;
 use Modules\System\App\Services\ExceptionLogWriter;
 use Modules\System\App\Support\GuestRedirect;
+use Modules\System\App\Support\Mail\MailGateway;
 use Modules\System\App\Support\MailConfigRegistrar;
 use Modules\System\App\Support\Sms\SmsGateway;
 use Modules\System\App\Support\Storage\LocalStorage;
 use Modules\System\App\Support\StorageConfigRegistrar;
+use Starship\Core\Contracts\Mail\MailSenderInterface;
 use Starship\Core\Contracts\Sms\SmsSenderInterface;
 use Starship\Core\Contracts\Storage\StorageInterface;
 use Starship\Core\Support\ApiResponse;
@@ -35,6 +37,7 @@ class SystemServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../../config/system.php', 'system');
 
         $this->app->singleton(SmsSenderInterface::class, SmsGateway::class);
+        $this->app->singleton(MailSenderInterface::class, MailGateway::class);
         $this->app->singleton(LocalStorage::class);
         $this->app->singleton(StorageInterface::class, fn ($app) => $app->make(LocalStorage::class));
     }

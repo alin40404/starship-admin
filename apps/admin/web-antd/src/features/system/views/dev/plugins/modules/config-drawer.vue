@@ -11,6 +11,7 @@ import { Button, Drawer, Form, Input, message, Tabs } from 'ant-design-vue';
 
 import {
   fetchPlugin,
+  testMailSmtpPlugin,
   testSmsAliyunPlugin,
   updatePluginConfig,
 } from '#/features/system/api/dev-plugin';
@@ -31,12 +32,17 @@ const testing = ref(false);
 const detail = ref<PluginDetail | null>(null);
 const configForm = reactive<Record<string, string>>({});
 const testMobile = ref('');
+const testEmail = ref('');
 
 const canConfig = computed(() => props.access.can(PLUGIN_PERMISSIONS.CONFIG));
 const configFields = computed(() => detail.value?.config_schema ?? []);
-const showTestTab = computed(
+const showSmsTestTab = computed(
   () => detail.value?.slug === 'sms-aliyun' && detail.value.enabled,
 );
+const showMailTestTab = computed(
+  () => detail.value?.slug === 'mail-smtp' && detail.value.enabled,
+);
+const showTestTab = computed(() => showSmsTestTab.value || showMailTestTab.value);
 
 const drawerTitle = computed(() =>
   detail.value
@@ -86,6 +92,7 @@ function syncConfigForm() {
 async function show(row: PluginRow) {
   open.value = true;
   testMobile.value = '';
+  testEmail.value = '';
   detail.value = buildPluginPreview(row);
   loading.value = false;
   await loadDetail(row.slug, row);
@@ -126,8 +133,22 @@ async function onTestSms() {
   }
 }
 
+async function onTestMail() {
+  if (!testEmail.value.trim()) {
+    message.warning($t('dev.shared.testEmailPlaceholder'));
+    return;
+  }
+  testing.value = true;
+  try {
+    const result = await testMailSmtpPlugin({ email: testEmail.value.trim() });
+    message.success(result.message || $t('dev.shared.testSuccess'));
+  } finally {
+    testing.value = false;
+  }
+}
+
 function isSensitiveField(key: string) {
-  return /access_key|secret_key|app_secret|token|private_key/i.test(key);
+  return /access_key|secret_key|app_secret|token|private_key|password/i.test(key);
 }
 
 function fieldLabel(key: string) {
@@ -179,7 +200,7 @@ defineExpose({ open: show });
       </Tabs.TabPane>
 
       <Tabs.TabPane v-if="showTestTab" key="test" :tab="$t('dev.plugins.testTab')">
-        <Form layout="vertical">
+        <Form v-if="showSmsTestTab" layout="vertical">
           <Form.Item :label="$t('dev.shared.testMobile')">
             <Input
               v-model:value="testMobile"
@@ -187,6 +208,17 @@ defineExpose({ open: show });
             />
           </Form.Item>
           <Button :loading="testing" type="primary" @click="onTestSms">
+            {{ $t('dev.shared.sendTest') }}
+          </Button>
+        </Form>
+        <Form v-else-if="showMailTestTab" layout="vertical">
+          <Form.Item :label="$t('dev.shared.testEmail')">
+            <Input
+              v-model:value="testEmail"
+              :placeholder="$t('dev.shared.testEmailPlaceholder')"
+            />
+          </Form.Item>
+          <Button :loading="testing" type="primary" @click="onTestMail">
             {{ $t('dev.shared.sendTest') }}
           </Button>
         </Form>

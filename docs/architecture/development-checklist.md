@@ -1,7 +1,8 @@
 # Starship Admin 开发清单
 
-> 更新日期：2026-07-13  
-> 目录约定：**保留 `modules/`**，近期不改为 `starship/`。
+> 更新日期：2026-07-15  
+> 目录约定：**保留 `modules/`**，近期不改为 `starship/`。  
+> **当前优先**：完善 Plugin / Contract（Mail 等），**暂缓** Packagist / `release` 分支。
 
 ---
 
@@ -68,12 +69,20 @@
 
 #### P2 — 框架产品化前置
 
-- [x] 最小 Contract（`StorageInterface` ✅；`SmsSenderInterface` ✅）
+- [x] 最小 Contract（`StorageInterface` ✅；`SmsSenderInterface` ✅；`MailSenderInterface` ✅）
 - [x] 框架级 Feature Test（`php artisan test` 冒烟，仅 backend 应用壳）
 - [x] `packages/core` 包测试（`cd packages/core && composer test`）
 - [x] 项目模板约定：开发仓兼发布（根 `composer.json` + [release-as-template.md](./release-as-template.md)）
 - [x] `starship/core` Packagist 约定（[packagist.md](./packagist.md)；待独立仓上架与首个 tag）
-- [ ] 对外发布分支 `release`：core 改版本约束 + clone 可起步
+- [ ] 对外发布分支 `release`：core 改版本约束 + clone 可起步 — **暂缓**（先完善插件 Contract）
+
+### 阶段一补充：插件 / Contract 完善（当前优先，暂缓 Packagist）
+
+- [x] Sms：`SmsSenderInterface` + System `SmsGateway` + `plugins/SmsAliyun` 覆盖
+- [x] Storage：`StorageInterface` + System `LocalStorage`
+- [x] Mail：`MailSenderInterface` + System 默认实现 + 样例插件覆盖（本轮）
+- [x] Contract 覆盖约定文档落地（Plugin 开发规范专节）
+- [ ] Payment / OAuth 等（延后）
 
 ### 阶段二：主题体系（底座稳定后，约 1～2 个月）
 
@@ -86,7 +95,7 @@
 ### 阶段二补充：会员模块（ThemeLoader 就绪后）
 
 - [x] 独立 `modules/Member` MVP（不进 System）：`members` 表、`member` session guard、后台会员 CRUD（查询/启停/增删改）、前台登录/注册 Blade（Theme 可覆盖）
-- [ ] 模块导出/导入验收（Member 试点）：[module-export-import-acceptance.md](../deployment/module-export-import-acceptance.md)
+- [x] 模块导出/导入验收（Member 试点）：[module-export-import-acceptance.md](../deployment/module-export-import-acceptance.md)（2026-07-15：B 环境 `export` → `import --force --migrate --seed` 后台通过）
 - [x] `starship:module:export` / `import` CLI：[module-cli.md](../deployment/module-cli.md)
 - [ ] 第三方登录、会员等级/积分、商城订单绑定（明确延后）
 

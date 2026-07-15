@@ -1,0 +1,30 @@
+{
+  "name": "MailSmtp",
+  "slug": "mail-smtp",
+  "type": "email",
+  "namespace": "Plugins\\MailSmtp",
+  "version": "1.0.0",
+  "description": "SMTP 邮件发送适配插件",
+  "author": "Starship Admin",
+  "cover": "cover.svg",
+  "require": {
+    "starship": ">=1.0.0",
+    "php": ">=8.3",
+    "modules": ["System"],
+    "plugins": []
+  },
+  "providers": [
+    "Plugins\\MailSmtp\\Providers\\MailSmtpServiceProvider"
+  ],
+  "routes": [
+    "routes/admin-api.php"
+  ],
+  "migrations": false,
+  "config": "config/mail-smtp.php",
+  "pages": [
+    { "key": "config", "title": "配置", "permission": "system.plugins.config" },
+    { "key": "test", "title": "测试", "permission": "system.plugins.config" }
+  ],
+  "enabled": false,
+  "order": 510
+}

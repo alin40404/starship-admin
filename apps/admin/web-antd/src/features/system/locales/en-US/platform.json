@@ -123,6 +123,12 @@
       "send": "Send test SMS",
       "sent": "Test SMS sent"
     },
+    "mailTest": {
+      "title": "Send test",
+      "emailPlaceholder": "Email address to receive the test message",
+      "send": "Send test email",
+      "sent": "Test email sent"
+    },
     "logoPlaceholder": "Select or upload logo",
     "faviconPlaceholder": "Select or upload site icon",
     "selectOptions": {

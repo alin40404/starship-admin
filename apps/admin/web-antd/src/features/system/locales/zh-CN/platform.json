@@ -123,6 +123,12 @@
       "send": "发送测试短信",
       "sent": "测试短信已发送"
     },
+    "mailTest": {
+      "title": "发送测试",
+      "emailPlaceholder": "请输入接收测试邮件的邮箱",
+      "send": "发送测试邮件",
+      "sent": "测试邮件已发送"
+    },
     "logoPlaceholder": "请选择或上传 Logo",
     "faviconPlaceholder": "请选择或上传站点图标",
     "selectOptions": {

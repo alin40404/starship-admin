@@ -165,4 +165,26 @@ class ConfigController extends Controller
 
         return ApiResponse::success(null, __('system::messages.sms_test_sent'));
     }
+
+    public function testMail(Request $request, \Starship\Core\Contracts\Mail\MailSenderInterface $mailSender): JsonResponse
+    {
+        $data = $request->validate([
+            'email' => ['required', 'email', 'max:191'],
+        ]);
+
+        try {
+            $mailSender->send(
+                $data['email'],
+                __('system::messages.mail_test_subject'),
+                __('system::messages.mail_test_body'),
+                ['html' => false],
+            );
+        } catch (\RuntimeException $exception) {
+            return ApiResponse::error($exception->getMessage(), 422);
+        } catch (\Throwable) {
+            return ApiResponse::error(__('system::messages.mail_send_failed'), 500);
+        }
+
+        return ApiResponse::success(null, __('system::messages.mail_test_sent'));
+    }
 }
