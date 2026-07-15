@@ -60,6 +60,7 @@ return [
     'theme_enabled' => 'Enabled.',
     'theme_disabled' => 'Disabled.',
     'theme_uninstalled' => 'Uninstalled successfully',
+    'theme_deleted' => 'Theme deleted',
     'theme_switched' => 'Active theme switched',
     'batch_deleted_partial_children' => ':deleted deleted, :skipped skipped due to sub-items',
     'batch_deleted_partial_dept' => ':deleted deleted, :skipped skipped due to sub-items or admins',

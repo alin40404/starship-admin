@@ -79,6 +79,11 @@ class ThemeService
         return $this->formatTheme($this->themeLifecycle->uninstall($slug));
     }
 
+    public function delete(string $slug): void
+    {
+        $this->themeLifecycle->delete($slug);
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -102,9 +107,17 @@ class ThemeService
      */
     protected function formatTheme(Theme $theme): array
     {
+        $slug = $theme->slug();
+        $protected = array_map(
+            static fn ($s) => strtolower((string) $s),
+            is_array(config('starship.protected_themes'))
+                ? config('starship.protected_themes')
+                : [],
+        );
+
         return [
             'name' => $theme->name(),
-            'slug' => $theme->slug(),
+            'slug' => $slug,
             'title' => $theme->title(),
             'type' => $theme->type(),
             'version' => $theme->version(),
@@ -116,6 +129,9 @@ class ThemeService
             'enabled' => $theme->isEnabled(),
             'installed' => $theme->isInstalled(),
             'is_active' => $theme->isActive(),
+            'deletable' => $theme->status() === Theme::STATUS_DISCOVERED
+                && ! $theme->isActive()
+                && ! in_array(strtolower($slug), $protected, true),
             'layout' => $theme->layoutEntry(),
             'cover' => $theme->coverRelativePath(),
             'cover_url' => $theme->coverAbsolutePath() !== null

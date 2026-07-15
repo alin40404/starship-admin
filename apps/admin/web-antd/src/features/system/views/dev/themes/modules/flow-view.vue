@@ -55,6 +55,20 @@ function canUninstall(row: ThemeRow) {
   );
 }
 
+function canDelete(row: ThemeRow) {
+  if (!props.access.can(THEME_PERMISSIONS.DELETE)) {
+    return false;
+  }
+  // 仅「未安装」可删：须先卸载；启用态/当前激活不可删
+  if (row.status !== THEME_STATUS.DISCOVERED || row.is_active) {
+    return false;
+  }
+  if (typeof row.deletable === 'boolean') {
+    return row.deletable;
+  }
+  return true;
+}
+
 function canSwitch(row: ThemeRow) {
   return (
     props.access.can(THEME_PERMISSIONS.SWITCH) &&
@@ -151,6 +165,14 @@ function canSwitch(row: ThemeRow) {
               @click="emit('action', 'uninstall', row)"
             >
               {{ $t('dev.shared.uninstall') }}
+            </button>
+            <button
+              v-if="canDelete(row)"
+              class="theme-card__btn theme-card__btn--danger"
+              type="button"
+              @click="emit('action', 'delete', row)"
+            >
+              {{ $t('dev.themes.delete') }}
             </button>
           </div>
         </div>

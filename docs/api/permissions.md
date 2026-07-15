@@ -88,7 +88,7 @@
 | `AttachmentPermissions` | `system.attachments.query/upload/delete/batch_delete` |
 | `ModulePermissions` | `system.modules.query/update` |
 | `PluginPermissions` | `system.plugins.query/discover/install/enable/disable/uninstall/config` |
-| `ThemePermissions` | `system.themes.query/discover/install/enable/disable/uninstall/switch` |
+| `ThemePermissions` | `system.themes.query/discover/install/enable/disable/uninstall/delete/switch` |
 | `InboxPermissions` | `dashboard.inbox`（消息接口） |
 | `OperationLogPermissions` | `monitor.operation_logs` + `.query/.delete/.batch_delete` |
 | `LoginLogPermissions` | `monitor.login_logs` + `.query/.delete/.batch_delete` |

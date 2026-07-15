@@ -10,6 +10,7 @@ import { IconifyIcon } from '@vben/icons';
 import { Button, Input, message, Modal, Spin } from 'ant-design-vue';
 
 import {
+  deleteTheme,
   disableTheme,
   enableTheme,
   fetchThemes,
@@ -145,6 +146,20 @@ function onAction(code: string, row: ThemeRow) {
         await runAction(
           () => uninstallTheme(row.slug),
           $t('dev.shared.uninstallSuccess'),
+        );
+      },
+    );
+    return;
+  }
+
+  if (code === 'delete') {
+    confirmAction(
+      $t('dev.themes.deleteTitle'),
+      $t('dev.themes.deleteConfirm', [row.title]),
+      async () => {
+        await runAction(
+          () => deleteTheme(row.slug),
+          $t('dev.themes.deleteSuccess'),
         );
       },
     );

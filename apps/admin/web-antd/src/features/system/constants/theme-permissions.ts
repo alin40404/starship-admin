@@ -11,6 +11,7 @@ export const THEME_PERMISSIONS = {
   ENABLE: 'system.themes.enable',
   DISABLE: 'system.themes.disable',
   UNINSTALL: 'system.themes.uninstall',
+  DELETE: 'system.themes.delete',
   SWITCH: 'system.themes.switch',
 } as const;
 

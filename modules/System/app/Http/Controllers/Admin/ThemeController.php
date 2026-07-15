@@ -70,6 +70,17 @@ class ThemeController extends Controller
         }
     }
 
+    public function delete(string $slug, ThemeService $themeService): JsonResponse
+    {
+        try {
+            $themeService->delete($slug);
+
+            return ApiResponse::success(null, __('system::messages.theme_deleted'));
+        } catch (InvalidArgumentException $exception) {
+            return ApiResponse::error($exception->getMessage(), 422);
+        }
+    }
+
     public function switch(string $slug, Request $request, ThemeService $themeService): JsonResponse
     {
         try {

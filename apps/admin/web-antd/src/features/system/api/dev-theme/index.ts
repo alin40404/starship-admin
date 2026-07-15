@@ -14,6 +14,7 @@ export interface ThemeRow {
   enabled: boolean;
   installed: boolean;
   is_active: boolean;
+  deletable?: boolean;
   layout: string | null;
   cover: string | null;
   cover_url: string | null;
@@ -66,6 +67,10 @@ export function disableTheme(slug: string) {
 
 export function uninstallTheme(slug: string) {
   return requestClient.post<ThemeRow>(`/dev/themes/${slug}/uninstall`);
+}
+
+export function deleteTheme(slug: string) {
+  return requestClient.post(`/dev/themes/${slug}/delete`);
 }
 
 export function switchTheme(slug: string, type?: string) {

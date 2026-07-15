@@ -3,6 +3,7 @@
 namespace Starship\Core\Theme;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\File;
 use InvalidArgumentException;
 use RuntimeException;
 use Starship\Core\Models\Theme as ThemeModel;
@@ -150,6 +151,69 @@ class ThemeLifecycle
         ]);
 
         return $this->refreshTheme($slug);
+    }
+
+    /**
+     * 物理删除主题：清空库记录并移除 themes/{slug} 目录。
+     * 须为未安装状态；当前激活 / 受保护主题不可删。
+     */
+    public function delete(string $slug): void
+    {
+        $theme = $this->requireTheme($slug);
+        $slug = $theme->slug();
+
+        $protected = array_map(
+            static fn ($s) => strtolower((string) $s),
+            is_array(config('starship.protected_themes'))
+                ? config('starship.protected_themes')
+                : [],
+        );
+        if (in_array(strtolower($slug), $protected, true)) {
+            throw new InvalidArgumentException("受保护主题不可删除：{$slug}");
+        }
+
+        $record = ThemeModel::query()->where('slug', $slug)->first();
+        if ($record !== null && (int) $record->is_active === 1) {
+            throw new InvalidArgumentException("当前使用中的主题不可删除，请先切换到其他主题：{$slug}");
+        }
+
+        if ($record !== null && (int) $record->status !== Theme::STATUS_DISCOVERED) {
+            throw new InvalidArgumentException("请先卸载主题后再删除：{$slug}");
+        }
+
+        $this->removePublicThemeLink($slug);
+
+        $directory = $theme->directory();
+        if (File::isDirectory($directory)) {
+            File::deleteDirectory($directory);
+        }
+
+        if ($record !== null) {
+            $record->delete();
+        }
+    }
+
+    protected function removePublicThemeLink(string $slug): void
+    {
+        $publicRoot = public_path('themes'.DIRECTORY_SEPARATOR.$slug);
+        if (! file_exists($publicRoot) && ! is_link($publicRoot)) {
+            return;
+        }
+
+        $assets = $publicRoot.DIRECTORY_SEPARATOR.'assets';
+        if (is_link($assets)) {
+            File::delete($assets);
+        } elseif (PHP_OS_FAMILY === 'Windows' && is_dir($assets)) {
+            exec(sprintf('cmd /c rmdir %s', escapeshellarg($assets)));
+        } elseif (File::isDirectory($assets)) {
+            File::deleteDirectory($assets);
+        }
+
+        if (is_link($publicRoot)) {
+            File::delete($publicRoot);
+        } elseif (File::isDirectory($publicRoot)) {
+            File::deleteDirectory($publicRoot);
+        }
     }
 
     protected function requireTheme(string $slug): Theme

@@ -54,3 +54,11 @@ php artisan starship:theme:install {slug}
 php artisan starship:theme:enable {slug}
 php artisan starship:theme:link {slug}
 ```
+
+### 删除（物理删除）
+
+```bash
+php artisan starship:theme:delete acme --force
+```
+
+管理端需权限 `system.themes.delete`。策略：**须先卸载**（状态变为未安装）后才能删除。启用中、当前激活主题、以及 `STARSHIP_PROTECTED_THEMES`（默认 `default`）不可删。

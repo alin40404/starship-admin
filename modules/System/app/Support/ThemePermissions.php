@@ -19,6 +19,8 @@ final class ThemePermissions
 
     public const UNINSTALL = 'system.themes.uninstall';
 
+    public const DELETE = 'system.themes.delete';
+
     public const SWITCH = 'system.themes.switch';
 
     /**
@@ -33,7 +35,8 @@ final class ThemePermissions
             ['name' => 'Enable', 'title' => '启用', 'permission' => self::ENABLE, 'sort' => 4],
             ['name' => 'Disable', 'title' => '禁用', 'permission' => self::DISABLE, 'sort' => 5],
             ['name' => 'Uninstall', 'title' => '卸载', 'permission' => self::UNINSTALL, 'sort' => 6],
-            ['name' => 'Switch', 'title' => '切换当前', 'permission' => self::SWITCH, 'sort' => 7],
+            ['name' => 'Delete', 'title' => '删除', 'permission' => self::DELETE, 'sort' => 7],
+            ['name' => 'Switch', 'title' => '切换当前', 'permission' => self::SWITCH, 'sort' => 8],
         ];
     }
 }

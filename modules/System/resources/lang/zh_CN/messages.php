@@ -60,6 +60,7 @@ return [
     'theme_enabled' => '已启用',
     'theme_disabled' => '已禁用',
     'theme_uninstalled' => '卸载成功',
+    'theme_deleted' => '主题已删除',
     'theme_switched' => '已切换当前主题',
     'batch_deleted_partial_children' => '已删除 :deleted 个，:skipped 个因存在下级未删除',
     'batch_deleted_partial_dept' => '已删除 :deleted 个，:skipped 个因存在下级或管理员未删除',

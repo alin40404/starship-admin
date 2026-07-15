@@ -36,6 +36,7 @@ class MenuSeeder extends Seeder
         // 只认自己的根节点 /dashboard；已存在则只走下方增量 ensure*。
         if ($this->systemMenuTreeSeeded()) {
             $this->ensureThemeMgmtMenu();
+            $this->ensureThemeButtonPermissions();
 
             return;
         }
@@ -666,6 +667,52 @@ class MenuSeeder extends Seeder
                 'status' => 1,
             ]);
             $menuIds[] = (int) $button->id;
+        }
+
+        $role = Role::query()->where('code', 'super_admin')->first();
+        if ($role !== null) {
+            $role->menus()->syncWithoutDetaching($menuIds);
+        }
+    }
+
+    /**
+     * 已有主题管理菜单时，补齐缺失的按钮权限（如 delete）。
+     */
+    protected function ensureThemeButtonPermissions(): void
+    {
+        $themeMenu = Menu::query()->where('path', '/dev/themes')->first();
+        if ($themeMenu === null) {
+            return;
+        }
+
+        $menuIds = [];
+        foreach (ThemePermissions::buttonDefinitions() as $btn) {
+            $existing = Menu::query()
+                ->where('parent_id', $themeMenu->id)
+                ->where('permission', $btn['permission'])
+                ->first();
+            if ($existing !== null) {
+                continue;
+            }
+
+            $button = Menu::query()->create([
+                'parent_id' => $themeMenu->id,
+                'type' => 3,
+                'name' => $btn['name'],
+                'title' => $btn['title'],
+                'path' => null,
+                'component' => null,
+                'permission' => $btn['permission'],
+                'icon' => null,
+                'sort' => $btn['sort'],
+                'other_settings' => $this->menuOther(0),
+                'status' => 1,
+            ]);
+            $menuIds[] = (int) $button->id;
+        }
+
+        if ($menuIds === []) {
+            return;
         }
 
         $role = Role::query()->where('code', 'super_admin')->first();

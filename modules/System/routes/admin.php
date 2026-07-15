@@ -341,6 +341,8 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
             ->middleware('admin.permission:'.ThemePermissions::DISABLE);
         Route::post('themes/{slug}/uninstall', [ThemeController::class, 'uninstall'])
             ->middleware('admin.permission:'.ThemePermissions::UNINSTALL);
+        Route::post('themes/{slug}/delete', [ThemeController::class, 'delete'])
+            ->middleware('admin.permission:'.ThemePermissions::DELETE);
         Route::post('themes/{slug}/switch', [ThemeController::class, 'switch'])
             ->middleware('admin.permission:'.ThemePermissions::SWITCH);
     });
