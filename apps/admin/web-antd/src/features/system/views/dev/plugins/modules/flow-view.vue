@@ -133,17 +133,16 @@ function switchLabel(row: PluginRow) {
               </Tag>
             </div>
             <p class="plugin-card__meta">
-              <span>{{ row.slug }}</span>
               <Tag v-if="row.type" class="plugin-card__type-tag" color="blue">
                 {{ row.type_label || row.type }}
               </Tag>
-              <span class="plugin-card__meta-sep">·</span>
+              <span v-if="row.type" class="plugin-card__meta-sep">·</span>
               <span>v{{ row.version }}</span>
             </p>
           </div>
         </div>
 
-        <p class="plugin-card__desc">
+        <p class="plugin-card__desc" :title="row.description || undefined">
           {{ row.description || $t('dev.themes.noDescription') }}
         </p>
 
@@ -334,21 +333,20 @@ function switchLabel(row: PluginRow) {
 }
 
 .plugin-card__type-tag {
-  margin: 0 0 0 6px !important;
+  margin: 0 !important;
   font-size: 12px;
   line-height: 18px;
 }
 
 .plugin-card__desc {
-  display: -webkit-box;
   flex: 1;
   margin: 0;
   overflow: hidden;
   color: hsl(var(--muted-foreground));
   font-size: 14px;
   line-height: 1.55;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .plugin-card__footer {
