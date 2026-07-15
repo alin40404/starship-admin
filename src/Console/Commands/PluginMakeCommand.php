@@ -131,6 +131,12 @@ class PluginMakeCommand extends Command
         );
 
         $this->writeFile(
+            "{$pluginPath}/config.schema.php",
+            $this->configSchemaStub($slug),
+            $this->option('force'),
+        );
+
+        $this->writeFile(
             "{$pluginPath}/routes/admin-api.php",
             $this->routesStub($slug),
             $this->option('force'),
@@ -188,8 +194,10 @@ class PluginMakeCommand extends Command
                     'key' => 'config',
                     'title' => '配置',
                     'permission' => 'system.plugins.config',
+                    'ui' => 'schema',
                 ],
             ],
+            'frontend' => null,
             'enabled' => false,
             'order' => 500,
         ];
@@ -248,6 +256,29 @@ return [
 PHP;
     }
 
+    protected function configSchemaStub(string $slug): string
+    {
+        return <<<PHP
+<?php
+
+/**
+ * 插件配置 Schema。label/help 直接用 __() 读语言包（加载本文件前已注册命名空间）。
+ */
+return [
+    [
+        'key' => 'api_key',
+        'label' => __('{$slug}::messages.fields.api_key_label'),
+        'type' => 'password',
+        'encrypted' => true,
+        'rules' => ['required'],
+        'help' => __('{$slug}::messages.fields.api_key_help'),
+        'group' => 'credentials',
+    ],
+];
+
+PHP;
+    }
+
     protected function routesStub(string $slug): string
     {
         return <<<PHP
@@ -271,6 +302,10 @@ PHP;
 
 return [
     'config_incomplete' => '请先完善插件配置',
+    'fields' => [
+        'api_key_label' => 'API Key',
+        'api_key_help' => '第三方服务密钥',
+    ],
 ];
 
 PHP;
@@ -283,6 +318,10 @@ PHP;
 
 return [
     'config_incomplete' => 'Please complete the plugin configuration first.',
+    'fields' => [
+        'api_key_label' => 'API Key',
+        'api_key_help' => 'Third-party API key',
+    ],
 ];
 
 PHP;

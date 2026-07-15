@@ -23,6 +23,12 @@ class SmsAliyunPluginLifecycleTest extends TestCase
         if (! is_dir((string) config('starship.plugins_path').DIRECTORY_SEPARATOR.'SmsAliyun')) {
             $this->markTestSkipped('SmsAliyun 插件目录不存在，跳过验收测试。');
         }
+
+        try {
+            PluginModel::query()->where('slug', self::SLUG)->delete();
+        } catch (\Throwable) {
+            //
+        }
     }
 
     protected function tearDown(): void
@@ -120,8 +126,9 @@ class SmsAliyunPluginLifecycleTest extends TestCase
 
         $this->assertNotNull($plugin);
         $this->assertSame('SmsAliyun', $plugin->name());
-        $this->assertSame('adapter', $plugin->type());
+        $this->assertSame('sms', $plugin->type());
         $this->assertTrue($plugin->configPath() !== null);
         $this->assertCount(2, $plugin->pages());
+        $this->assertNotNull($plugin->configSchemaPath());
     }
 }
