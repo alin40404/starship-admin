@@ -24,6 +24,8 @@ use Starship\Core\Console\Commands\ThemeListCommand;
 use Starship\Core\Console\Commands\ThemeLinkCommand;
 use Starship\Core\Console\Commands\ThemeSwitchCommand;
 use Starship\Core\Console\Commands\ThemeUninstallCommand;
+use Starship\Core\Event\EventDispatcher;
+use Starship\Core\Event\EventDispatcherInterface;
 use Starship\Core\Module\ModuleLocator;
 use Starship\Core\Module\ModuleManager;
 use Starship\Core\Module\ModulePackageBuilder;
@@ -43,6 +45,8 @@ class CoreServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../../config/starship.php', 'starship');
+
+        $this->app->singleton(EventDispatcherInterface::class, EventDispatcher::class);
 
         $this->app->singleton(ModuleManager::class, function () {
             return new ModuleManager((string) config('starship.modules_path'));
