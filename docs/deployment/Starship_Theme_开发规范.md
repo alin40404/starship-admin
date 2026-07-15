@@ -182,15 +182,13 @@ CDN 桶内路径须与本地一致：`themes/default/assets/css/app.css`。
 
     ↓
 
-    activate
-
-    ↓
-
-    switch
+    enable / switch
 
     ↓
 
     uninstall
+
+跨站点搬运：`starship:theme:export` / `import`（见 [theme-cli.md](./theme-cli.md)）。
 
 ------------------------------------------------------------------------
 

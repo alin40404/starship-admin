@@ -21,6 +21,8 @@ use Starship\Core\Console\Commands\PluginUninstallCommand;
 use Starship\Core\Console\Commands\ThemeDisableCommand;
 use Starship\Core\Console\Commands\ThemeDiscoverCommand;
 use Starship\Core\Console\Commands\ThemeEnableCommand;
+use Starship\Core\Console\Commands\ThemeExportCommand;
+use Starship\Core\Console\Commands\ThemeImportCommand;
 use Starship\Core\Console\Commands\ThemeInstallCommand;
 use Starship\Core\Console\Commands\ThemeListCommand;
 use Starship\Core\Console\Commands\ThemeLinkCommand;
@@ -42,6 +44,7 @@ use Starship\Core\Theme\ThemeAssetLinker;
 use Starship\Core\Theme\ThemeLifecycle;
 use Starship\Core\Theme\ThemeLoader;
 use Starship\Core\Theme\ThemeManager;
+use Starship\Core\Theme\ThemePackageBuilder;
 
 class CoreServiceProvider extends ServiceProvider
 {
@@ -76,6 +79,7 @@ class CoreServiceProvider extends ServiceProvider
         $this->app->singleton(PluginLifecycle::class);
         $this->app->singleton(PluginAssetLinker::class);
         $this->app->singleton(PluginPackageBuilder::class);
+        $this->app->singleton(ThemePackageBuilder::class);
         $this->app->singleton(ThemeLifecycle::class);
         $this->app->singleton(ThemeLoader::class);
         $this->app->singleton(ThemeAssetLinker::class);
@@ -127,6 +131,8 @@ class CoreServiceProvider extends ServiceProvider
                 ThemeDisableCommand::class,
                 ThemeUninstallCommand::class,
                 ThemeLinkCommand::class,
+                ThemeExportCommand::class,
+                ThemeImportCommand::class,
             ]);
         }
     }

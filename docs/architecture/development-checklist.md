@@ -99,6 +99,7 @@
 - [x] 后台主题管理页（`/dev/themes`，镜像插件管理）
 - [x] 前台主题最小 Blade Demo（ThemeLoader + `GET /`；CMS/商城业务另计）
 - [x] `themes/` 目录规范落地（`default` / `corporate` 种子 `theme.json`）
+- [x] 主题 export / import CLI（[theme-cli.md](../deployment/theme-cli.md)）
 
 ### 阶段二补充：会员模块（ThemeLoader 就绪后）
 
