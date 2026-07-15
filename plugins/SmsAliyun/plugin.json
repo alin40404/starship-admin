@@ -22,9 +22,30 @@
   "migrations": false,
   "config": "config/sms-aliyun.php",
   "pages": [
-    { "key": "config", "title": "配置", "permission": "system.plugins.config" },
-    { "key": "test", "title": "测试", "permission": "system.plugins.config" }
+    {
+      "key": "config",
+      "title": "配置",
+      "permission": "system.plugins.config",
+      "ui": "schema"
+    },
+    {
+      "key": "templates",
+      "title": "模板",
+      "permission": "system.plugins.config",
+      "ui": "component",
+      "component": "sms-aliyun-templates"
+    },
+    {
+      "key": "test",
+      "title": "测试",
+      "permission": "system.plugins.config",
+      "ui": "schema"
+    }
   ],
+  "frontend": {
+    "entry": "#/plugins/sms-aliyun",
+    "routes": []
+  },
   "enabled": false,
   "order": 500
 }

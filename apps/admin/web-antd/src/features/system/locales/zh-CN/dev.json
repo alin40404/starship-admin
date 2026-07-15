@@ -105,6 +105,8 @@
     "configTab": "配置",
     "testTab": "测试",
     "testHint": "通过 SmsSenderInterface 发送测试验证码，需填写有效的阿里云短信配置。",
+    "testHintSms": "通过 SmsSenderInterface 发送测试验证码，需填写有效的阿里云短信配置。",
+    "testHintMail": "通过 MailSenderInterface 发送测试邮件，需填写有效的 SMTP 配置。",
     "linkTabHint": "此页由插件声明为外链配置入口（ui=link）。",
     "openLink": "打开链接",
     "linkMissing": "未配置外链地址",

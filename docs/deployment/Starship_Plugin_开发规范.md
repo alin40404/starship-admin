@@ -347,7 +347,10 @@ apps/admin/web-antd/src/plugins/{slug}/
 └── locales/{zh-CN,en-US}/{slug}.json
 ```
 
-`id` 必须等于 `plugin.json` 的 `pages[].component`。样例：MailSmtp → `src/plugins/mail-smtp/`。
+`id` 必须等于 `plugin.json` 的 `pages[].component`。样例：
+
+- MailSmtp「高级」→ `src/plugins/mail-smtp/advanced.vue`（连接概览 + 扩展项 + 通知收件人）
+- SmsAliyun「模板」→ `src/plugins/sms-aliyun/templates.vue`（抽屉内 CRUD + 写回配置）
 
 **语言包：**
 

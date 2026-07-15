@@ -1,20 +1,16 @@
-# MailSmtp 插件目录
+# MailSmtp
 
-```text
-plugins/MailSmtp/
-├── plugin.json
-├── frontend/                # 前台前端（站点 / 主题侧）
-├── backend/README.md        # 占位：后台前端开发态见下行
-├── src/                     # PHP
-├── resources/lang/          # 后端语言包
-└── ...
+SMTP 邮件发送适配插件。
 
-# 后台前端（管理端）开发态：
-apps/admin/web-antd/src/plugins/mail-smtp/
-├── panel.ts
-├── *.vue
-└── locales/{zh-CN,en-US}/
-```
+| 内容 | 路径 |
+|------|------|
+| PHP | `plugins/MailSmtp/` |
+| 前台占位 | `frontend/` |
+| 后台前端 | `apps/admin/web-antd/src/plugins/mail-smtp/` |
 
-管理端 `src/plugins/registry.ts` 扫描 `./*/panel.ts`。  
-导出包：`plugin/`（本目录，不含占位 backend）+ `backend/`（来自 src/plugins/mail-smtp）。
+后台 Tab：
+
+- **配置**：Schema（主机/端口/账号/发件人）
+- **高级**：连接概览、扩展选项（Reply-To/超时/校验证书）、通知收件人清单
+- **文档**：外链
+- **测试**：试发邮件

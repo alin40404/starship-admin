@@ -37,7 +37,9 @@ import { $t } from '#/locales';
 import { resolvePluginCustomComponent } from '#/plugins/registry';
 
 const { isMobile } = usePreferences();
-const drawerWidth = computed(() => (isMobile.value ? '100%' : 'min(90vw, 640px)'));
+const drawerWidth = computed(() =>
+  isMobile.value ? '100%' : 'min(92vw, 880px)',
+);
 
 const props = defineProps<{
   access: PluginAccessChecker;
@@ -275,7 +277,11 @@ defineExpose({ open: show });
         key="config"
         :tab="$t('dev.plugins.configTab')"
       >
-        <Form v-if="configFields.length > 0" layout="vertical">
+        <Form
+          v-if="configFields.length > 0"
+          class="plugin-config-form"
+          layout="vertical"
+        >
           <template v-for="[groupKey, fields] in fieldGroups" :key="groupKey">
             <div
               v-if="groupTitle(groupKey)"
@@ -291,7 +297,8 @@ defineExpose({ open: show });
             >
               <Select
                 v-if="field.type === 'select'"
-                v-model:value="configForm[field.key]"
+                v-model:value="configForm[field.key] as string | number | undefined"
+                class="w-full"
                 :disabled="!canConfig"
                 :options="field.options"
                 :placeholder="fieldPlaceholder(field)"
@@ -313,6 +320,7 @@ defineExpose({ open: show });
               <Textarea
                 v-else-if="field.type === 'textarea'"
                 v-model:value="configForm[field.key] as string"
+                class="w-full"
                 :disabled="!canConfig"
                 :placeholder="fieldPlaceholder(field)"
                 :rows="4"
@@ -320,6 +328,7 @@ defineExpose({ open: show });
               <Input
                 v-else
                 v-model:value="configForm[field.key] as string"
+                class="w-full"
                 :disabled="!canConfig"
                 :placeholder="fieldPlaceholder(field)"
                 :type="isEncryptedField(field) ? 'password' : 'text'"
@@ -365,10 +374,15 @@ defineExpose({ open: show });
       </Tabs.TabPane>
 
       <Tabs.TabPane v-if="showTestTab" key="test" :tab="$t('dev.plugins.testTab')">
-        <Form v-if="showSmsTestTab" layout="vertical">
+        <Form
+          v-if="showSmsTestTab"
+          class="plugin-config-form"
+          layout="vertical"
+        >
           <Form.Item :label="$t('dev.shared.testMobile')">
             <Input
               v-model:value="testMobile"
+              class="w-full"
               :placeholder="$t('dev.shared.testMobilePlaceholder')"
             />
           </Form.Item>
@@ -376,10 +390,15 @@ defineExpose({ open: show });
             {{ $t('dev.shared.sendTest') }}
           </Button>
         </Form>
-        <Form v-else-if="showMailTestTab" layout="vertical">
+        <Form
+          v-else-if="showMailTestTab"
+          class="plugin-config-form"
+          layout="vertical"
+        >
           <Form.Item :label="$t('dev.shared.testEmail')">
             <Input
               v-model:value="testEmail"
+              class="w-full"
               :placeholder="$t('dev.shared.testEmailPlaceholder')"
             />
           </Form.Item>
@@ -388,9 +407,74 @@ defineExpose({ open: show });
           </Button>
         </Form>
         <p class="text-muted-foreground mt-2 text-xs">
-          {{ $t('dev.plugins.testHint') }}
+          {{
+            showSmsTestTab
+              ? $t('dev.plugins.testHintSms')
+              : $t('dev.plugins.testHintMail')
+          }}
         </p>
       </Tabs.TabPane>
     </Tabs>
   </Drawer>
 </template>
+
+<style scoped>
+/* 标签与控件共用同一动态字号，随 preferences.theme.fontSize（--font-size-base）缩放 */
+.plugin-config-form {
+  --plugin-form-font-size: calc(var(--font-size-base, 16px) * 0.875);
+}
+
+.plugin-config-form :deep(.ant-form-item-label) {
+  padding: 0 0 2px;
+}
+
+.plugin-config-form :deep(.ant-form-item-label > label) {
+  height: auto;
+  font-size: var(--plugin-form-font-size);
+}
+
+.plugin-config-form :deep(.ant-input),
+.plugin-config-form :deep(.ant-input-affix-wrapper),
+.plugin-config-form :deep(.ant-input-number),
+.plugin-config-form :deep(.ant-input-number-input),
+.plugin-config-form :deep(.ant-select),
+.plugin-config-form :deep(.ant-select-selection-item),
+.plugin-config-form :deep(.ant-select-selection-placeholder) {
+  font-size: var(--plugin-form-font-size);
+}
+
+.plugin-config-form :deep(.ant-form-item-extra) {
+  font-size: calc(var(--font-size-base, 16px) * 0.75);
+}
+
+.plugin-config-form :deep(.ant-input:not(textarea)),
+.plugin-config-form :deep(.ant-input-affix-wrapper),
+.plugin-config-form :deep(.ant-input-number),
+.plugin-config-form
+  :deep(.ant-select-single:not(.ant-select-customize-input) .ant-select-selector) {
+  height: 32px;
+}
+
+.plugin-config-form :deep(.ant-input-number) {
+  width: 100%;
+}
+
+.plugin-config-form :deep(.ant-input-number-input) {
+  height: 30px;
+  padding-block: 0;
+  line-height: 30px;
+}
+
+.plugin-config-form
+  :deep(.ant-select-single .ant-select-selector .ant-select-selection-item),
+.plugin-config-form
+  :deep(
+    .ant-select-single .ant-select-selector .ant-select-selection-placeholder
+  ) {
+  line-height: 30px;
+}
+
+.plugin-config-form :deep(.ant-select) {
+  width: 100%;
+}
+</style>
