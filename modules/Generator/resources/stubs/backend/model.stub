@@ -16,4 +16,13 @@ class {{ $model_class }} extends Model
     protected $table = '{{ $table_suffix }}';
 
     protected $guarded = [];
+@if($has_model_casts)
+
+    protected function casts(): array
+    {
+        return [
+{!! $model_casts_body !!}
+        ];
+    }
+@endif
 }

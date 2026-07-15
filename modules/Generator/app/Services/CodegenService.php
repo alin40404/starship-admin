@@ -430,6 +430,8 @@ class CodegenService
         );
         $relationLoaders = $this->formSchemaBuilder->buildRelationLoadersBody($formColumns);
 
+        $modelCastsBody = $this->buildModelCastsBody($columns);
+
         return [
             'config' => $config,
             'api_route_prefix' => $apiRoutePrefix,
@@ -502,6 +504,8 @@ class CodegenService
             'status_batch_validation_body' => $this->buildStatusBatchValidationBody($statusProfile),
             'status_form_default_js' => $statusProfile?->jsLiteral($statusProfile->enabledValue) ?? '1',
             'has_soft_delete' => $hasSoftDelete,
+            'has_model_casts' => $modelCastsBody !== '',
+            'model_casts_body' => $modelCastsBody,
             'has_batch_delete' => (bool) ($config->options['batch_delete'] ?? true),
             'has_batch_status' => (bool) ($config->options['batch_status'] ?? $hasStatus),
             'has_keyword_search' => (bool) ($config->options['keyword_search'] ?? true),
@@ -1022,6 +1026,42 @@ class CodegenService
         $lines = [];
         foreach ($profile->allowedValues as $value) {
             $lines[] = $indent."  { label: {$profile->labelTsExpr($value)}, value: {$profile->jsLiteral($value)} },";
+        }
+
+        return implode(PHP_EOL, $lines);
+    }
+
+    /**
+     * date / datetime / timestamp 写入 casts，便于接收前端 UTC ISO 后再按 app timezone 写入 MySQL。
+     */
+    protected function buildModelCastsBody($columns): string
+    {
+        $lines = [];
+        $seen = [];
+
+        foreach ($columns as $column) {
+            $name = (string) ($column->column_name ?? '');
+            if ($name === '' || isset($seen[$name])) {
+                continue;
+            }
+            if (in_array($name, ['created_at', 'updated_at', 'deleted_at'], true)) {
+                continue;
+            }
+
+            $type = strtolower((string) ($column->column_type ?? ''));
+            $cast = null;
+            if (str_contains($type, 'datetime') || str_contains($type, 'timestamp')) {
+                $cast = 'datetime';
+            } elseif (preg_match('/\bdate\b/', $type) && ! str_contains($type, 'datetime')) {
+                $cast = 'date';
+            }
+
+            if ($cast === null) {
+                continue;
+            }
+
+            $seen[$name] = true;
+            $lines[] = "            '{$name}' => '{$cast}',";
         }
 
         return implode(PHP_EOL, $lines);
