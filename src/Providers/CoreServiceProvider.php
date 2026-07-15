@@ -18,6 +18,7 @@ use Starship\Core\Console\Commands\PluginLinkCommand;
 use Starship\Core\Console\Commands\PluginListCommand;
 use Starship\Core\Console\Commands\PluginMakeCommand;
 use Starship\Core\Console\Commands\PluginUninstallCommand;
+use Starship\Core\Console\Commands\ThemeDeleteCommand;
 use Starship\Core\Console\Commands\ThemeDisableCommand;
 use Starship\Core\Console\Commands\ThemeDiscoverCommand;
 use Starship\Core\Console\Commands\ThemeEnableCommand;
@@ -132,6 +133,7 @@ class CoreServiceProvider extends ServiceProvider
                 ThemeSwitchCommand::class,
                 ThemeDisableCommand::class,
                 ThemeUninstallCommand::class,
+                ThemeDeleteCommand::class,
                 ThemeLinkCommand::class,
                 ThemeExportCommand::class,
                 ThemeImportCommand::class,
