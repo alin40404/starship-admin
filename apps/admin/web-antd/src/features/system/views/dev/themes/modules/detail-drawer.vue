@@ -10,6 +10,7 @@ import { Descriptions, Drawer, Tag } from 'ant-design-vue';
 
 import { fetchTheme } from '#/features/system/api/dev-theme';
 import {
+  getThemeStatusLabel,
   getThemeStatusTagColor,
   THEME_STATUS_TAG_ENABLED,
 } from '#/features/system/constants/theme-permissions';
@@ -147,7 +148,7 @@ defineExpose({ open: show });
       </Descriptions.Item>
       <Descriptions.Item :label="$t('dev.shared.status')">
         <Tag :color="getThemeStatusTagColor(detail.status)" class="!m-0">
-          {{ detail.status_label }}
+          {{ getThemeStatusLabel(detail.status) }}
         </Tag>
       </Descriptions.Item>
       <Descriptions.Item :label="$t('dev.shared.installedAt')">

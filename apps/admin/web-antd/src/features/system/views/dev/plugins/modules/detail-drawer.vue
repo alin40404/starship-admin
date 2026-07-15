@@ -9,7 +9,10 @@ import { formatDateTime } from '@vben/utils';
 import { Descriptions, Drawer, Tag } from 'ant-design-vue';
 
 import { fetchPlugin } from '#/features/system/api/dev-plugin';
-import { getPluginStatusTagColor } from '#/features/system/constants/plugin-permissions';
+import {
+  getPluginStatusLabel,
+  getPluginStatusTagColor,
+} from '#/features/system/constants/plugin-permissions';
 import { $t } from '#/locales';
 
 import PluginCover from './plugin-cover.vue';
@@ -120,7 +123,7 @@ defineExpose({ open: show });
       <Descriptions.Item :label="$t('dev.shared.namespace')">{{ detail.namespace || '—' }}</Descriptions.Item>
       <Descriptions.Item :label="$t('dev.shared.status')">
         <Tag :color="getPluginStatusTagColor(detail.status)" class="!m-0">
-          {{ detail.status_label }}
+          {{ getPluginStatusLabel(detail.status) }}
         </Tag>
       </Descriptions.Item>
       <Descriptions.Item :label="$t('dev.shared.installedAt')">

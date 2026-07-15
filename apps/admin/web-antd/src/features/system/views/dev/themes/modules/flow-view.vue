@@ -4,6 +4,7 @@ import type { ThemeRow } from '#/features/system/api/dev-theme';
 import { Tag } from 'ant-design-vue';
 
 import {
+  getThemeStatusLabel,
   getThemeStatusTagColor,
   THEME_PERMISSIONS,
   THEME_STATUS,
@@ -96,7 +97,7 @@ function canSwitch(row: ThemeRow) {
           <div class="theme-card__title-row">
             <h3 class="theme-card__title" :title="row.title">{{ row.title }}</h3>
             <Tag :color="getThemeStatusTagColor(row.status)" class="!m-0 shrink-0">
-              {{ row.status_label }}
+              {{ getThemeStatusLabel(row.status) }}
             </Tag>
           </div>
           <p class="theme-card__meta">

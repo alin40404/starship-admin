@@ -6,6 +6,7 @@ import { IconifyIcon } from '@vben/icons';
 import { Switch, Tag } from 'ant-design-vue';
 
 import {
+  getPluginStatusLabel,
   getPluginStatusTagColor,
   PLUGIN_PERMISSIONS,
   PLUGIN_STATUS,
@@ -128,7 +129,7 @@ function switchLabel(row: PluginRow) {
                 :color="getPluginStatusTagColor(row.status)"
                 class="!m-0 shrink-0"
               >
-                {{ row.status_label }}
+                {{ getPluginStatusLabel(row.status) }}
               </Tag>
             </div>
             <p class="plugin-card__meta">

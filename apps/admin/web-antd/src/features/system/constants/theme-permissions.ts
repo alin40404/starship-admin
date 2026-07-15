@@ -44,26 +44,44 @@ export function getThemeStatusTagColor(status: number): string {
   }
 }
 
+/** 按状态码取前端文案（勿用接口 status_label，后端为中文硬编码） */
+export function getThemeStatusLabel(status: number): string {
+  switch (status) {
+    case THEME_STATUS.ENABLED: {
+      return $t('dev.themes.statusEnabled');
+    }
+    case THEME_STATUS.INSTALLED: {
+      return $t('dev.themes.statusInstalled');
+    }
+    case THEME_STATUS.DISABLED: {
+      return $t('dev.themes.statusDisabled');
+    }
+    default: {
+      return $t('dev.themes.statusDiscovered');
+    }
+  }
+}
+
 export function getThemeStatusTagOptions() {
   return [
     {
       color: 'default',
-      label: $t('dev.themes.statusDiscovered'),
+      label: getThemeStatusLabel(THEME_STATUS.DISCOVERED),
       value: THEME_STATUS.DISCOVERED,
     },
     {
       color: 'processing',
-      label: $t('dev.themes.statusInstalled'),
+      label: getThemeStatusLabel(THEME_STATUS.INSTALLED),
       value: THEME_STATUS.INSTALLED,
     },
     {
       color: THEME_STATUS_TAG_ENABLED,
-      label: $t('dev.themes.statusEnabled'),
+      label: getThemeStatusLabel(THEME_STATUS.ENABLED),
       value: THEME_STATUS.ENABLED,
     },
     {
       color: 'warning',
-      label: $t('dev.themes.statusDisabled'),
+      label: getThemeStatusLabel(THEME_STATUS.DISABLED),
       value: THEME_STATUS.DISABLED,
     },
   ] as const;
