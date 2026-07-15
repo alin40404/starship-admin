@@ -149,6 +149,7 @@ class ThemeMakeCommand extends Command
             'version' => '1.0.0',
             'type' => 'frontend',
             'description' => $description,
+            'author' => 'Starship Admin',
             'cover' => 'cover.svg',
             'require' => [
                 'modules' => [],

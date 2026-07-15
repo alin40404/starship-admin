@@ -5,6 +5,7 @@
   "version": "1.1.0",
   "type": "frontend",
   "description": "Starship 默认前台主题（Hello Elementor 风格 Blade）",
+  "author": "Starship Admin",
   "cover": "cover.svg",
   "require": {
     "modules": []
