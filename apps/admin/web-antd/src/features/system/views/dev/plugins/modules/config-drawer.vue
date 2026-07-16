@@ -8,7 +8,7 @@ import type {
   PluginRow,
 } from '#/features/system/api/dev-plugin';
 
-import { computed, reactive, ref, type Component } from 'vue';
+import { computed, reactive, ref, shallowRef, watch, type Component } from 'vue';
 
 import { usePreferences } from '@vben/preferences';
 
@@ -20,6 +20,7 @@ import {
   InputNumber,
   message,
   Select,
+  Spin,
   Switch,
   Tabs,
   Textarea,
@@ -35,7 +36,7 @@ import {
 import { PLUGIN_PERMISSIONS } from '#/features/system/constants/plugin-permissions';
 import { $t } from '#/locales';
 
-import { resolvePluginCustomComponent } from '#/plugins/registry';
+import { resolvePluginCustomComponentAsync } from '#/plugins/registry';
 
 const { isMobile } = usePreferences();
 const drawerWidth = computed(() =>
@@ -55,6 +56,8 @@ const configForm = reactive<Record<string, string | number | boolean>>({});
 const testMobile = ref('');
 const testEmail = ref('');
 const activeTab = ref('config');
+const customComponents = shallowRef<Record<string, Component>>({});
+const customComponentsLoading = ref(false);
 
 const canConfig = computed(() => props.access.can(PLUGIN_PERMISSIONS.CONFIG));
 const configFields = computed<PluginConfigField[]>(
@@ -100,6 +103,45 @@ const fieldGroups = computed(() => {
     groups.set(groupKey, list);
   }
   return [...groups.entries()];
+});
+
+async function loadCustomComponents() {
+  const current = detail.value;
+  if (!current) {
+    customComponents.value = {};
+    return;
+  }
+
+  const pages = (current.pages ?? []).filter(
+    (page) => (page.ui ?? 'schema') === 'component' && page.component,
+  );
+  if (pages.length === 0) {
+    customComponents.value = {};
+    return;
+  }
+
+  customComponentsLoading.value = true;
+  try {
+    const resolved: Record<string, Component> = {};
+    await Promise.all(
+      pages.map(async (page) => {
+        const component = await resolvePluginCustomComponentAsync(
+          page.component!,
+          current.slug,
+        );
+        if (component) {
+          resolved[page.key] = component;
+        }
+      }),
+    );
+    customComponents.value = resolved;
+  } finally {
+    customComponentsLoading.value = false;
+  }
+}
+
+watch(detail, () => {
+  void loadCustomComponents();
 });
 
 const drawerTitle = computed(() =>
@@ -254,11 +296,8 @@ function fieldPlaceholder(field: PluginConfigField) {
   return $t('dev.shared.enterField', [field.label]);
 }
 
-function resolveCustomComponent(page: PluginPageMeta): Component | null {
-  if (!page.component) {
-    return null;
-  }
-  return resolvePluginCustomComponent(page.component);
+function customComponentFor(page: PluginPageMeta): Component | null {
+  return customComponents.value[page.key] ?? null;
 }
 
 function openLink(page: PluginPageMeta) {
@@ -378,9 +417,10 @@ defineExpose({ open: show });
             {{ $t('dev.plugins.openLink') }}
           </Button>
         </template>
+        <Spin v-else-if="page.ui === 'component' && customComponentsLoading" />
         <component
-          :is="resolveCustomComponent(page)"
-          v-else-if="page.ui === 'component' && resolveCustomComponent(page)"
+          :is="customComponentFor(page)"
+          v-else-if="page.ui === 'component' && customComponentFor(page)"
           :slug="detail.slug"
           :config="detail.config"
         />

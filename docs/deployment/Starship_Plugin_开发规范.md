@@ -394,8 +394,8 @@ Event::listen(PluginDescriptionResolving::class, function (PluginDescriptionReso
 # 6D. 前端插件动态加载（约定预留）
 
 - `plugin.json.frontend.entry` / `routes` 已可声明。
-- 管理端 [`frontend-registry.ts`](../../apps/admin/web-antd/src/plugins/frontend-registry.ts) 记录约定；`PLUGIN_FRONTEND_DYNAMIC_ENABLED = false`。
-- **当前 L2**：`src/plugins/*/panel.ts` 经 `registry.ts` glob 登记；导出进包内 `backend/`（见 [plugin-cli.md](./plugin-cli.md)）。
+- 管理端 [`frontend-registry.ts`](../../apps/admin/web-antd/src/plugins/frontend-registry.ts) 记录约定；`VITE_PLUGIN_FRONTEND_DYNAMIC_ENABLED` 默认未设置（等同 `false`）。
+- **当前 L2**：`src/plugins/*/panel.ts` 经 `registry.ts` 按需 `import`；关闭开关时打开配置抽屉会预加载全部 panel，开启时仅加载当前插件 slug。
 - **远期 L3**：按已启用插件的 `frontend.entry` 动态 import（插件市场另议）。
 
 ------------------------------------------------------------------------

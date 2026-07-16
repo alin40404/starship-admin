@@ -115,7 +115,7 @@
 - [ ] Filter Hook（辅助，延后）
 - [x] Contract 完整目录（`packages/core/src/Contracts/`：第一阶段 8 组接口；Tenant/Search/Workflow 等第二阶段）
 - [ ] 官方插件库（支付、存储、短信）：短信 ✅ `SmsAliyun`；存储 ✅ `StorageOss`；支付仍缺
-- [ ] 前端插件动态加载（约定已预留；`PLUGIN_FRONTEND_DYNAMIC_ENABLED` 默认关闭）
+- [x] 前端插件动态加载（`registry.ts` 按需加载 panel；`VITE_PLUGIN_FRONTEND_DYNAMIC_ENABLED` 默认 false，true 时仅按 slug 加载）
 - [ ] 插件市场（可选）
 - [ ] Contract 延后绑定：Payment / Notification / Config / Permission 的 System 默认与插件样例
 
