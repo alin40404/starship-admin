@@ -1,8 +1,8 @@
 # Starship Admin 开发清单
 
-> 更新日期：2026-07-15  
+> 更新日期：2026-07-16  
 > 目录约定：**保留 `modules/`**，近期不改为 `starship/`。  
-> **当前优先**：完善 Plugin / Contract（Mail 等），**暂缓** Packagist / `release` 分支。
+> **当前优先**：阶段三生态（官方插件 / 前端插件动态加载 / Contract 延后绑定）；**暂缓** Packagist / `release` 分支。
 
 ---
 
@@ -33,7 +33,7 @@
 | `starship:module:make` | ✅ | 模块脚手架 |
 | `starship:plugin:make` | ✅ | 插件脚手架 |
 | Generator 端到端 Demo | ✅ | `sa_demo_products` 表 + CLI 全流程已验收 |
-| Contract 体系 | ✅ | `SmsSenderInterface`、`StorageInterface` 已落地；System 默认实现可被插件覆盖 |
+| Contract 体系 | ✅ | Sms/Mail/Storage/Admin/Member 已绑定；Payment/Notification/Config/Permission 接口目录已入库（实现延后） |
 | Event / Hook | ✅ Event 主干 | `EventDispatcherInterface` + `EventDispatcher`；样例 `plugins/EventSample`。独立 Filter Hook 延后 |
 | ThemeManager | ✅ | 发现/安装/启用/切换/卸载 + CLI |
 | 脚手架 `starship/skeleton` | 🚧 | 开发仓兼发布：根 `composer.json` 已备；待维护 `release` 分支 |
@@ -113,10 +113,11 @@
 
 - [x] EventBus 主干（`EventDispatcher`；样例 `EventSample`）
 - [ ] Filter Hook（辅助，延后）
-- [ ] Contract 完整目录（`packages/core/Contract/`）
+- [x] Contract 完整目录（`packages/core/src/Contracts/`：第一阶段 8 组接口；Tenant/Search/Workflow 等第二阶段）
 - [ ] 官方插件库（支付、存储、短信）
 - [ ] 前端插件动态加载（约定已预留；`PLUGIN_FRONTEND_DYNAMIC_ENABLED` 默认关闭）
 - [ ] 插件市场（可选）
+- [ ] Contract 延后绑定：Payment / Notification / Config / Permission 的 System 默认与插件样例
 
 ### 明确不做（近期）
 

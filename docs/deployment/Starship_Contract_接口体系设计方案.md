@@ -1,15 +1,23 @@
 # Starship Contract 接口体系设计方案
 
-> **实现状态（2026-07-15）**
+> **实现状态（2026-07-16）**
 >
-> | Contract | Core | System 默认 | 插件覆盖样例 |
-> |----------|------|-------------|--------------|
+> | Contract | Core 接口 | System 默认 | 插件覆盖样例 |
+> |----------|-----------|-------------|--------------|
 > | `SmsSenderInterface` | ✅ | `SmsGateway` | `plugins/SmsAliyun` |
 > | `StorageInterface` | ✅（含 `exists()`） | `LocalStorage` | （延后 OSS） |
 > | `MailSenderInterface` | ✅ | `MailGateway` | `plugins/MailSmtp` |
+> | `PaymentInterface` | ✅ 目录已入库 | ❌ 延后 | ❌ 延后 |
+> | `NotificationInterface` | ✅ 目录已入库 | ❌ 延后 | ❌ 延后 |
+> | `AdminProviderInterface` | ✅ | `AdminProvider` | — |
+> | `MemberProviderInterface` | ✅ | Member `MemberProvider` | — |
+> | `ConfigRepositoryInterface` | ✅ 目录已入库 | ❌ 延后 | — |
+> | `PermissionCheckerInterface` | ✅ 目录已入库 | ❌ 延后 | — |
 >
-> **第一批范围**：Sms / Storage / Mail。Payment / OAuth / Notification 聚合等**延后**。  
-> **暂缓**：Packagist / `release` 分支（先把插件 Contract 约定跑通）。
+> **目录**：`packages/core/src/Contracts/{Sms,Mail,Storage,Admin,Member,Payment,Notification,Config,Permission}/`  
+> **已落地绑定**：Sms / Storage / Mail / Admin / Member。Payment / Notification / Config / Permission 仅接口占位。  
+> **第二阶段目录**（尚未建）：Tenant / Search / Workflow / AI / OAuth。  
+> **暂缓**：Packagist / `release` 分支。
 
 ## 1. 设计目标
 
@@ -67,28 +75,25 @@ Contract 是 Starship 解耦 Module、Plugin、Theme 的核心机制。
 
 # 3. Contract 所属位置
 
-建议：
+落点：
 
-    packages/core/src/Contracts/
+```text
+packages/core/src/Contracts/
+├── Sms/             # ✅ 已绑定
+├── Mail/            # ✅ 已绑定
+├── Storage/         # ✅ 已绑定
+├── Admin/           # ✅ AdminProvider 已绑定
+├── Member/          # ✅ MemberProvider 已绑定
+├── Payment/         # ✅ 接口；实现延后
+├── Notification/    # ✅ 接口；实现延后
+├── Config/          # ✅ 接口；实现延后
+├── Permission/      # ✅ 接口；实现延后
+├── Tenant/          # 第二阶段
+├── Search/          # 第二阶段
+└── Workflow/        # 第二阶段
+```
 
-
-    ├── Payment
-
-    ├── Storage
-
-    ├── Notification
-
-    ├── User
-
-    ├── Tenant
-
-    ├── Search
-
-    └── Workflow
-
-Core 定义规则。
-
-Module 和 Plugin 实现。
+Core 定义规则；Module / System 提供默认实现；Plugin 覆盖可替换能力。
 
 ------------------------------------------------------------------------
 
@@ -98,7 +103,7 @@ Module 和 Plugin 实现。
 
 例如：
 
-    UserProviderInterface
+    AdminProviderInterface / MemberProviderInterface
 
     StorageInterface
 
@@ -259,40 +264,37 @@ array $data
 
 ------------------------------------------------------------------------
 
-# 8. UserProviderInterface设计
+# 8. 身份查询 Contract（Admin / Member）
 
-解决模块依赖用户。
+仓库内没有统一的 `User` 模型，身份分两类，**禁止**用一个模糊 `UserProvider` 混用：
+
+| 接口 | 身份 | 默认实现 |
+|------|------|----------|
+| `AdminProviderInterface` | 后台管理员 `Admin` | System `AdminProvider`（`request()->user()` / Sanctum） |
+| `MemberProviderInterface` | 前台会员 `Member` | Member `MemberProvider`（`Auth::guard('member')`） |
 
 不要：
 
-    CRM
-
-    依赖
-
-    System User Model
+```text
+CRM → use Modules\System\App\Models\Admin
+Shop → use Modules\Member\App\Models\Member
+```
 
 应该：
 
-    CRM
+```text
+后台业务 → AdminProviderInterface::find() / current()
+前台业务 → MemberProviderInterface::find() / current()
+```
 
-    UserProviderInterface
+接口形状（两套相同）：
 
-    System实现
-
-接口：
-
-``` php
-interface UserProviderInterface
+```php
+interface AdminProviderInterface
 {
+    public function find(string|int $id): ?object;
 
-public function find(
-string $id
-);
-
-
-public function current();
-
-
+    public function current(): ?object;
 }
 ```
 
@@ -411,27 +413,18 @@ v1:
 
 # 13. 推荐核心 Contract
 
-第一阶段：
+第一阶段（目录已齐）：
 
-    StorageInterface
+    StorageInterface / SmsSenderInterface / MailSenderInterface   ← 已绑定
+    PaymentInterface / NotificationInterface                     ← 仅接口
+    AdminProviderInterface / MemberProviderInterface             ← 已绑定
+    ConfigRepositoryInterface / PermissionCheckerInterface       ← 仅接口
 
-    SmsSenderInterface
+第二阶段（目录未建）：
 
-    MailSenderInterface
-
-    （延后）PaymentInterface / NotificationInterface / UserProviderInterface / ConfigInterface / PermissionInterface
-
-第二阶段：
-
-    TenantInterface
-
-    SearchInterface
-
-    WorkflowInterface
-
-    AIInterface
-
-    OAuth / Payment 具体落地
+    TenantInterface / SearchInterface / WorkflowInterface
+    AIInterface / OAuth
+    Payment / Notification 的 System 默认与官方插件落地
 ------------------------------------------------------------------------
 
 # 14. 最终架构

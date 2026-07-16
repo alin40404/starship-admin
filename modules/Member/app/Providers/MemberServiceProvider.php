@@ -6,13 +6,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 use Modules\Member\App\Models\Member;
+use Modules\Member\App\Support\MemberProvider;
 use Modules\System\App\Support\GuestRedirect;
+use Starship\Core\Contracts\Member\MemberProviderInterface;
 
 class MemberServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        $this->app->singleton(MemberProviderInterface::class, MemberProvider::class);
     }
 
     public function boot(): void
