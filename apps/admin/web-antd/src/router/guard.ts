@@ -59,7 +59,19 @@ function setupAccessGuard(router: Router) {
             preferences.app.defaultHomePath,
         );
       }
-      return true;
+      // Profile 等挂在 BasicLayout 下的 core 业务页：硬刷新时也要生成动态菜单，
+      // 否则 accessMenus 为空，侧栏不显示。登录/认证相关 core 路由仍直接放行。
+      const isAuthCoreRoute =
+        to.name === 'Authentication' ||
+        to.name === 'Root' ||
+        String(to.path).startsWith('/auth');
+      if (
+        !accessStore.accessToken ||
+        accessStore.isAccessChecked ||
+        isAuthCoreRoute
+      ) {
+        return true;
+      }
     }
 
     // accessToken 检查
