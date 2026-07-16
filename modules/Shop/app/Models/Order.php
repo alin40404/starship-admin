@@ -3,6 +3,7 @@
 namespace Modules\Shop\App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Order extends Model
@@ -28,7 +29,10 @@ class Order extends Model
         'quantity',
         'status',
         'pay_channel',
+        'prepay_id',
+        'trade_no',
         'paid_at',
+        'refunded_at',
         'remark',
     ];
 
@@ -41,11 +45,22 @@ class Order extends Model
             'quantity' => 'integer',
             'status' => 'integer',
             'paid_at' => 'datetime',
+            'refunded_at' => 'datetime',
         ];
+    }
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class, 'product_id');
     }
 
     public function isPending(): bool
     {
         return $this->status === self::STATUS_PENDING;
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->status === self::STATUS_PAID;
     }
 }

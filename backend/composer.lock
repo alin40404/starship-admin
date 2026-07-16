@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1d29c1e1621f5ddc77bf88d002efea5d",
+    "content-hash": "7462968e066e92c3d3883316ff96961c",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -4717,6 +4717,34 @@
                 "source": "https://github.com/Seldaek/signal-handler/tree/2.0.2"
             },
             "time": "2023-09-03T09:24:00+00:00"
+        },
+        {
+            "name": "starship/cms",
+            "version": "0.1.0",
+            "dist": {
+                "type": "path",
+                "url": "../modules/Cms",
+                "reference": "7f83a827e3e492910d60cda8ac5cdb065d6ae530"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Modules\\Cms\\App\\": "app/",
+                    "Modules\\Cms\\Database\\Seeders\\": "database/seeders/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Modules\\Cms\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Starship Admin 内容管理 module",
+            "transport-options": {
+                "relative": true
+            }
         },
         {
             "name": "starship/core",
@@ -10053,6 +10081,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "starship/cms": 20,
         "starship/core": 20,
         "starship/generator": 20,
         "starship/member": 20,

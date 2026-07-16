@@ -18,7 +18,10 @@ return new class extends Migration
             $table->unsignedTinyInteger('quantity')->default(1)->comment('数量');
             $table->tinyInteger('status')->default(0)->comment('0待支付,1已支付,2已取消,3已退款');
             $table->string('pay_channel', 32)->nullable()->comment('支付渠道');
+            $table->string('prepay_id', 64)->nullable()->comment('预支付单号');
+            $table->string('trade_no', 64)->nullable()->comment('渠道交易号');
             $table->dateTime('paid_at')->nullable()->comment('支付时间');
+            $table->dateTime('refunded_at')->nullable()->comment('退款时间');
             $table->string('remark', 255)->nullable()->comment('备注');
             $table->timestamps();
             $table->softDeletes();

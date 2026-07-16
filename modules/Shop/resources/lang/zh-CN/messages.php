@@ -12,6 +12,11 @@ return [
     'order_synced' => '订单支付状态已同步',
     'order_cancelled' => '订单已取消',
     'order_deleted' => '订单已删除',
+    'order_refunded' => '订单已退款',
     'order_not_pending' => '仅待支付订单可执行此操作',
+    'order_not_paid' => '仅已支付订单可退款',
     'order_delete_forbidden' => '仅待支付订单可删除',
+    'refund_default_reason' => '后台退款',
+    'refund_failed' => '支付通道退款失败',
+    'notify_ok' => '支付回调已处理',
 ];

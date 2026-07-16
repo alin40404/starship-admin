@@ -12,6 +12,11 @@ return [
     'order_synced' => 'Payment status synced',
     'order_cancelled' => 'Order cancelled',
     'order_deleted' => 'Order deleted',
+    'order_refunded' => 'Order refunded',
     'order_not_pending' => 'Only pending orders can perform this action',
+    'order_not_paid' => 'Only paid orders can be refunded',
     'order_delete_forbidden' => 'Only pending orders can be deleted',
+    'refund_default_reason' => 'Admin refund',
+    'refund_failed' => 'Payment channel refund failed',
+    'notify_ok' => 'Payment notify processed',
 ];

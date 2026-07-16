@@ -24,7 +24,10 @@ export interface OrderRow {
   quantity: number;
   status: number;
   pay_channel: string | null;
+  prepay_id: string | null;
+  trade_no: string | null;
   paid_at: string | null;
+  refunded_at: string | null;
   remark: string | null;
   created_at?: string;
   updated_at?: string;
@@ -95,6 +98,13 @@ export function prepayOrder(id: number) {
 
 export function syncOrderStatus(id: number) {
   return requestClient.post<OrderRow>(`/shop/orders/${id}/sync-status`);
+}
+
+export function refundOrder(id: number, reason?: string) {
+  return requestClient.post<{ order: OrderRow; refund: Record<string, unknown> }>(
+    `/shop/orders/${id}/refund`,
+    { reason },
+  );
 }
 
 export function cancelOrder(id: number) {

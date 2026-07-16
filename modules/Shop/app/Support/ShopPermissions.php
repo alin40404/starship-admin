@@ -22,6 +22,8 @@ final class ShopPermissions
 
     public const ORDERS_CANCEL = 'shop.orders.cancel';
 
+    public const ORDERS_REFUND = 'shop.orders.refund';
+
     public const ORDERS_DELETE = 'shop.orders.delete';
 
     /**
@@ -48,7 +50,8 @@ final class ShopPermissions
             ['name' => 'Create', 'title' => '创建订单', 'permission' => self::ORDERS_CREATE, 'sort' => 2],
             ['name' => 'Prepay', 'title' => '发起支付', 'permission' => self::ORDERS_PREPAY, 'sort' => 3],
             ['name' => 'Cancel', 'title' => '取消订单', 'permission' => self::ORDERS_CANCEL, 'sort' => 4],
-            ['name' => 'Delete', 'title' => '删除', 'permission' => self::ORDERS_DELETE, 'sort' => 5],
+            ['name' => 'Refund', 'title' => '退款', 'permission' => self::ORDERS_REFUND, 'sort' => 5],
+            ['name' => 'Delete', 'title' => '删除', 'permission' => self::ORDERS_DELETE, 'sort' => 6],
         ];
     }
 }

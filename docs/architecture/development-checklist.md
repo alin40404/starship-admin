@@ -119,7 +119,8 @@
 - [x] 前端插件动态加载（`registry.ts` 按需加载 panel；`VITE_PLUGIN_FRONTEND_DYNAMIC_ENABLED` 默认 false，true 时仅按 slug 加载）
 - [ ] 插件市场（可选）
 - [x] Contract 延后绑定：Config / Permission System 默认已绑；Notification 仍占位
-- [x] 业务 Module MVP：`modules/Shop`（商品/订单/prepay）、`modules/Cms`（栏目/文章）
+- [x] 业务 Module MVP：`modules/Shop`（商品/订单/prepay/notify/refund）、`modules/Cms`（栏目/文章）
+- [ ] Shop 深化：SKU / 购物车 / 前台下单（延后）
 - [ ] OA / CRM / ERP（明确延后）
 
 ### 明确不做（近期）

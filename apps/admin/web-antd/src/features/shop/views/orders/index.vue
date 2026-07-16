@@ -16,6 +16,7 @@ import {
   deleteOrder,
   fetchOrderPage,
   prepayOrder,
+  refundOrder,
   syncOrderStatus,
 } from '#/features/shop/api';
 import { SHOP_PERMISSIONS } from '#/features/shop/constants/shop-permissions';
@@ -37,6 +38,7 @@ function onCreate() {
 function onActionClick({ code, row }: OnActionClickParams<OrderRow>) {
   if (code === 'prepay') void onPrepay(row);
   else if (code === 'sync') void onSync(row);
+  else if (code === 'refund') onRefund(row);
   else if (code === 'cancel') onCancel(row);
   else if (code === 'delete') onDelete(row);
 }
@@ -81,12 +83,21 @@ function onRefresh() {
 async function onPrepay(row: OrderRow) {
   try {
     const result = await prepayOrder(row.id);
-    Modal.info({
-      content: JSON.stringify(result.payment, null, 2),
+    Modal.confirm({
+      content: `预支付已创建。沙箱可点「同步」模拟支付成功。\n\n${JSON.stringify(result.payment, null, 2)}`,
+      okText: '立即同步支付状态',
+      cancelText: '关闭',
       title: '预支付结果',
       width: 640,
+      async onOk() {
+        await syncOrderStatus(row.id);
+        message.success('支付状态已同步');
+        onRefresh();
+      },
+      onCancel() {
+        onRefresh();
+      },
     });
-    onRefresh();
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : '发起支付失败';
     message.error(msg);
@@ -94,9 +105,28 @@ async function onPrepay(row: OrderRow) {
 }
 
 async function onSync(row: OrderRow) {
-  await syncOrderStatus(row.id);
-  message.success('支付状态已同步');
-  onRefresh();
+  try {
+    await syncOrderStatus(row.id);
+    message.success('支付状态已同步');
+    onRefresh();
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : '同步失败';
+    message.error(msg);
+  }
+}
+
+function onRefund(row: OrderRow) {
+  Modal.confirm({
+    content: `确认对订单「${row.order_no}」退款？库存将回补。`,
+    okText: $t('common.confirm'),
+    cancelText: $t('common.cancel'),
+    title: $t('common.prompt'),
+    async onOk() {
+      await refundOrder(row.id);
+      message.success('订单已退款');
+      onRefresh();
+    },
+  });
 }
 
 function onCancel(row: OrderRow) {

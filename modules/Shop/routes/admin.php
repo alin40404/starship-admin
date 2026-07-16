@@ -30,6 +30,8 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
             ->middleware('admin.permission:'.ShopPermissions::ORDERS_PREPAY);
         Route::post('orders/{id}/sync-status', [OrderController::class, 'syncStatus'])
             ->middleware('admin.permission:'.ShopPermissions::ORDERS_PREPAY);
+        Route::post('orders/{id}/refund', [OrderController::class, 'refund'])
+            ->middleware('admin.permission:'.ShopPermissions::ORDERS_REFUND);
         Route::post('orders/{id}/cancel', [OrderController::class, 'cancel'])
             ->middleware('admin.permission:'.ShopPermissions::ORDERS_CANCEL);
         Route::delete('orders/{id}', [OrderController::class, 'destroy'])

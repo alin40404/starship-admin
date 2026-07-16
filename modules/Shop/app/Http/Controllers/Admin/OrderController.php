@@ -7,9 +7,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Shop\App\Models\Order;
 use Modules\Shop\App\Services\OrderService;
-use Modules\Shop\App\Support\ShopPermissions;
 use Modules\System\App\Support\AdminRuntimeConfig;
 use Starship\Core\Support\ApiResponse;
+use Throwable;
 
 class OrderController extends Controller
 {
@@ -54,12 +54,16 @@ class OrderController extends Controller
             'remark' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $order = $this->orderService->createFromProduct(
-            (int) $data['product_id'],
-            (int) ($data['quantity'] ?? 1),
-            isset($data['member_id']) ? (int) $data['member_id'] : null,
-            $data['remark'] ?? null,
-        );
+        try {
+            $order = $this->orderService->createFromProduct(
+                (int) $data['product_id'],
+                (int) ($data['quantity'] ?? 1),
+                isset($data['member_id']) ? (int) $data['member_id'] : null,
+                $data['remark'] ?? null,
+            );
+        } catch (Throwable $e) {
+            return ApiResponse::error($e->getMessage(), 422);
+        }
 
         return ApiResponse::success($order, __('shop::messages.order_created'));
     }
@@ -67,7 +71,12 @@ class OrderController extends Controller
     public function prepay(int $id): JsonResponse
     {
         $order = Order::query()->findOrFail($id);
-        $result = $this->orderService->prepay($order);
+
+        try {
+            $result = $this->orderService->prepay($order);
+        } catch (Throwable $e) {
+            return ApiResponse::error($e->getMessage(), 422);
+        }
 
         return ApiResponse::success($result, __('shop::messages.order_prepay_ok'));
     }
@@ -75,15 +84,41 @@ class OrderController extends Controller
     public function syncStatus(int $id): JsonResponse
     {
         $order = Order::query()->findOrFail($id);
-        $order = $this->orderService->syncPaymentStatus($order);
+
+        try {
+            $order = $this->orderService->syncPaymentStatus($order);
+        } catch (Throwable $e) {
+            return ApiResponse::error($e->getMessage(), 422);
+        }
 
         return ApiResponse::success($order, __('shop::messages.order_synced'));
+    }
+
+    public function refund(Request $request, int $id): JsonResponse
+    {
+        $order = Order::query()->findOrFail($id);
+        $data = $request->validate([
+            'reason' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        try {
+            $result = $this->orderService->refund($order, $data['reason'] ?? null);
+        } catch (Throwable $e) {
+            return ApiResponse::error($e->getMessage(), 422);
+        }
+
+        return ApiResponse::success($result, __('shop::messages.order_refunded'));
     }
 
     public function cancel(int $id): JsonResponse
     {
         $order = Order::query()->findOrFail($id);
-        $order = $this->orderService->cancel($order);
+
+        try {
+            $order = $this->orderService->cancel($order);
+        } catch (Throwable $e) {
+            return ApiResponse::error($e->getMessage(), 422);
+        }
 
         return ApiResponse::success($order, __('shop::messages.order_cancelled'));
     }

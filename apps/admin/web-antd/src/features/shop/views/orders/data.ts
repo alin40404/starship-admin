@@ -112,6 +112,12 @@ export function useColumns(
       width: 110,
     },
     {
+      field: 'trade_no',
+      formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
+      minWidth: 140,
+      title: '交易号',
+    },
+    {
       field: 'created_at',
       formatter: ({ row }: { row: OrderRow }) =>
         row.created_at ? formatDateTime(row.created_at) : TABLE_CELL_EMPTY,
@@ -143,6 +149,13 @@ export function useColumns(
             type: 'link',
           },
           {
+            code: 'refund',
+            show: (row: OrderRow) =>
+              row.status === 1 && access.can(SHOP_PERMISSIONS.ORDERS_REFUND),
+            text: '退款',
+            type: 'link',
+          },
+          {
             code: 'cancel',
             show: (row: OrderRow) =>
               row.status === 0 && access.can(SHOP_PERMISSIONS.ORDERS_CANCEL),
@@ -161,7 +174,7 @@ export function useColumns(
       field: 'operation',
       fixed: 'right',
       title: $t('crud.columnActions'),
-      width: 220,
+      width: 260,
     },
   ];
 }
