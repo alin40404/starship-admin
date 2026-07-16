@@ -26,7 +26,7 @@ class ContractsCatalogTest extends TestCase
             'sms' => [SmsSenderInterface::class, ['sendVerificationCode']],
             'mail' => [MailSenderInterface::class, ['send']],
             'storage' => [StorageInterface::class, ['put', 'get', 'delete', 'url', 'exists']],
-            'payment' => [PaymentInterface::class, ['createOrder', 'pay', 'refund', 'query']],
+            'payment' => [PaymentInterface::class, ['prepay', 'refund', 'query']],
             'notification' => [NotificationInterface::class, ['send']],
             'admin' => [AdminProviderInterface::class, ['find', 'current']],
             'member' => [MemberProviderInterface::class, ['find', 'current']],

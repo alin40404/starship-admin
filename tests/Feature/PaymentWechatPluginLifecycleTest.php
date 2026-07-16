@@ -49,17 +49,12 @@ class PaymentWechatPluginLifecycleTest extends TestCase
         $this->app->singleton(PaymentInterface::class, function () {
             return new class implements PaymentInterface
             {
-                public function createOrder(array $data): array
+                public function prepay(string $orderNo, array $context = []): array
                 {
                     return [];
                 }
 
-                public function pay(string $orderNo): array
-                {
-                    return [];
-                }
-
-                public function refund(string $orderNo): array
+                public function refund(string $orderNo, array $context = []): array
                 {
                     return [];
                 }
@@ -95,6 +90,7 @@ class PaymentWechatPluginLifecycleTest extends TestCase
 
         $this->app->make(PluginLoader::class)->register($plugin);
 
+        $this->app->forgetInstance(PaymentInterface::class);
         $this->assertInstanceOf(WechatPayment::class, $this->app->make(PaymentInterface::class));
 
         $uris = collect(Route::getRoutes()->getRoutes())
