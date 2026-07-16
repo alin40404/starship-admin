@@ -58,6 +58,7 @@ const canUpload = computed(() =>
 );
 const uploadAccept = computed(() => resolveUploadAccept(props.accept));
 const uploading = ref(false);
+const isDragOver = ref(false);
 const showPickerContent = ref(false);
 const showFlowPanel = ref(false);
 
@@ -387,6 +388,47 @@ function onOpenUpload() {
   input.click();
 }
 
+function onPanelDragOver(event: DragEvent) {
+  if (!canUpload.value || uploading.value) {
+    return;
+  }
+  event.preventDefault();
+  event.stopPropagation();
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = 'copy';
+  }
+  isDragOver.value = true;
+}
+
+function onPanelDragLeave(event: DragEvent) {
+  event.preventDefault();
+  event.stopPropagation();
+  const currentTarget = event.currentTarget as HTMLElement | null;
+  if (
+    currentTarget &&
+    !currentTarget.contains(event.relatedTarget as Node | null)
+  ) {
+    isDragOver.value = false;
+  }
+}
+
+async function onPanelDrop(event: DragEvent) {
+  event.preventDefault();
+  event.stopPropagation();
+  isDragOver.value = false;
+  if (!canUpload.value) {
+    message.warning($t('resource.attachment.field.noUploadPermission'));
+    return;
+  }
+  if (uploading.value) {
+    return;
+  }
+  const files = event.dataTransfer?.files
+    ? [...event.dataTransfer.files]
+    : [];
+  await uploadPickerFiles(files);
+}
+
 const debouncedRefreshGrid = useDebounceFn(() => {
   void loadPickerGrid();
 }, 400);
@@ -654,6 +696,7 @@ watch(
     if (isOpen) {
       api.open();
     } else {
+      isDragOver.value = false;
       api.close();
     }
   },
@@ -668,7 +711,12 @@ watch(
     content-class="flex min-h-0 flex-1 flex-col overflow-hidden !p-0"
     :title="$t('resource.attachment.picker.title')"
   >
-    <div :class="contentWrapClass">
+    <div
+      :class="contentWrapClass"
+      @dragover="onPanelDragOver"
+      @dragleave="onPanelDragLeave"
+      @drop="onPanelDrop"
+    >
       <div
         v-if="showPickerContent"
         ref="gridWrapRef"
@@ -747,6 +795,12 @@ watch(
             />
           </Teleport>
         </div>
+      </div>
+      <div
+        v-if="isDragOver && canUpload"
+        class="attachment-picker-drop-mask"
+      >
+        {{ $t('resource.attachment.field.dragHint') }}
       </div>
     </div>
 
@@ -769,7 +823,12 @@ watch(
     content-class="flex min-h-0 flex-1 flex-col overflow-hidden !p-0"
     :title="$t('resource.attachment.picker.title')"
   >
-    <div :class="contentWrapClass">
+    <div
+      :class="contentWrapClass"
+      @dragover="onPanelDragOver"
+      @dragleave="onPanelDragLeave"
+      @drop="onPanelDrop"
+    >
       <div
         v-if="showPickerContent"
         ref="gridWrapRef"
@@ -849,6 +908,12 @@ watch(
           </Teleport>
         </div>
       </div>
+      <div
+        v-if="isDragOver && canUpload"
+        class="attachment-picker-drop-mask"
+      >
+        {{ $t('resource.attachment.field.dragHint') }}
+      </div>
     </div>
 
     <template #footer>
@@ -866,6 +931,26 @@ watch(
 </template>
 
 <style scoped>
+.attachment-picker-body {
+  position: relative;
+}
+
+.attachment-picker-drop-mask {
+  position: absolute;
+  inset: 8px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  border: 2px dashed hsl(var(--primary));
+  border-radius: 10px;
+  background: hsl(var(--background) / 0.82);
+  color: hsl(var(--primary));
+  font-size: 15px;
+  font-weight: 600;
+}
+
 .attachment-picker-confirm.is-inactive {
   cursor: not-allowed;
   background: #91caff;
