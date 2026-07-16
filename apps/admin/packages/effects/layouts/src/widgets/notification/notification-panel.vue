@@ -190,25 +190,24 @@ function showCategoryIcon(item: NotificationItem) {
                 class="aspect-square size-full object-cover"
               />
             </span>
-            <div class="min-w-0 flex-1 flex-col gap-1 pr-12 leading-none">
+            <div class="flex min-w-0 flex-1 flex-col gap-1 pr-12 leading-normal">
               <p
                 class="cursor-pointer truncate font-semibold hover:text-primary hover:underline"
                 @click.stop="emit('view', item)"
               >
                 {{ item.title }}
               </p>
-              <p class="line-clamp-2 text-xs text-muted-foreground">
-                {{ item.message }}
-              </p>
-              <div
-                class="flex items-center gap-2 text-xs text-muted-foreground"
-              >
-                <span class="w-24 shrink-0 truncate">
-                  {{ item.senderName || '' }}
-                </span>
-                <span class="ml-auto shrink-0 whitespace-nowrap tabular-nums">
-                  {{ item.date }}
-                </span>
+              <div class="flex flex-col gap-0.5">
+                <p class="line-clamp-2 text-xs text-muted-foreground">
+                  {{ item.message }}
+                </p>
+                <div
+                  class="flex items-center gap-2 text-xs text-muted-foreground"
+                >
+                  <span class="shrink-0 whitespace-nowrap tabular-nums">
+                    {{ item.date }}
+                  </span>
+                </div>
               </div>
             </div>
             <div
