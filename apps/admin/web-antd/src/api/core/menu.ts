@@ -56,6 +56,10 @@ const PERMISSION_PAGE_BY_PATH: Record<string, string> = {
   '/dev/codegen': 'views/dev/codegen/index.vue',
   '/dev/modules': 'views/dev/modules/index.vue',
   '/member/members': 'views/member/index.vue',
+  '/shop/products': 'views/shop/products/index.vue',
+  '/shop/orders': 'views/shop/orders/index.vue',
+  '/cms/categories': 'views/cms/categories/index.vue',
+  '/cms/articles': 'views/cms/articles/index.vue',
 };
 
 /** 路由 meta 用：库内为 Iconify `collection:name`（如 ep:menu），空则用占位 */

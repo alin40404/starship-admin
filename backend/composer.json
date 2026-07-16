@@ -3,18 +3,23 @@
     "name": "laravel/laravel",
     "type": "project",
     "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "keywords": [
+        "laravel",
+        "framework"
+    ],
     "license": "MIT",
     "require": {
-        "php": "^8.3",
         "laravel/framework": "^13.0",
         "laravel/sanctum": "^4.3",
         "laravel/tinker": "^3.0",
         "league/flysystem-aws-s3-v3": "3.0",
         "overtrue/pinyin": "5.0",
+        "php": "^8.3",
+        "starship/cms": "@dev",
         "starship/core": "@dev",
         "starship/generator": "@dev",
         "starship/member": "@dev",
+        "starship/shop": "@dev",
         "starship/system": "@dev"
     },
     "require-dev": {
@@ -48,6 +53,14 @@
         {
             "type": "path",
             "url": "../modules/Member"
+        },
+        {
+            "type": "path",
+            "url": "../modules/Shop"
+        },
+        {
+            "type": "path",
+            "url": "../modules/Cms"
         }
     ],
     "autoload-dev": {
@@ -55,6 +68,8 @@
             "Tests\\": "tests/",
             "Modules\\System\\Tests\\": "../modules/System/tests/",
             "Modules\\Member\\Tests\\": "../modules/Member/tests/",
+            "Modules\\Shop\\Tests\\": "../modules/Shop/tests/",
+            "Modules\\Cms\\Tests\\": "../modules/Cms/tests/",
             "Modules\\Generator\\Tests\\": "../modules/Generator/tests/"
         }
     },

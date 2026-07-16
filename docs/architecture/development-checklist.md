@@ -2,7 +2,7 @@
 
 > 更新日期：2026-07-16  
 > 目录约定：**保留 `modules/`**，近期不改为 `starship/`。  
-> **当前优先**：业务 Module（Shop/CMS）或 Notification 聚合；**暂缓** Packagist / `release` / Filter Hook / 插件市场。
+> **当前优先**：Shop / CMS 业务 Module MVP 已落地；OA / CRM / ERP 延后。Packagist / `release` / Filter Hook / 插件市场仍暂缓。
 
 ---
 
@@ -34,6 +34,7 @@
 | `starship:plugin:make` | ✅ | 插件脚手架 |
 | Generator 端到端 Demo | ✅ | `sa_demo_products` 表 + CLI 全流程已验收 |
 | Contract 体系 | ✅ | Sms/Mail/Storage/Admin/Member/Payment/Config/Permission 已绑定；Notification 接口占位 |
+| Shop / CMS Module | ✅ | `modules/Shop` 商品+订单+prepay；`modules/Cms` 栏目+文章 MVP |
 | Event / Hook | ✅ Event 主干 | `EventDispatcherInterface` + `EventDispatcher`；样例 `plugins/EventSample`。独立 Filter Hook 延后 |
 | ThemeManager | ✅ | 发现/安装/启用/切换/卸载 + CLI |
 | 脚手架 `starship/skeleton` | 🚧 | 开发仓兼发布：根 `composer.json` 已备；待维护 `release` 分支 |
@@ -118,6 +119,8 @@
 - [x] 前端插件动态加载（`registry.ts` 按需加载 panel；`VITE_PLUGIN_FRONTEND_DYNAMIC_ENABLED` 默认 false，true 时仅按 slug 加载）
 - [ ] 插件市场（可选）
 - [x] Contract 延后绑定：Config / Permission System 默认已绑；Notification 仍占位
+- [x] 业务 Module MVP：`modules/Shop`（商品/订单/prepay）、`modules/Cms`（栏目/文章）
+- [ ] OA / CRM / ERP（明确延后）
 
 ### 明确不做（近期）
 
@@ -211,7 +214,10 @@ starship-admin/
 ├── backend/                # Laravel 应用壳
 ├── modules/
 │   ├── System/             # 系统 + 监控日志
-│   └── Generator/          # 代码生成
+│   ├── Generator/          # 代码生成
+│   ├── Member/             # 会员中心
+│   ├── Shop/               # 商城 MVP
+│   └── Cms/                # 内容管理 MVP
 ├── plugins/
 │   └── SmsAliyun/          # 短信插件示例
 ├── themes/                 # 占位

@@ -1,0 +1,30 @@
+{
+    "name": "shop",
+    "title": "商城",
+    "version": "0.1.0",
+    "enabled": true,
+    "providers": [
+        "Modules\\Shop\\App\\Providers\\ShopServiceProvider"
+    ],
+    "seeders": [
+        "Modules\\Shop\\Database\\Seeders\\ShopMenuSeeder"
+    ],
+    "require": {
+        "modules": [
+            "system"
+        ]
+    },
+    "menus": {
+        "paths": [
+            "/shop",
+            "/shop/products",
+            "/shop/orders"
+        ]
+    },
+    "permissions": {
+        "prefixes": [
+            "shop."
+        ],
+        "exact": []
+    }
+}

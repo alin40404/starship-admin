@@ -24,7 +24,7 @@ class FrameworkSmokeTest extends TestCase
     }
 
     #[Test]
-    public function enabled_modules_include_system_generator_and_member(): void
+    public function enabled_modules_include_core_business_modules(): void
     {
         $names = app(ModuleManager::class)
             ->enabled()
@@ -35,6 +35,8 @@ class FrameworkSmokeTest extends TestCase
         $this->assertContains('system', $names);
         $this->assertContains('generator', $names);
         $this->assertContains('member', $names);
+        $this->assertContains('shop', $names);
+        $this->assertContains('cms', $names);
     }
 
     #[Test]

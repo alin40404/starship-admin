@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "80e51b7bdc3d364a357a4b2c4495e0f0",
+    "content-hash": "1d29c1e1621f5ddc77bf88d002efea5d",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -4774,12 +4774,17 @@
             "dist": {
                 "type": "path",
                 "url": "../modules/Generator",
-                "reference": "4741ea5cd33bad2b2bf161ada848b3a1c106a28c"
+                "reference": "f832385d50aa877547d0e1fdb8e0a10d7b2ea489"
             },
             "type": "library",
             "autoload": {
                 "psr-4": {
                     "Modules\\Generator\\App\\": "app/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Modules\\Generator\\Tests\\": "tests/"
                 }
             },
             "license": [
@@ -4796,13 +4801,18 @@
             "dist": {
                 "type": "path",
                 "url": "../modules/Member",
-                "reference": "b14af180a04ec9d66697aab002972f8031486def"
+                "reference": "792068d4850352482da777d8932335fdcd4c6ad2"
             },
             "type": "library",
             "autoload": {
                 "psr-4": {
                     "Modules\\Member\\App\\": "app/",
                     "Modules\\Member\\Database\\Seeders\\": "database/seeders/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Modules\\Member\\Tests\\": "tests/"
                 }
             },
             "license": [
@@ -4814,18 +4824,51 @@
             }
         },
         {
+            "name": "starship/shop",
+            "version": "0.1.0",
+            "dist": {
+                "type": "path",
+                "url": "../modules/Shop",
+                "reference": "03b26cba8b35cec6b04047b4a431d29059dfabbc"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Modules\\Shop\\App\\": "app/",
+                    "Modules\\Shop\\Database\\Seeders\\": "database/seeders/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Modules\\Shop\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Starship Admin 商城 module",
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
             "name": "starship/system",
             "version": "0.1.0",
             "dist": {
                 "type": "path",
                 "url": "../modules/System",
-                "reference": "0c7f41ac45acc101d5b6ce25ecebbcd3a9b54a4f"
+                "reference": "8819ff188d14a506a624e85d1a2956d560536e4c"
             },
             "type": "library",
             "autoload": {
                 "psr-4": {
                     "Modules\\System\\App\\": "app/",
                     "Modules\\System\\Database\\Seeders\\": "database/seeders/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Modules\\System\\Tests\\": "tests/"
                 }
             },
             "license": [
@@ -10013,6 +10056,7 @@
         "starship/core": 20,
         "starship/generator": 20,
         "starship/member": 20,
+        "starship/shop": 20,
         "starship/system": 20
     },
     "prefer-stable": true,
@@ -10020,6 +10064,6 @@
     "platform": {
         "php": "^8.3"
     },
-    "platform-dev": {},
+    "platform-dev": [],
     "plugin-api-version": "2.6.0"
 }
