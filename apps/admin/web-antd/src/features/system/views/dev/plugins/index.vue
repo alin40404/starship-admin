@@ -415,13 +415,20 @@ onMounted(() => {
 
 .plugin-type-aside__count {
   flex-shrink: 0;
+  min-width: 1.25rem;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: hsl(var(--muted) / 0.85);
   color: hsl(var(--muted-foreground));
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
+  line-height: 1.45;
+  text-align: center;
 }
 
 .plugin-type-aside__item.is-active .plugin-type-aside__count {
-  color: hsl(var(--primary) / 0.8);
+  background: hsl(var(--primary) / 0.14);
+  color: hsl(var(--primary));
 }
 
 .plugin-main {
