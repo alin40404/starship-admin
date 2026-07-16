@@ -24,6 +24,10 @@ export const PLUGIN_FRONTEND_DECLARED: Record<string, PluginFrontendManifest> =
       entry: '#/plugins/storage-oss',
       routes: [],
     },
+    'payment-wechat': {
+      entry: '#/plugins/payment-wechat',
+      routes: [],
+    },
   };
 
 export const PLUGIN_FRONTEND_DYNAMIC_ENABLED =

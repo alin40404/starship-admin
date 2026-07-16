@@ -29,6 +29,7 @@ import {
 import {
   fetchPlugin,
   testMailSmtpPlugin,
+  testPaymentWechatPlugin,
   testSmsAliyunPlugin,
   testStorageOssPlugin,
   updatePluginConfig,
@@ -86,12 +87,16 @@ const showMailTestTab = computed(
 const showStorageTestTab = computed(
   () => detail.value?.slug === 'storage-oss' && detail.value.enabled,
 );
+const showPaymentTestTab = computed(
+  () => detail.value?.slug === 'payment-wechat' && detail.value.enabled,
+);
 const showTestTab = computed(
   () =>
     (detail.value?.pages ?? []).some((p) => p.key === 'test') &&
     (showSmsTestTab.value ||
       showMailTestTab.value ||
-      showStorageTestTab.value),
+      showStorageTestTab.value ||
+      showPaymentTestTab.value),
 );
 
 const fieldGroups = computed(() => {
@@ -275,6 +280,16 @@ async function onTestStorage() {
   testing.value = true;
   try {
     const result = await testStorageOssPlugin();
+    message.success(result.message || $t('dev.shared.testSuccess'));
+  } finally {
+    testing.value = false;
+  }
+}
+
+async function onTestPayment() {
+  testing.value = true;
+  try {
+    const result = await testPaymentWechatPlugin();
     message.success(result.message || $t('dev.shared.testSuccess'));
   } finally {
     testing.value = false;
@@ -471,6 +486,18 @@ defineExpose({ open: show });
             {{ $t('dev.plugins.testHintStorage') }}
           </p>
           <Button :loading="testing" type="primary" @click="onTestStorage">
+            {{ $t('dev.shared.runTest') }}
+          </Button>
+        </Form>
+        <Form
+          v-else-if="showPaymentTestTab"
+          class="plugin-form"
+          layout="vertical"
+        >
+          <p class="text-muted-foreground mb-3 text-sm">
+            {{ $t('dev.plugins.testHintPayment') }}
+          </p>
+          <Button :loading="testing" type="primary" @click="onTestPayment">
             {{ $t('dev.shared.runTest') }}
           </Button>
         </Form>

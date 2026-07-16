@@ -280,7 +280,7 @@ System     已启用 Plugin
 3. **禁用 / 卸载** 后 Provider 不再加载；下一请求由 System 默认实现承接（无残留绑定）。
 4. 业务发送入口（短信、邮件、存储等）一律注入 Contract，禁止写死 `Plugins\Foo\...`。
 
-参考：`SmsSenderInterface` + `SmsGateway` + `plugins/SmsAliyun`；`MailSenderInterface` + `MailGateway` + `plugins/MailSmtp`；`StorageInterface` + `LocalStorage` + `plugins/StorageOss`。  
+参考：`SmsSenderInterface` + `SmsGateway` + `plugins/SmsAliyun`；`MailSenderInterface` + `MailGateway` + `plugins/MailSmtp`；`StorageInterface` + `LocalStorage` + `plugins/StorageOss`；`PaymentInterface` + `PaymentGateway` + `plugins/PaymentWechat`。  
 目录总览见 [Starship_Contract_接口体系设计方案.md](./Starship_Contract_接口体系设计方案.md)（`packages/core/src/Contracts/`）。
 
 ## 6.2 plugin.json

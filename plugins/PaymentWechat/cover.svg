@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-label="PaymentWechat plugin cover">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f1a24"/>
+      <stop offset="45%" stop-color="#152433"/>
+      <stop offset="100%" stop-color="#0c1218"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#22c55e"/>
+      <stop offset="100%" stop-color="#16a34a"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="540" fill="url(#bg)"/>
+  <rect x="0" y="0" width="960" height="8" fill="url(#accent)"/>
+  <circle cx="140" cy="420" r="180" fill="#22c55e" fill-opacity="0.10"/>
+  <circle cx="820" cy="80" r="200" fill="#16a34a" fill-opacity="0.14"/>
+  <rect x="300" y="170" width="360" height="200" rx="24" fill="#1a2a3a" stroke="#22c55e" stroke-opacity="0.45" stroke-width="3"/>
+  <rect x="340" y="220" width="120" height="80" rx="12" fill="#22c55e" fill-opacity="0.35"/>
+  <path d="M360 250 h80 M400 210 v80" stroke="#22c55e" stroke-width="10" stroke-linecap="round"/>
+  <text x="480" y="460" fill="#9ec9e8" font-family="Segoe UI, sans-serif" font-size="36" text-anchor="middle">PaymentWechat</text>
+</svg>

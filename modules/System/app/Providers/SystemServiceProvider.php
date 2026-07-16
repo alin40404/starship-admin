@@ -24,8 +24,10 @@ use Modules\System\App\Support\MailConfigRegistrar;
 use Modules\System\App\Support\Sms\SmsGateway;
 use Modules\System\App\Support\Storage\LocalStorage;
 use Modules\System\App\Support\StorageConfigRegistrar;
+use Modules\System\App\Support\Payment\PaymentGateway;
 use Modules\System\App\Support\AdminProvider;
 use Starship\Core\Contracts\Mail\MailSenderInterface;
+use Starship\Core\Contracts\Payment\PaymentInterface;
 use Starship\Core\Contracts\Sms\SmsSenderInterface;
 use Starship\Core\Contracts\Storage\StorageInterface;
 use Starship\Core\Contracts\Admin\AdminProviderInterface;
@@ -43,6 +45,7 @@ class SystemServiceProvider extends ServiceProvider
         $this->app->singleton(LocalStorage::class);
         $this->app->singleton(StorageInterface::class, fn ($app) => $app->make(LocalStorage::class));
         $this->app->singleton(AdminProviderInterface::class, AdminProvider::class);
+        $this->app->singleton(PaymentInterface::class, PaymentGateway::class);
     }
 
     public function boot(): void

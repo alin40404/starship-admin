@@ -33,7 +33,7 @@
 | `starship:module:make` | ✅ | 模块脚手架 |
 | `starship:plugin:make` | ✅ | 插件脚手架 |
 | Generator 端到端 Demo | ✅ | `sa_demo_products` 表 + CLI 全流程已验收 |
-| Contract 体系 | ✅ | Sms/Mail/Storage/Admin/Member 已绑定；Payment/Notification/Config/Permission 接口目录已入库（实现延后） |
+| Contract 体系 | ✅ | Sms/Mail/Storage/Admin/Member/Payment 已绑定；Notification/Config/Permission 接口目录已入库（实现延后） |
 | Event / Hook | ✅ Event 主干 | `EventDispatcherInterface` + `EventDispatcher`；样例 `plugins/EventSample`。独立 Filter Hook 延后 |
 | ThemeManager | ✅ | 发现/安装/启用/切换/卸载 + CLI |
 | 脚手架 `starship/skeleton` | 🚧 | 开发仓兼发布：根 `composer.json` 已备；待维护 `release` 分支 |
@@ -114,10 +114,10 @@
 - [x] EventBus 主干（`EventDispatcher`；样例 `EventSample`）
 - [ ] Filter Hook（辅助，延后）
 - [x] Contract 完整目录（`packages/core/src/Contracts/`：第一阶段 8 组接口；Tenant/Search/Workflow 等第二阶段）
-- [ ] 官方插件库（支付、存储、短信）：短信 ✅ `SmsAliyun`；存储 ✅ `StorageOss`；支付仍缺
+- [x] 官方插件库（支付、存储、短信）：`SmsAliyun` / `StorageOss` / `PaymentWechat`
 - [x] 前端插件动态加载（`registry.ts` 按需加载 panel；`VITE_PLUGIN_FRONTEND_DYNAMIC_ENABLED` 默认 false，true 时仅按 slug 加载）
 - [ ] 插件市场（可选）
-- [ ] Contract 延后绑定：Payment / Notification / Config / Permission 的 System 默认与插件样例
+- [ ] Contract 延后绑定：Notification / Config / Permission 的 System 默认与插件样例
 
 ### 明确不做（近期）
 

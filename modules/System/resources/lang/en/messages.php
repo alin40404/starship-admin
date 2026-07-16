@@ -95,4 +95,5 @@ return [
     'sms_code_invalid' => 'Invalid or expired verification code',
     'sms_login_disabled' => 'SMS code login is disabled',
     'sms_provider_unsupported' => 'Unsupported SMS provider',
+    'payment_plugin_required' => 'Please install and enable a payment plugin (e.g. PaymentWechat)',
 ];

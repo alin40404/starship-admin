@@ -129,3 +129,7 @@ export function testMailSmtpPlugin(payload: { email: string }) {
 export function testStorageOssPlugin() {
   return requestClient.post<{ message: string }>('/plugin/storage-oss/test');
 }
+
+export function testPaymentWechatPlugin() {
+  return requestClient.post<{ message: string }>('/plugin/payment-wechat/test');
+}

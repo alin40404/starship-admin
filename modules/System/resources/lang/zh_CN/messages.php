@@ -95,4 +95,5 @@ return [
     'sms_code_invalid' => '验证码错误或已失效',
     'sms_login_disabled' => '手机号验证码登录未开启',
     'sms_provider_unsupported' => '不支持的短信服务商',
+    'payment_plugin_required' => '请安装并启用支付插件（如 PaymentWechat）',
 ];

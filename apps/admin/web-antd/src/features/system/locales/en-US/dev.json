@@ -109,6 +109,7 @@
     "testHintSms": "Sends a test verification code via SmsSenderInterface. Valid Alibaba Cloud SMS credentials are required.",
     "testHintMail": "Sends a test email via MailSenderInterface. Valid SMTP configuration is required.",
     "testHintStorage": "Uploads and deletes a probe file via StorageInterface. Valid OSS credentials are required.",
+    "testHintPayment": "Creates and queries a sandbox order via PaymentInterface. AppID, merchant ID and APIv3 key are required.",
     "linkTabHint": "This tab is declared by the plugin as an external link (ui=link).",
     "openLink": "Open link",
     "linkMissing": "No href configured",
