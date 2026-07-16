@@ -29,6 +29,7 @@ import {
   fetchPlugin,
   testMailSmtpPlugin,
   testSmsAliyunPlugin,
+  testStorageOssPlugin,
   updatePluginConfig,
 } from '#/features/system/api/dev-plugin';
 import { PLUGIN_PERMISSIONS } from '#/features/system/constants/plugin-permissions';
@@ -79,10 +80,15 @@ const showSmsTestTab = computed(
 const showMailTestTab = computed(
   () => detail.value?.slug === 'mail-smtp' && detail.value.enabled,
 );
+const showStorageTestTab = computed(
+  () => detail.value?.slug === 'storage-oss' && detail.value.enabled,
+);
 const showTestTab = computed(
   () =>
     (detail.value?.pages ?? []).some((p) => p.key === 'test') &&
-    (showSmsTestTab.value || showMailTestTab.value),
+    (showSmsTestTab.value ||
+      showMailTestTab.value ||
+      showStorageTestTab.value),
 );
 
 const fieldGroups = computed(() => {
@@ -217,6 +223,16 @@ async function onTestMail() {
   testing.value = true;
   try {
     const result = await testMailSmtpPlugin({ email: testEmail.value.trim() });
+    message.success(result.message || $t('dev.shared.testSuccess'));
+  } finally {
+    testing.value = false;
+  }
+}
+
+async function onTestStorage() {
+  testing.value = true;
+  try {
+    const result = await testStorageOssPlugin();
     message.success(result.message || $t('dev.shared.testSuccess'));
   } finally {
     testing.value = false;
@@ -406,7 +422,22 @@ defineExpose({ open: show });
             {{ $t('dev.shared.sendTest') }}
           </Button>
         </Form>
-        <p class="text-muted-foreground mt-2 text-xs">
+        <Form
+          v-else-if="showStorageTestTab"
+          class="plugin-form"
+          layout="vertical"
+        >
+          <p class="text-muted-foreground mb-3 text-sm">
+            {{ $t('dev.plugins.testHintStorage') }}
+          </p>
+          <Button :loading="testing" type="primary" @click="onTestStorage">
+            {{ $t('dev.shared.runTest') }}
+          </Button>
+        </Form>
+        <p
+          v-if="showSmsTestTab || showMailTestTab"
+          class="text-muted-foreground mt-2 text-xs"
+        >
           {{
             showSmsTestTab
               ? $t('dev.plugins.testHintSms')

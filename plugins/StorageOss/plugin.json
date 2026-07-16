@@ -1,0 +1,44 @@
+{
+  "name": "StorageOss",
+  "slug": "storage-oss",
+  "type": "storage",
+  "namespace": "Plugins\\StorageOss",
+  "version": "1.0.0",
+  "description": "阿里云 OSS 存储适配插件",
+  "author": "Starship Admin",
+  "cover": "cover.svg",
+  "require": {
+    "starship": ">=1.0.0",
+    "php": ">=8.3",
+    "modules": ["System"],
+    "plugins": []
+  },
+  "providers": [
+    "Plugins\\StorageOss\\Providers\\StorageOssServiceProvider"
+  ],
+  "routes": [
+    "routes/admin-api.php"
+  ],
+  "migrations": false,
+  "config": "config/storage-oss.php",
+  "pages": [
+    {
+      "key": "config",
+      "title": "配置",
+      "permission": "system.plugins.config",
+      "ui": "schema"
+    },
+    {
+      "key": "test",
+      "title": "测试",
+      "permission": "system.plugins.config",
+      "ui": "schema"
+    }
+  ],
+  "frontend": {
+    "entry": "#/plugins/storage-oss",
+    "routes": []
+  },
+  "enabled": false,
+  "order": 520
+}

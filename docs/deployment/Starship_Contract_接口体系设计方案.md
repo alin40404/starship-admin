@@ -5,7 +5,7 @@
 > | Contract | Core 接口 | System 默认 | 插件覆盖样例 |
 > |----------|-----------|-------------|--------------|
 > | `SmsSenderInterface` | ✅ | `SmsGateway` | `plugins/SmsAliyun` |
-> | `StorageInterface` | ✅（含 `exists()`） | `LocalStorage` | （延后 OSS） |
+> | `StorageInterface` | ✅（含 `exists()`） | `LocalStorage` | `plugins/StorageOss` |
 > | `MailSenderInterface` | ✅ | `MailGateway` | `plugins/MailSmtp` |
 > | `PaymentInterface` | ✅ 目录已入库 | ❌ 延后 | ❌ 延后 |
 > | `NotificationInterface` | ✅ 目录已入库 | ❌ 延后 | ❌ 延后 |
@@ -15,7 +15,7 @@
 > | `PermissionCheckerInterface` | ✅ 目录已入库 | ❌ 延后 | — |
 >
 > **目录**：`packages/core/src/Contracts/{Sms,Mail,Storage,Admin,Member,Payment,Notification,Config,Permission}/`  
-> **已落地绑定**：Sms / Storage / Mail / Admin / Member。Payment / Notification / Config / Permission 仅接口占位。  
+> **已落地绑定**：Sms / Storage / Mail / Admin / Member；Storage 插件覆盖样例 `StorageOss`。Payment / Notification / Config / Permission 仅接口占位。  
 > **第二阶段目录**（尚未建）：Tenant / Search / Workflow / AI / OAuth。  
 > **暂缓**：Packagist / `release` 分支。
 

@@ -50,6 +50,22 @@ const typeOptions = computed(() => [
   ...typeCatalog.value,
 ]);
 
+const TYPE_ICONS: Record<string, string> = {
+  all: 'lucide:layout-grid',
+  payment: 'lucide:credit-card',
+  sms: 'lucide:message-square-text',
+  email: 'lucide:mail',
+  oauth: 'lucide:key-round',
+  storage: 'lucide:hard-drive',
+  ai: 'lucide:sparkles',
+  feature: 'lucide:puzzle',
+  other: 'lucide:package',
+};
+
+function typeIcon(type: string) {
+  return TYPE_ICONS[type] ?? 'lucide:box';
+}
+
 const keywordMatchedRows = computed(() => {
   const key = keyword.value.trim().toLowerCase();
   if (!key) {
@@ -241,7 +257,13 @@ onMounted(() => {
               type="button"
               @click="typeFilter = item.value"
             >
-              <span class="plugin-type-aside__label">{{ item.label }}</span>
+              <span class="plugin-type-aside__main">
+                <IconifyIcon
+                  class="plugin-type-aside__icon"
+                  :icon="typeIcon(item.value)"
+                />
+                <span class="plugin-type-aside__label">{{ item.label }}</span>
+              </span>
               <span class="plugin-type-aside__count">
                 {{ typeCounts[item.value] ?? 0 }}
               </span>
@@ -363,6 +385,24 @@ onMounted(() => {
 
 .plugin-type-aside__item.is-active {
   background: hsl(var(--primary) / 0.12);
+  color: hsl(var(--primary));
+}
+
+.plugin-type-aside__main {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.plugin-type-aside__icon {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.plugin-type-aside__item.is-active .plugin-type-aside__icon {
   color: hsl(var(--primary));
 }
 

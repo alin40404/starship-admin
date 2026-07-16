@@ -125,3 +125,7 @@ export function testSmsAliyunPlugin(payload: { mobile: string }) {
 export function testMailSmtpPlugin(payload: { email: string }) {
   return requestClient.post<{ message: string }>('/plugin/mail-smtp/test', payload);
 }
+
+export function testStorageOssPlugin() {
+  return requestClient.post<{ message: string }>('/plugin/storage-oss/test');
+}
