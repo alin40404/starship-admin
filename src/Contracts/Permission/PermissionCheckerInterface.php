@@ -3,8 +3,9 @@
 namespace Starship\Core\Contracts\Permission;
 
 /**
- * 权限校验契约：业务侧只依赖接口，不耦合具体 RBAC 实现。
- * 接口已入库；System 绑定实现延后。
+ * 后台权限校验契约。业务 Module 注入本接口，不直接依赖 AdminPermissionService。
+ * System 默认实现：PermissionChecker（RBAC + 超管）。
+ * userId 为空时取当前请求登录管理员。
  */
 interface PermissionCheckerInterface
 {
