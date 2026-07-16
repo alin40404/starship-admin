@@ -186,49 +186,48 @@ string $path
 
 ------------------------------------------------------------------------
 
-# 6. PaymentInterface设计
+# 6. PaymentInterface 设计
 
 用途：
 
-支付能力。
+**支付通道**能力（微信 / 支付宝等）。**不包含**业务订单创建。
+
+职责边界：
+
+| 层 | 职责 |
+|----|------|
+| Shop 等 Module | 创建业务订单（`orders` 表）、库存、用户 |
+| `PaymentInterface` | 对已有 `orderNo` 发起预支付、退款、查单 |
 
 接口：
 
-``` php
+```php
 interface PaymentInterface
 {
+    /** 向通道统一下单；orderNo 为业务订单号 */
+    public function prepay(string $orderNo, array $context = []): array;
 
+    public function refund(string $orderNo, array $context = []): array;
 
-public function createOrder(
-array $data
-);
-
-
-public function pay(
-string $orderNo
-);
-
-
-public function refund(
-string $orderNo
-);
-
-
-public function query(
-string $orderNo
-);
-
-
+    public function query(string $orderNo): array;
 }
+```
+
+典型调用（Shop）：
+
+```php
+$order = $orderService->create([...]); // 业务订单
+$prepay = $payment->prepay($order->order_no, [
+    'amount' => $order->amount,
+    'subject' => $order->title,
+]);
 ```
 
 实现：
 
-    WechatPayPlugin
+    PaymentGateway（System 占位）
 
-    AlipayPlugin
-
-    StripePlugin
+    plugins/PaymentWechat（通道样例）
 
 ------------------------------------------------------------------------
 
@@ -379,7 +378,7 @@ Event：
 
 Contract：
 
-    PaymentInterface.pay()
+    PaymentInterface.prepay()
 
 成功后：
 

@@ -109,7 +109,7 @@
     "testHintSms": "通过 SmsSenderInterface 发送测试验证码，需填写有效的阿里云短信配置。",
     "testHintMail": "通过 MailSenderInterface 发送测试邮件，需填写有效的 SMTP 配置。",
     "testHintStorage": "通过 StorageInterface 上传并删除探测文件，需填写有效的 OSS 配置。",
-    "testHintPayment": "通过 PaymentInterface 沙箱下单并查单，需填写 AppID / 商户号 / APIv3 密钥。",
+    "testHintPayment": "使用业务侧测试订单号调用 PaymentInterface::prepay 与 query（沙箱模式）。需填写 AppID / 商户号 / APIv3 密钥。",
     "linkTabHint": "此页由插件声明为外链配置入口（ui=link）。",
     "openLink": "打开链接",
     "linkMissing": "未配置外链地址",

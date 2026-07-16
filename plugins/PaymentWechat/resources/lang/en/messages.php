@@ -4,6 +4,7 @@ return [
     'config_incomplete' => 'Please configure AppID, merchant ID and APIv3 key first',
     'test_success' => 'WeChat Pay sample connectivity test passed',
     'test_failed' => 'WeChat Pay sample connectivity test failed',
+    'order_no_required' => 'Business order number is required',
     'sandbox_order_subject' => 'Starship payment plugin test',
     'fields' => [
         'app_id_label' => 'AppID',

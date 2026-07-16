@@ -10,17 +10,12 @@ use Starship\Core\Contracts\Payment\PaymentInterface;
  */
 class PaymentGateway implements PaymentInterface
 {
-    public function createOrder(array $data): array
+    public function prepay(string $orderNo, array $context = []): array
     {
         throw new RuntimeException(__('system::messages.payment_plugin_required'));
     }
 
-    public function pay(string $orderNo): array
-    {
-        throw new RuntimeException(__('system::messages.payment_plugin_required'));
-    }
-
-    public function refund(string $orderNo): array
+    public function refund(string $orderNo, array $context = []): array
     {
         throw new RuntimeException(__('system::messages.payment_plugin_required'));
     }

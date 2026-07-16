@@ -4,6 +4,7 @@ return [
     'config_incomplete' => '请先完善 AppID、商户号与 APIv3 密钥',
     'test_success' => '微信支付样例连通性测试通过',
     'test_failed' => '微信支付样例连通性测试失败',
+    'order_no_required' => '业务订单号不能为空',
     'sandbox_order_subject' => 'Starship 支付插件测试',
     'fields' => [
         'app_id_label' => 'AppID',

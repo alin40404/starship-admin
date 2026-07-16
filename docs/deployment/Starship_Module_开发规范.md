@@ -248,11 +248,13 @@ API：
 
 应该：
 
-    PaymentInterface
+    Shop 先创建业务订单
+
+    PaymentInterface::prepay($orderNo, ...)
 
     ↓
 
-    Plugin实现
+    Plugin 通道实现
 
 ------------------------------------------------------------------------
 

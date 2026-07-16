@@ -4,6 +4,7 @@ namespace Plugins\PaymentWechat\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Str;
 use Starship\Core\Contracts\Payment\PaymentInterface;
 use Starship\Core\Support\ApiResponse;
 
@@ -11,12 +12,13 @@ class PaymentWechatController extends Controller
 {
     public function test(PaymentInterface $payment): JsonResponse
     {
+        $orderNo = 'WXTEST'.now()->format('YmdHis').Str::lower(Str::random(6));
+
         try {
-            $created = $payment->createOrder([
+            $prepay = $payment->prepay($orderNo, [
                 'subject' => __('payment-wechat::messages.sandbox_order_subject'),
                 'amount' => 1,
             ]);
-            $orderNo = (string) ($created['order_no'] ?? '');
             $queried = $payment->query($orderNo);
         } catch (\Throwable $exception) {
             return ApiResponse::error(
@@ -28,7 +30,8 @@ class PaymentWechatController extends Controller
         }
 
         return ApiResponse::success([
-            'created' => $created,
+            'order_no' => $orderNo,
+            'prepay' => $prepay,
             'queried' => $queried,
         ], __('payment-wechat::messages.test_success'));
     }

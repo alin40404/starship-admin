@@ -1,6 +1,6 @@
 # PaymentWechat
 
-微信支付官方样例插件：启用后覆盖 `PaymentInterface`。
+微信支付官方样例插件：启用后覆盖 `PaymentInterface`（仅通道：prepay / refund / query）。业务订单由 Shop 等模块创建。
 
 ## 使用
 

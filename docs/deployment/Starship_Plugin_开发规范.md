@@ -413,19 +413,15 @@ Core：
 ``` php
 interface PaymentInterface
 {
+    public function prepay(string $orderNo, array $context = []): array;
 
-public function pay();
+    public function refund(string $orderNo, array $context = []): array;
 
-public function refund();
-
-public function query();
-
+    public function query(string $orderNo): array;
 }
 ```
 
-插件实现：
-
-    WechatPayment
+业务订单由 Shop 等 Module 创建；插件只实现通道。参考 `plugins/PaymentWechat`。
 
     AlipayPayment
 
