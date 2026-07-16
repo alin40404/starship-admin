@@ -26,11 +26,15 @@ use Modules\System\App\Support\Storage\LocalStorage;
 use Modules\System\App\Support\StorageConfigRegistrar;
 use Modules\System\App\Support\Payment\PaymentGateway;
 use Modules\System\App\Support\AdminProvider;
+use Modules\System\App\Support\Config\ConfigRepository;
+use Modules\System\App\Support\Permission\PermissionChecker;
 use Starship\Core\Contracts\Mail\MailSenderInterface;
 use Starship\Core\Contracts\Payment\PaymentInterface;
 use Starship\Core\Contracts\Sms\SmsSenderInterface;
 use Starship\Core\Contracts\Storage\StorageInterface;
 use Starship\Core\Contracts\Admin\AdminProviderInterface;
+use Starship\Core\Contracts\Config\ConfigRepositoryInterface;
+use Starship\Core\Contracts\Permission\PermissionCheckerInterface;
 use Starship\Core\Support\ApiResponse;
 use Throwable;
 
@@ -46,6 +50,8 @@ class SystemServiceProvider extends ServiceProvider
         $this->app->singleton(StorageInterface::class, fn ($app) => $app->make(LocalStorage::class));
         $this->app->singleton(AdminProviderInterface::class, AdminProvider::class);
         $this->app->singleton(PaymentInterface::class, PaymentGateway::class);
+        $this->app->singleton(ConfigRepositoryInterface::class, ConfigRepository::class);
+        $this->app->singleton(PermissionCheckerInterface::class, PermissionChecker::class);
     }
 
     public function boot(): void

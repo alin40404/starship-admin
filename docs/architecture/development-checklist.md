@@ -2,7 +2,7 @@
 
 > 更新日期：2026-07-16  
 > 目录约定：**保留 `modules/`**，近期不改为 `starship/`。  
-> **当前优先**：阶段三生态（官方插件 / 前端插件动态加载 / Contract 延后绑定）；**暂缓** Packagist / `release` 分支。
+> **当前优先**：业务 Module（Shop/CMS）或 Notification 聚合；**暂缓** Packagist / `release` / Filter Hook / 插件市场。
 
 ---
 
@@ -33,7 +33,7 @@
 | `starship:module:make` | ✅ | 模块脚手架 |
 | `starship:plugin:make` | ✅ | 插件脚手架 |
 | Generator 端到端 Demo | ✅ | `sa_demo_products` 表 + CLI 全流程已验收 |
-| Contract 体系 | ✅ | Sms/Mail/Storage/Admin/Member/Payment 已绑定；Notification/Config/Permission 接口目录已入库（实现延后） |
+| Contract 体系 | ✅ | Sms/Mail/Storage/Admin/Member/Payment/Config/Permission 已绑定；Notification 接口占位 |
 | Event / Hook | ✅ Event 主干 | `EventDispatcherInterface` + `EventDispatcher`；样例 `plugins/EventSample`。独立 Filter Hook 延后 |
 | ThemeManager | ✅ | 发现/安装/启用/切换/卸载 + CLI |
 | 脚手架 `starship/skeleton` | 🚧 | 开发仓兼发布：根 `composer.json` 已备；待维护 `release` 分支 |
@@ -89,8 +89,8 @@
 - [x] 管理端插件 UI：`src/plugins/{slug}`（后台前端）+ 插件内 `frontend/`（前台）；导出 `backend/`
 - [x] 插件表单公共样式（`styles/plugin-form.css`，配置/测试/自定义 Tab 共用 `--plugin-form-font-size`）
 - [x] 插件 export / import CLI（[plugin-cli.md](../deployment/plugin-cli.md)）
-- [x] 前端插件动态加载约定预留（`frontend` + `frontend-registry.ts`；运行时加载暂关）
-- [ ] Payment / OAuth 等（延后）
+- [x] 前端插件动态加载（`registry.ts` 按需加载；`VITE_PLUGIN_FRONTEND_DYNAMIC_ENABLED`）
+- [x] Payment 样例（`PaymentWechat` + `prepay`）；OAuth 延后
 
 ### 阶段二：主题体系（底座稳定后，约 1～2 个月）
 
@@ -117,7 +117,7 @@
 - [x] 官方插件库（支付、存储、短信）：`SmsAliyun` / `StorageOss` / `PaymentWechat`
 - [x] 前端插件动态加载（`registry.ts` 按需加载 panel；`VITE_PLUGIN_FRONTEND_DYNAMIC_ENABLED` 默认 false，true 时仅按 slug 加载）
 - [ ] 插件市场（可选）
-- [ ] Contract 延后绑定：Notification / Config / Permission 的 System 默认与插件样例
+- [x] Contract 延后绑定：Config / Permission System 默认已绑；Notification 仍占位
 
 ### 明确不做（近期）
 

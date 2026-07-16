@@ -11,11 +11,11 @@
 > | `NotificationInterface` | ✅ 目录已入库 | ❌ 延后 | ❌ 延后 |
 > | `AdminProviderInterface` | ✅ | `AdminProvider` | — |
 > | `MemberProviderInterface` | ✅ | Member `MemberProvider` | — |
-> | `ConfigRepositoryInterface` | ✅ 目录已入库 | ❌ 延后 | — |
-> | `PermissionCheckerInterface` | ✅ 目录已入库 | ❌ 延后 | — |
+> | `ConfigRepositoryInterface` | ✅ | `ConfigRepository`（SettingStore） | — |
+> | `PermissionCheckerInterface` | ✅ | `PermissionChecker`（RBAC） | — |
 >
 > **目录**：`packages/core/src/Contracts/{Sms,Mail,Storage,Admin,Member,Payment,Notification,Config,Permission}/`  
-> **已落地绑定**：Sms / Storage / Mail / Admin / Member / Payment（`PaymentWechat` 样例）；Payment 生产网关对接可后续扩展。  
+> **已落地绑定**：Sms / Storage / Mail / Admin / Member / Payment / Config / Permission；Notification 仅接口占位。  
 > **第二阶段目录**（尚未建）：Tenant / Search / Workflow / AI / OAuth。  
 > **暂缓**：Packagist / `release` 分支。
 
@@ -84,10 +84,10 @@ packages/core/src/Contracts/
 ├── Storage/         # ✅ 已绑定
 ├── Admin/           # ✅ AdminProvider 已绑定
 ├── Member/          # ✅ MemberProvider 已绑定
-├── Payment/         # ✅ 接口；实现延后
+├── Payment/         # ✅ PaymentGateway + PaymentWechat
 ├── Notification/    # ✅ 接口；实现延后
-├── Config/          # ✅ 接口；实现延后
-├── Permission/      # ✅ 接口；实现延后
+├── Config/          # ✅ ConfigRepository 已绑定
+├── Permission/      # ✅ PermissionChecker 已绑定
 ├── Tenant/          # 第二阶段
 ├── Search/          # 第二阶段
 └── Workflow/        # 第二阶段
@@ -414,10 +414,8 @@ v1:
 
 第一阶段（目录已齐）：
 
-    StorageInterface / SmsSenderInterface / MailSenderInterface   ← 已绑定
-    PaymentInterface / NotificationInterface                     ← 仅接口
-    AdminProviderInterface / MemberProviderInterface             ← 已绑定
-    ConfigRepositoryInterface / PermissionCheckerInterface       ← 仅接口
+    Storage / Sms / Mail / Admin / Member / Payment / Config / Permission  ← 已绑定
+    NotificationInterface                                                  ← 仅接口
 
 第二阶段（目录未建）：
 
