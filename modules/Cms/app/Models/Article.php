@@ -3,7 +3,9 @@
 namespace Modules\Cms\App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Modules\System\App\Models\Category;
 
 class Article extends Model
 {
@@ -33,5 +35,10 @@ class Article extends Model
             'status' => 'integer',
             'published_at' => 'datetime',
         ];
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'category_id');
     }
 }

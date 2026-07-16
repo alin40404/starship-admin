@@ -12,12 +12,12 @@ import { useVbenForm } from '#/adapter/form';
 import {
   createArticle,
   fetchArticle,
-  fetchCategoryOptions,
+  fetchCmsCategoryOptions,
   updateArticle,
 } from '#/features/cms/api';
 import { $t } from '#/locales';
 
-import { buildArticleFormSchema } from './data';
+import { buildArticleFormSchema } from '../data';
 
 const emits = defineEmits<{ success: [] }>();
 const { isMobile } = usePreferences();
@@ -47,11 +47,8 @@ type PopupApi = {
 };
 
 async function loadCategories() {
-  const items = await fetchCategoryOptions();
-  categoryOptions.value = items.map((item) => ({
-    label: item.name,
-    value: item.id,
-  }));
+  const items = await fetchCmsCategoryOptions();
+  categoryOptions.value = items;
   formApi.setState({ schema: buildArticleFormSchema(categoryOptions.value) });
 }
 

@@ -19,7 +19,7 @@ class ShopMenuSeeder extends Seeder
             [
                 'parent_id' => 0,
                 'name' => 'ShopCenter',
-                'title' => '商城',
+                'title' => '商城中心',
                 'component' => null,
                 'permission' => null,
                 'icon' => 'ep:shopping-cart',
@@ -28,6 +28,8 @@ class ShopMenuSeeder extends Seeder
                 'status' => 1,
             ],
         );
+
+        $root->update(['title' => '商城中心']);
 
         $products = Menu::query()->firstOrCreate(
             ['path' => '/shop/products', 'type' => 2],

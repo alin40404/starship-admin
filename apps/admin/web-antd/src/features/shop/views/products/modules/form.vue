@@ -16,7 +16,7 @@ import {
 } from '#/features/shop/api';
 import { $t } from '#/locales';
 
-import { buildProductFormSchema } from './data';
+import { buildProductFormSchema } from '../data';
 
 const emits = defineEmits<{ success: [] }>();
 const { isMobile } = usePreferences();

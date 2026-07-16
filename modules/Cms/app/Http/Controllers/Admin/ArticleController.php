@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Modules\Cms\App\Models\Article;
+use Modules\Cms\App\Support\CmsCategoryType;
 use Modules\System\App\Support\AdminRuntimeConfig;
 use Starship\Core\Support\ApiResponse;
 
@@ -92,7 +93,12 @@ class ArticleController extends Controller
         }
 
         $rules = [
-            'category_id' => ['nullable', 'integer', 'min:1'],
+            'category_id' => [
+                'nullable',
+                'integer',
+                'min:1',
+                Rule::exists('categories', 'id')->where('type', CmsCategoryType::ARTICLE),
+            ],
             'title' => [$partial ? 'sometimes' : 'required', 'string', 'max:160'],
             'slug' => [$partial ? 'sometimes' : 'required', 'string', 'max:160', $slugRule],
             'summary' => ['nullable', 'string', 'max:500'],

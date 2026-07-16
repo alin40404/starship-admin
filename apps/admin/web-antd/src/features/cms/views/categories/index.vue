@@ -1,125 +1,285 @@
 <script lang="ts" setup>
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { CategoryRow } from '#/features/cms/api';
+import type { CmsCategoryTreeNode } from '#/features/cms/api';
 
 import { ref } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { Page } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
+import { $t } from '@vben/locales';
 
 import { Button, message, Modal } from 'ant-design-vue';
 
-import { useResponsiveCrud } from '#/adapter/mobile-list';
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import {
-  deleteCategory,
-  fetchCategoryPage,
-  updateCategoryStatus,
+  batchDeleteCmsCategories,
+  batchUpdateCmsCategoryStatus,
+  deleteCmsCategory,
+  fetchCmsCategoryTree,
+  updateCmsCategorySort,
+  updateCmsCategoryStatus,
 } from '#/features/cms/api';
 import { CMS_PERMISSIONS } from '#/features/cms/constants/cms-permissions';
-import { $t } from '#/locales';
 
 import { useColumns, useGridFormSchema } from './data';
 import CategoryForm from './modules/form.vue';
 
 type CategoryFormExpose = {
-  open: (data?: CategoryRow | Record<string, never>) => void;
+  open: (data?: CmsCategoryTreeNode | { parent_id?: number }) => void;
 };
 
-const categoryFormRef = ref<CategoryFormExpose>();
 const { hasAccessByCodes } = useAccess();
-const access = { can: (code: string) => hasAccessByCodes([code]) };
+const categoryAccess = {
+  can: (code: string) => hasAccessByCodes([code]),
+};
 
-function onCreate() {
-  categoryFormRef.value?.open({});
+const selectedRows = ref<CmsCategoryTreeNode[]>([]);
+const categoryFormRef = ref<CategoryFormExpose>();
+
+function syncSelection() {
+  const records = gridApi?.grid?.getCheckboxRecords?.() ?? [];
+  selectedRows.value = records as CmsCategoryTreeNode[];
 }
 
-function onEdit(row: CategoryRow) {
+function clearSelection() {
+  gridApi?.grid?.clearCheckboxRow?.();
+  selectedRows.value = [];
+}
+
+function onRefresh() {
+  gridApi.query();
+}
+
+function onCreate() {
+  categoryFormRef.value?.open({ parent_id: 0 });
+}
+
+function onAppend(row: CmsCategoryTreeNode) {
+  categoryFormRef.value?.open({ parent_id: row.id });
+}
+
+function onEdit(row: CmsCategoryTreeNode) {
   categoryFormRef.value?.open(row);
 }
 
-function onActionClick({ code, row }: OnActionClickParams<CategoryRow>) {
-  if (code === 'edit') onEdit(row);
+function onActionClick({ code, row }: OnActionClickParams<CmsCategoryTreeNode>) {
+  if (code === 'append') onAppend(row);
+  else if (code === 'edit') onEdit(row);
   else if (code === 'delete') onDelete(row);
 }
 
-async function onStatusBeforeChange(newVal: number, row: CategoryRow) {
-  try {
-    await updateCategoryStatus(row.id, newVal);
-    message.success($t('crud.saved'));
-    return true;
-  } catch {
-    return false;
-  }
+async function onCategoryStatusToggle(
+  nextStatus: CmsCategoryTreeNode['status'],
+  row: CmsCategoryTreeNode,
+) {
+  return new Promise<boolean>((resolve) => {
+    const label =
+      nextStatus === 'normal'
+        ? $t('system.shared.status.normal')
+        : $t('system.shared.status.hidden');
+    Modal.confirm({
+      content: $t('platform.category.toggleStatusConfirm', [row.name, label]),
+      okText: $t('common.confirm'),
+      cancelText: $t('common.cancel'),
+      title: $t('system.shared.toggleStatusTitle'),
+      async onOk() {
+        try {
+          await updateCmsCategoryStatus(row.id, nextStatus);
+          message.success($t('crud.statusUpdated'));
+          onRefresh();
+          resolve(true);
+        } catch {
+          resolve(false);
+        }
+      },
+      onCancel() {
+        resolve(false);
+      },
+    });
+  });
 }
 
-const columns = useColumns(onActionClick, access, onStatusBeforeChange);
+async function onDelete(row: CmsCategoryTreeNode) {
+  await deleteCmsCategory(row.id);
+  message.success($t('crud.deleted'));
+  clearSelection();
+  onRefresh();
+}
 
-const [CrudView, crudApi] = useResponsiveCrud<CategoryRow>({
+function onBatchDelete() {
+  const ids = selectedRows.value.map((row) => row.id);
+  if (ids.length === 0) return;
+  Modal.confirm({
+    content: $t('platform.category.batchDeleteConfirm', [ids.length]),
+    okText: $t('common.delete'),
+    okType: 'danger',
+    cancelText: $t('common.cancel'),
+    title: $t('system.shared.batchDelete'),
+    async onOk() {
+      const result = await batchDeleteCmsCategories(ids);
+      if (result.skipped > 0) {
+        message.warning(
+          $t('platform.category.batchDeletePartial', [
+            result.deleted,
+            result.skipped,
+          ]),
+        );
+      } else {
+        message.success($t('crud.batchDeleted'));
+      }
+      clearSelection();
+      onRefresh();
+    },
+  });
+}
+
+function onBatchUpdateStatus(status: CmsCategoryTreeNode['status']) {
+  const ids = selectedRows.value.map((row) => row.id);
+  if (ids.length === 0) return;
+  const label =
+    status === 'normal'
+      ? $t('system.shared.status.normal')
+      : $t('system.shared.status.hidden');
+  Modal.confirm({
+    content: $t('platform.category.batchStatusConfirmCategory', [
+      ids.length,
+      label,
+    ]),
+    okText: $t('common.confirm'),
+    cancelText: $t('common.cancel'),
+    title: $t('system.shared.batchSet', [label]),
+    async onOk() {
+      await batchUpdateCmsCategoryStatus(ids, status);
+      message.success($t('system.shared.batchSetDone', [label]));
+      clearSelection();
+      onRefresh();
+    },
+  });
+}
+
+const [Grid, gridApi] = useVbenVxeGrid<CmsCategoryTreeNode>({
   formOptions: {
     commonConfig: { componentProps: { class: 'w-full' } },
     schema: useGridFormSchema(),
     submitOnChange: true,
     submitButtonOptions: { content: $t('common.query') },
   },
+  gridEvents: {
+    checkboxAll: syncSelection,
+    checkboxChange: syncSelection,
+    async editClosed({
+      column,
+      row,
+    }: {
+      column: { field: string };
+      row: CmsCategoryTreeNode;
+    }) {
+      if (column.field !== 'sort') {
+        return;
+      }
+      const grid = gridApi.grid;
+      if (!grid?.isUpdateByRow?.(row)) {
+        return;
+      }
+
+      const sort = Number(row.sort);
+      if (!Number.isFinite(sort) || sort < 0 || !Number.isInteger(sort)) {
+        message.warning($t('platform.category.sortInvalid'));
+        await gridApi.reload();
+        return;
+      }
+
+      gridApi.setLoading(true);
+      try {
+        await updateCmsCategorySort(row.id, sort);
+        message.success($t('platform.category.sortUpdated'));
+        onRefresh();
+      } catch {
+        await gridApi.reload();
+      } finally {
+        gridApi.setLoading(false);
+      }
+    },
+  },
   gridOptions: {
-    columns: columns as VxeTableGridOptions<CategoryRow>['columns'],
+    checkboxConfig: { highlight: true },
+    columns: useColumns(onActionClick, onCategoryStatusToggle, categoryAccess),
+    editConfig: {
+      beforeEditMethod({ column }) {
+        return (
+          column.field === 'sort' &&
+          categoryAccess.can(CMS_PERMISSIONS.CATEGORIES_SORT)
+        );
+      },
+      mode: 'cell',
+      trigger: 'dblclick',
+    },
     height: 'auto',
+    keepSource: true,
+    pagerConfig: { enabled: false },
     proxyConfig: {
       ajax: {
-        query: async ({ page }, formValues) =>
-          fetchCategoryPage({
-            page: page.currentPage,
-            per_page: page.pageSize,
-            keyword: formValues?.keyword || undefined,
-            status:
-              formValues?.status === undefined || formValues?.status === null
-                ? undefined
-                : formValues.status,
+        query: async (_ctx, formValues) =>
+          fetchCmsCategoryTree({
+            search: formValues?.search || undefined,
           }),
       },
     },
     rowConfig: { keyField: 'id' },
     toolbarConfig: { custom: true, refresh: true, search: true, zoom: true },
-  } as VxeTableGridOptions<CategoryRow>,
-});
-
-const { reload } = crudApi;
-
-function onRefresh() {
-  reload();
-}
-
-function onDelete(row: CategoryRow) {
-  Modal.confirm({
-    content: `确认删除栏目「${row.name}」？`,
-    okText: $t('common.delete'),
-    okType: 'danger',
-    cancelText: $t('common.cancel'),
-    title: $t('common.prompt'),
-    async onOk() {
-      await deleteCategory(row.id);
-      message.success($t('crud.deleted'));
-      onRefresh();
+    treeConfig: {
+      childrenField: 'children',
+      expandAll: true,
+      rowField: 'id',
+      transform: false,
     },
-  });
-}
+  } as VxeTableGridOptions<CmsCategoryTreeNode>,
+});
 </script>
 
 <template>
   <Page auto-content-height>
     <CategoryForm ref="categoryFormRef" @success="onRefresh" />
-    <CrudView>
+    <Grid>
       <template #toolbar-actions>
-        <Button
-          v-if="access.can(CMS_PERMISSIONS.CATEGORIES_CREATE)"
-          type="primary"
-          @click="onCreate"
-        >
-          <Plus class="size-4" />
-          新增栏目
-        </Button>
+        <div class="flex flex-wrap items-center gap-3">
+          <div v-if="selectedRows.length > 0" class="vxe-grid-batch-toolbar">
+            <Button
+              v-if="categoryAccess.can(CMS_PERMISSIONS.CATEGORIES_BATCH_DELETE)"
+              danger
+              @click="onBatchDelete"
+            >
+              {{ $t('system.shared.batchDeleteWithCount', [selectedRows.length]) }}
+            </Button>
+            <Button
+              v-if="categoryAccess.can(CMS_PERMISSIONS.CATEGORIES_BATCH_STATUS)"
+              class="ml-2"
+              @click="onBatchUpdateStatus('normal')"
+            >
+              {{ $t('system.shared.batchNormal') }}
+            </Button>
+            <Button
+              v-if="categoryAccess.can(CMS_PERMISSIONS.CATEGORIES_BATCH_STATUS)"
+              class="ml-2"
+              @click="onBatchUpdateStatus('hidden')"
+            >
+              {{ $t('system.shared.batchHidden') }}
+            </Button>
+            <Button class="ml-2" type="link" @click="clearSelection">
+              {{ $t('system.shared.clearSelection') }}
+            </Button>
+          </div>
+          <Button
+            v-else-if="categoryAccess.can(CMS_PERMISSIONS.CATEGORIES_CREATE)"
+            type="primary"
+            @click="onCreate"
+          >
+            <Plus class="size-4" />
+            {{ $t('platform.category.createCategory') }}
+          </Button>
+        </div>
       </template>
-    </CrudView>
+    </Grid>
   </Page>
 </template>

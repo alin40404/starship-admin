@@ -1,39 +1,121 @@
 <script lang="ts" setup>
-import type { CategoryRow, CategorySavePayload } from '#/features/cms/api';
+import type {
+  CmsCategorySavePayload,
+  CmsCategoryTreeNode,
+} from '#/features/cms/api';
 
-import { computed, ref } from 'vue';
+import type { UploadFile } from 'ant-design-vue/es/upload';
+
+import { computed, reactive, ref, watch } from 'vue';
 
 import { useVbenDrawer, useVbenModal } from '@vben/common-ui';
+import { $t } from '@vben/locales';
 import { usePreferences } from '@vben/preferences';
 
 import { message } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
 import {
-  createCategory,
-  fetchCategory,
-  updateCategory,
+  createCmsCategory,
+  fetchCmsCategory,
+  updateCmsCategory,
 } from '#/features/cms/api';
-import { $t } from '#/locales';
+import { uploadAttachment } from '#/features/system/api/attachment';
+import { validateUploadFile } from '#/utils/upload-policy';
 
-import { buildCategoryFormSchema } from './data';
+import { buildFormSchema } from '../data';
 
 const emits = defineEmits<{ success: [] }>();
+
 const { isMobile } = usePreferences();
+
 const editingId = ref<number | null>(null);
 
-const [Form, formApi] = useVbenForm({
-  commonConfig: {
-    componentProps: { class: 'w-full' },
-    labelClass: 'justify-start',
-  },
-  layout: 'vertical',
-  schema: buildCategoryFormSchema(),
-  showDefaultActions: false,
-  wrapperClass: 'grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1',
+function normalizeImageToFileList(image?: null | string): UploadFile[] {
+  if (!image) {
+    return [];
+  }
+  return [
+    {
+      name: 'image',
+      status: 'done',
+      uid: 'category-image-existing',
+      url: image,
+    },
+  ];
+}
+
+function resolveImageUrl(files: unknown): string {
+  const imageFiles = Array.isArray(files) ? files : [];
+  const imageFile = imageFiles[0] as
+    | { response?: { file_url?: string }; url?: string }
+    | undefined;
+  if (!imageFile) {
+    return '';
+  }
+  return imageFile.response?.file_url ?? imageFile.url ?? '';
+}
+
+function onImageChange(_event: unknown) {}
+
+async function onImageUpload(options: any) {
+  const file = options?.file as File | undefined;
+  if (!file) {
+    options?.onError?.(new Error('missing file'));
+    return;
+  }
+
+  const validationError = validateUploadFile(file, 'image');
+  if (validationError) {
+    message.error(validationError);
+    options?.onError?.(new Error(validationError));
+    return;
+  }
+
+  try {
+    const row = await uploadAttachment(file);
+    options?.onSuccess?.(row);
+  } catch (error) {
+    options?.onError?.(error);
+    throw error;
+  }
+}
+
+function refreshFormSchema() {
+  formApi.setState({
+    schema: buildFormSchema({
+      excludeId: editingId.value ?? undefined,
+      onImageChange,
+      onImageUpload,
+    }),
+  });
+}
+
+const [Form, formApi] = useVbenForm(
+  reactive({
+    commonConfig: {
+      componentProps: { class: 'w-full' },
+      labelClass: 'justify-start',
+    },
+    layout: 'vertical' as const,
+    schema: buildFormSchema({
+      onImageChange,
+      onImageUpload,
+    }),
+    showDefaultActions: false,
+    wrapperClass: 'grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1',
+  }) as any,
+);
+
+watch(editingId, () => {
+  refreshFormSchema();
 });
 
-const formTitle = computed(() => (editingId.value ? '编辑栏目' : '新增栏目'));
+const formTitle = computed(() =>
+  editingId.value
+    ? $t('platform.category.editCategory')
+    : $t('platform.category.createCategoryTitle'),
+);
 
 type PopupApi = {
   close: () => void;
@@ -48,14 +130,17 @@ async function handleConfirm(popupApi: PopupApi) {
   const { valid } = await formApi.validate();
   if (!valid) return;
 
-  const values = (await formApi.getValues()) as CategorySavePayload;
+  const values = (await formApi.getValues()) as CmsCategorySavePayload;
+  if (!values.parent_id) values.parent_id = 0;
+  values.image = resolveImageUrl((values as { image?: unknown }).image) || null;
+
   popupApi.lock();
   try {
     if (!editingId.value) {
-      await createCategory(values);
+      await createCmsCategory(values);
       message.success($t('crud.created'));
     } else {
-      await updateCategory(editingId.value, values);
+      await updateCmsCategory(editingId.value, values);
       message.success($t('crud.saved'));
     }
     popupApi.close();
@@ -66,25 +151,50 @@ async function handleConfirm(popupApi: PopupApi) {
 }
 
 async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
-  if (!isOpen) return;
+  if (!isOpen) {
+    editingId.value = null;
+    return;
+  }
+
   formApi.resetForm();
-  const data = popupApi.getData<CategoryRow | Record<string, never>>();
+
+  const data = popupApi.getData<
+    CmsCategoryTreeNode | { parent_id?: number }
+  >();
   const id =
-    data && typeof (data as CategoryRow).id === 'number'
-      ? (data as CategoryRow).id
+    data && typeof (data as CmsCategoryTreeNode).id === 'number'
+      ? (data as CmsCategoryTreeNode).id
       : null;
   editingId.value = id;
+  refreshFormSchema();
 
   if (id) {
-    const detail = await fetchCategory(id);
-    await formApi.setValues(detail);
+    const detail = await fetchCmsCategory(id);
+    formApi.setValues({
+      description: detail.description ?? '',
+      diyname: detail.diyname ?? '',
+      flag: detail.flag ?? [],
+      image: normalizeImageToFileList(detail.image),
+      keywords: detail.keywords ?? '',
+      name: detail.name,
+      nickname: detail.nickname,
+      parent_id: detail.parent_id ?? 0,
+      sort: detail.sort ?? 0,
+      status: detail.status,
+    });
   } else {
-    await formApi.setValues({
+    const preset = data as { parent_id?: number };
+    formApi.setValues({
+      description: '',
+      diyname: '',
+      flag: [],
+      image: [],
+      keywords: '',
       name: '',
-      slug: '',
-      parent_id: 0,
+      nickname: '',
+      parent_id: preset.parent_id ?? 0,
       sort: 0,
-      status: 1,
+      status: 'normal',
     });
   }
 }
@@ -110,7 +220,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
   },
 });
 
-function open(data: CategoryRow | Record<string, never> = {}) {
+function open(data: CmsCategoryTreeNode | { parent_id?: number } = {}) {
   const api = (isMobile.value ? drawerApi : modalApi) as PopupApi;
   api.setData(data);
   api.open();
@@ -123,7 +233,7 @@ defineExpose({ open });
   <Modal
     v-if="!isMobile"
     :title="formTitle"
-    class="w-full max-w-full md:w-[640px] md:max-w-[640px]"
+    class="w-full max-w-full md:w-[720px] md:max-w-[720px]"
   >
     <Form />
   </Modal>

@@ -1,6 +1,6 @@
 {
     "name": "shop",
-    "title": "商城",
+    "title": "商城中心",
     "version": "0.1.0",
     "enabled": true,
     "providers": [

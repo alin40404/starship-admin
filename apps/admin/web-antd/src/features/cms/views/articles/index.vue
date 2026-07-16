@@ -14,7 +14,7 @@ import { useResponsiveCrud } from '#/adapter/mobile-list';
 import {
   deleteArticle,
   fetchArticlePage,
-  fetchCategoryOptions,
+  fetchCmsCategoryOptions,
   updateArticleStatus,
 } from '#/features/cms/api';
 import { CMS_PERMISSIONS } from '#/features/cms/constants/cms-permissions';
@@ -110,11 +110,7 @@ function onDelete(row: ArticleRow) {
 }
 
 onMounted(async () => {
-  const items = await fetchCategoryOptions();
-  categoryOptions.value = items.map((item) => ({
-    label: item.name,
-    value: item.id,
-  }));
+  categoryOptions.value = await fetchCmsCategoryOptions();
   gridFormSchema.value = useGridFormSchema(categoryOptions.value);
 });
 </script>

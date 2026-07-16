@@ -17,6 +17,11 @@ const forbiddenComponent = () => import('#/views/_core/fallback/forbidden.vue');
 /**
  * Vben normalizeViewPath 会去掉路径前缀 `/views`。
  * features 下页面需映射成等价的 `../views/...` key，菜单 component 才继续有效。
+ *
+ * 同时注册两种 key，兼容不同模块的目录习惯：
+ * - `features/system/views/permission/...` → `/permission/...`（system 不带模块名）
+ * - `features/shop/views/products/...` → `/shop/products/...` 与 `/products/...`
+ * - `features/member/views/member/...` → `/member/...`（相对路径已含模块名，不重复拼接）
  */
 function buildPageMap(): ComponentRecordType {
   const pageMap: ComponentRecordType = {
@@ -25,10 +30,18 @@ function buildPageMap(): ComponentRecordType {
 
   const featureViews = import.meta.glob('../features/*/views/**/*.vue');
   for (const [key, loader] of Object.entries(featureViews)) {
-    const matched = key.match(/\/features\/[^/]+\/views\/(.+)$/);
-    if (matched?.[1]) {
-      pageMap[`../views/${matched[1]}`] =
-        loader as ComponentRecordType[string];
+    const matched = key.match(/\/features\/([^/]+)\/views\/(.+)$/);
+    if (!matched?.[1] || !matched[2]) {
+      continue;
+    }
+    const feature = matched[1];
+    const relative = matched[2];
+    const typedLoader = loader as ComponentRecordType[string];
+
+    pageMap[`../views/${relative}`] = typedLoader;
+
+    if (!relative.startsWith(`${feature}/`)) {
+      pageMap[`../views/${feature}/${relative}`] = typedLoader;
     }
   }
 

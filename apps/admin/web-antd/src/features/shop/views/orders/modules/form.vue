@@ -12,7 +12,7 @@ import { useVbenForm } from '#/adapter/form';
 import { createOrder, fetchProductPage } from '#/features/shop/api';
 import { $t } from '#/locales';
 
-import { buildOrderFormSchema } from './data';
+import { buildOrderFormSchema } from '../data';
 
 const emits = defineEmits<{ success: [] }>();
 const { isMobile } = usePreferences();

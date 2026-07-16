@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('cms_articles', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('category_id')->nullable()->comment('栏目ID');
+            $table->unsignedBigInteger('category_id')->nullable()->comment('系统分类ID(categories.type=article)');
             $table->string('title', 160)->comment('标题');
             $table->string('slug', 160)->comment('标识');
             $table->string('summary', 500)->nullable()->comment('摘要');
