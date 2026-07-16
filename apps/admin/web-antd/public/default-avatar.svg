@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 32 32" fill="none">
+  <!-- B: outline / line icon -->
+  <circle cx="16" cy="16" r="16" fill="#0a1628"/>
+  <circle cx="16" cy="11.8" r="4.4" stroke="#00E5FF" stroke-width="1.8" fill="none"/>
+  <path d="M7.5 26.8c1-5.2 4.4-7.8 8.5-7.8s7.5 2.6 8.5 7.8" stroke="#00E5FF" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+</svg>

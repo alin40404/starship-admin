@@ -3,7 +3,7 @@
         <a class="site-brand" href="{{ url('/') }}">
             <img
                 class="site-brand__logo"
-                src="{{ theme_asset('images/logo.svg') }}"
+                src="{{ theme_asset('images/logo.png') }}"
                 width="28"
                 height="28"
                 alt=""

@@ -24,6 +24,8 @@ export const overridesPreferences = defineOverridesPreferences({
     accessMode: 'backend',
     /** 与种子菜单「工作台 / 控制台」路径一致 */
     defaultHomePath: '/dashboard/console',
+    /** 本地默认头像（public/default-avatar.png） */
+    defaultAvatar: '/default-avatar.png',
   },
   logo: {
     source: VBEN_LOGO_URL,

@@ -35,6 +35,8 @@ async function initApplication() {
     app: {
       accessMode: overridesPreferences.app?.accessMode ?? 'backend',
       defaultHomePath: overridesPreferences.app?.defaultHomePath ?? '/dashboard/console',
+      defaultAvatar:
+        overridesPreferences.app?.defaultAvatar ?? '/default-avatar.png',
     },
     theme: {
       fontSize: overridesPreferences.theme?.fontSize ?? 16,
