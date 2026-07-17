@@ -21,6 +21,14 @@ export const useAuthStore = defineStore('auth', () => {
 
   const loginLoading = ref(false);
 
+  function notifyLoginSuccess(realName: string) {
+    notification.success({
+      description: `${$t('authentication.loginSuccessDesc')}:${realName}`,
+      duration: 3,
+      message: $t('authentication.loginSuccess'),
+    });
+  }
+
   /**
    * 异步处理登录操作
    * Asynchronously handle the login process
@@ -62,11 +70,7 @@ export const useAuthStore = defineStore('auth', () => {
         }
 
         if (userInfo?.realName) {
-          notification.success({
-            description: `${$t('authentication.loginSuccessDesc')}:${userInfo?.realName}`,
-            duration: 3,
-            message: $t('authentication.loginSuccess'),
-          });
+          notifyLoginSuccess(userInfo.realName);
         }
       }
     } finally {
@@ -111,11 +115,7 @@ export const useAuthStore = defineStore('auth', () => {
         }
 
         if (userInfo?.realName) {
-          notification.success({
-            description: `${$t('authentication.loginSuccessDesc')}:${userInfo?.realName}`,
-            duration: 3,
-            message: $t('authentication.loginSuccess'),
-          });
+          notifyLoginSuccess(userInfo.realName);
         }
       }
     } finally {

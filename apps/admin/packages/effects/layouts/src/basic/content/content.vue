@@ -40,48 +40,52 @@ const showComponent = (route: RouteLocationNormalizedLoadedGeneric) => {
         :route="route"
         v-if="route.meta.domCached"
       />
-      <Transition
-        v-if="getEnabledTransition"
-        :name="getTransitionName(route)"
-        appear
-        mode="out-in"
-      >
-        <KeepAlive
-          v-if="keepAlive"
-          :exclude="getExcludeCachedTabs"
-          :include="getCachedTabs"
+      <!--
+        showComponent / Component 提到 Transition 外层：
+        避免 out-in 等待 leave 时，内层 v-if 先把旧节点拆空导致白屏/卸载报错。
+      -->
+      <template v-if="Component && showComponent(route)">
+        <Transition
+          v-if="getEnabledTransition"
+          :name="getTransitionName(route)"
+          appear
+          mode="out-in"
         >
+          <KeepAlive
+            v-if="keepAlive"
+            :exclude="getExcludeCachedTabs"
+            :include="getCachedTabs"
+          >
+            <component
+              :is="transformComponent(Component, route)"
+              v-show="!route.meta.iframeSrc"
+              :key="getTabKey(route)"
+            />
+          </KeepAlive>
           <component
-            :is="transformComponent(Component, route)"
-            v-if="showComponent(route)"
-            v-show="!route.meta.iframeSrc"
+            :is="Component"
+            v-else
             :key="getTabKey(route)"
           />
-        </KeepAlive>
-        <component
-          :is="Component"
-          v-else-if="showComponent(route)"
-          :key="getTabKey(route)"
-        />
-      </Transition>
-      <template v-else>
-        <KeepAlive
-          v-if="keepAlive"
-          :exclude="getExcludeCachedTabs"
-          :include="getCachedTabs"
-        >
+        </Transition>
+        <template v-else>
+          <KeepAlive
+            v-if="keepAlive"
+            :exclude="getExcludeCachedTabs"
+            :include="getCachedTabs"
+          >
+            <component
+              :is="transformComponent(Component, route)"
+              v-show="!route.meta.iframeSrc"
+              :key="getTabKey(route)"
+            />
+          </KeepAlive>
           <component
-            :is="transformComponent(Component, route)"
-            v-if="showComponent(route)"
-            v-show="!route.meta.iframeSrc"
+            :is="Component"
+            v-else
             :key="getTabKey(route)"
           />
-        </KeepAlive>
-        <component
-          :is="Component"
-          v-else-if="showComponent(route)"
-          :key="getTabKey(route)"
-        />
+        </template>
       </template>
     </RouterView>
   </div>
