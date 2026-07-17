@@ -56,8 +56,13 @@ const PERMISSION_PAGE_BY_PATH: Record<string, string> = {
   '/dev/codegen': 'views/dev/codegen/index.vue',
   '/dev/modules': 'views/dev/modules/index.vue',
   '/member/members': 'views/member/index.vue',
+  '/shop/categories': 'views/shop/categories/index.vue',
+  '/shop/brands': 'views/shop/brands/index.vue',
   '/shop/products': 'views/shop/products/index.vue',
   '/shop/orders': 'views/shop/orders/index.vue',
+  '/game-shop/games': 'views/game-shop/games/index.vue',
+  '/game-shop/products': 'views/game-shop/products/index.vue',
+  '/game-shop/orders': 'views/game-shop/orders/index.vue',
   '/cms/categories': 'views/cms/categories/index.vue',
   '/cms/articles': 'views/cms/articles/index.vue',
 };

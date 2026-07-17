@@ -258,6 +258,20 @@ API：
 
 ------------------------------------------------------------------------
 
+## 9.1 Shop / GameShop 业态约定
+
+普通商城与游戏商城是**并列 Module**，不共用万能商品表：
+
+- **Shop（普通商城）**：分类复用 System `categories`（`type=product`）；`product_type` = `physical` / `virtual` / `digital`；`fulfillment_type` = `shipping` / `digital` / `card` / `code` / `manual`；后台文案「交付方式」；卡密走 `shop_card_codes`
+- **GameShop（游戏商城）**：独立表 `game_shop_*`（游戏、商品、订单含账号区服）；**不依赖** Shop；充值通道走 Plugin
+- 课程 / 预约 / 订阅：未来各自 Module，不塞进 Shop 枚举
+- Shop 履约 / 库存契约在本模块 `App\Contracts`（不进入 Core）；支付走 `PaymentInterface`（Core）+ Plugin
+
+
+详见 [Starship_Shop_模块框架实现方案.md](../architecture/Starship_Shop_模块框架实现方案.md)。
+
+------------------------------------------------------------------------
+
 # 10. Module通信规范
 
 禁止：

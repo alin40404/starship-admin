@@ -7,6 +7,7 @@
         "Modules\\Shop\\App\\Providers\\ShopServiceProvider"
     ],
     "seeders": [
+        "Modules\\Shop\\Database\\Seeders\\ShopDictSeeder",
         "Modules\\Shop\\Database\\Seeders\\ShopMenuSeeder"
     ],
     "require": {
@@ -17,6 +18,8 @@
     "menus": {
         "paths": [
             "/shop",
+            "/shop/categories",
+            "/shop/brands",
             "/shop/products",
             "/shop/orders"
         ]

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7462968e066e92c3d3883316ff96961c",
+    "content-hash": "d86ca7084f64f2ae6640d2dfb24bec53",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -4792,6 +4792,34 @@
                 }
             ],
             "description": "Starship Admin framework kernel — module scanner, plugin engine, theme manager, contracts",
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "starship/game-shop",
+            "version": "0.1.0",
+            "dist": {
+                "type": "path",
+                "url": "../modules/GameShop",
+                "reference": "03bb2edc5cbb7eafa367708ee3d2ace9b24ef37a"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Modules\\GameShop\\App\\": "app/",
+                    "Modules\\GameShop\\Database\\Seeders\\": "database/seeders/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Modules\\GameShop\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Starship Admin 游戏商城 module",
             "transport-options": {
                 "relative": true
             }
@@ -10083,6 +10111,7 @@
     "stability-flags": {
         "starship/cms": 20,
         "starship/core": 20,
+        "starship/game-shop": 20,
         "starship/generator": 20,
         "starship/member": 20,
         "starship/shop": 20,

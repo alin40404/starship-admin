@@ -10,16 +10,29 @@ return new class extends Migration
     {
         Schema::create('shop_products', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('category_id')->nullable()->comment('系统分类ID(categories.type=product)');
+            $table->unsignedBigInteger('brand_id')->nullable()->comment('品牌ID');
+            $table->string('product_type', 30)->default('physical')->comment('商品类型:physical,virtual,digital');
+            $table->string('fulfillment_type', 30)->default('shipping')->comment('交付方式:shipping,digital,card,code,manual');
             $table->string('name', 120)->comment('商品名称');
+            $table->string('subtitle', 160)->nullable()->comment('副标题');
             $table->unsignedInteger('price')->default(0)->comment('售价(分)');
             $table->unsignedInteger('stock')->default(0)->comment('库存');
             $table->string('cover', 255)->nullable()->comment('封面图');
+            $table->json('images')->nullable()->comment('图集');
             $table->text('description')->nullable()->comment('描述');
             $table->tinyInteger('status')->default(1)->comment('状态:1上架,0下架');
+            $table->integer('sort')->default(0)->comment('排序');
+            $table->json('extra')->nullable()->comment('扩展属性');
             $table->timestamps();
             $table->softDeletes();
 
+            $table->index('category_id');
+            $table->index('brand_id');
+            $table->index('product_type');
+            $table->index('fulfillment_type');
             $table->index('status');
+            $table->index(['sort', 'id']);
         });
     }
 

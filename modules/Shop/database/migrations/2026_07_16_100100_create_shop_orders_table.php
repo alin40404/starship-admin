@@ -13,6 +13,7 @@ return new class extends Migration
             $table->string('order_no', 32)->comment('业务订单号');
             $table->unsignedBigInteger('member_id')->nullable()->comment('会员ID');
             $table->unsignedBigInteger('product_id')->comment('商品ID');
+            $table->unsignedBigInteger('sku_id')->nullable()->comment('SKU ID');
             $table->string('product_name', 120)->comment('商品名称快照');
             $table->unsignedInteger('amount')->comment('订单金额(分)');
             $table->unsignedTinyInteger('quantity')->default(1)->comment('数量');
@@ -23,13 +24,18 @@ return new class extends Migration
             $table->dateTime('paid_at')->nullable()->comment('支付时间');
             $table->dateTime('refunded_at')->nullable()->comment('退款时间');
             $table->string('remark', 255)->nullable()->comment('备注');
+            $table->string('fulfillment_type', 30)->nullable()->comment('履约类型');
+            $table->json('fulfillment_payload')->nullable()->comment('履约快照(地址/账号等)');
+            $table->string('fulfillment_status', 30)->nullable()->comment('pending,shipped,delivered,fulfilled,failed');
             $table->timestamps();
             $table->softDeletes();
 
             $table->unique('order_no');
             $table->index('member_id');
             $table->index('product_id');
+            $table->index('sku_id');
             $table->index('status');
+            $table->index('fulfillment_status');
         });
     }
 

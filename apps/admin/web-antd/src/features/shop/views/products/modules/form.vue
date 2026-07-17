@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { ProductRow, ProductSavePayload } from '#/features/shop/api';
 
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 import { useVbenDrawer, useVbenModal } from '@vben/common-ui';
 import { usePreferences } from '@vben/preferences';
@@ -11,16 +11,25 @@ import { message } from 'ant-design-vue';
 import { useVbenForm } from '#/adapter/form';
 import {
   createProduct,
+  fetchBrandOptions,
   fetchProduct,
+  fetchShopCategoryOptions,
+  SHOP_FULFILLMENT_TYPE,
+  SHOP_PRODUCT_TYPE,
   updateProduct,
 } from '#/features/shop/api';
 import { $t } from '#/locales';
 
-import { buildProductFormSchema } from '../data';
+import {
+  buildProductFormSchema,
+  defaultFulfillmentForProductType,
+} from '../data';
 
 const emits = defineEmits<{ success: [] }>();
 const { isMobile } = usePreferences();
 const editingId = ref<number | null>(null);
+const categoryOptions = ref<{ label: string; value: number }[]>([]);
+const brandOptions = ref<{ label: string; value: number }[]>([]);
 
 const [Form, formApi] = useVbenForm({
   commonConfig: {
@@ -28,7 +37,7 @@ const [Form, formApi] = useVbenForm({
     labelClass: 'justify-start',
   },
   layout: 'vertical',
-  schema: buildProductFormSchema(),
+  schema: buildProductFormSchema({}),
   showDefaultActions: false,
   wrapperClass: 'grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1',
 });
@@ -44,14 +53,52 @@ type PopupApi = {
   unlock: () => void;
 };
 
+async function refreshOptions() {
+  const [cats, brands] = await Promise.all([
+    fetchShopCategoryOptions(),
+    fetchBrandOptions(),
+  ]);
+  categoryOptions.value = cats;
+  brandOptions.value = brands.map((item) => ({
+    label: item.name,
+    value: item.id,
+  }));
+  formApi.setState({
+    schema: buildProductFormSchema({
+      brandOptions: brandOptions.value,
+      categoryOptions: categoryOptions.value,
+    }),
+  });
+}
+
 function toPayload(values: Record<string, unknown>): ProductSavePayload {
+  const price = Math.round(Number(values.price_yuan ?? 0) * 100);
+  const stock = Number(values.stock ?? 0);
+  const productType = String(values.product_type ?? SHOP_PRODUCT_TYPE.PHYSICAL);
+  const fulfillmentType = String(
+    values.fulfillment_type ?? defaultFulfillmentForProductType(productType),
+  );
+
   return {
+    product_type: productType,
+    fulfillment_type: fulfillmentType,
+    category_id: values.category_id ? Number(values.category_id) : null,
+    brand_id: values.brand_id ? Number(values.brand_id) : null,
     name: String(values.name ?? ''),
-    price: Math.round(Number(values.price_yuan ?? 0) * 100),
-    stock: Number(values.stock ?? 0),
+    subtitle: (values.subtitle as string) || null,
+    price,
+    stock,
     cover: (values.cover as string) || null,
     description: (values.description as string) || null,
     status: Number(values.status ?? 1),
+    extra: null,
+    skus: [
+      {
+        price,
+        stock,
+        status: 1,
+      },
+    ],
   };
 }
 
@@ -79,6 +126,7 @@ async function handleConfirm(popupApi: PopupApi) {
 
 async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
   if (!isOpen) return;
+  await refreshOptions();
   formApi.resetForm();
   const data = popupApi.getData<ProductRow | Record<string, never>>();
   const id =
@@ -89,17 +137,31 @@ async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
 
   if (id) {
     const detail = await fetchProduct(id);
+    const defaultSku = detail.skus?.[0];
+    const productType = detail.product_type || SHOP_PRODUCT_TYPE.PHYSICAL;
     await formApi.setValues({
+      product_type: productType,
+      fulfillment_type:
+        detail.fulfillment_type ||
+        defaultFulfillmentForProductType(productType),
+      category_id: detail.category_id ?? undefined,
+      brand_id: detail.brand_id ?? undefined,
       name: detail.name,
-      price_yuan: detail.price / 100,
-      stock: detail.stock,
+      subtitle: detail.subtitle ?? '',
+      price_yuan: (defaultSku?.price ?? detail.price) / 100,
+      stock: defaultSku?.stock ?? detail.stock,
       cover: detail.cover ?? '',
       description: detail.description ?? '',
       status: detail.status,
     });
   } else {
     await formApi.setValues({
+      product_type: SHOP_PRODUCT_TYPE.PHYSICAL,
+      fulfillment_type: SHOP_FULFILLMENT_TYPE.SHIPPING,
+      category_id: undefined,
+      brand_id: undefined,
       name: '',
+      subtitle: '',
       price_yuan: 0,
       stock: 0,
       cover: '',
@@ -136,6 +198,10 @@ function open(data: ProductRow | Record<string, never> = {}) {
   api.open();
 }
 
+onMounted(() => {
+  void refreshOptions();
+});
+
 defineExpose({ open });
 </script>
 
@@ -143,7 +209,7 @@ defineExpose({ open });
   <Modal
     v-if="!isMobile"
     :title="formTitle"
-    class="w-full max-w-full md:w-[640px] md:max-w-[640px]"
+    class="w-full max-w-full md:w-[720px] md:max-w-[720px]"
   >
     <Form />
   </Modal>

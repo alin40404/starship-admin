@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use Mockery;
 use Modules\Shop\App\Models\Order;
 use Modules\Shop\App\Models\Product;
+use Modules\Shop\App\Models\ProductSku;
 use Modules\Shop\App\Services\OrderService;
 use PHPUnit\Framework\Attributes\Test;
 use Starship\Core\Contracts\Payment\PaymentInterface;
@@ -107,6 +108,15 @@ class ShopOrderPaymentTest extends TestCase
             'price' => 1000,
             'stock' => 5,
             'status' => 1,
+            'product_type' => 'physical',
+            'fulfillment_type' => 'shipping',
+        ]);
+        ProductSku::query()->create([
+            'product_id' => $product->id,
+            'sku_code' => 'SKU'.$product->id.'T',
+            'price' => 1000,
+            'stock' => 5,
+            'status' => 1,
         ]);
 
         try {
@@ -116,6 +126,7 @@ class ShopOrderPaymentTest extends TestCase
 
             $this->assertSame(Order::STATUS_PENDING, $order->status);
             $this->assertSame(2000, $order->amount);
+            $this->assertSame('shipping', $order->fulfillment_type);
 
             $prepay = $service->prepay($order);
             $this->assertSame('wechat', $prepay['order']->pay_channel);
@@ -140,6 +151,7 @@ class ShopOrderPaymentTest extends TestCase
 
             Order::query()->whereKey($order->id)->forceDelete();
         } finally {
+            ProductSku::query()->where('product_id', $product->id)->forceDelete();
             Product::query()->whereKey($product->id)->forceDelete();
         }
     }
@@ -156,15 +168,26 @@ class ShopOrderPaymentTest extends TestCase
             'price' => 500,
             'stock' => 2,
             'status' => 1,
+            'product_type' => 'physical',
+            'fulfillment_type' => 'shipping',
+        ]);
+        $sku = ProductSku::query()->create([
+            'product_id' => $product->id,
+            'sku_code' => 'SKU'.$product->id.'N',
+            'price' => 500,
+            'stock' => 2,
+            'status' => 1,
         ]);
 
         $order = Order::query()->create([
             'order_no' => 'S'.now()->format('YmdHis').Str::upper(Str::random(6)),
             'product_id' => $product->id,
+            'sku_id' => $sku->id,
             'product_name' => $product->name,
             'amount' => 500,
             'quantity' => 1,
             'status' => Order::STATUS_PENDING,
+            'fulfillment_type' => 'shipping',
         ]);
 
         try {
@@ -182,6 +205,7 @@ class ShopOrderPaymentTest extends TestCase
             $this->assertSame(1, $product->fresh()->stock);
         } finally {
             Order::query()->whereKey($order->id)->forceDelete();
+            ProductSku::query()->whereKey($sku->id)->forceDelete();
             Product::query()->whereKey($product->id)->forceDelete();
         }
     }
@@ -189,7 +213,9 @@ class ShopOrderPaymentTest extends TestCase
     protected function shopTablesReady(): bool
     {
         try {
-            return Schema::hasTable('shop_products') && Schema::hasTable('shop_orders');
+            return Schema::hasTable('shop_products')
+                && Schema::hasTable('shop_orders')
+                && Schema::hasTable('shop_product_skus');
         } catch (\Throwable) {
             return false;
         }

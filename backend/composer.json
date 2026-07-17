@@ -17,6 +17,7 @@
         "php": "^8.3",
         "starship/cms": "@dev",
         "starship/core": "@dev",
+        "starship/game-shop": "@dev",
         "starship/generator": "@dev",
         "starship/member": "@dev",
         "starship/shop": "@dev",
@@ -60,6 +61,10 @@
         },
         {
             "type": "path",
+            "url": "../modules/GameShop"
+        },
+        {
+            "type": "path",
             "url": "../modules/Cms"
         }
     ],
@@ -69,6 +74,7 @@
             "Modules\\System\\Tests\\": "../modules/System/tests/",
             "Modules\\Member\\Tests\\": "../modules/Member/tests/",
             "Modules\\Shop\\Tests\\": "../modules/Shop/tests/",
+            "Modules\\GameShop\\Tests\\": "../modules/GameShop/tests/",
             "Modules\\Cms\\Tests\\": "../modules/Cms/tests/",
             "Modules\\Generator\\Tests\\": "../modules/Generator/tests/"
         }

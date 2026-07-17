@@ -34,7 +34,7 @@
 | `starship:plugin:make` | ✅ | 插件脚手架 |
 | Generator 端到端 Demo | ✅ | `sa_demo_products` 表 + CLI 全流程已验收 |
 | Contract 体系 | ✅ | Sms/Mail/Storage/Admin/Member/Payment/Config/Permission 已绑定；Notification 接口占位 |
-| Shop / CMS Module | ✅ | `modules/Shop` 商品+订单+prepay；`modules/Cms` 栏目+文章 MVP |
+| Shop / CMS Module | ✅ | Shop：分类/品牌/SPU·SKU/履约契约/购物车 API；Cms：栏目+文章 |
 | Event / Hook | ✅ Event 主干 | `EventDispatcherInterface` + `EventDispatcher`；样例 `plugins/EventSample`。独立 Filter Hook 延后 |
 | ThemeManager | ✅ | 发现/安装/启用/切换/卸载 + CLI |
 | 脚手架 `starship/skeleton` | 🚧 | 开发仓兼发布：根 `composer.json` 已备；待维护 `release` 分支 |
@@ -114,13 +114,14 @@
 
 - [x] EventBus 主干（`EventDispatcher`；样例 `EventSample`）
 - [ ] Filter Hook（辅助，延后）
-- [x] Contract 完整目录（`packages/core/src/Contracts/`：第一阶段 8 组接口；Tenant/Search/Workflow 等第二阶段）
+- [x] Contract 完整目录（`packages/core/src/Contracts/`：Payment/Sms/Mail/Storage/Admin/Member/Config/Permission；Shop 的 Fulfillment/Inventory；Notification 占位）
 - [x] 官方插件库（支付、存储、短信）：`SmsAliyun` / `StorageOss` / `PaymentWechat`
 - [x] 前端插件动态加载（`registry.ts` 按需加载 panel；`VITE_PLUGIN_FRONTEND_DYNAMIC_ENABLED` 默认 false，true 时仅按 slug 加载）
 - [ ] 插件市场（可选）
 - [x] Contract 延后绑定：Config / Permission System 默认已绑；Notification 仍占位
 - [x] 业务 Module MVP：`modules/Shop`（商品/订单/prepay/notify/refund）、`modules/Cms`（栏目/文章）
-- [ ] Shop 深化：SKU / 购物车 / 前台下单（延后）
+- [x] Shop 框架深化：分类（共用 categories）、品牌、SPU/SKU、履约/库存契约、订单行、卡密履约、购物车 API（见 [Starship_Shop_模块框架实现方案.md](./Starship_Shop_模块框架实现方案.md)）
+- [ ] Shop 前台 Theme 完整下单页（延后）
 - [ ] OA / CRM / ERP（明确延后）
 
 ### 明确不做（近期）

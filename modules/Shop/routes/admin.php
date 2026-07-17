@@ -1,12 +1,47 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Modules\Shop\App\Http\Controllers\Admin\BrandController;
+use Modules\Shop\App\Http\Controllers\Admin\CategoryController;
 use Modules\Shop\App\Http\Controllers\Admin\OrderController;
 use Modules\Shop\App\Http\Controllers\Admin\ProductController;
 use Modules\Shop\App\Support\ShopPermissions;
 
 Route::middleware('api')->prefix('admin-api')->group(function () {
     Route::middleware('auth:sanctum')->prefix('shop')->group(function () {
+        Route::get('category-options/tree', [CategoryController::class, 'optionsTree']);
+
+        Route::get('categories/tree', [CategoryController::class, 'tree'])
+            ->middleware('admin.permission:'.ShopPermissions::CATEGORIES_QUERY);
+        Route::post('categories/batch-destroy', [CategoryController::class, 'batchDestroy'])
+            ->middleware('admin.permission:'.ShopPermissions::CATEGORIES_BATCH_DELETE);
+        Route::put('categories/batch-status', [CategoryController::class, 'batchUpdateStatus'])
+            ->middleware('admin.permission:'.ShopPermissions::CATEGORIES_BATCH_STATUS);
+        Route::post('categories', [CategoryController::class, 'store'])
+            ->middleware('admin.permission:'.ShopPermissions::CATEGORIES_CREATE);
+        Route::get('categories/{id}', [CategoryController::class, 'show'])
+            ->middleware('admin.permission:'.ShopPermissions::CATEGORIES_QUERY);
+        Route::put('categories/{id}/status', [CategoryController::class, 'updateStatus'])
+            ->middleware('admin.permission:'.ShopPermissions::CATEGORIES_STATUS);
+        Route::put('categories/{id}/sort', [CategoryController::class, 'updateSort'])
+            ->middleware('admin.permission:'.ShopPermissions::CATEGORIES_SORT);
+        Route::put('categories/{id}', [CategoryController::class, 'update'])
+            ->middleware('admin.permission:'.ShopPermissions::CATEGORIES_UPDATE);
+        Route::delete('categories/{id}', [CategoryController::class, 'destroy'])
+            ->middleware('admin.permission:'.ShopPermissions::CATEGORIES_DELETE);
+
+        Route::get('brand-options', [BrandController::class, 'options']);
+        Route::get('brands', [BrandController::class, 'index'])
+            ->middleware('admin.permission:'.ShopPermissions::BRANDS_QUERY);
+        Route::post('brands', [BrandController::class, 'store'])
+            ->middleware('admin.permission:'.ShopPermissions::BRANDS_CREATE);
+        Route::get('brands/{id}', [BrandController::class, 'show'])
+            ->middleware('admin.permission:'.ShopPermissions::BRANDS_QUERY);
+        Route::put('brands/{id}', [BrandController::class, 'update'])
+            ->middleware('admin.permission:'.ShopPermissions::BRANDS_UPDATE);
+        Route::delete('brands/{id}', [BrandController::class, 'destroy'])
+            ->middleware('admin.permission:'.ShopPermissions::BRANDS_DELETE);
+
         Route::get('products', [ProductController::class, 'index'])
             ->middleware('admin.permission:'.ShopPermissions::PRODUCTS_QUERY);
         Route::post('products', [ProductController::class, 'store'])

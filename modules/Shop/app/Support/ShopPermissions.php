@@ -4,6 +4,32 @@ namespace Modules\Shop\App\Support;
 
 final class ShopPermissions
 {
+    public const CATEGORIES_QUERY = 'shop.categories.query';
+
+    public const CATEGORIES_CREATE = 'shop.categories.create';
+
+    public const CATEGORIES_APPEND = 'shop.categories.append';
+
+    public const CATEGORIES_UPDATE = 'shop.categories.update';
+
+    public const CATEGORIES_DELETE = 'shop.categories.delete';
+
+    public const CATEGORIES_BATCH_DELETE = 'shop.categories.batch_delete';
+
+    public const CATEGORIES_BATCH_STATUS = 'shop.categories.batch_status';
+
+    public const CATEGORIES_STATUS = 'shop.categories.status';
+
+    public const CATEGORIES_SORT = 'shop.categories.sort';
+
+    public const BRANDS_QUERY = 'shop.brands.query';
+
+    public const BRANDS_CREATE = 'shop.brands.create';
+
+    public const BRANDS_UPDATE = 'shop.brands.update';
+
+    public const BRANDS_DELETE = 'shop.brands.delete';
+
     public const PRODUCTS_QUERY = 'shop.products.query';
 
     public const PRODUCTS_CREATE = 'shop.products.create';
@@ -25,6 +51,37 @@ final class ShopPermissions
     public const ORDERS_REFUND = 'shop.orders.refund';
 
     public const ORDERS_DELETE = 'shop.orders.delete';
+
+    /**
+     * @return list<array{name: string, title: string, permission: string, sort: int}>
+     */
+    public static function categoryButtonDefinitions(): array
+    {
+        return [
+            ['name' => 'Query', 'title' => '查询', 'permission' => self::CATEGORIES_QUERY, 'sort' => 1],
+            ['name' => 'Create', 'title' => '新增', 'permission' => self::CATEGORIES_CREATE, 'sort' => 2],
+            ['name' => 'Append', 'title' => '新增下级', 'permission' => self::CATEGORIES_APPEND, 'sort' => 3],
+            ['name' => 'Update', 'title' => '编辑', 'permission' => self::CATEGORIES_UPDATE, 'sort' => 4],
+            ['name' => 'Delete', 'title' => '删除', 'permission' => self::CATEGORIES_DELETE, 'sort' => 5],
+            ['name' => 'BatchDelete', 'title' => '批量删除', 'permission' => self::CATEGORIES_BATCH_DELETE, 'sort' => 6],
+            ['name' => 'BatchStatus', 'title' => '批量改状态', 'permission' => self::CATEGORIES_BATCH_STATUS, 'sort' => 7],
+            ['name' => 'Status', 'title' => '切换状态', 'permission' => self::CATEGORIES_STATUS, 'sort' => 8],
+            ['name' => 'Sort', 'title' => '调整排序', 'permission' => self::CATEGORIES_SORT, 'sort' => 9],
+        ];
+    }
+
+    /**
+     * @return list<array{name: string, title: string, permission: string, sort: int}>
+     */
+    public static function brandButtonDefinitions(): array
+    {
+        return [
+            ['name' => 'Query', 'title' => '查询', 'permission' => self::BRANDS_QUERY, 'sort' => 1],
+            ['name' => 'Create', 'title' => '新增品牌', 'permission' => self::BRANDS_CREATE, 'sort' => 2],
+            ['name' => 'Update', 'title' => '编辑', 'permission' => self::BRANDS_UPDATE, 'sort' => 3],
+            ['name' => 'Delete', 'title' => '删除', 'permission' => self::BRANDS_DELETE, 'sort' => 4],
+        ];
+    }
 
     /**
      * @return list<array{name: string, title: string, permission: string, sort: int}>

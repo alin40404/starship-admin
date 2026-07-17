@@ -2,7 +2,7 @@
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { ProductRow } from '#/features/shop/api';
 
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { Page } from '@vben/common-ui';
@@ -14,6 +14,7 @@ import { useResponsiveCrud } from '#/adapter/mobile-list';
 import {
   deleteProduct,
   fetchProductPage,
+  fetchShopCategoryOptions,
   updateProductStatus,
 } from '#/features/shop/api';
 import { SHOP_PERMISSIONS } from '#/features/shop/constants/shop-permissions';
@@ -25,6 +26,8 @@ import ProductForm from './modules/form.vue';
 type ProductFormExpose = { open: (data?: ProductRow | Record<string, never>) => void };
 
 const productFormRef = ref<ProductFormExpose>();
+const categoryOptions = ref<{ label: string; value: number }[]>([]);
+const gridFormSchema = ref(useGridFormSchema([]));
 const { hasAccessByCodes } = useAccess();
 const access = { can: (code: string) => hasAccessByCodes([code]) };
 
@@ -56,7 +59,7 @@ const columns = useColumns(onActionClick, access, onStatusBeforeChange);
 const [CrudView, crudApi] = useResponsiveCrud<ProductRow>({
   formOptions: {
     commonConfig: { componentProps: { class: 'w-full' } },
-    schema: useGridFormSchema(),
+    schema: gridFormSchema.value,
     submitOnChange: true,
     submitButtonOptions: { content: $t('common.query') },
   },
@@ -70,6 +73,8 @@ const [CrudView, crudApi] = useResponsiveCrud<ProductRow>({
             page: page.currentPage,
             per_page: page.pageSize,
             keyword: formValues?.keyword || undefined,
+            product_type: formValues?.product_type || undefined,
+            category_id: formValues?.category_id || undefined,
             status:
               formValues?.status === undefined || formValues?.status === null
                 ? undefined
@@ -102,6 +107,11 @@ function onDelete(row: ProductRow) {
     },
   });
 }
+
+onMounted(async () => {
+  categoryOptions.value = await fetchShopCategoryOptions();
+  gridFormSchema.value = useGridFormSchema(categoryOptions.value);
+});
 </script>
 
 <template>

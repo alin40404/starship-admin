@@ -31,6 +31,36 @@ class ShopMenuSeeder extends Seeder
 
         $root->update(['title' => '商城中心']);
 
+        $categories = Menu::query()->firstOrCreate(
+            ['path' => '/shop/categories', 'type' => 2],
+            [
+                'parent_id' => $root->id,
+                'name' => 'ShopCategories',
+                'title' => '商品分类',
+                'component' => '/shop/categories/index',
+                'permission' => ShopPermissions::CATEGORIES_QUERY,
+                'icon' => 'ep:folder',
+                'sort' => 60,
+                'other_settings' => $this->menuOther(1, 1),
+                'status' => 1,
+            ],
+        );
+
+        $brands = Menu::query()->firstOrCreate(
+            ['path' => '/shop/brands', 'type' => 2],
+            [
+                'parent_id' => $root->id,
+                'name' => 'ShopBrands',
+                'title' => '品牌管理',
+                'component' => '/shop/brands/index',
+                'permission' => ShopPermissions::BRANDS_QUERY,
+                'icon' => 'ep:medal',
+                'sort' => 61,
+                'other_settings' => $this->menuOther(1, 1),
+                'status' => 1,
+            ],
+        );
+
         $products = Menu::query()->firstOrCreate(
             ['path' => '/shop/products', 'type' => 2],
             [
@@ -40,7 +70,7 @@ class ShopMenuSeeder extends Seeder
                 'component' => '/shop/products/index',
                 'permission' => ShopPermissions::PRODUCTS_QUERY,
                 'icon' => 'ep:goods',
-                'sort' => 61,
+                'sort' => 62,
                 'other_settings' => $this->menuOther(1, 1),
                 'status' => 1,
             ],
@@ -55,54 +85,46 @@ class ShopMenuSeeder extends Seeder
                 'component' => '/shop/orders/index',
                 'permission' => ShopPermissions::ORDERS_QUERY,
                 'icon' => 'ep:document',
-                'sort' => 62,
+                'sort' => 63,
                 'other_settings' => $this->menuOther(1, 1),
                 'status' => 1,
             ],
         );
 
-        $menuIds = [(int) $root->id, (int) $products->id, (int) $orders->id];
+        $menuIds = [
+            (int) $root->id,
+            (int) $categories->id,
+            (int) $brands->id,
+            (int) $products->id,
+            (int) $orders->id,
+        ];
 
-        foreach (ShopPermissions::productButtonDefinitions() as $btn) {
-            $button = Menu::query()->firstOrCreate(
-                [
-                    'parent_id' => $products->id,
-                    'type' => 3,
-                    'permission' => $btn['permission'],
-                ],
-                [
-                    'name' => $btn['name'],
-                    'title' => $btn['title'],
-                    'path' => null,
-                    'component' => null,
-                    'icon' => null,
-                    'sort' => $btn['sort'],
-                    'other_settings' => $this->menuOther(0),
-                    'status' => 1,
-                ],
-            );
-            $menuIds[] = (int) $button->id;
-        }
-
-        foreach (ShopPermissions::orderButtonDefinitions() as $btn) {
-            $button = Menu::query()->firstOrCreate(
-                [
-                    'parent_id' => $orders->id,
-                    'type' => 3,
-                    'permission' => $btn['permission'],
-                ],
-                [
-                    'name' => $btn['name'],
-                    'title' => $btn['title'],
-                    'path' => null,
-                    'component' => null,
-                    'icon' => null,
-                    'sort' => $btn['sort'],
-                    'other_settings' => $this->menuOther(0),
-                    'status' => 1,
-                ],
-            );
-            $menuIds[] = (int) $button->id;
+        foreach ([
+            [$categories->id, ShopPermissions::categoryButtonDefinitions()],
+            [$brands->id, ShopPermissions::brandButtonDefinitions()],
+            [$products->id, ShopPermissions::productButtonDefinitions()],
+            [$orders->id, ShopPermissions::orderButtonDefinitions()],
+        ] as [$parentId, $buttons]) {
+            foreach ($buttons as $btn) {
+                $button = Menu::query()->firstOrCreate(
+                    [
+                        'parent_id' => $parentId,
+                        'type' => 3,
+                        'permission' => $btn['permission'],
+                    ],
+                    [
+                        'name' => $btn['name'],
+                        'title' => $btn['title'],
+                        'path' => null,
+                        'component' => null,
+                        'icon' => null,
+                        'sort' => $btn['sort'],
+                        'other_settings' => $this->menuOther(0),
+                        'status' => 1,
+                    ],
+                );
+                $menuIds[] = (int) $button->id;
+            }
         }
 
         $role = Role::query()->where('code', 'super_admin')->first();

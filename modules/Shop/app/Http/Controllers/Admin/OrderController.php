@@ -42,16 +42,18 @@ class OrderController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        return ApiResponse::success(Order::query()->findOrFail($id));
+        return ApiResponse::success(Order::query()->with('items')->findOrFail($id));
     }
 
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
             'product_id' => ['required', 'integer', 'min:1'],
+            'sku_id' => ['nullable', 'integer', 'min:1'],
             'quantity' => ['sometimes', 'integer', 'min:1', 'max:99'],
             'member_id' => ['nullable', 'integer', 'min:1'],
             'remark' => ['nullable', 'string', 'max:255'],
+            'fulfillment_payload' => ['nullable', 'array'],
         ]);
 
         try {
@@ -60,6 +62,8 @@ class OrderController extends Controller
                 (int) ($data['quantity'] ?? 1),
                 isset($data['member_id']) ? (int) $data['member_id'] : null,
                 $data['remark'] ?? null,
+                isset($data['sku_id']) ? (int) $data['sku_id'] : null,
+                $data['fulfillment_payload'] ?? [],
             );
         } catch (Throwable $e) {
             return ApiResponse::error($e->getMessage(), 422);
