@@ -16,8 +16,6 @@ use Starship\Core\Support\ApiResponse;
  */
 class CategoryController extends Controller
 {
-    private const FLAG_OPTIONS = ['hot', 'index', 'recommend'];
-
     /**
      * 栏目选择器：需登录，无按钮权限；仅返回启用节点。
      */
@@ -27,7 +25,7 @@ class CategoryController extends Controller
             ->where('status', 'normal')
             ->orderByDesc('sort')
             ->orderByDesc('id')
-            ->get(['id', 'parent_id', 'type', 'name', 'nickname', 'status']);
+            ->get(['id', 'parent_id', 'type', 'name', 'slug', 'status']);
 
         return ApiResponse::success($this->buildOptionsTree($rows));
     }
@@ -40,7 +38,7 @@ class CategoryController extends Controller
             $search = (string) $request->get('search');
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', '%'.$search.'%')
-                    ->orWhere('nickname', 'like', '%'.$search.'%');
+                    ->orWhere('slug', 'like', '%'.$search.'%');
             });
         }
 
@@ -201,7 +199,7 @@ class CategoryController extends Controller
                 'parent_id' => (int) $item->parent_id,
                 'type' => (string) $item->type,
                 'name' => (string) $item->name,
-                'nickname' => (string) $item->nickname,
+                'slug' => (string) $item->slug,
                 'status' => (string) $item->status,
             ];
             $children = $this->buildOptionsTree($rows, (int) $item->id);
@@ -265,20 +263,15 @@ class CategoryController extends Controller
      */
     private function formatCategory(Category $category): array
     {
-        $flags = $this->normalizeFlags($category->flag);
-
         return [
             'id' => $category->id,
             'parent_id' => (int) $category->parent_id,
             'type' => (string) $category->type,
             'name' => (string) $category->name,
-            'nickname' => (string) $category->nickname,
-            'flag' => $flags,
-            'flag_labels' => $this->flagLabels($flags),
+            'slug' => (string) $category->slug,
             'image' => $category->image,
             'keywords' => $category->keywords,
             'description' => $category->description,
-            'diyname' => $category->diyname,
             'sort' => (int) $category->sort,
             'status' => (string) $category->status,
             'created_at' => $category->created_at,
@@ -294,27 +287,20 @@ class CategoryController extends Controller
         $rules = [
             'parent_id' => ['sometimes', 'integer', 'min:0'],
             'name' => ['sometimes', 'string', 'max:30'],
-            'nickname' => ['sometimes', 'string', 'max:50'],
-            'flag' => ['nullable', 'array'],
-            'flag.*' => ['string', Rule::in(self::FLAG_OPTIONS)],
+            'slug' => ['sometimes', 'string', 'max:50'],
             'image' => ['nullable', 'string', 'max:255'],
             'keywords' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:255'],
-            'diyname' => ['nullable', 'string', 'max:30'],
             'sort' => ['sometimes', 'integer', 'min:0'],
             'status' => ['sometimes', 'string', Rule::in(['normal', 'hidden'])],
         ];
 
         if (! $partial) {
             $rules['name'] = ['required', 'string', 'max:30'];
-            $rules['nickname'] = ['required', 'string', 'max:50'];
+            $rules['slug'] = ['required', 'string', 'max:50'];
         }
 
         $data = $request->validate($rules);
-
-        if (array_key_exists('flag', $data)) {
-            $data['flag'] = $this->encodeFlags($data['flag']);
-        }
 
         if (! array_key_exists('parent_id', $data)) {
             $data['parent_id'] = 0;
@@ -325,46 +311,5 @@ class CategoryController extends Controller
         }
 
         return $data;
-    }
-
-    /**
-     * @param  list<string>|null  $flags
-     */
-    private function encodeFlags(?array $flags): ?string
-    {
-        if ($flags === null || $flags === []) {
-            return null;
-        }
-
-        $flags = array_values(array_intersect($flags, self::FLAG_OPTIONS));
-
-        return $flags === [] ? null : implode(',', $flags);
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function normalizeFlags(?string $flag): array
-    {
-        if ($flag === null || $flag === '') {
-            return [];
-        }
-
-        return array_values(array_intersect(explode(',', $flag), self::FLAG_OPTIONS));
-    }
-
-    /**
-     * @param  list<string>  $flags
-     * @return list<string>
-     */
-    private function flagLabels(array $flags): array
-    {
-        $map = [
-            'hot' => '热门',
-            'index' => '首页',
-            'recommend' => '推荐',
-        ];
-
-        return array_values(array_map(fn ($flag) => $map[$flag] ?? $flag, $flags));
     }
 }

@@ -10,7 +10,6 @@ import {
   mapCategoryForTreeSelect,
 } from '#/features/system/api/category';
 import { CATEGORY_PERMISSIONS } from '#/features/system/constants/category-permissions';
-import { TABLE_CELL_EMPTY } from '#/constants/table';
 import { $t } from '#/locales';
 
 import {
@@ -21,17 +20,6 @@ import {
 export type CategoryAccessChecker = {
   can: (code: string) => boolean;
 };
-
-export function getCategoryFlagOptions() {
-  return [
-    { label: $t('platform.category.flagOptions.hot'), value: 'hot' },
-    { label: $t('platform.category.flagOptions.index'), value: 'index' },
-    {
-      label: $t('platform.category.flagOptions.recommend'),
-      value: 'recommend',
-    },
-  ];
-}
 
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
@@ -126,23 +114,11 @@ export function buildFormSchema(params: {
       component: 'Input',
       componentProps: {
         class: 'w-full',
-        placeholder: $t('platform.category.nicknamePlaceholder'),
+        placeholder: $t('platform.category.slugPlaceholder'),
       },
-      fieldName: 'nickname',
-      label: $t('platform.category.nickname'),
+      fieldName: 'slug',
+      label: $t('platform.category.slug'),
       rules: 'required',
-    },
-    {
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        class: 'w-full',
-        mode: 'multiple',
-        options: getCategoryFlagOptions(),
-        placeholder: $t('platform.category.flagPlaceholder'),
-      },
-      fieldName: 'flag',
-      label: $t('platform.category.flag'),
     },
     {
       component: 'Input',
@@ -167,15 +143,6 @@ export function buildFormSchema(params: {
       fieldName: 'description',
       formItemClass: 'items-start',
       label: $t('platform.category.description'),
-    },
-    {
-      component: 'Input',
-      componentProps: {
-        class: 'w-full',
-        placeholder: $t('platform.category.diynamePlaceholder'),
-      },
-      fieldName: 'diyname',
-      label: $t('platform.category.diyname'),
     },
     {
       component: 'InputNumber',
@@ -251,19 +218,9 @@ export function useColumns(
     },
     {
       align: 'left',
-      field: 'nickname',
+      field: 'slug',
       minWidth: 120,
-      title: $t('platform.category.alias'),
-    },
-    {
-      align: 'center',
-      field: 'flag_labels',
-      formatter: ({ cellValue }) =>
-        Array.isArray(cellValue) && cellValue.length > 0
-          ? cellValue.join('、')
-          : TABLE_CELL_EMPTY,
-      minWidth: 120,
-      title: $t('platform.category.flags'),
+      title: $t('platform.category.slug'),
     },
     {
       align: 'center',

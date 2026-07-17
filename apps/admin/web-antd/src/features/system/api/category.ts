@@ -14,13 +14,10 @@ export interface CategoryTreeNode {
   type: string;
   type_label?: string;
   name: string;
-  nickname: string;
-  flag: string[];
-  flag_labels?: string[];
+  slug: string;
   image: string | null;
   keywords: string | null;
   description: string | null;
-  diyname: string | null;
   sort: number;
   status: CategoryStatus;
   created_at?: string;
@@ -37,12 +34,10 @@ export interface CategorySavePayload {
   parent_id?: number;
   type: string;
   name: string;
-  nickname: string;
-  flag?: string[];
+  slug: string;
   image?: string | null;
   keywords?: string | null;
   description?: string | null;
-  diyname?: string | null;
   sort?: number;
   status?: CategoryStatus;
 }

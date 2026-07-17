@@ -172,12 +172,10 @@ async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
     const detail = await fetchShopCategory(id);
     formApi.setValues({
       description: detail.description ?? '',
-      diyname: detail.diyname ?? '',
-      flag: detail.flag ?? [],
       image: normalizeImageToFileList(detail.image),
       keywords: detail.keywords ?? '',
       name: detail.name,
-      nickname: detail.nickname,
+      slug: detail.slug,
       parent_id: detail.parent_id ?? 0,
       sort: detail.sort ?? 0,
       status: detail.status,
@@ -186,12 +184,10 @@ async function handleOpenChange(isOpen: boolean, popupApi: PopupApi) {
     const preset = data as { parent_id?: number };
     formApi.setValues({
       description: '',
-      diyname: '',
-      flag: [],
       image: [],
       keywords: '',
       name: '',
-      nickname: '',
+      slug: '',
       parent_id: preset.parent_id ?? 0,
       sort: 0,
       status: 'normal',

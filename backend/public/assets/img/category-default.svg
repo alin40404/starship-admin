@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Category default">
+  <rect width="256" height="256" fill="#F3F4F6"/>
+  <path
+    fill="#9CA3AF"
+    d="M64 84c0-6.627 5.373-12 12-12h36.343c3.183 0 6.235 1.264 8.485 3.515L132 87h48c6.627 0 12 5.373 12 12v77c0 6.627-5.373 12-12 12H76c-6.627 0-12-5.373-12-12V84z"
+  />
+  <rect x="76" y="104" width="104" height="10" rx="5" fill="#E5E7EB"/>
+</svg>
