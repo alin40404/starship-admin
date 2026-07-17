@@ -347,7 +347,15 @@ function onBatchUpdateStatus(status: 0 | 1) {
                 :icon="row.icon!.trim()"
               />
             </span>
-            <span class="min-w-0 flex-auto truncate">{{
+            <a
+              v-if="menuAccess.can(MENU_PERMISSIONS.UPDATE)"
+              class="menu-title-link min-w-0 flex-auto truncate"
+              href="javascript:void(0)"
+              @click.prevent="onEdit(row)"
+            >
+              {{ menuDisplayLabel(row) }}
+            </a>
+            <span v-else class="min-w-0 flex-auto truncate">{{
               menuDisplayLabel(row)
             }}</span>
           </div>
@@ -395,6 +403,17 @@ function onBatchUpdateStatus(status: 0 | 1) {
   & > :deep(div) {
     padding-top: 0;
     padding-bottom: 0;
+  }
+}
+
+.menu-title-link {
+  color: hsl(var(--primary));
+  cursor: pointer;
+  text-decoration: none;
+
+  &:hover {
+    color: hsl(var(--primary) / 80%);
+    text-decoration: underline;
   }
 }
 </style>
