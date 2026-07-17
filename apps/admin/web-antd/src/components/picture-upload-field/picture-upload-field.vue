@@ -13,7 +13,7 @@ import { resolveUploadAcceptAttr } from '#/utils/upload-policy';
 
 import type { PictureUploadFieldProps } from './types';
 
-defineOptions({ name: 'PictureUploadField' });
+defineOptions({ inheritAttrs: false, name: 'PictureUploadField' });
 
 const props = withDefaults(defineProps<PictureUploadFieldProps>(), {
   accept: 'image',
@@ -22,6 +22,9 @@ const props = withDefaults(defineProps<PictureUploadFieldProps>(), {
 });
 
 const emit = defineEmits<{
+  blur: [];
+  change: [value?: unknown];
+  input: [value?: unknown];
   'update:fileList': [fileList: UploadFile[]];
 }>();
 
@@ -62,6 +65,8 @@ const pickerInitialUrls = computed(() =>
 function onUploadChange(event: UploadChangeParam) {
   props.handleChange?.(event);
   innerFileList.value = event.fileList.filter((file) => file.status !== 'removed');
+  emit('change', event);
+  emit('input', event);
 }
 
 function onSelectClick() {
@@ -89,6 +94,8 @@ function onPickerConfirm(urls: string[]) {
   if (props.maxCount === 1) {
     innerFileList.value = [buildPickedFile(pickedUrls[0]!, 0)];
     pickerOpen.value = false;
+    emit('change', innerFileList.value);
+    emit('input', innerFileList.value);
     return;
   }
 
@@ -108,6 +115,8 @@ function onPickerConfirm(urls: string[]) {
   }
   innerFileList.value = merged;
   pickerOpen.value = false;
+  emit('change', merged);
+  emit('input', merged);
 }
 </script>
 
@@ -150,13 +159,13 @@ function onPickerConfirm(urls: string[]) {
         </span>
       </Button>
     </div>
-  </div>
 
-  <AttachmentPickerModal
-    v-model:open="pickerOpen"
-    :accept="accept"
-    :initial-urls="pickerInitialUrls"
-    :multiple="pickerMultiple"
-    @confirm="onPickerConfirm"
-  />
+    <AttachmentPickerModal
+      v-model:open="pickerOpen"
+      :accept="accept"
+      :initial-urls="pickerInitialUrls"
+      :multiple="pickerMultiple"
+      @confirm="onPickerConfirm"
+    />
+  </div>
 </template>
