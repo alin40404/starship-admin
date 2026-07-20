@@ -23,10 +23,29 @@ export function useGridFormSchema(): VbenFormSchema[] {
   ];
 }
 
-export function buildBrandFormSchema(): VbenFormSchema[] {
+export function buildBrandFormSchema(params: {
+  onImageChange?: (event: unknown) => void;
+  onImageUpload?: (options: unknown) => Promise<void> | void;
+} = {}): VbenFormSchema[] {
+  const { onImageChange, onImageUpload } = params;
   return [
-    { component: 'Input', fieldName: 'name', label: '品牌名称', rules: 'required' },
-    { component: 'Input', fieldName: 'logo', label: 'Logo URL' },
+    {
+      component: 'Input',
+      fieldName: 'name',
+      label: '品牌名称',
+      rules: 'required',
+    },
+    {
+      component: 'PictureUploadField',
+      componentProps: {
+        customRequest: onImageUpload,
+        handleChange: onImageChange,
+        maxCount: 1,
+      },
+      fieldName: 'logo',
+      formItemClass: 'picture-upload-form-item items-start',
+      label: 'Logo',
+    },
     {
       component: 'InputNumber',
       componentProps: { class: 'w-full', min: 0 },
