@@ -90,16 +90,52 @@
     left: 0;
   }
 
-  .loading-title {
+  .loading-title-stack {
+    position: relative;
     margin-top: 28px;
+    line-height: 1.2;
+  }
+
+  .loading-title {
     font-size: 22px;
     font-weight: 600;
     letter-spacing: 0.02em;
-    color: rgb(0 0 0 / 85%);
+    white-space: nowrap;
   }
 
-  .dark .loading-title {
-    color: rgb(255 255 255 / 90%);
+  .loading-title--gray {
+    color: rgb(0 0 0 / 28%);
+  }
+
+  .dark .loading-title--gray {
+    color: rgb(255 255 255 / 28%);
+  }
+
+  .loading-title--color {
+    color: #00e5ff;
+  }
+
+  .dark .loading-title--color {
+    color: #00e5ff;
+  }
+
+  /* 标题彩色层：自左向右渐显 */
+  .loading-title-color {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to right, #000 72%, transparent 100%);
+    mask-image: linear-gradient(to right, #000 72%, transparent 100%);
+    animation: title-color-sweep 2.4s ease-in-out infinite;
+  }
+
+  .loading-title-color .loading-title {
+    position: absolute;
+    top: 0;
+    left: 0;
   }
 
   @keyframes loading-spin {
@@ -125,6 +161,24 @@
       height: 0%;
     }
   }
+
+  @keyframes title-color-sweep {
+    0% {
+      width: 0%;
+    }
+
+    45% {
+      width: 100%;
+    }
+
+    60% {
+      width: 100%;
+    }
+
+    100% {
+      width: 0%;
+    }
+  }
 </style>
 <div class="loading" id="__app-loading__">
   <div class="loading-brand">
@@ -148,5 +202,10 @@
       </div>
     </div>
   </div>
-  <div class="loading-title">%VITE_APP_TITLE%</div>
+  <div class="loading-title-stack">
+    <div class="loading-title loading-title--gray">%VITE_APP_TITLE%</div>
+    <div class="loading-title-color" aria-hidden="true">
+      <div class="loading-title loading-title--color">%VITE_APP_TITLE%</div>
+    </div>
+  </div>
 </div>
