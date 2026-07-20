@@ -1,7 +1,18 @@
 <script lang="ts" setup>
-import { computed, ref, useTemplateRef, watch } from 'vue';
+import type { Sortable } from '@vben/hooks';
+
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  useTemplateRef,
+  watch,
+} from 'vue';
 
 import { useAccess } from '@vben/access';
+import { useSortable } from '@vben/hooks';
 import { IconifyIcon } from '@vben/icons';
 
 import { Button, Image, message } from 'ant-design-vue';
@@ -42,11 +53,14 @@ const canUpload = computed(() =>
 const pickerOpen = ref(false);
 const uploading = ref(false);
 const isDragOver = ref(false);
+const isSorting = ref(false);
 const fileInputRef = useTemplateRef<HTMLInputElement>('fileInputRef');
+const gridRef = useTemplateRef<HTMLElement>('gridRef');
 const previewUrl = ref('');
 const previewVisible = ref(false);
 /** Shopify 式勾选删除：选中的媒体下标 */
 const selectedIndexes = ref<number[]>([]);
+let sortableInstance: null | Sortable = null;
 
 const urls = computed(() =>
   (props.modelValue ?? []).map((url) => String(url).trim()).filter(Boolean),
@@ -211,7 +225,77 @@ function onDeleteSelected() {
   message.success('已删除所选媒体');
 }
 
+function remapSelectionAfterReorder(oldIndex: number, newIndex: number) {
+  selectedIndexes.value = selectedIndexes.value.map((index) => {
+    if (index === oldIndex) return newIndex;
+    if (oldIndex < newIndex && index > oldIndex && index <= newIndex) {
+      return index - 1;
+    }
+    if (oldIndex > newIndex && index >= newIndex && index < oldIndex) {
+      return index + 1;
+    }
+    return index;
+  });
+}
+
+function reorderAt(oldIndex: number, newIndex: number) {
+  if (oldIndex === newIndex) return;
+  const next = [...urls.value];
+  const [moved] = next.splice(oldIndex, 1);
+  if (!moved) return;
+  next.splice(newIndex, 0, moved);
+  remapSelectionAfterReorder(oldIndex, newIndex);
+  emitUrls(next);
+}
+
+function destroySortable() {
+  sortableInstance?.destroy();
+  sortableInstance = null;
+}
+
+async function setupSortable() {
+  destroySortable();
+  if (!isInteractive.value || urls.value.length < 2) return;
+  await nextTick();
+  const el = gridRef.value;
+  if (!el) return;
+
+  const { initializeSortable } = useSortable(el, {
+    animation: 200,
+    delay: 0,
+    delayOnTouchOnly: true,
+    draggable: '.product-media-grid__sortable',
+    handle: '.product-media-grid__handle',
+    ghostClass: 'product-media-grid__item--ghost',
+    chosenClass: 'product-media-grid__item--chosen',
+    dragClass: 'product-media-grid__item--drag',
+    onStart() {
+      isSorting.value = true;
+    },
+    onEnd(evt) {
+      const { oldIndex, newIndex } = evt;
+      // 等本轮 click 冒泡过后再清，避免松手误开预览
+      requestAnimationFrame(() => {
+        isSorting.value = false;
+      });
+      if (
+        oldIndex === undefined ||
+        newIndex === undefined ||
+        Number.isNaN(oldIndex) ||
+        Number.isNaN(newIndex) ||
+        oldIndex === newIndex
+      ) {
+        return;
+      }
+      reorderAt(oldIndex, newIndex);
+    },
+  });
+
+  sortableInstance = await initializeSortable();
+}
+
 function onPreview(url: string) {
+  if (isSorting.value) return;
   if (isImageUrl(url)) {
     previewUrl.value = url;
     previewVisible.value = true;
@@ -224,6 +308,18 @@ function onPreviewVisibleChange(visible: boolean) {
   previewVisible.value = visible;
   if (!visible) previewUrl.value = '';
 }
+
+watch([() => urls.value.length, isInteractive], () => {
+  void setupSortable();
+});
+
+onMounted(() => {
+  void setupSortable();
+});
+
+onBeforeUnmount(() => {
+  destroySortable();
+});
 </script>
 
 <template>
@@ -318,13 +414,14 @@ function onPreviewVisibleChange(visible: boolean) {
 
     <div
       v-if="urls.length > 0"
+      ref="gridRef"
       class="product-media-grid mt-4"
       :class="{ 'product-media-grid--selecting': selectedCount > 0 }"
     >
       <div
         v-for="(url, index) in urls"
-        :key="`${url}-${index}`"
-        class="product-media-grid__item group relative"
+        :key="url"
+        class="product-media-grid__item product-media-grid__sortable group relative"
         :class="{
           'product-media-grid__item--main': index === 0,
           'product-media-grid__item--selected': isSelected(index),
@@ -385,7 +482,7 @@ function onPreviewVisibleChange(visible: boolean) {
               />
             </span>
           </button>
-          <span class="product-media-grid__handle" title="拖拽排序（即将支持）">
+          <span class="product-media-grid__handle" title="拖拽排序">
             <IconifyIcon class="size-3.5" icon="lucide:grip" />
           </span>
         </template>
@@ -551,8 +648,23 @@ function onPreviewVisibleChange(visible: boolean) {
   transition: opacity 0.15s ease;
 }
 
-.product-media-grid__item:hover .product-media-grid__handle {
+.product-media-grid__item:hover .product-media-grid__handle,
+.product-media-grid__item--chosen .product-media-grid__handle,
+.product-media-grid__item--drag .product-media-grid__handle {
   opacity: 1;
+}
+
+.product-media-grid__item--ghost {
+  opacity: 0.35;
+}
+
+.product-media-grid__item--drag {
+  opacity: 1;
+  cursor: grabbing;
+}
+
+.product-media-grid__item--drag .product-media-grid__handle {
+  cursor: grabbing;
 }
 
 @media (min-width: 640px) {
