@@ -1,18 +1,14 @@
 <script lang="ts" setup>
-import type { Sortable } from '@vben/hooks';
-
 import {
   computed,
   nextTick,
   onBeforeUnmount,
-  onMounted,
   ref,
   useTemplateRef,
   watch,
 } from 'vue';
 
 import { useAccess } from '@vben/access';
-import { useSortable } from '@vben/hooks';
 import { IconifyIcon } from '@vben/icons';
 
 import { Button, Image, message } from 'ant-design-vue';
@@ -55,16 +51,47 @@ const uploading = ref(false);
 const isDragOver = ref(false);
 const isSorting = ref(false);
 const fileInputRef = useTemplateRef<HTMLInputElement>('fileInputRef');
-const gridRef = useTemplateRef<HTMLElement>('gridRef');
 const previewUrl = ref('');
 const previewVisible = ref(false);
 /** Shopify 式勾选删除：选中的媒体下标 */
 const selectedIndexes = ref<number[]>([]);
-let sortableInstance: null | Sortable = null;
+
+/** 拖拽中的草稿顺序（浮层 + FLIP，不改真实 DOM 插入） */
+const draftUrls = ref<null | string[]>(null);
+
+interface DragSession {
+  activeUrl: string;
+  grabRatioX: number;
+  grabRatioY: number;
+  mainHeight: number;
+  mainWidth: number;
+  overIndex: number;
+  pointerId: number;
+  pointerX: number;
+  pointerY: number;
+  startX: number;
+  startY: number;
+  started: boolean;
+  thumbHeight: number;
+  thumbWidth: number;
+}
+
+const drag = ref<null | DragSession>(null);
+const itemEls = new Map<string, HTMLElement>();
+const FLIP_MS = 200;
+const ACTIVATE_PX = 4;
+/** FLIP 进行中禁止再次换位，避免动画半截被测量导致来回抖 */
+let flipLocked = false;
+let pendingOverIndex: null | number = null;
+let flipUnlockTimer: null | ReturnType<typeof setTimeout> = null;
+/** 当前草稿顺序下的稳定布局盒（不受 FLIP transform 影响） */
+let slotRects = new Map<string, DOMRect>();
 
 const urls = computed(() =>
   (props.modelValue ?? []).map((url) => String(url).trim()).filter(Boolean),
 );
+
+const displayUrls = computed(() => draftUrls.value ?? urls.value);
 
 const canAddMore = computed(
   () => !props.maxCount || urls.value.length < props.maxCount,
@@ -81,6 +108,22 @@ const isAllSelected = computed(
 const isPartialSelected = computed(
   () => selectedCount.value > 0 && !isAllSelected.value,
 );
+
+const overlayStyle = computed(() => {
+  const session = drag.value;
+  if (!session?.started) return null;
+  // 命中主图位 → 大图浮层；命中小图位 → 及时缩小
+  const isMainSlot = session.overIndex === 0;
+  const width = isMainSlot ? session.mainWidth : session.thumbWidth;
+  const height = isMainSlot ? session.mainHeight : session.thumbHeight;
+  const offsetX = session.grabRatioX * width;
+  const offsetY = session.grabRatioY * height;
+  return {
+    width: `${width}px`,
+    height: `${height}px`,
+    transform: `translate3d(${session.pointerX - offsetX}px, ${session.pointerY - offsetY}px, 0) scale(1.04)`,
+  };
+});
 
 watch(
   () => urls.value.length,
@@ -189,15 +232,22 @@ function onPickerConfirm(selected: string[]) {
   pickerOpen.value = false;
 }
 
-function isSelected(index: number) {
-  return selectedIndexes.value.includes(index);
+function isUrlSelected(url: string) {
+  const index = urls.value.indexOf(url);
+  return index >= 0 && selectedIndexes.value.includes(index);
+}
+
+function toggleSelectByUrl(url: string, event?: Event) {
+  const index = urls.value.indexOf(url);
+  if (index < 0) return;
+  toggleSelect(index, event);
 }
 
 function toggleSelect(index: number, event?: Event) {
   event?.stopPropagation();
   event?.preventDefault();
   if (!isInteractive.value) return;
-  if (isSelected(index)) {
+  if (selectedIndexes.value.includes(index)) {
     selectedIndexes.value = selectedIndexes.value.filter((i) => i !== index);
   } else {
     selectedIndexes.value = [...selectedIndexes.value, index];
@@ -225,77 +275,283 @@ function onDeleteSelected() {
   message.success('已删除所选媒体');
 }
 
-function remapSelectionAfterReorder(oldIndex: number, newIndex: number) {
-  selectedIndexes.value = selectedIndexes.value.map((index) => {
-    if (index === oldIndex) return newIndex;
-    if (oldIndex < newIndex && index > oldIndex && index <= newIndex) {
-      return index - 1;
+function moveItem(list: string[], from: number, to: number) {
+  if (from === to) return list;
+  const next = [...list];
+  const [moved] = next.splice(from, 1);
+  if (!moved) return list;
+  next.splice(to, 0, moved);
+  return next;
+}
+
+function setItemRef(url: string, el: Element | null) {
+  if (el instanceof HTMLElement) {
+    itemEls.set(url, el);
+  } else {
+    itemEls.delete(url);
+  }
+}
+
+/** 清掉进行中的 FLIP，读真实布局盒，避免 transform 污染命中/测量 */
+function snapFlipStyles() {
+  for (const el of itemEls.values()) {
+    el.style.transition = 'none';
+    el.style.transform = '';
+    el.style.transformOrigin = '';
+  }
+}
+
+function captureLayoutRects() {
+  snapFlipStyles();
+  const map = new Map<string, DOMRect>();
+  for (const [url, el] of itemEls) {
+    map.set(url, el.getBoundingClientRect());
+  }
+  slotRects = map;
+  return map;
+}
+
+function playFlip(before: Map<string, DOMRect>) {
+  for (const [url, el] of itemEls) {
+    const prev = before.get(url);
+    if (!prev) continue;
+    const next = slotRects.get(url) ?? el.getBoundingClientRect();
+    const dx = prev.left - next.left;
+    const dy = prev.top - next.top;
+    // 只做位移 FLIP；尺寸交给 grid 直接变，避免 scale 与布局互相打架抖动
+    if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) continue;
+
+    el.style.transition = 'none';
+    el.style.transform = `translate(${dx}px, ${dy}px)`;
+    void el.offsetWidth;
+    el.style.transition = `transform ${FLIP_MS}ms cubic-bezier(0.2, 0, 0, 1)`;
+    el.style.transform = '';
+  }
+}
+
+function lockFlip() {
+  flipLocked = true;
+  if (flipUnlockTimer) clearTimeout(flipUnlockTimer);
+  flipUnlockTimer = setTimeout(() => {
+    flipLocked = false;
+    flipUnlockTimer = null;
+    snapFlipStyles();
+    if (pendingOverIndex !== null) {
+      const next = pendingOverIndex;
+      pendingOverIndex = null;
+      void moveActiveTo(next);
     }
-    if (oldIndex > newIndex && index >= newIndex && index < oldIndex) {
-      return index + 1;
+  }, FLIP_MS + 16);
+}
+
+/**
+ * 用缓存布局盒命中，并对当前格做粘滞，
+ * 防止主图/小图交界处分数来回跳。
+ */
+function hitTestIndex(clientX: number, clientY: number) {
+  const list = draftUrls.value ?? urls.value;
+  const session = drag.value;
+  const stickyIndex = session?.overIndex ?? 0;
+  let bestIndex = stickyIndex;
+  let bestScore = Infinity;
+
+  list.forEach((url, index) => {
+    const rect = slotRects.get(url);
+    if (!rect) return;
+
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    let score = (clientX - cx) ** 2 + (clientY - cy) ** 2;
+    const inside =
+      clientX >= rect.left &&
+      clientX <= rect.right &&
+      clientY >= rect.top &&
+      clientY <= rect.bottom;
+    if (inside) score *= 0.15;
+    // 当前落点更「粘」，需要明显更近才切换
+    if (index === stickyIndex) score *= 0.55;
+
+    if (score < bestScore) {
+      bestScore = score;
+      bestIndex = index;
     }
-    return index;
   });
+
+  return bestIndex;
 }
 
-function reorderAt(oldIndex: number, newIndex: number) {
-  if (oldIndex === newIndex) return;
-  const next = [...urls.value];
-  const [moved] = next.splice(oldIndex, 1);
-  if (!moved) return;
-  next.splice(newIndex, 0, moved);
-  remapSelectionAfterReorder(oldIndex, newIndex);
-  emitUrls(next);
-}
+async function moveActiveTo(index: number) {
+  const session = drag.value;
+  const list = draftUrls.value;
+  if (!session || !list) return;
 
-function destroySortable() {
-  sortableInstance?.destroy();
-  sortableInstance = null;
-}
+  const from = list.indexOf(session.activeUrl);
+  if (from < 0 || from === index) {
+    session.overIndex = index;
+    return;
+  }
 
-async function setupSortable() {
-  destroySortable();
-  if (!isInteractive.value || urls.value.length < 2) return;
+  if (flipLocked) {
+    pendingOverIndex = index;
+    return;
+  }
+
+  const before = captureLayoutRects();
+  draftUrls.value = moveItem(list, from, index);
+  session.overIndex = index;
+  lockFlip();
   await nextTick();
-  const el = gridRef.value;
-  if (!el) return;
+  // 换位后先记下最终布局，再开 FLIP；命中始终读这套稳定盒
+  snapFlipStyles();
+  for (const [url, el] of itemEls) {
+    slotRects.set(url, el.getBoundingClientRect());
+  }
+  playFlip(before);
+}
 
-  const { initializeSortable } = useSortable(el, {
-    animation: 200,
-    delay: 0,
-    delayOnTouchOnly: true,
-    draggable: '.product-media-grid__sortable',
-    handle: '.product-media-grid__handle',
-    ghostClass: 'product-media-grid__item--ghost',
-    chosenClass: 'product-media-grid__item--chosen',
-    dragClass: 'product-media-grid__item--drag',
-    onStart() {
-      isSorting.value = true;
-    },
-    onEnd(evt) {
-      const { oldIndex, newIndex } = evt;
-      // 等本轮 click 冒泡过后再清，避免松手误开预览
-      requestAnimationFrame(() => {
-        isSorting.value = false;
-      });
-      if (
-        oldIndex === undefined ||
-        newIndex === undefined ||
-        Number.isNaN(oldIndex) ||
-        Number.isNaN(newIndex) ||
-        oldIndex === newIndex
-      ) {
-        return;
-      }
-      reorderAt(oldIndex, newIndex);
-    },
+function bindDragListeners() {
+  window.addEventListener('pointermove', onWindowPointerMove, {
+    passive: false,
   });
+  window.addEventListener('pointerup', onWindowPointerUp);
+  window.addEventListener('pointercancel', onWindowPointerUp);
+}
 
-  sortableInstance = await initializeSortable();
+function unbindDragListeners() {
+  window.removeEventListener('pointermove', onWindowPointerMove);
+  window.removeEventListener('pointerup', onWindowPointerUp);
+  window.removeEventListener('pointercancel', onWindowPointerUp);
+}
+
+function resetDrag() {
+  unbindDragListeners();
+  if (flipUnlockTimer) {
+    clearTimeout(flipUnlockTimer);
+    flipUnlockTimer = null;
+  }
+  flipLocked = false;
+  pendingOverIndex = null;
+  slotRects = new Map();
+  snapFlipStyles();
+  document.body.style.removeProperty('user-select');
+  document.body.style.removeProperty('cursor');
+  drag.value = null;
+  draftUrls.value = null;
+  requestAnimationFrame(() => {
+    isSorting.value = false;
+  });
+}
+
+function commitDrag() {
+  const session = drag.value;
+  const next = draftUrls.value;
+  if (!session?.started || !next) {
+    resetDrag();
+    return;
+  }
+
+  const prev = urls.value;
+  const selectedUrls = new Set(
+    selectedIndexes.value
+      .map((index) => prev[index])
+      .filter((url): url is string => Boolean(url)),
+  );
+  selectedIndexes.value = next
+    .map((url, index) => (selectedUrls.has(url) ? index : -1))
+    .filter((index) => index >= 0);
+
+  if (next.join('\0') !== prev.join('\0')) {
+    emitUrls(next);
+  }
+  resetDrag();
+}
+
+function onWindowPointerMove(event: PointerEvent) {
+  const session = drag.value;
+  if (!session || event.pointerId !== session.pointerId) return;
+
+  session.pointerX = event.clientX;
+  session.pointerY = event.clientY;
+
+  if (!session.started) {
+    const dist = Math.hypot(
+      event.clientX - session.startX,
+      event.clientY - session.startY,
+    );
+    if (dist < ACTIVATE_PX) return;
+    session.started = true;
+    isSorting.value = true;
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'grabbing';
+  }
+
+  event.preventDefault();
+  void moveActiveTo(hitTestIndex(event.clientX, event.clientY));
+}
+
+function onWindowPointerUp(event: PointerEvent) {
+  const session = drag.value;
+  if (!session || event.pointerId !== session.pointerId) return;
+  if (session.started) {
+    commitDrag();
+  } else {
+    resetDrag();
+  }
+}
+
+function onHandlePointerDown(index: number, url: string, event: PointerEvent) {
+  if (!isInteractive.value || urls.value.length < 2) return;
+  if (event.button !== 0) return;
+  event.preventDefault();
+  event.stopPropagation();
+
+  const el = itemEls.get(url);
+  const rect = el?.getBoundingClientRect();
+  if (!rect) return;
+
+  const list = urls.value;
+  const mainRect =
+    index === 0
+      ? rect
+      : itemEls.get(list[0] ?? '')?.getBoundingClientRect() ?? null;
+  const thumbSourceUrl = list.find((item, i) => i !== 0 && item !== url) ?? list.find((_, i) => i !== 0);
+  const thumbRect =
+    index === 0
+      ? thumbSourceUrl
+        ? itemEls.get(thumbSourceUrl)?.getBoundingClientRect()
+        : null
+      : rect;
+
+  const thumbWidth = thumbRect?.width ?? Math.max((mainRect?.width ?? rect.width) / 2 - 6, 48);
+  const thumbHeight = thumbRect?.height ?? thumbWidth;
+  const mainWidth = mainRect?.width ?? thumbWidth * 2 + 12;
+  const mainHeight = mainRect?.height ?? mainWidth;
+
+  drag.value = {
+    activeUrl: url,
+    grabRatioX: (event.clientX - rect.left) / Math.max(rect.width, 1),
+    grabRatioY: (event.clientY - rect.top) / Math.max(rect.height, 1),
+    mainHeight,
+    mainWidth,
+    overIndex: index,
+    pointerId: event.pointerId,
+    pointerX: event.clientX,
+    pointerY: event.clientY,
+    startX: event.clientX,
+    startY: event.clientY,
+    started: false,
+    thumbHeight,
+    thumbWidth,
+  };
+  draftUrls.value = [...urls.value];
+  bindDragListeners();
+  void nextTick(() => {
+    captureLayoutRects();
+  });
 }
 
 function onPreview(url: string) {
-  if (isSorting.value) return;
+  if (isSorting.value || drag.value?.started) return;
   if (isImageUrl(url)) {
     previewUrl.value = url;
     previewVisible.value = true;
@@ -309,16 +565,9 @@ function onPreviewVisibleChange(visible: boolean) {
   if (!visible) previewUrl.value = '';
 }
 
-watch([() => urls.value.length, isInteractive], () => {
-  void setupSortable();
-});
-
-onMounted(() => {
-  void setupSortable();
-});
-
 onBeforeUnmount(() => {
-  destroySortable();
+  resetDrag();
+  itemEls.clear();
 });
 </script>
 
@@ -413,76 +662,87 @@ onBeforeUnmount(() => {
     </div>
 
     <div
-      v-if="urls.length > 0"
-      ref="gridRef"
+      v-if="displayUrls.length > 0"
       class="product-media-grid mt-4"
-      :class="{ 'product-media-grid--selecting': selectedCount > 0 }"
+      :class="{
+        'product-media-grid--selecting': selectedCount > 0,
+        'product-media-grid--sorting': drag?.started,
+      }"
     >
       <div
-        v-for="(url, index) in urls"
+        v-for="(url, index) in displayUrls"
         :key="url"
-        class="product-media-grid__item product-media-grid__sortable group relative"
+        :ref="(el) => setItemRef(url, el as Element | null)"
+        class="product-media-grid__item group relative"
         :class="{
           'product-media-grid__item--main': index === 0,
-          'product-media-grid__item--selected': isSelected(index),
+          'product-media-grid__item--selected': isUrlSelected(url),
+          'product-media-grid__item--placeholder':
+            drag?.started && drag.activeUrl === url,
         }"
       >
         <button
-          class="product-media-grid__card bg-background relative flex size-full items-center justify-center overflow-hidden rounded-lg border border-border p-1.5"
+          class="product-media-grid__card bg-background relative flex size-full items-center justify-center overflow-hidden rounded-lg border border-border"
           type="button"
           @click="onPreview(url)"
         >
-          <img
-            v-if="isImageUrl(url)"
-            class="size-full object-contain"
-            :alt="`媒体 ${index + 1}`"
-            :src="url"
-          />
-          <div
-            v-else-if="isVideoUrl(url)"
-            class="text-muted-foreground flex flex-col items-center gap-1 text-xs"
-          >
-            <IconifyIcon
-              :class="index === 0 ? 'size-10' : 'size-6'"
-              icon="lucide:video"
+          <template v-if="!(drag?.started && drag.activeUrl === url)">
+            <img
+              v-if="isImageUrl(url)"
+              class="size-full object-contain"
+              :alt="`媒体 ${index + 1}`"
+              :src="url"
+              draggable="false"
             />
-            <span>视频</span>
-          </div>
-          <div
-            v-else
-            class="text-muted-foreground flex flex-col items-center gap-1 text-xs"
-          >
-            <IconifyIcon
-              :class="index === 0 ? 'size-10' : 'size-6'"
-              icon="lucide:file"
-            />
-            <span>文件</span>
-          </div>
-          <!-- Hover / 选中蒙板 -->
-          <span class="product-media-grid__overlay" aria-hidden="true"></span>
+            <div
+              v-else-if="isVideoUrl(url)"
+              class="text-muted-foreground flex flex-col items-center gap-1 text-xs"
+            >
+              <IconifyIcon
+                :class="index === 0 ? 'size-10' : 'size-6'"
+                icon="lucide:video"
+              />
+              <span>视频</span>
+            </div>
+            <div
+              v-else
+              class="text-muted-foreground flex flex-col items-center gap-1 text-xs"
+            >
+              <IconifyIcon
+                :class="index === 0 ? 'size-10' : 'size-6'"
+                icon="lucide:file"
+              />
+              <span>文件</span>
+            </div>
+            <span class="product-media-grid__overlay" aria-hidden="true"></span>
+          </template>
         </button>
 
-        <template v-if="isInteractive">
+        <template v-if="isInteractive && !(drag?.started && drag.activeUrl === url)">
           <button
             class="product-media-grid__check"
             type="button"
             title="选择"
-            @click="toggleSelect(index, $event)"
+            @click="toggleSelectByUrl(url, $event)"
           >
             <span
               class="product-media-grid__checkbox"
               :class="{
-                'product-media-grid__checkbox--checked': isSelected(index),
+                'product-media-grid__checkbox--checked': isUrlSelected(url),
               }"
             >
               <IconifyIcon
-                v-if="isSelected(index)"
+                v-if="isUrlSelected(url)"
                 class="size-3 text-white"
                 icon="lucide:check"
               />
             </span>
           </button>
-          <span class="product-media-grid__handle" title="拖拽排序">
+          <span
+            class="product-media-grid__handle"
+            title="拖拽排序"
+            @pointerdown="onHandlePointerDown(index, url, $event)"
+          >
             <IconifyIcon class="size-3.5" icon="lucide:grip" />
           </span>
         </template>
@@ -492,12 +752,47 @@ onBeforeUnmount(() => {
         v-if="isInteractive && canAddMore"
         class="product-media-grid__item product-media-grid__add text-muted-foreground hover:border-primary hover:text-primary flex items-center justify-center rounded-lg border border-dashed border-border transition-colors disabled:cursor-not-allowed disabled:opacity-50"
         type="button"
-        :disabled="uploading"
+        :disabled="uploading || !!drag?.started"
         @click="onSelectClick"
       >
         <IconifyIcon class="size-5" icon="lucide:plus" />
       </button>
     </div>
+
+    <!-- 拖拽浮层：跟随指针，不参与文档流重排 -->
+    <Teleport to="body">
+      <div
+        v-if="drag?.started && overlayStyle"
+        class="product-media-grid__drag-overlay"
+        :style="overlayStyle"
+      >
+        <div
+          class="bg-background flex size-full items-center justify-center overflow-hidden rounded-lg border border-border shadow-lg"
+        >
+          <img
+            v-if="isImageUrl(drag.activeUrl)"
+            class="size-full object-contain"
+            alt=""
+            :src="drag.activeUrl"
+            draggable="false"
+          />
+          <div
+            v-else-if="isVideoUrl(drag.activeUrl)"
+            class="text-muted-foreground flex flex-col items-center gap-1 text-xs"
+          >
+            <IconifyIcon class="size-8" icon="lucide:video" />
+            <span>视频</span>
+          </div>
+          <div
+            v-else
+            class="text-muted-foreground flex flex-col items-center gap-1 text-xs"
+          >
+            <IconifyIcon class="size-8" icon="lucide:file" />
+            <span>文件</span>
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
     <input
       ref="fileInputRef"
@@ -554,10 +849,15 @@ onBeforeUnmount(() => {
   align-items: start;
 }
 
+.product-media-grid--sorting {
+  cursor: grabbing;
+}
+
 .product-media-grid__item {
   width: var(--media-thumb);
   height: var(--media-thumb);
   min-width: 0;
+  will-change: transform;
 }
 
 .product-media-grid__item--main {
@@ -565,6 +865,11 @@ onBeforeUnmount(() => {
   height: calc(var(--media-thumb) * 2 + 0.75rem);
   grid-column: span 2;
   grid-row: span 2;
+}
+
+.product-media-grid__item--placeholder > .product-media-grid__card {
+  border-style: dashed;
+  background: hsl(var(--muted) / 0.35);
 }
 
 .product-media-grid__card {
@@ -585,11 +890,14 @@ onBeforeUnmount(() => {
   opacity: 1;
 }
 
+.product-media-grid--sorting .product-media-grid__overlay {
+  opacity: 0 !important;
+}
+
 .product-media-grid__add {
   background: hsl(var(--muted) / 0.35);
 }
 
-/* 左上勾选：悬停显示；进入选择模式后全部常显 */
 .product-media-grid__check {
   position: absolute;
   top: 6px;
@@ -610,6 +918,11 @@ onBeforeUnmount(() => {
   opacity: 1;
 }
 
+.product-media-grid--sorting .product-media-grid__check {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
 .product-media-grid__checkbox {
   display: flex;
   width: 18px;
@@ -628,7 +941,6 @@ onBeforeUnmount(() => {
   background: #303030;
 }
 
-/* 右上拖拽柄：悬停显示 */
 .product-media-grid__handle {
   position: absolute;
   top: 6px;
@@ -645,26 +957,29 @@ onBeforeUnmount(() => {
   color: hsl(var(--muted-foreground));
   cursor: grab;
   opacity: 0;
+  touch-action: none;
   transition: opacity 0.15s ease;
 }
 
-.product-media-grid__item:hover .product-media-grid__handle,
-.product-media-grid__item--chosen .product-media-grid__handle,
-.product-media-grid__item--drag .product-media-grid__handle {
+.product-media-grid__item:hover .product-media-grid__handle {
   opacity: 1;
 }
 
-.product-media-grid__item--ghost {
-  opacity: 0.35;
+.product-media-grid--sorting .product-media-grid__handle {
+  opacity: 0 !important;
+  pointer-events: none;
 }
 
-.product-media-grid__item--drag {
-  opacity: 1;
-  cursor: grabbing;
-}
-
-.product-media-grid__item--drag .product-media-grid__handle {
-  cursor: grabbing;
+.product-media-grid__drag-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10000;
+  pointer-events: none;
+  will-change: transform, width, height;
+  transition:
+    width 180ms cubic-bezier(0.2, 0, 0, 1),
+    height 180ms cubic-bezier(0.2, 0, 0, 1);
 }
 
 @media (min-width: 640px) {
