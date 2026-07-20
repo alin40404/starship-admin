@@ -16,7 +16,6 @@ async function viteInjectAppLoadingPlugin(
   env: Record<string, any> = {},
   loadingTemplate = 'loading.html',
 ): Promise<PluginOption | undefined> {
-  const loadingHtml = await getLoadingRawByHtmlTemplate(loadingTemplate);
   const { version } = await readPackageJSON(process.cwd());
   const envRaw = isBuild ? 'prod' : 'dev';
   const cacheName = `'${env.VITE_APP_NAMESPACE}-${version}-${envRaw}-preferences-theme'`;
@@ -30,18 +29,24 @@ async function viteInjectAppLoadingPlugin(
 </script>
 `;
 
-  if (!loadingHtml) {
-    return;
-  }
+  let loadingHtml = '';
 
   return {
+    configResolved: async (config) => {
+      loadingHtml = await getLoadingRawByHtmlTemplate(
+        loadingTemplate,
+        config.root,
+      );
+    },
     enforce: 'pre',
     name: 'vite:inject-app-loading',
     transformIndexHtml: {
       handler(html) {
+        if (!loadingHtml) {
+          return html;
+        }
         const re = /<body\s*>/;
-        html = html.replace(re, `<body>${injectScript}${loadingHtml}`);
-        return html;
+        return html.replace(re, `<body>${injectScript}${loadingHtml}`);
       },
       order: 'pre',
     },
@@ -50,17 +55,25 @@ async function viteInjectAppLoadingPlugin(
 
 /**
  * 用于获取loading的html模板
+ * 优先读取应用根目录（Vite config.root）下的 loading.html
  */
-async function getLoadingRawByHtmlTemplate(loadingTemplate: string) {
-  // 支持在app内自定义loading模板，模版参考default-loading.html即可
-  let appLoadingPath = join(process.cwd(), loadingTemplate);
+async function getLoadingRawByHtmlTemplate(
+  loadingTemplate: string,
+  appRoot = process.cwd(),
+) {
+  const candidates = [
+    join(appRoot, loadingTemplate),
+    join(process.cwd(), loadingTemplate),
+  ];
 
-  if (!fs.existsSync(appLoadingPath)) {
-    const __dirname = fileURLToPath(new URL('.', import.meta.url));
-    appLoadingPath = join(__dirname, './default-loading.html');
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return await fsp.readFile(candidate, 'utf8');
+    }
   }
 
-  return await fsp.readFile(appLoadingPath, 'utf8');
+  const __dirname = fileURLToPath(new URL('.', import.meta.url));
+  return await fsp.readFile(join(__dirname, './default-loading.html'), 'utf8');
 }
 
 export { viteInjectAppLoadingPlugin };
