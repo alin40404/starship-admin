@@ -283,10 +283,15 @@ setupVbenVxeTable({
           typeof attrs?.getLabel === 'function'
             ? attrs.getLabel(row, column)
             : String(value);
+        const extraClass =
+          typeof attrs?.getClass === 'function' ? attrs.getClass(row) : '';
         return h(
           Button,
           {
-            class: 'cell-action-text h-auto max-w-full p-0 text-left whitespace-normal',
+            class: [
+              'cell-action-text h-auto max-w-full p-0 text-left whitespace-normal',
+              extraClass,
+            ],
             size: 'small',
             type: 'link',
             ...props,

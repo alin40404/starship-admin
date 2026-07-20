@@ -219,10 +219,7 @@ class InboxMessageController extends Controller
     private function applyInboxOrdering($query): void
     {
         $query
-            ->orderBy('is_read')
-            ->orderByRaw(
-                "CASE priority WHEN 'urgent' THEN 1 WHEN 'high' THEN 2 WHEN 'normal' THEN 3 ELSE 4 END"
-            )
+            ->orderByDesc('created_at')
             ->orderByDesc('id');
     }
 

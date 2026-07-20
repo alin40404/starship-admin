@@ -119,6 +119,8 @@ export function useColumns(
       cellRender: {
         attrs: {
           code: 'detail',
+          getClass: (row: InboxMessageRow) =>
+            row.is_read === 1 ? '!text-muted-foreground' : '',
           onClick: onActionClick,
         },
         name: 'CellActionText',
@@ -237,11 +239,6 @@ export function useColumns(
             text: $t('system.shared.view'),
           },
           {
-            code: 'markRead',
-            disabled: (row: InboxMessageRow) => row.is_read === 1,
-            text: $t('inbox.readStatus.read'),
-          },
-          {
             code: 'delete',
             text: $t('common.delete'),
           },
@@ -250,7 +247,7 @@ export function useColumns(
       field: 'operation',
       fixed: 'right',
       title: $t('crud.columnActions'),
-      width: 180,
+      width: 140,
     },
   ] as CrudGridColumn<InboxMessageRow>[];
 

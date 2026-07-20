@@ -192,7 +192,12 @@ function showCategoryIcon(item: NotificationItem) {
             </span>
             <div class="flex min-w-0 flex-1 flex-col gap-1 pr-12 leading-normal">
               <p
-                class="cursor-pointer truncate font-semibold hover:text-primary hover:underline"
+                class="cursor-pointer truncate hover:underline"
+                :class="
+                  item.isRead
+                    ? 'font-normal text-muted-foreground hover:text-muted-foreground'
+                    : 'font-semibold hover:text-primary'
+                "
                 @click.stop="emit('view', item)"
               >
                 {{ item.title }}

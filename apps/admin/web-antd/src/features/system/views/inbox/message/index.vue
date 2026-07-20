@@ -70,12 +70,6 @@ async function onActionClick({ code, row }: OnActionClickParams<InboxMessageRow>
     }
     return;
   }
-  if (code === 'markRead') {
-    await markInboxMessageRead(row.id);
-    message.success($t('inbox.markReadDone'));
-    onRefresh();
-    return;
-  }
   if (code === 'delete') {
     onDelete(row);
   }
