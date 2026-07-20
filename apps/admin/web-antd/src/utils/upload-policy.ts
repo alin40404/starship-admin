@@ -20,6 +20,8 @@ const IMAGE_EXTENSIONS = new Set([
   'webp',
 ]);
 
+const VIDEO_EXTENSIONS = new Set(['avi', 'm4v', 'mkv', 'mov', 'mp4', 'webm']);
+
 export function getUploadMaxSizeMbSync(): number {
   return getAdminRuntimeSnapshot().uploadMaxSizeMb;
 }
@@ -30,6 +32,14 @@ export function getUploadAllowedExtensionsSync(): string[] {
 
 export function getFileExtension(fileName: string): string {
   return fileName.split('.').pop()?.toLowerCase().trim() ?? '';
+}
+
+export function isImageExtension(ext: string): boolean {
+  return IMAGE_EXTENSIONS.has(ext);
+}
+
+export function isVideoExtension(ext: string): boolean {
+  return VIDEO_EXTENSIONS.has(ext);
 }
 
 export function validateUploadFile(
@@ -55,6 +65,17 @@ export function validateUploadFile(
     return $t('resource.attachment.field.imageTypeRequired');
   }
 
+  if (mode === 'video' && (!ext || !VIDEO_EXTENSIONS.has(ext))) {
+    return '仅支持视频文件';
+  }
+
+  if (
+    mode === 'media' &&
+    (!ext || (!IMAGE_EXTENSIONS.has(ext) && !VIDEO_EXTENSIONS.has(ext)))
+  ) {
+    return '仅支持图片或视频文件';
+  }
+
   return null;
 }
 
@@ -74,6 +95,24 @@ export function resolveUploadAcceptAttr(
       return imageAllowed.map((ext) => `.${ext}`).join(',');
     }
     return 'image/*';
+  }
+
+  if (mode === 'video') {
+    const videoAllowed = allowed.filter((ext) => VIDEO_EXTENSIONS.has(ext));
+    if (videoAllowed.length > 0) {
+      return videoAllowed.map((ext) => `.${ext}`).join(',');
+    }
+    return 'video/*';
+  }
+
+  if (mode === 'media') {
+    const mediaAllowed = allowed.filter(
+      (ext) => IMAGE_EXTENSIONS.has(ext) || VIDEO_EXTENSIONS.has(ext),
+    );
+    if (mediaAllowed.length > 0) {
+      return mediaAllowed.map((ext) => `.${ext}`).join(',');
+    }
+    return 'image/*,video/*';
   }
 
   if (allowed.length > 0) {

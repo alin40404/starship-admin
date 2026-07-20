@@ -16,20 +16,31 @@ const IMAGE_EXTENSIONS = new Set([
   'webp',
 ]);
 
-/** 根据 URL 后缀判断是否为图片资源 */
-export function isImageUrl(url: string): boolean {
+const VIDEO_EXTENSIONS = new Set(['avi', 'm4v', 'mkv', 'mov', 'mp4', 'webm']);
+
+function getUrlExtension(url: string): string {
   const trimmed = url?.trim();
   if (!trimmed) {
-    return false;
+    return '';
   }
   try {
     const pathname = new URL(trimmed, 'http://localhost').pathname;
-    const ext = pathname.split('.').pop()?.toLowerCase();
-    return ext ? IMAGE_EXTENSIONS.has(ext) : false;
+    return pathname.split('.').pop()?.toLowerCase() ?? '';
   } catch {
-    const ext = trimmed.split('?')[0]?.split('.').pop()?.toLowerCase();
-    return ext ? IMAGE_EXTENSIONS.has(ext) : false;
+    return trimmed.split('?')[0]?.split('.').pop()?.toLowerCase() ?? '';
   }
+}
+
+/** 根据 URL 后缀判断是否为图片资源 */
+export function isImageUrl(url: string): boolean {
+  const ext = getUrlExtension(url);
+  return ext ? IMAGE_EXTENSIONS.has(ext) : false;
+}
+
+/** 根据 URL 后缀判断是否为视频资源 */
+export function isVideoUrl(url: string): boolean {
+  const ext = getUrlExtension(url);
+  return ext ? VIDEO_EXTENSIONS.has(ext) : false;
 }
 
 export function resolveUploadAccept(accept: AttachmentAcceptMode = 'all') {
@@ -37,7 +48,13 @@ export function resolveUploadAccept(accept: AttachmentAcceptMode = 'all') {
 }
 
 export function resolveMimeFilter(accept: AttachmentAcceptMode = 'all') {
-  return accept === 'image' ? 'image/' : undefined;
+  if (accept === 'image') {
+    return 'image/';
+  }
+  if (accept === 'media') {
+    return undefined;
+  }
+  return undefined;
 }
 
 export function isAttachmentAcceptable(
@@ -46,6 +63,21 @@ export function isAttachmentAcceptable(
 ) {
   if (accept === 'image') {
     return isImageAttachment(row);
+  }
+  if (accept === 'video') {
+    const mime = String(row.mime_type ?? '').toLowerCase();
+    if (mime.startsWith('video/')) {
+      return true;
+    }
+    return isVideoUrl(String(row.file_url ?? ''));
+  }
+  if (accept === 'media') {
+    const mime = String(row.mime_type ?? '').toLowerCase();
+    if (mime.startsWith('image/') || mime.startsWith('video/')) {
+      return true;
+    }
+    const url = String(row.file_url ?? '');
+    return isImageUrl(url) || isVideoUrl(url);
   }
   return true;
 }

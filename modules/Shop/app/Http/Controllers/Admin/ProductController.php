@@ -13,6 +13,7 @@ use Modules\Shop\App\Models\Product;
 use Modules\Shop\App\Models\ProductSku;
 use Modules\Shop\App\Support\ShopCategoryType;
 use Modules\Shop\App\Support\ShopFulfillmentType;
+use Modules\Shop\App\Support\ShopProductStatus;
 use Modules\Shop\App\Support\ShopProductType;
 use Modules\System\App\Support\AdminRuntimeConfig;
 use Starship\Core\Support\ApiResponse;
@@ -51,7 +52,9 @@ class ProductController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $data = $this->normalizeProductTypes($this->validateProduct($request));
+        $data = $this->normalizeMediaFields(
+            $this->normalizeProductTypes($this->validateProduct($request)),
+        );
         $skus = $this->validateSkus($request);
 
         $product = DB::transaction(function () use ($data, $skus): Product {
@@ -67,7 +70,9 @@ class ProductController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $product = Product::query()->findOrFail($id);
-        $data = $this->normalizeProductTypes($this->validateProduct($request, true), $product);
+        $data = $this->normalizeMediaFields(
+            $this->normalizeProductTypes($this->validateProduct($request, true), $product),
+        );
         $skus = $request->has('skus') ? $this->validateSkus($request) : null;
 
         $product = DB::transaction(function () use ($product, $data, $skus): Product {
@@ -88,7 +93,7 @@ class ProductController extends Controller
     {
         $product = Product::query()->findOrFail($id);
         $data = $request->validate([
-            'status' => ['required', 'integer', Rule::in([0, 1])],
+            'status' => ['required', 'integer', Rule::in(ShopProductStatus::values())],
         ]);
 
         $product->update(['status' => (int) $data['status']]);
@@ -126,11 +131,11 @@ class ProductController extends Controller
             'subtitle' => ['nullable', 'string', 'max:160'],
             'price' => ['sometimes', 'integer', 'min:0'],
             'stock' => ['sometimes', 'integer', 'min:0'],
-            'cover' => ['nullable', 'string', 'max:255'],
-            'images' => ['nullable', 'array'],
-            'images.*' => ['string', 'max:255'],
+            'media' => ['nullable', 'array'],
+            'media.*.type' => ['required_with:media', 'string', Rule::in(['image', 'video'])],
+            'media.*.url' => ['required_with:media', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'status' => ['sometimes', 'integer', 'in:0,1'],
+            'status' => ['sometimes', 'integer', Rule::in(ShopProductStatus::values())],
             'sort' => ['sometimes', 'integer', 'min:0'],
             'extra' => ['nullable', 'array'],
         ];
@@ -140,6 +145,39 @@ class ProductController extends Controller
         }
 
         return $request->validate($rules);
+    }
+
+    /**
+     * 规范化 media 列表。
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    protected function normalizeMediaFields(array $data): array
+    {
+        if (! array_key_exists('media', $data)) {
+            return $data;
+        }
+
+        $media = is_array($data['media']) ? $data['media'] : [];
+        $normalized = [];
+        foreach ($media as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+            $url = trim((string) ($item['url'] ?? ''));
+            if ($url === '') {
+                continue;
+            }
+            $type = (string) ($item['type'] ?? 'image');
+            if (! in_array($type, ['image', 'video'], true)) {
+                $type = 'image';
+            }
+            $normalized[] = ['type' => $type, 'url' => $url];
+        }
+        $data['media'] = $normalized === [] ? null : $normalized;
+
+        return $data;
     }
 
     /**

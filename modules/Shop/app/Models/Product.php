@@ -14,6 +14,11 @@ class Product extends Model
 
     protected $table = 'shop_products';
 
+    protected $appends = [
+        'cover',
+        'images',
+    ];
+
     protected $fillable = [
         'category_id',
         'brand_id',
@@ -23,8 +28,7 @@ class Product extends Model
         'subtitle',
         'price',
         'stock',
-        'cover',
-        'images',
+        'media',
         'description',
         'status',
         'sort',
@@ -38,11 +42,63 @@ class Product extends Model
             'brand_id' => 'integer',
             'price' => 'integer',
             'stock' => 'integer',
-            'images' => 'array',
+            'media' => 'array',
             'status' => 'integer',
             'sort' => 'integer',
             'extra' => 'array',
         ];
+    }
+
+    /**
+     * 封面图：取 media 中第一张图片。
+     */
+    public function getCoverAttribute(): ?string
+    {
+        $media = $this->media;
+        if (! is_array($media)) {
+            return null;
+        }
+        foreach ($media as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+            if (($item['type'] ?? 'image') === 'image') {
+                $url = trim((string) ($item['url'] ?? ''));
+                if ($url !== '') {
+                    return $url;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * 图集：media 中全部图片 URL。
+     *
+     * @return list<string>
+     */
+    public function getImagesAttribute(): array
+    {
+        $media = $this->media;
+        if (! is_array($media)) {
+            return [];
+        }
+        $images = [];
+        foreach ($media as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+            if (($item['type'] ?? 'image') !== 'image') {
+                continue;
+            }
+            $url = trim((string) ($item['url'] ?? ''));
+            if ($url !== '') {
+                $images[] = $url;
+            }
+        }
+
+        return $images;
     }
 
     public function skus(): HasMany

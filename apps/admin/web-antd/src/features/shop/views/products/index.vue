@@ -15,7 +15,6 @@ import {
   deleteProduct,
   fetchProductPage,
   fetchShopCategoryOptions,
-  updateProductStatus,
 } from '#/features/shop/api';
 import { SHOP_PERMISSIONS } from '#/features/shop/constants/shop-permissions';
 import { $t } from '#/locales';
@@ -44,17 +43,7 @@ function onActionClick({ code, row }: OnActionClickParams<ProductRow>) {
   else if (code === 'delete') onDelete(row);
 }
 
-async function onStatusBeforeChange(newVal: number, row: ProductRow) {
-  try {
-    await updateProductStatus(row.id, newVal);
-    message.success($t('crud.saved'));
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-const columns = useColumns(onActionClick, access, onStatusBeforeChange);
+const columns = useColumns(onActionClick, access);
 
 const [CrudView, crudApi] = useResponsiveCrud<ProductRow>({
   formOptions: {

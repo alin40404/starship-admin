@@ -520,7 +520,7 @@ function onActionClick({ code, row }: OnActionClickParams<AttachmentRow>) {
 }
 
 function filterPickerRows(rows: AttachmentRow[]) {
-  if (props.accept !== 'image') {
+  if (props.accept === 'all' || props.accept === 'resource') {
     return rows;
   }
   return rows.filter((row) => isAttachmentAcceptable(row, props.accept));

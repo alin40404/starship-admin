@@ -11,6 +11,7 @@ use Modules\Shop\App\Models\OrderItem;
 use Modules\Shop\App\Models\Product;
 use Modules\Shop\App\Models\ProductSku;
 use Modules\Shop\App\Support\ShopFulfillmentType;
+use Modules\Shop\App\Support\ShopProductStatus;
 use RuntimeException;
 use Starship\Core\Contracts\Payment\PaymentInterface;
 
@@ -32,7 +33,7 @@ class OrderService
     ): Order {
         $product = Product::query()->whereKey($productId)->firstOrFail();
 
-        if ((int) $product->status !== 1) {
+        if (! ShopProductStatus::isOnSale((int) $product->status)) {
             throw new RuntimeException(__('shop::messages.product_not_on_sale'));
         }
 

@@ -18,6 +18,7 @@ import {
   extractFileNameFromUrl,
   formatAttachmentDisplayName,
   isImageUrl,
+  isVideoUrl,
   normalizeFieldValue,
 } from './utils';
 import { resolveUploadAcceptAttr, validateUploadFile } from '#/utils/upload-policy';
@@ -135,7 +136,13 @@ function getDisplayName(url: string) {
 }
 
 function getFileIcon(url: string) {
-  return isImageUrl(url) ? 'lucide:image' : 'lucide:paperclip';
+  if (isImageUrl(url)) {
+    return 'lucide:image';
+  }
+  if (isVideoUrl(url)) {
+    return 'lucide:video';
+  }
+  return 'lucide:paperclip';
 }
 
 function onUploadTrigger() {

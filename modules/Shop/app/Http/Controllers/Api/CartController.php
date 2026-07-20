@@ -10,6 +10,7 @@ use Modules\Shop\App\Models\CartItem;
 use Modules\Shop\App\Models\Product;
 use Modules\Shop\App\Models\ProductSku;
 use Modules\Shop\App\Services\OrderService;
+use Modules\Shop\App\Support\ShopProductStatus;
 use RuntimeException;
 use Starship\Core\Support\ApiResponse;
 
@@ -40,7 +41,7 @@ class CartController extends Controller
 
         $sku = ProductSku::query()->whereKey($data['sku_id'])->firstOrFail();
         $product = Product::query()->whereKey($sku->product_id)->firstOrFail();
-        if ((int) $product->status !== 1 || (int) $sku->status !== 1) {
+        if (! ShopProductStatus::isOnSale((int) $product->status) || (int) $sku->status !== 1) {
             throw new RuntimeException(__('shop::messages.product_not_on_sale'));
         }
 

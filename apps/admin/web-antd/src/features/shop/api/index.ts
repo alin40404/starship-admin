@@ -15,6 +15,13 @@ export const SHOP_PRODUCT_TYPE = {
   DIGITAL: 'digital',
 } as const;
 
+/** 0下架 / 1上架 / 2草稿 */
+export const SHOP_PRODUCT_STATUS = {
+  OFF: 0,
+  ON: 1,
+  DRAFT: 2,
+} as const;
+
 export const SHOP_FULFILLMENT_TYPE = {
   SHIPPING: 'shipping',
   DIGITAL: 'digital',
@@ -39,6 +46,11 @@ export interface ProductSkuRow {
   extra?: Record<string, unknown> | null;
 }
 
+export interface ProductMediaItem {
+  type: 'image' | 'video';
+  url: string;
+}
+
 export interface ProductRow {
   id: number;
   category_id: number | null;
@@ -49,8 +61,11 @@ export interface ProductRow {
   subtitle: string | null;
   price: number;
   stock: number;
-  cover: string | null;
-  images: string[] | null;
+  /** 由后端访问器从 media 派生，只读 */
+  cover?: string | null;
+  /** 由后端访问器从 media 派生，只读 */
+  images?: string[] | null;
+  media: ProductMediaItem[] | null;
   description: string | null;
   status: number;
   sort: number;
@@ -101,8 +116,7 @@ export interface ProductSavePayload {
   subtitle?: string | null;
   price?: number;
   stock?: number;
-  cover?: string | null;
-  images?: string[] | null;
+  media?: ProductMediaItem[] | null;
   description?: string | null;
   status?: number;
   sort?: number;
