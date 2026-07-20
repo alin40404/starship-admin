@@ -372,7 +372,6 @@ defineExpose({ open });
           <section
             class="rounded-lg border border-border bg-card p-4 shadow-sm"
           >
-            <h3 class="mb-3 text-sm font-semibold">媒体文件</h3>
             <ProductMediaField v-model="mediaUrls" />
           </section>
 

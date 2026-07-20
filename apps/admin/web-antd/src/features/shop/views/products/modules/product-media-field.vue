@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, ref, useTemplateRef } from 'vue';
+import { computed, ref, useTemplateRef, watch } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { IconifyIcon } from '@vben/icons';
@@ -45,6 +45,8 @@ const isDragOver = ref(false);
 const fileInputRef = useTemplateRef<HTMLInputElement>('fileInputRef');
 const previewUrl = ref('');
 const previewVisible = ref(false);
+/** Shopify 式勾选删除：选中的媒体下标 */
+const selectedIndexes = ref<number[]>([]);
 
 const urls = computed(() =>
   (props.modelValue ?? []).map((url) => String(url).trim()).filter(Boolean),
@@ -55,6 +57,25 @@ const canAddMore = computed(
 );
 
 const isInteractive = computed(() => !props.disabled);
+
+const selectedCount = computed(() => selectedIndexes.value.length);
+
+const isAllSelected = computed(
+  () => urls.value.length > 0 && selectedCount.value === urls.value.length,
+);
+
+const isPartialSelected = computed(
+  () => selectedCount.value > 0 && !isAllSelected.value,
+);
+
+watch(
+  () => urls.value.length,
+  () => {
+    selectedIndexes.value = selectedIndexes.value.filter(
+      (index) => index >= 0 && index < urls.value.length,
+    );
+  },
+);
 
 function emitUrls(next: string[]) {
   const limited =
@@ -154,8 +175,40 @@ function onPickerConfirm(selected: string[]) {
   pickerOpen.value = false;
 }
 
-function onRemove(url: string) {
-  emitUrls(urls.value.filter((item) => item !== url));
+function isSelected(index: number) {
+  return selectedIndexes.value.includes(index);
+}
+
+function toggleSelect(index: number, event?: Event) {
+  event?.stopPropagation();
+  event?.preventDefault();
+  if (!isInteractive.value) return;
+  if (isSelected(index)) {
+    selectedIndexes.value = selectedIndexes.value.filter((i) => i !== index);
+  } else {
+    selectedIndexes.value = [...selectedIndexes.value, index];
+  }
+}
+
+function toggleSelectAll() {
+  if (!isInteractive.value || urls.value.length === 0) return;
+  if (isAllSelected.value) {
+    selectedIndexes.value = [];
+    return;
+  }
+  selectedIndexes.value = urls.value.map((_, index) => index);
+}
+
+function clearSelection() {
+  selectedIndexes.value = [];
+}
+
+function onDeleteSelected() {
+  if (selectedIndexes.value.length === 0) return;
+  const removeSet = new Set(selectedIndexes.value);
+  emitUrls(urls.value.filter((_, index) => !removeSet.has(index)));
+  selectedIndexes.value = [];
+  message.success('已删除所选媒体');
 }
 
 function onPreview(url: string) {
@@ -171,16 +224,65 @@ function onPreviewVisibleChange(visible: boolean) {
   previewVisible.value = visible;
   if (!visible) previewUrl.value = '';
 }
-
-function isCoverImage(url: string, index: number) {
-  if (!isImageUrl(url)) return false;
-  const firstImageIndex = urls.value.findIndex((item) => isImageUrl(item));
-  return firstImageIndex === index;
-}
 </script>
 
 <template>
   <div class="w-full">
+    <!-- 标题行：默认「媒体文件」/ 选中时切换为批量操作栏 -->
+    <div class="mb-3 flex min-h-8 items-center justify-between gap-3">
+      <template v-if="selectedCount > 0 && isInteractive">
+        <div class="flex items-center gap-2">
+          <button
+            class="product-media-header__check"
+            type="button"
+            title="全选/取消"
+            @click="toggleSelectAll"
+          >
+            <span
+              class="product-media-grid__checkbox"
+              :class="{
+                'product-media-grid__checkbox--checked': isAllSelected,
+                'product-media-grid__checkbox--partial': isPartialSelected,
+              }"
+            >
+              <IconifyIcon
+                v-if="isAllSelected"
+                class="size-3 text-white"
+                icon="lucide:check"
+              />
+              <IconifyIcon
+                v-else-if="isPartialSelected"
+                class="size-3 text-white"
+                icon="lucide:minus"
+              />
+            </span>
+          </button>
+          <span class="text-sm font-medium">
+            已选择 {{ selectedCount }} 个文件
+          </span>
+        </div>
+        <div class="flex items-center gap-3">
+          <button
+            class="text-destructive hover:text-destructive/80 text-sm"
+            type="button"
+            @click="onDeleteSelected"
+          >
+            移除
+          </button>
+          <button
+            class="text-muted-foreground hover:text-foreground text-sm"
+            type="button"
+            @click="clearSelection"
+          >
+            取消
+          </button>
+        </div>
+      </template>
+      <template v-else>
+        <h3 class="text-sm font-semibold">媒体文件</h3>
+      </template>
+    </div>
+
     <div
       class="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border px-4 py-10 transition-colors"
       :class="{
@@ -217,15 +319,19 @@ function isCoverImage(url: string, index: number) {
     <div
       v-if="urls.length > 0"
       class="product-media-grid mt-4"
+      :class="{ 'product-media-grid--selecting': selectedCount > 0 }"
     >
       <div
         v-for="(url, index) in urls"
         :key="`${url}-${index}`"
-        class="product-media-grid__item relative"
-        :class="{ 'product-media-grid__item--main': index === 0 }"
+        class="product-media-grid__item group relative"
+        :class="{
+          'product-media-grid__item--main': index === 0,
+          'product-media-grid__item--selected': isSelected(index),
+        }"
       >
         <button
-          class="bg-background relative flex size-full items-center justify-center overflow-hidden rounded-lg border border-border p-1.5"
+          class="product-media-grid__card bg-background relative flex size-full items-center justify-center overflow-hidden rounded-lg border border-border p-1.5"
           type="button"
           @click="onPreview(url)"
         >
@@ -255,21 +361,34 @@ function isCoverImage(url: string, index: number) {
             />
             <span>文件</span>
           </div>
-          <span
-            v-if="isCoverImage(url, index)"
-            class="bg-primary text-primary-foreground absolute left-2 top-2 rounded px-1.5 py-0.5 text-[10px] leading-none"
+          <!-- Hover / 选中蒙板 -->
+          <span class="product-media-grid__overlay" aria-hidden="true"></span>
+        </button>
+
+        <template v-if="isInteractive">
+          <button
+            class="product-media-grid__check"
+            type="button"
+            title="选择"
+            @click="toggleSelect(index, $event)"
           >
-            主图
+            <span
+              class="product-media-grid__checkbox"
+              :class="{
+                'product-media-grid__checkbox--checked': isSelected(index),
+              }"
+            >
+              <IconifyIcon
+                v-if="isSelected(index)"
+                class="size-3 text-white"
+                icon="lucide:check"
+              />
+            </span>
+          </button>
+          <span class="product-media-grid__handle" title="拖拽排序（即将支持）">
+            <IconifyIcon class="size-3.5" icon="lucide:grip" />
           </span>
-        </button>
-        <button
-          v-if="isInteractive"
-          class="bg-background/90 text-foreground hover:bg-destructive hover:text-destructive-foreground absolute -right-1.5 -top-1.5 z-10 flex size-6 items-center justify-center rounded-full border border-border shadow-sm"
-          type="button"
-          @click="onRemove(url)"
-        >
-          <IconifyIcon class="size-3.5" icon="lucide:x" />
-        </button>
+        </template>
       </div>
 
       <button
@@ -320,8 +439,15 @@ function isCoverImage(url: string, index: number) {
 </template>
 
 <style scoped>
+.product-media-header__check {
+  display: flex;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
 .product-media-grid {
-  /* 小图基准边长；主图 span 2×2 → 面积为小图的 4 倍（小图 = 主图 1/4） */
   --media-thumb: 5.5rem;
   display: grid;
   grid-template-columns: repeat(auto-fill, var(--media-thumb));
@@ -344,8 +470,89 @@ function isCoverImage(url: string, index: number) {
   grid-row: span 2;
 }
 
+.product-media-grid__card {
+  position: relative;
+}
+
+.product-media-grid__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgb(33 33 33 / 45%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.product-media-grid__item:hover .product-media-grid__overlay,
+.product-media-grid__item--selected .product-media-grid__overlay {
+  opacity: 1;
+}
+
 .product-media-grid__add {
   background: hsl(var(--muted) / 0.35);
+}
+
+/* 左上勾选：悬停显示；进入选择模式后全部常显 */
+.product-media-grid__check {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 3;
+  display: flex;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.product-media-grid__item:hover .product-media-grid__check,
+.product-media-grid__item--selected .product-media-grid__check,
+.product-media-grid--selecting .product-media-grid__check {
+  opacity: 1;
+}
+
+.product-media-grid__checkbox {
+  display: flex;
+  width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid hsl(var(--border));
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
+}
+
+.product-media-grid__checkbox--checked,
+.product-media-grid__checkbox--partial {
+  border-color: #303030;
+  background: #303030;
+}
+
+/* 右上拖拽柄：悬停显示 */
+.product-media-grid__handle {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 3;
+  display: flex;
+  width: 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: hsl(var(--background) / 92%);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
+  color: hsl(var(--muted-foreground));
+  cursor: grab;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.product-media-grid__item:hover .product-media-grid__handle {
+  opacity: 1;
 }
 
 @media (min-width: 640px) {
