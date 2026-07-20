@@ -4,6 +4,10 @@ import type { Recordable } from '@vben/types';
 
 import type { VxeGridApi } from './api';
 
+import { h } from 'vue';
+
+import { EmptyIcon } from '@vben/icons';
+import { $t } from '@vben/locales';
 import { formatDate, formatDateTime, isFunction } from '@vben/utils';
 
 export function extendProxyOptions(
@@ -78,4 +82,15 @@ export function extendsDefaultFormatter(vxeUI: VxeUIExport) {
       return formatDateTime(cellValue);
     },
   });
+
+  if (!vxeUI.renderer.get('VbenTableEmpty')) {
+    vxeUI.renderer.add('VbenTableEmpty', {
+      renderTableEmpty() {
+        return [
+          h(EmptyIcon, { class: 'mx-auto' }),
+          h('div', { class: 'mt-2' }, $t('common.noData')),
+        ];
+      },
+    });
+  }
 }

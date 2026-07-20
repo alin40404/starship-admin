@@ -27,7 +27,6 @@ import {
 } from 'vue';
 
 import { usePriorityValues } from '@vben/hooks';
-import { EmptyIcon } from '@vben/icons';
 import { $t } from '@vben/locales';
 import { usePreferences } from '@vben/preferences';
 import {
@@ -201,20 +200,21 @@ async function handleMobileSearchSubmit() {
 }
 
 const showTableTitle = computed(() => {
-  return !!slots[TABLE_TITLE]?.() || tableTitle.value;
+  // 只判断插槽是否存在，禁止在 computed 中调用 slots.xxx()（会脱离 render 上下文）
+  return !!slots[TABLE_TITLE] || !!tableTitle.value;
 });
 
 const showToolbar = computed(() => {
   return (
-    !!slots[TOOLBAR_ACTIONS]?.() ||
-    !!slots[TOOLBAR_TOOLS]?.() ||
+    !!slots[TOOLBAR_ACTIONS] ||
+    !!slots[TOOLBAR_TOOLS] ||
     showTableTitle.value
   );
 });
 
 const toolbarOptions = computed(() => {
-  const slotActions = slots[TOOLBAR_ACTIONS]?.();
-  const slotTools = slots[TOOLBAR_TOOLS]?.();
+  const hasActions = !!slots[TOOLBAR_ACTIONS] || showTableTitle.value;
+  const hasTools = !!slots[TOOLBAR_TOOLS];
   const searchBtn: VxeToolbarPropTypes.ToolConfig = {
     code: 'search',
     icon: 'vxe-icon-search',
@@ -243,10 +243,8 @@ const toolbarOptions = computed(() => {
   // 强制使用固定的toolbar配置，不允许用户自定义
   // 减少配置的复杂度，以及后续维护的成本
   toolbarConfig.slots = {
-    ...(slotActions || showTableTitle.value
-      ? { buttons: TOOLBAR_ACTIONS }
-      : {}),
-    ...(slotTools ? { tools: TOOLBAR_TOOLS } : {}),
+    ...(hasActions ? { buttons: TOOLBAR_ACTIONS } : {}),
+    ...(hasTools ? { tools: TOOLBAR_TOOLS } : {}),
   };
   return { toolbarConfig };
 });
@@ -315,6 +313,14 @@ const options = computed(() => {
       mergedOptions.data = tableData.value;
     }
   }
+  // 默认空状态走 renderer，避免 vxe callSlot(#empty) 在卸载/异步更新时触发 Vue slot 警告与 unmount 崩溃
+  if (
+    !slots.empty &&
+    mergedOptions.emptyText === undefined &&
+    mergedOptions.emptyRender === undefined
+  ) {
+    mergedOptions.emptyRender = { name: 'VbenTableEmpty' };
+  }
   return mergedOptions;
 });
 
@@ -368,17 +374,15 @@ const delegatedFormSlots = computed(() => {
   return resultSlots.map((key) => key.replace(FORM_SLOT_PREFIX, ''));
 });
 
-const showDefaultEmpty = computed(() => {
-  // 检查是否有原生的 VXE Table 空状态配置
-  const hasEmptyText = options.value.emptyText !== undefined;
-  const hasEmptyRender = options.value.emptyRender !== undefined;
-
-  // 如果有原生配置，就不显示默认的空状态
-  return !hasEmptyText && !hasEmptyRender;
-});
+/** 仅在业务侧显式传入 #empty 时走插槽；默认空状态已改用 emptyRender */
+const hasEmptySlot = computed(() => !!slots.empty);
 
 async function init() {
   await nextTick();
+  // 快速切页时可能已卸载，避免对销毁中的 grid 继续 query
+  if (!gridRef.value) {
+    return;
+  }
   const globalGridConfig = VxeUI?.getConfig()?.grid ?? {};
   const defaultGridOptions: VxeTableGridProps = mergeWithArrayOverride(
     {},
@@ -389,10 +393,13 @@ async function init() {
   const autoLoad = defaultGridOptions.proxyConfig?.autoLoad;
   const enableProxyConfig = options.value.proxyConfig?.enabled;
   if (enableProxyConfig && autoLoad) {
-    props.api.grid.commitProxy?.(
-      'query',
-      formOptions.value ? ((await formApi.getValues()) ?? {}) : {},
-    );
+    const formValues = formOptions.value
+      ? ((await formApi.getValues()) ?? {})
+      : {};
+    if (!gridRef.value) {
+      return;
+    }
+    props.api.grid.commitProxy?.('query', formValues);
     // props.api.reload(formApi.form?.values ?? {});
   }
 
@@ -557,12 +564,9 @@ onUnmounted(() => {
           <VbenLoading :spinning="true" />
         </slot>
       </template>
-      <!-- 统一控状态 -->
-      <template v-if="showDefaultEmpty" #empty>
-        <slot name="empty">
-          <EmptyIcon class="mx-auto" />
-          <div class="mt-2">{{ $t('common.noData') }}</div>
-        </slot>
+      <!-- 自定义空状态（默认空状态见 emptyRender: VbenTableEmpty） -->
+      <template v-if="hasEmptySlot" #empty="slotProps">
+        <slot name="empty" v-bind="slotProps"></slot>
       </template>
     </VxeGrid>
 

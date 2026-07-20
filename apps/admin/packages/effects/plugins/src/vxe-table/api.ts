@@ -74,6 +74,9 @@ export class VxeGridApi<
   }
 
   async query(params: Record<string, any> = {}) {
+    if (!this.isMounted || !this.grid?.commitProxy) {
+      return;
+    }
     try {
       await this.grid.commitProxy('query', toRaw(params));
     } catch (error) {
@@ -82,6 +85,9 @@ export class VxeGridApi<
   }
 
   async reload(params: Record<string, any> = {}) {
+    if (!this.isMounted || !this.grid?.commitProxy) {
+      return;
+    }
     try {
       await this.grid.commitProxy('reload', toRaw(params));
     } catch (error) {
@@ -130,5 +136,6 @@ export class VxeGridApi<
   unmount() {
     this.isMounted = false;
     this.stateHandler.reset();
+    this.grid = {} as VxeGridInstance<T>;
   }
 }
