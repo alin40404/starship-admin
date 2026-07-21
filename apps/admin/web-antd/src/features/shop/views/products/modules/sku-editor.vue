@@ -220,6 +220,10 @@ function validate(): string | null {
     if (!row) return '请填写商品库存信息';
     if (Number(row.price_yuan) < 0) return '售价不能为负数';
     if (Number(row.stock) < 0) return '库存不能为负数';
+    const compareAt = Number(row.compare_at_price_yuan ?? 0);
+    if (compareAt > 0 && compareAt <= Number(row.price_yuan)) {
+      return '原价须大于售价才会作为划线价生效；请提高原价或清空原价';
+    }
     return null;
   }
 
@@ -238,6 +242,15 @@ function validate(): string | null {
   }
   if (skus.value.length > 120) {
     return '多规格建议不超过 120 个，请减少选项组合';
+  }
+  for (const [index, row] of skus.value.entries()) {
+    if (Number(row.price_yuan) < 0) {
+      return `第 ${index + 1} 行售价不能为负数`;
+    }
+    const compareAt = Number(row.compare_at_price_yuan ?? 0);
+    if (compareAt > 0 && compareAt <= Number(row.price_yuan)) {
+      return `第 ${index + 1} 行原价须大于售价，或清空原价`;
+    }
   }
   return null;
 }

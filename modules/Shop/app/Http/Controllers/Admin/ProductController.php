@@ -216,12 +216,32 @@ class ProductController extends Controller
             'skus.*.sku_code' => ['nullable', 'string', 'max:64'],
             'skus.*.specs' => ['nullable', 'array'],
             'skus.*.price' => ['required', 'integer', 'min:0'],
+            'skus.*.compare_at_price' => ['nullable', 'integer', 'min:0'],
             'skus.*.stock' => ['required', 'integer', 'min:0'],
             'skus.*.status' => ['sometimes', 'integer', 'in:0,1'],
             'skus.*.extra' => ['nullable', 'array'],
         ]);
 
-        return $data['skus'] ?? [];
+        $skus = $data['skus'] ?? [];
+        foreach ($skus as $index => $row) {
+            $price = (int) ($row['price'] ?? 0);
+            $compareAt = array_key_exists('compare_at_price', $row) && $row['compare_at_price'] !== null
+                ? (int) $row['compare_at_price']
+                : null;
+
+            // Shopify 规则：有原价时必须严格大于售价；0 视为未设置
+            if ($compareAt !== null && $compareAt > 0 && $compareAt <= $price) {
+                throw ValidationException::withMessages([
+                    "skus.{$index}.compare_at_price" => [__('shop::messages.sku_compare_at_price_invalid')],
+                ]);
+            }
+
+            if ($compareAt !== null && $compareAt === 0) {
+                $skus[$index]['compare_at_price'] = null;
+            }
+        }
+
+        return $skus;
     }
 
     /**
@@ -232,6 +252,7 @@ class ProductController extends Controller
         if ($skus === []) {
             $skus = [[
                 'price' => (int) ($product->price ?? 0),
+                'compare_at_price' => null,
                 'stock' => (int) ($product->stock ?? 0),
                 'status' => 1,
             ]];
@@ -247,14 +268,22 @@ class ProductController extends Controller
                 $skuCode = 'SKU'.$product->id.'_'.($index + 1).'_'.Str::upper(Str::random(4));
             }
 
+            $compareAt = array_key_exists('compare_at_price', $row) && $row['compare_at_price'] !== null
+                ? (int) $row['compare_at_price']
+                : null;
+            if ($compareAt !== null && $compareAt <= 0) {
+                $compareAt = null;
+            }
+
             $payload = [
                 'product_id' => $product->id,
                 'sku_code' => $skuCode,
                 'specs' => $row['specs'] ?? null,
                 'price' => (int) $row['price'],
+                'compare_at_price' => $compareAt,
                 'stock' => (int) $row['stock'],
                 'status' => (int) ($row['status'] ?? 1),
-                'extra' => $row['extra'] ?? null,
+                'extra' => $this->normalizeSkuExtra($row['extra'] ?? null),
             ];
 
             $skuId = isset($row['id']) ? (int) $row['id'] : 0;
@@ -282,5 +311,22 @@ class ProductController extends Controller
             'price' => $minPrice ?? 0,
             'stock' => $totalStock,
         ]);
+    }
+
+    /**
+     * extra 仅保留规格图等扩展，不再承载原价。
+     *
+     * @param  mixed  $extra
+     * @return array<string, mixed>|null
+     */
+    protected function normalizeSkuExtra(mixed $extra): ?array
+    {
+        if (! is_array($extra)) {
+            return null;
+        }
+
+        unset($extra['compare_at_price'], $extra['original_price']);
+
+        return $extra === [] ? null : $extra;
     }
 }

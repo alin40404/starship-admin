@@ -41,6 +41,8 @@ export interface ProductSkuRow {
   sku_code?: string;
   specs?: Record<string, string> | null;
   price: number;
+  /** 原价/划线价（分），空表示无；有值须大于 price */
+  compare_at_price?: number | null;
   stock: number;
   status?: number;
   extra?: Record<string, unknown> | null;

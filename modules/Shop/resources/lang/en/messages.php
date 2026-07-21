@@ -16,6 +16,7 @@ return [
     'product_status_updated' => 'Product status updated',
     'product_not_on_sale' => 'Product is not on sale',
     'fulfillment_not_allowed' => 'Fulfillment type is not allowed for this product type',
+    'sku_compare_at_price_invalid' => 'Compare-at price must be greater than price, or leave it empty',
     'product_out_of_stock' => 'Product is out of stock',
     'product_sku_missing' => 'Product has no SKU',
     'order_created' => 'Order created',

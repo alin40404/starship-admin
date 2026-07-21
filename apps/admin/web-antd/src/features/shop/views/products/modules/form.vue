@@ -32,6 +32,7 @@ const FORM_CONTENT_MAX_CLASS = 'max-w-[1200px]';
 import {
   buildDetailFormSchema,
   buildOrganizationFormSchema,
+  buildSkuCompareAtPriceCents,
   buildSkuExtra,
   buildStatusFormSchema,
   buildTitleFormSchema,
@@ -150,6 +151,7 @@ function buildSkusPayload(): ProductSkuRow[] {
     sku_code: row.sku_code?.trim() || undefined,
     specs: enableMulti.value ? row.specs : null,
     price: Math.round(Number(row.price_yuan ?? 0) * 100),
+    compare_at_price: buildSkuCompareAtPriceCents(row),
     stock: Number(row.stock ?? 0),
     status: Number(row.status ?? 1),
     extra: buildSkuExtra(row),

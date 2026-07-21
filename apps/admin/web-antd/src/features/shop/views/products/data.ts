@@ -71,20 +71,38 @@ function readSkuExtraString(
   return raw == null ? '' : String(raw).trim();
 }
 
-/** 从表单行生成后端 skus[].extra */
+/** 从表单行生成后端 skus[].extra（仅规格图等，原价走独立字段） */
 export function buildSkuExtra(
   row: SkuFormRow,
 ): Record<string, unknown> | null {
   const image = row.image.trim();
-  const compareAt = Math.round(Number(row.compare_at_price_yuan ?? 0) * 100);
-  const extra: Record<string, unknown> = {};
-  if (image) extra.image = image;
-  if (compareAt > 0) extra.compare_at_price = compareAt;
-  return Object.keys(extra).length > 0 ? extra : null;
+  if (!image) return null;
+  return { image };
+}
+
+/** 表单原价（元）→ 后端分；0 视为未设置 */
+export function buildSkuCompareAtPriceCents(row: SkuFormRow): number | null {
+  const cents = Math.round(Number(row.compare_at_price_yuan ?? 0) * 100);
+  return cents > 0 ? cents : null;
 }
 
 function formatPrice(cents: number) {
   return `¥${(cents / 100).toFixed(2)}`;
+}
+
+/** 列表展示用：取默认 SKU（第一行）的原价（分） */
+function getProductCompareAtPriceCents(row: ProductRow): number {
+  const sku = row.skus?.[0];
+  if (!sku) return 0;
+  const fromColumn = Number(sku.compare_at_price ?? 0);
+  if (fromColumn > 0) return fromColumn;
+  // 兼容迁移前残留在 extra 的数据
+  const extra = sku.extra;
+  if (!extra) return 0;
+  return (
+    readSkuExtraNumber(extra, 'compare_at_price') ||
+    readSkuExtraNumber(extra, 'original_price')
+  );
 }
 
 export function getStatusOptions() {
@@ -216,10 +234,12 @@ export function skuRowsFromProduct(
   return skus.map((sku) => {
     const specs = sku.specs ?? null;
     const extra = sku.extra ?? null;
-    // 兼容短暂存在过的 original_price
+    const fromColumn = Number(sku.compare_at_price ?? 0);
     const compareAtCents =
-      readSkuExtraNumber(extra, 'compare_at_price') ||
-      readSkuExtraNumber(extra, 'original_price');
+      fromColumn > 0
+        ? fromColumn
+        : readSkuExtraNumber(extra, 'compare_at_price') ||
+          readSkuExtraNumber(extra, 'original_price');
     return createEmptySkuRow({
       id: sku.id,
       key: specsKey(specs),
@@ -474,7 +494,26 @@ export function useColumns(
 
   return [
     { field: 'id', title: 'ID', width: 72 },
-    { field: 'name', minWidth: 160, title: '商品名称' },
+    {
+      align: 'center',
+      cellRender: {
+        attrs: {
+          getSrc: (row: ProductRow) => row.cover ?? null,
+        },
+        name: 'CellImage',
+        props: { height: 48, width: 48 },
+      },
+      field: 'cover',
+      title: '主图',
+      width: 72,
+    },
+    {
+      align: 'left',
+      field: 'name',
+      headerAlign: 'left',
+      minWidth: 160,
+      title: '商品名称',
+    },
     {
       field: 'product_type',
       formatter: ({ cellValue }: { cellValue: unknown }) =>
@@ -495,6 +534,15 @@ export function useColumns(
       formatter: ({ cellValue }: { cellValue: unknown }) =>
         formatPrice(Number(cellValue ?? 0)),
       title: '售价',
+      width: 110,
+    },
+    {
+      field: 'compare_at_price',
+      formatter: ({ row }: { row: ProductRow }) => {
+        const cents = getProductCompareAtPriceCents(row);
+        return cents > 0 ? formatPrice(cents) : TABLE_CELL_EMPTY;
+      },
+      title: '原价',
       width: 110,
     },
     { field: 'stock', title: '库存', width: 90 },

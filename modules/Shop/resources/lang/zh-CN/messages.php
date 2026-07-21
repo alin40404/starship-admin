@@ -16,6 +16,7 @@ return [
     'product_status_updated' => '商品状态已更新',
     'product_not_on_sale' => '商品未上架',
     'fulfillment_not_allowed' => '该商品类型不支持所选交付方式',
+    'sku_compare_at_price_invalid' => '原价须大于售价才会作为划线价生效；请提高原价或清空原价',
     'product_out_of_stock' => '商品库存不足',
     'product_sku_missing' => '商品缺少 SKU，请先维护规格',
     'order_created' => '订单已创建',

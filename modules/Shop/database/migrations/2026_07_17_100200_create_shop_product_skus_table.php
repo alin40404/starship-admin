@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('sku_code', 64)->comment('SKU 编码');
             $table->json('specs')->nullable()->comment('规格 JSON');
             $table->unsignedInteger('price')->default(0)->comment('售价(分)');
+            $table->unsignedInteger('compare_at_price')->nullable()->comment('原价/划线价(分)，空表示无');
             $table->unsignedInteger('stock')->default(0)->comment('库存');
             $table->tinyInteger('status')->default(1)->comment('1启用,0禁用');
             $table->json('extra')->nullable()->comment('SKU 扩展');
@@ -23,6 +24,7 @@ return new class extends Migration
 
             $table->unique('sku_code');
             $table->index('product_id');
+            $table->index('compare_at_price');
             $table->index('status');
         });
 
