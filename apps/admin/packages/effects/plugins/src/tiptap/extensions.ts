@@ -20,6 +20,10 @@ export function createDefaultTiptapExtensions(
   return [
     Document,
     StarterKit.configure({
+      // v3 StarterKit 已内置这三项，关掉以免与下方独立扩展重复
+      document: false,
+      link: false,
+      underline: false,
       heading: {
         levels: [1, 2, 3, 4],
       },

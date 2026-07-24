@@ -73,8 +73,8 @@ const isMenuPopup = computed<MenuProvider['isMenuPopup']>(() => {
   );
 });
 
-const getSlot = computed(() => {
-  // 更新插槽内容
+/** 必须在 render 内调用，禁止放进 computed（会触发 Slot invoked outside of render） */
+function getMenuSlots() {
   const defaultSlots: VNodeArrayChildren = slots.default?.() ?? [];
 
   const originalSlot = flattedChildren(defaultSlots) as VNodeArrayChildren;
@@ -87,7 +87,7 @@ const getSlot = computed(() => {
     sliceIndex.value === -1 ? [] : originalSlot.slice(sliceIndex.value);
 
   return { showSlotMore: slotMore.length > 0, slotDefault, slotMore };
-});
+}
 
 watch(
   () => props.collapse,
@@ -350,18 +350,25 @@ function getActivePaths() {
     :style="menuStyle"
     role="menu"
   >
-    <template v-if="mode === 'horizontal' && getSlot.showSlotMore">
-      <template v-for="(item, index) in getSlot.slotDefault" :key="index">
-        <component :is="item" />
+    <template v-if="mode === 'horizontal'">
+      <template v-for="menuSlots in [getMenuSlots()]" :key="'menu-slots'">
+        <template v-if="menuSlots.showSlotMore">
+          <template v-for="(item, index) in menuSlots.slotDefault" :key="index">
+            <component :is="item" />
+          </template>
+          <SubMenu is-sub-menu-more path="sub-menu-more">
+            <template #title>
+              <Ellipsis class="size-4" />
+            </template>
+            <template v-for="(item, index) in menuSlots.slotMore" :key="index">
+              <component :is="item" />
+            </template>
+          </SubMenu>
+        </template>
+        <template v-else>
+          <slot></slot>
+        </template>
       </template>
-      <SubMenu is-sub-menu-more path="sub-menu-more">
-        <template #title>
-          <Ellipsis class="size-4" />
-        </template>
-        <template v-for="(item, index) in getSlot.slotMore" :key="index">
-          <component :is="item" />
-        </template>
-      </SubMenu>
     </template>
     <template v-else>
       <slot></slot>

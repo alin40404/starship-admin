@@ -1,7 +1,6 @@
 import type { Recordable, UserInfo } from '@vben/types';
 
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
 
 import { LOGIN_PATH } from '@vben/constants';
 import { preferences } from '@vben/preferences';
@@ -12,14 +11,16 @@ import { defineStore } from 'pinia';
 
 import { getAccessCodesApi, getUserInfoApi, loginApi, logoutApi, smsLoginApi } from '#/api';
 import { $t } from '#/locales';
+import { router } from '#/router';
 import { refreshAccess as refreshAccessFromServer } from '#/utils/refresh-access';
 
 export const useAuthStore = defineStore('auth', () => {
   const accessStore = useAccessStore();
   const userStore = useUserStore();
-  const router = useRouter();
 
   const loginLoading = ref(false);
+  /** 防止并发 401 重复触发 logout / 跳转死循环 */
+  const isLoggingOut = ref(false);
 
   function notifyLoginSuccess(realName: string) {
     notification.success({
@@ -128,23 +129,35 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function logout(redirect: boolean = true) {
+    if (isLoggingOut.value) {
+      return;
+    }
+    isLoggingOut.value = true;
+
+    const redirectPath = router.currentRoute.value.fullPath;
+
     try {
       await logoutApi();
     } catch {
-      // 不做任何处理
+      // 会话已失效时退出接口可能失败，忽略
+    } finally {
+      resetAllStores();
+      accessStore.setLoginExpired(false);
     }
-    resetAllStores();
-    accessStore.setLoginExpired(false);
 
-    // 回登录页带上当前路由地址
-    await router.replace({
-      path: LOGIN_PATH,
-      query: redirect
-        ? {
-            redirect: encodeURIComponent(router.currentRoute.value.fullPath),
-          }
-        : {},
-    });
+    try {
+      // 回登录页带上当前路由地址
+      await router.replace({
+        path: LOGIN_PATH,
+        query: redirect
+          ? {
+              redirect: encodeURIComponent(redirectPath),
+            }
+          : {},
+      });
+    } finally {
+      isLoggingOut.value = false;
+    }
   }
 
   async function fetchUserInfo() {

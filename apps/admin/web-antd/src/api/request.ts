@@ -47,13 +47,14 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
     console.warn('Access token or refresh token is invalid or expired. ');
     const accessStore = useAccessStore();
     const authStore = useAuthStore();
-    accessStore.setAccessToken(null);
     if (
       preferences.app.loginExpiredMode === 'modal' &&
       accessStore.isAccessChecked
     ) {
+      accessStore.setAccessToken(null);
       accessStore.setLoginExpired(true);
     } else {
+      // 由 logout 清本地态并跳转，保留 token 以便 logoutApi 带上 Authorization
       await authStore.logout();
     }
   }
@@ -93,17 +94,7 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
     }),
   );
 
-  // 通用的错误处理（须在 authenticate 之前注册，以便 401 时先跳转登录、少弹干扰 toast）
-  client.addResponseInterceptor(
-    errorMessageResponseInterceptor((msg: string, error) => {
-      if (error?.__skipErrorMessage) {
-        return;
-      }
-      message.error(resolveApiErrorMessage(error, msg));
-    }),
-  );
-
-  // token 过期的处理（后注册，响应 reject 时优先执行）
+  // token 过期：须在 errorMessage 之前注册，401 时先重登并标记跳过 toast
   client.addResponseInterceptor(
     authenticateResponseInterceptor({
       client,
@@ -111,6 +102,16 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
       doRefreshToken,
       enableRefreshToken: preferences.app.enableRefreshToken,
       formatToken,
+    }),
+  );
+
+  // 通用错误提示（authenticate 未处理的错误才会弹 toast）
+  client.addResponseInterceptor(
+    errorMessageResponseInterceptor((msg: string, error) => {
+      if (error?.__skipErrorMessage) {
+        return;
+      }
+      message.error(resolveApiErrorMessage(error, msg));
     }),
   );
 

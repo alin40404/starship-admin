@@ -38,7 +38,7 @@ import {
 } from '@vben/utils';
 
 import { globalShareState } from '@vben-core/shared/global-state';
-import { VbenHelpTooltip, VbenLoading } from '@vben-core/shadcn-ui';
+import { VbenHelpTooltip } from '@vben-core/shadcn-ui';
 
 import { VxeButton } from 'vxe-pc-ui';
 import { VxeGrid, VxeUI } from 'vxe-table';
@@ -376,6 +376,8 @@ const delegatedFormSlots = computed(() => {
 
 /** 仅在业务侧显式传入 #empty 时走插槽；默认空状态已改用 emptyRender */
 const hasEmptySlot = computed(() => !!slots.empty);
+/** 仅在业务侧显式传入 #loading 时走插槽，避免 vxe 包成 VxeLoading default 槽触发 Vue 警告 */
+const hasLoadingSlot = computed(() => !!slots.loading);
 
 async function init() {
   await nextTick();
@@ -558,11 +560,9 @@ onUnmounted(() => {
           ></div>
         </div>
       </template>
-      <!-- loading -->
-      <template #loading>
-        <slot name="loading">
-          <VbenLoading :spinning="true" />
-        </slot>
+      <!-- loading：仅业务自定义时挂插槽，默认用 vxe 自带 Loading -->
+      <template v-if="hasLoadingSlot" #loading>
+        <slot name="loading"></slot>
       </template>
       <!-- 自定义空状态（默认空状态见 emptyRender: VbenTableEmpty） -->
       <template v-if="hasEmptySlot" #empty="slotProps">
