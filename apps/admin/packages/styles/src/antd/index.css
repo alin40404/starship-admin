@@ -51,6 +51,51 @@ textarea.ant-input,
   font-size: var(--text-sm, 0.875rem) !important;
 }
 
+/**
+ * 表单控件高度固定 32px。
+ * Ant Design Input / Affix / Picker 默认不设固定 height，只靠 padding + fontSize 撑开；
+ * 上方把 font-size 覆盖为 --text-sm 后，实际高度会偏矮（约 29px），这里强制对齐默认 controlHeight。
+ */
+.ant-input:not(textarea):not(.ant-input-sm):not(.ant-input-lg),
+.ant-input-affix-wrapper:not(.ant-input-affix-wrapper-sm):not(.ant-input-affix-wrapper-lg),
+.ant-input-number:not(.ant-input-number-sm):not(.ant-input-number-lg),
+.ant-picker:not(.ant-picker-small):not(.ant-picker-large),
+.ant-select-single:not(.ant-select-sm):not(.ant-select-lg):not(
+    .ant-select-customize-input
+  )
+  .ant-select-selector,
+.ant-tree-select.ant-select-single:not(.ant-select-sm):not(.ant-select-lg):not(
+    .ant-select-customize-input
+  )
+  .ant-select-selector,
+.ant-cascader.ant-select-single:not(.ant-select-sm):not(.ant-select-lg):not(
+    .ant-select-customize-input
+  )
+  .ant-select-selector {
+  height: 32px;
+  box-sizing: border-box;
+}
+
+.ant-input-affix-wrapper:not(.ant-input-affix-wrapper-sm):not(
+    .ant-input-affix-wrapper-lg
+  )
+  > input.ant-input {
+  height: auto !important;
+}
+
+.ant-input-number-input {
+  height: 30px;
+}
+
+.ant-select-single:not(.ant-select-sm):not(.ant-select-lg)
+  .ant-select-selector
+  .ant-select-selection-item,
+.ant-select-single:not(.ant-select-sm):not(.ant-select-lg)
+  .ant-select-selector
+  .ant-select-selection-placeholder {
+  line-height: 30px;
+}
+
 /** Alert 提示文字：跟随 --text-sm，随 html 根字号缩放 */
 .ant-alert-message,
 .ant-alert-description {

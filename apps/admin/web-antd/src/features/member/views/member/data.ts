@@ -92,9 +92,13 @@ export function buildMemberFormSchema(isEdit: boolean): VbenFormSchema[] {
       label: '手机号',
     },
     {
-      component: 'RadioGroup',
+      component: 'Switch',
       componentProps: {
-        options: getStatusSelectOptions(),
+        checkedChildren: $t('system.shared.status.enable'),
+        checkedValue: 1,
+        class: 'w-auto',
+        unCheckedChildren: $t('system.shared.status.disable'),
+        unCheckedValue: 0,
       },
       defaultValue: 1,
       fieldName: 'status',
