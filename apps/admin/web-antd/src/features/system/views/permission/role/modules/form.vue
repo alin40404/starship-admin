@@ -481,7 +481,7 @@ function handlePermissionTreeCheckAllClick(event: MouseEvent) {
 
 /** 角色权限树：默认全展开，保留边框与顶部全选，三级层次排版 */
 .role-drawer-form {
-  --permission-tree-pl: 0.5rem;
+  --permission-tree-pl: 1rem;
 }
 
 .role-drawer-form :deep(.permission-tree .container.list-none) {
