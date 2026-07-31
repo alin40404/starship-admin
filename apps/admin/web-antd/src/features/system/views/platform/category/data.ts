@@ -124,8 +124,14 @@ export function buildFormSchema(params: {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'keywords',
-      formItemClass: 'self-start',
       label: $t('platform.category.keywords'),
+    },
+    {
+      component: 'InputNumber',
+      componentProps: { class: 'w-full', min: 0 },
+      defaultValue: 0,
+      fieldName: 'sort',
+      label: $t('platform.category.sort'),
     },
     {
       component: 'PictureUploadField',
@@ -137,14 +143,6 @@ export function buildFormSchema(params: {
       fieldName: 'image',
       formItemClass: 'picture-upload-form-item items-start',
       label: $t('platform.category.image'),
-    },
-    {
-      component: 'InputNumber',
-      componentProps: { class: 'w-full', min: 0 },
-      defaultValue: 0,
-      fieldName: 'sort',
-      formItemClass: 'self-start',
-      label: $t('platform.category.sort'),
     },
     {
       component: 'RadioGroup',
@@ -159,6 +157,7 @@ export function buildFormSchema(params: {
       },
       defaultValue: 'normal',
       fieldName: 'status',
+      formItemClass: 'self-start',
       label: $t('platform.category.status'),
     },
     {
