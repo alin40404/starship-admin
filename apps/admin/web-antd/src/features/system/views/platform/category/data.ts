@@ -124,6 +124,7 @@ export function buildFormSchema(params: {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'keywords',
+      formItemClass: 'self-start',
       label: $t('platform.category.keywords'),
     },
     {
@@ -138,17 +139,11 @@ export function buildFormSchema(params: {
       label: $t('platform.category.image'),
     },
     {
-      component: 'Textarea',
-      componentProps: { rows: 2 },
-      fieldName: 'description',
-      formItemClass: 'items-start',
-      label: $t('platform.category.description'),
-    },
-    {
       component: 'InputNumber',
       componentProps: { class: 'w-full', min: 0 },
       defaultValue: 0,
       fieldName: 'sort',
+      formItemClass: 'self-start',
       label: $t('platform.category.sort'),
     },
     {
@@ -165,6 +160,13 @@ export function buildFormSchema(params: {
       defaultValue: 'normal',
       fieldName: 'status',
       label: $t('platform.category.status'),
+    },
+    {
+      component: 'Textarea',
+      componentProps: { rows: 2 },
+      fieldName: 'description',
+      formItemClass: 'col-span-full items-start',
+      label: $t('platform.category.description'),
     },
   ];
 }
