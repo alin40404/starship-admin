@@ -254,7 +254,7 @@ const currentSection = computed(
     white-space: nowrap;
     font-size: 12px;
     line-height: 1.25;
-    color: hsl(var(--muted-foreground));
+    color: hsl(var(--muted-foreground) / 0.55);
   }
 
   .config-section-item:hover {
