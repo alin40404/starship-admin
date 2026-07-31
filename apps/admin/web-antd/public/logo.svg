@@ -1,7 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-  <rect width="32" height="32" rx="6" fill="#0a1628"/>
-  <!-- outer stroke thickened to match inner transparent band -->
-  <path d="M8 18.5L16 7l8 11.5H8z" stroke="#00E5FF" stroke-width="2.325" stroke-linejoin="miter" stroke-miterlimit="8" fill="none"/>
-  <path d="M12.2 18.5L16 13.2l3.8 5.3H12.2z" fill="#00E5FF"/>
-  <circle cx="16" cy="22.5" r="1.4" fill="#00E5FF"/>
+  <rect width="32" height="32" rx="6" fill="#006BE6"/>
+  <path d="M8 18.5L16 7l8 11.5H8z" stroke="#FFFFFF" stroke-width="2.325" stroke-linejoin="miter" stroke-miterlimit="8" fill="none"/>
+  <path d="M12.2 18.5L16 13.2l3.8 5.3H12.2z" fill="#FFFFFF"/>
+  <circle cx="16" cy="22.5" r="1.4" fill="#FFFFFF"/>
 </svg>

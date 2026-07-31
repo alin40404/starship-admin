@@ -35,6 +35,7 @@ import { validateUploadFile } from '#/utils/upload-policy';
 import {
   configFieldLabel,
   configFieldRemark,
+  CONFIG_PICTURE_UPLOAD_KEYS,
   getConfigSelectOptions,
   isPictureUploadField,
   isHomePathSelectField,
@@ -65,6 +66,7 @@ const loading = ref(false);
 const saving = ref(false);
 const rows = ref<ConfigRow[]>([]);
 const draftValues = ref<Record<string, string>>({});
+const pictureFileLists = ref<Record<string, UploadFile[]>>({});
 const homePathCascaderOptions = ref<HomePathCascaderOption[]>([]);
 const siteTimezoneOptions = ref<{ label: string; value: string }[]>([]);
 const smsTestMobile = ref('');
@@ -101,6 +103,12 @@ function syncDraftFromRows(list: ConfigRow[]) {
     next[row.key] = row.value ?? '';
   }
   draftValues.value = next;
+
+  const nextPictureLists: Record<string, UploadFile[]> = {};
+  for (const key of CONFIG_PICTURE_UPLOAD_KEYS) {
+    nextPictureLists[key] = normalizeUploadToFileList(next[key]);
+  }
+  pictureFileLists.value = nextPictureLists;
 }
 
 async function loadSiteTimezoneOptions() {
@@ -245,7 +253,7 @@ function normalizeUploadToFileList(url?: null | string): UploadFile[] {
     {
       name: 'file',
       status: 'done',
-      uid: 'upload-existing',
+      uid: `upload-${url}`,
       url,
     },
   ];
@@ -254,20 +262,36 @@ function normalizeUploadToFileList(url?: null | string): UploadFile[] {
 function resolveUploadUrl(files: unknown): string {
   const uploadFiles = Array.isArray(files) ? files : [];
   const file = uploadFiles[0] as
-    | { response?: { file_url?: string }; url?: string }
+    | {
+        response?: { file_url?: string };
+        thumbUrl?: string;
+        url?: string;
+      }
     | undefined;
   if (!file) {
     return '';
   }
-  return file.response?.file_url ?? file.url ?? '';
+  return file.response?.file_url ?? file.url ?? file.thumbUrl ?? '';
 }
 
 function getPictureFileList(key: string) {
-  return normalizeUploadToFileList(draftValues.value[key]);
+  return (
+    pictureFileLists.value[key] ??
+    normalizeUploadToFileList(draftValues.value[key])
+  );
 }
 
 function setPictureFileList(key: string, files: UploadFile[]) {
-  draftValues.value[key] = resolveUploadUrl(files);
+  pictureFileLists.value[key] = files;
+  if (files.length === 0) {
+    draftValues.value[key] = '';
+    return;
+  }
+  // 上传中尚无 url 时保留原值，避免受控 fileList 被清空导致预览消失
+  const url = resolveUploadUrl(files);
+  if (url) {
+    draftValues.value[key] = url;
+  }
 }
 
 function onPictureUploadChange(_event: unknown) {}

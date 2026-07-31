@@ -62,9 +62,31 @@ const pickerInitialUrls = computed(() =>
     .map(String),
 );
 
+function resolveFilePreviewUrl(file: UploadFile): string | undefined {
+  const response = file.response as { file_url?: string } | undefined;
+  const url = file.url ?? file.thumbUrl ?? response?.file_url;
+  return url ? String(url) : undefined;
+}
+
+function normalizeUploadFileList(files: UploadFile[]): UploadFile[] {
+  return files
+    .filter((file) => file.status !== 'removed')
+    .map((file) => {
+      const url = resolveFilePreviewUrl(file);
+      if (!url || file.url === url) {
+        return file;
+      }
+      return {
+        ...file,
+        thumbUrl: file.thumbUrl ?? url,
+        url,
+      };
+    });
+}
+
 function onUploadChange(event: UploadChangeParam) {
   props.handleChange?.(event);
-  innerFileList.value = event.fileList.filter((file) => file.status !== 'removed');
+  innerFileList.value = normalizeUploadFileList(event.fileList);
   emit('change', event);
   emit('input', event);
 }
