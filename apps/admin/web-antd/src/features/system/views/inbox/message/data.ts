@@ -235,6 +235,8 @@ export function useColumns(
         name: 'CellOperation',
         options: [
           {
+            class: (row: InboxMessageRow) =>
+              row.is_read === 1 ? '!text-muted-foreground' : '',
             code: 'detail',
             text: $t('system.shared.view'),
           },

@@ -170,6 +170,26 @@ class InboxMessageController extends Controller
         return ApiResponse::success(['deleted' => $deleted], __('system::inbox.cleared_read'));
     }
 
+    public function batchMarkRead(Request $request): JsonResponse
+    {
+        $admin = $this->currentAdmin($request);
+        $ids = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+        ])['ids'];
+
+        $updated = InboxMessage::query()
+            ->where('admin_id', $admin->id)
+            ->whereIn('id', $ids)
+            ->where('is_read', 0)
+            ->update([
+                'is_read' => 1,
+                'read_at' => now(),
+            ]);
+
+        return ApiResponse::success(['updated' => $updated], __('system::inbox.batch_marked_read'));
+    }
+
     public function batchDestroy(Request $request): JsonResponse
     {
         $admin = $this->currentAdmin($request);

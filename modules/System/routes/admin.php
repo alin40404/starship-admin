@@ -400,6 +400,8 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
             ->middleware('admin.permission:'.InboxPermissions::QUERY);
         Route::delete('messages/{id}', [InboxMessageController::class, 'destroy'])
             ->middleware('admin.permission:'.InboxPermissions::QUERY);
+        Route::post('messages/batch-read', [InboxMessageController::class, 'batchMarkRead'])
+            ->middleware('admin.permission:'.InboxPermissions::QUERY);
         Route::post('messages/batch-destroy', [InboxMessageController::class, 'batchDestroy'])
             ->middleware('admin.permission:'.InboxPermissions::QUERY);
     });

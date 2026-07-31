@@ -14,6 +14,7 @@ import { Button, message, Modal } from 'ant-design-vue';
 import { useResponsiveCrud } from '#/adapter/mobile-list';
 import {
   batchDeleteInboxMessages,
+  batchMarkInboxMessagesRead,
   deleteInboxMessage,
   fetchInboxMessagePage,
   markAllInboxMessagesRead,
@@ -190,6 +191,20 @@ async function onMarkAllRead() {
   onRefresh();
 }
 
+async function onMarkSelectedRead() {
+  const unreadIds = selectedRows.value
+    .filter((row) => row.is_read === 0)
+    .map((row) => row.id);
+  if (unreadIds.length === 0) {
+    message.info($t('inbox.markSelectedReadEmpty'));
+    return;
+  }
+  await batchMarkInboxMessagesRead(unreadIds);
+  message.success($t('inbox.markSelectedReadDone'));
+  clearSelection();
+  onRefresh();
+}
+
 function onBatchDelete() {
   const ids = selectedRows.value.map((row) => row.id);
   if (ids.length === 0) {
@@ -269,7 +284,10 @@ function onBatchDelete() {
           <CrudView>
             <template #toolbar-actions>
               <div v-if="selectedRows.length > 0" class="vxe-grid-batch-toolbar">
-                <Button danger @click="onBatchDelete">
+                <Button @click="onMarkSelectedRead">
+                  {{ $t('inbox.markSelectedRead') }}
+                </Button>
+                <Button class="ml-2" danger @click="onBatchDelete">
                   {{ $t('system.shared.batchDeleteWithCount', [selectedRows.length]) }}
                 </Button>
                 <Button class="ml-2" type="link" @click="clearSelection">

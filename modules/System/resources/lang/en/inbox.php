@@ -4,6 +4,7 @@ return [
     'deleted' => 'Deleted',
     'batch_deleted' => 'Batch deleted',
     'marked_read' => 'Marked as read',
+    'batch_marked_read' => 'Selected messages marked as read',
     'all_marked_read' => 'All marked as read',
     'cleared_read' => 'Cleared read notifications',
     'login_success_title' => 'Signed in successfully',

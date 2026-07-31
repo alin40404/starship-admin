@@ -24,9 +24,9 @@ export const INBOX_CATEGORY_OPTIONS = [
 
 export const INBOX_PRIORITY_OPTIONS = [
   { color: 'default', labelKey: 'inbox.priority.low', value: 'low' },
-  { color: 'processing', labelKey: 'inbox.priority.normal', value: 'normal' },
-  { color: 'warning', labelKey: 'inbox.priority.high', value: 'high' },
-  { color: 'error', labelKey: 'inbox.priority.urgent', value: 'urgent' },
+  { color: 'cyan', labelKey: 'inbox.priority.normal', value: 'normal' },
+  { color: 'orange', labelKey: 'inbox.priority.high', value: 'high' },
+  { color: 'magenta', labelKey: 'inbox.priority.urgent', value: 'urgent' },
 ] as const;
 
 export type InboxCategory = (typeof INBOX_CATEGORY_OPTIONS)[number]['value'];

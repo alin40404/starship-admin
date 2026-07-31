@@ -4,6 +4,7 @@ return [
     'deleted' => '已删除',
     'batch_deleted' => '已批量删除',
     'marked_read' => '已标记为已读',
+    'batch_marked_read' => '已将选中消息标为已读',
     'all_marked_read' => '已全部标记为已读',
     'cleared_read' => '已清空已读通知',
     'login_success_title' => '登录成功',

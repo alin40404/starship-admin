@@ -85,6 +85,12 @@ export function markAllInboxMessagesRead() {
   return requestClient.post<null>('/inbox/messages/read-all');
 }
 
+export function batchMarkInboxMessagesRead(ids: number[]) {
+  return requestClient.post<{ updated: number }>('/inbox/messages/batch-read', {
+    ids,
+  });
+}
+
 export function clearReadInboxMessages() {
   return requestClient.post<{ deleted: number }>('/inbox/messages/clear-read');
 }
