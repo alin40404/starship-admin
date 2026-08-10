@@ -107,6 +107,7 @@ function buildValueFieldSchema(type: string): VbenFormSchema {
         placeholder: $t('platform.config.param.numberPlaceholder'),
       },
       fieldName: 'value',
+      formItemClass: 'col-span-full',
       label: $t('platform.config.param.value'),
     };
   }
@@ -129,6 +130,7 @@ function buildValueFieldSchema(type: string): VbenFormSchema {
       },
       defaultValue: 'false',
       fieldName: 'value',
+      formItemClass: 'col-span-full',
       label: $t('platform.config.param.value'),
     };
   }
@@ -140,6 +142,7 @@ function buildValueFieldSchema(type: string): VbenFormSchema {
       placeholder: $t('platform.config.param.stringPlaceholder'),
     },
     fieldName: 'value',
+    formItemClass: 'col-span-full',
     label: $t('platform.config.param.value'),
   };
 }
@@ -150,6 +153,7 @@ function getParamFormSchema(): VbenFormSchema[] {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'key',
+      formItemClass: 'col-span-full',
       label: $t('platform.config.param.keyLabel'),
       rules: 'required',
     },
@@ -157,6 +161,7 @@ function getParamFormSchema(): VbenFormSchema[] {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'name',
+      formItemClass: 'col-span-full',
       label: $t('platform.config.param.nameLabel'),
       rules: 'required',
     },
@@ -187,7 +192,6 @@ function getParamFormSchema(): VbenFormSchema[] {
       fieldName: 'type',
       label: $t('platform.config.param.valueType'),
     },
-    buildValueFieldSchema('string'),
     {
       component: 'InputNumber',
       componentProps: { class: 'w-full', min: 0 },
@@ -195,9 +199,10 @@ function getParamFormSchema(): VbenFormSchema[] {
       fieldName: 'sort',
       label: $t('platform.config.param.sort'),
     },
+    buildValueFieldSchema('string'),
     {
       component: 'Textarea',
-      componentProps: { class: 'w-full', rows: 2 },
+      componentProps: { class: 'w-full', rows: 4 },
       fieldName: 'remark',
       formItemClass: 'col-span-full w-full items-start',
       label: $t('platform.config.param.remark'),
@@ -213,7 +218,7 @@ const [Form, formApi] = useVbenForm({
   layout: 'vertical',
   schema: getParamFormSchema(),
   showDefaultActions: false,
-  wrapperClass: 'grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1',
+  wrapperClass: 'grid-cols-2 gap-x-4 gap-y-1',
   handleValuesChange(values, fieldsChanged) {
     if (hydratingForm.value) {
       return;
