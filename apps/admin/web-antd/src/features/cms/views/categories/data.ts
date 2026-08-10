@@ -73,28 +73,10 @@ export function buildFormSchema(params: {
       rules: 'required',
     },
     {
-      component: 'PictureUploadField',
-      componentProps: {
-        customRequest: onImageUpload,
-        handleChange: onImageChange,
-        maxCount: 1,
-      },
-      fieldName: 'image',
-      formItemClass: 'picture-upload-form-item items-start',
-      label: $t('platform.category.image'),
-    },
-    {
       component: 'Input',
       componentProps: { class: 'w-full' },
       fieldName: 'keywords',
       label: $t('platform.category.keywords'),
-    },
-    {
-      component: 'Textarea',
-      componentProps: { rows: 2 },
-      fieldName: 'description',
-      formItemClass: 'items-start',
-      label: $t('platform.category.description'),
     },
     {
       component: 'InputNumber',
@@ -117,6 +99,24 @@ export function buildFormSchema(params: {
       defaultValue: 'normal',
       fieldName: 'status',
       label: $t('platform.category.status'),
+    },
+    {
+      component: 'PictureUploadField',
+      componentProps: {
+        customRequest: onImageUpload,
+        handleChange: onImageChange,
+        maxCount: 1,
+      },
+      fieldName: 'image',
+      formItemClass: 'picture-upload-form-item col-span-full items-start',
+      label: $t('platform.category.image'),
+    },
+    {
+      component: 'Textarea',
+      componentProps: { rows: 2 },
+      fieldName: 'description',
+      formItemClass: 'col-span-full items-start',
+      label: $t('platform.category.description'),
     },
   ];
 }
