@@ -106,6 +106,7 @@ export function buildMemberFormSchema(isEdit: boolean): VbenFormSchema[] {
     },
     {
       component: 'Textarea',
+      componentProps: { rows: 4 },
       fieldName: 'remark',
       label: $t('org.shared.remark'),
       formItemClass: 'col-span-full',
