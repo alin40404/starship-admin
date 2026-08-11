@@ -325,7 +325,7 @@ function showCategoryIcon(item: NotificationItem) {
   border: 1px solid hsl(var(--border));
   border-radius: var(--radius);
   background: transparent;
-  padding: 4px 10px;
+  padding: 6px 10px;
   font-size: 12px;
   line-height: 1;
   color: hsl(var(--muted-foreground));
