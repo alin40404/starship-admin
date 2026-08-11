@@ -41,7 +41,7 @@ export const overridesPreferences = defineOverridesPreferences({
   theme: {
     mode: 'light',
     radius: '0.25',
-    fontSize: 15,
+    fontSize: 16,
   },
 });
 

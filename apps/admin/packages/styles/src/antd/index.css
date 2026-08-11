@@ -107,6 +107,11 @@ textarea.ant-input,
   font-size: var(--text-sm, 0.875rem) !important;
 }
 
+/** Modal.confirm 内容文字 */
+.ant-modal-confirm-content {
+  font-size: var(--text-sm, 0.875rem) !important;
+}
+
 /** Notification / Message：描述跟随 --text-sm；标题略小、图标略收 */
 .ant-notification-notice-description,
 .ant-message-notice-content {
