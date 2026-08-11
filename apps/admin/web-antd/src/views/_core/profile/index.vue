@@ -13,7 +13,7 @@ const tabsValue = ref<string>('basic');
 
 const tabs = ref([
   {
-    label: '基本设置',
+    label: '基本信息',
     value: 'basic',
   },
   {
@@ -30,8 +30,8 @@ const tabs = ref([
     :tabs="tabs"
   >
     <template #content>
-      <ProfileBase v-if="tabsValue === 'basic'" />
-      <ProfilePasswordSetting v-if="tabsValue === 'password'" />
+      <ProfileBase v-show="tabsValue === 'basic'" />
+      <ProfilePasswordSetting v-show="tabsValue === 'password'" />
     </template>
   </Profile>
 </template>

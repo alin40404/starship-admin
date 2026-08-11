@@ -13,7 +13,7 @@ import { useAuthStore } from '#/store';
 
 const authStore = useAuthStore();
 
-/** 与基本设置 Ant Design Input 默认高度（32px）对齐 */
+/** 与基本信息 Ant Design Input 默认高度（32px）对齐 */
 const passwordInputClass = 'h-8 py-1';
 
 const formSchema = computed((): VbenFormSchema[] => {
