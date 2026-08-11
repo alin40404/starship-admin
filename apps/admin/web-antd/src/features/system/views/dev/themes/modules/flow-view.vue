@@ -213,17 +213,27 @@ function canSwitch(row: ThemeRow) {
   background: hsl(var(--card));
   transition:
     border-color 0.2s ease,
-    box-shadow 0.2s ease;
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .theme-card:hover {
-  border-color: hsl(var(--primary) / 0.35);
-  box-shadow: 0 8px 24px hsl(var(--foreground) / 0.06);
+  border-color: hsl(var(--primary) / 0.45);
+  box-shadow: 0 10px 28px hsl(var(--foreground) / 0.1);
+  transform: translateY(-3px);
 }
 
 .theme-card.is-enabled {
   border-color: hsl(142 71% 45% / 0.5);
   box-shadow: 0 0 0 1px hsl(142 71% 45% / 0.14);
+}
+
+.theme-card.is-enabled:hover {
+  border-color: hsl(142 71% 42% / 0.75);
+  box-shadow:
+    0 0 0 1px hsl(142 71% 42% / 0.22),
+    0 10px 28px hsl(142 71% 35% / 0.16);
+  transform: translateY(-3px);
 }
 
 .theme-card.is-active {
@@ -233,10 +243,27 @@ function canSwitch(row: ThemeRow) {
     0 8px 20px hsl(142 71% 35% / 0.12);
 }
 
+.theme-card.is-active:hover {
+  border-color: hsl(142 71% 38% / 0.9);
+  box-shadow:
+    0 0 0 1px hsl(142 71% 38% / 0.36),
+    0 12px 30px hsl(142 71% 35% / 0.2);
+  transform: translateY(-3px);
+}
+
 .theme-card__cover {
   position: relative;
   cursor: pointer;
+  overflow: hidden;
   border-bottom: 1px solid hsl(var(--border));
+}
+
+.theme-card__cover :deep(.theme-cover__img) {
+  transition: transform 0.25s ease;
+}
+
+.theme-card:hover .theme-card__cover :deep(.theme-cover__img) {
+  transform: scale(1.04);
 }
 
 .theme-card__badge {
