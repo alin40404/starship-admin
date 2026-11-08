@@ -1,6 +1,13 @@
 @echo off
+REM 双击时资源管理器会用“跑完就关”的方式打开本文件，所以先换到 /k，窗口才会留下来
+if /I not "%~1"=="__run" (
+  title Starship Dev
+  cmd /k ""%~f0" __run"
+  exit /b
+)
 setlocal EnableExtensions
 cd /d "%~dp0"
+title Starship Dev
 chcp 65001 >nul
 
 REM 可在运行前设置 PHP_BIN 指向指定 php.exe；否则从 PATH 里挑选 8.3+
@@ -88,12 +95,15 @@ if "%PORT_UP%"=="1" (
 )
 
 echo.
-echo 关闭标题为 Starship-Backend / Starship-Frontend 的窗口即可停止。
-echo 也可双击 stop-dev.bat 结束这两个端口上的进程。
+echo 前后端在另外两个窗口里跑。关掉本窗口不会停它们。
+echo 要停止服务，关掉 Starship-Backend / Starship-Frontend，或双击 stop-dev.bat。
 echo.
 echo 等待前端就绪后打开浏览器...
 timeout /t 8 /nobreak >nul
 start "" "http://127.0.0.1:5666"
+echo.
+echo 启动步骤已结束。此窗口会保留，避免一闪而过。
+echo 输入 exit 后回车，或直接点关闭，即可关掉本窗口。
 endlocal
 exit /b 0
 
