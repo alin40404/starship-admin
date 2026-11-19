@@ -318,8 +318,6 @@
   align-items: center;
   gap: 10px;
   width: 100%;
-  /* 给上浮标签留出骑边空间，对齐 CRM 搜索工具栏 */
-  padding-top: 8px;
 }
 
 .vxe-grid-search-toolbar > .relative.flex,

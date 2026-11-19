@@ -724,10 +724,6 @@ watch(
   },
 );
 
-const isCompactForm = computed(() => {
-  return formApi.getState()?.compact;
-});
-
 onMounted(() => {
   props.api?.mount?.(gridRef.value, formApi);
   init();
@@ -798,112 +794,104 @@ onUnmounted(() => {
         <div
           v-if="formOptions && !isMobile"
           v-show="showInlineSearchForm"
-          :class="
-            cn(
-              'relative rounded-sm py-3',
-              isCompactForm
-                ? isSeparator
-                  ? 'pb-8'
-                  : 'pb-4'
-                : isSeparator
-                  ? 'pb-4'
-                  : 'pb-0',
-            )
-          "
+          class="relative"
         >
-          <slot name="form">
-            <Form>
-              <template
-                v-for="slotName in delegatedFormSlots"
-                :key="slotName"
-                #[slotName]="slotProps"
-              >
-                <slot
-                  :name="`${FORM_SLOT_PREFIX}${slotName}`"
-                  v-bind="slotProps"
-                ></slot>
-              </template>
-              <template #reset-before="slotProps">
-                <slot name="reset-before" v-bind="slotProps"></slot>
-                <div
-                  v-if="hasFilterPanel"
-                  ref="filterTriggerRef"
-                  class="search-filter-anchor"
+          <!-- 上边距不叠：外层 vxe-grid 已有 p-2；底边自留 pb-2 与之对称；分隔条在内容外 -->
+          <div class="rounded-sm pt-0 pb-2">
+            <slot name="form">
+              <Form>
+                <template
+                  v-for="slotName in delegatedFormSlots"
+                  :key="slotName"
+                  #[slotName]="slotProps"
                 >
+                  <slot
+                    :name="`${FORM_SLOT_PREFIX}${slotName}`"
+                    v-bind="slotProps"
+                  ></slot>
+                </template>
+                <template #reset-before="slotProps">
+                  <slot name="reset-before" v-bind="slotProps"></slot>
+                  <div
+                    v-if="hasFilterPanel"
+                    ref="filterTriggerRef"
+                    class="search-filter-anchor"
+                  >
+                    <component
+                      :is="components.DefaultButton"
+                      type="button"
+                      class="search-filter-trigger"
+                      @click="filterPanelOpen = !filterPanelOpen"
+                    >
+                      <template #icon>
+                        <Filter class="size-4" />
+                      </template>
+                      {{ $t('common.filter') }}
+                      <span
+                        v-if="filterCount > 0"
+                        class="search-filter-count"
+                      >
+                        {{ filterCount }}
+                      </span>
+                    </component>
+                  </div>
+                  <Teleport to="body">
+                    <div
+                      v-show="filterPanelOpen"
+                      ref="filterPanelRef"
+                      class="search-filter-panel"
+                      :style="filterPanelStyle"
+                      @mousedown.stop
+                    >
+                      <PanelForm />
+                      <div class="search-filter-footer">
+                        <component
+                          :is="components.DefaultButton"
+                          type="button"
+                          @click="handleFilterPanelReset"
+                        >
+                          {{ $t('common.resetConditions') }}
+                        </component>
+                        <component
+                          :is="components.PrimaryButton"
+                          type="button"
+                          @click="filterPanelOpen = false"
+                        >
+                          {{ $t('common.confirm') }}
+                        </component>
+                      </div>
+                    </div>
+                  </Teleport>
                   <component
                     :is="components.DefaultButton"
                     type="button"
-                    class="search-filter-trigger"
-                    @click="filterPanelOpen = !filterPanelOpen"
+                    class="search-reset-trigger"
+                    @click="handleSearchReset"
                   >
                     <template #icon>
-                      <Filter class="size-4" />
+                      <RotateCcw class="size-4" />
                     </template>
-                    {{ $t('common.filter') }}
-                    <span
-                      v-if="filterCount > 0"
-                      class="search-filter-count"
-                    >
-                      {{ filterCount }}
-                    </span>
+                    {{ $t('common.reset') }}
                   </component>
-                </div>
-                <Teleport to="body">
-                  <div
-                    v-show="filterPanelOpen"
-                    ref="filterPanelRef"
-                    class="search-filter-panel"
-                    :style="filterPanelStyle"
-                    @mousedown.stop
-                  >
-                    <PanelForm />
-                    <div class="search-filter-footer">
-                      <component
-                        :is="components.DefaultButton"
-                        type="button"
-                        @click="handleFilterPanelReset"
-                      >
-                        {{ $t('common.resetConditions') }}
-                      </component>
-                      <component
-                        :is="components.PrimaryButton"
-                        type="button"
-                        @click="filterPanelOpen = false"
-                      >
-                        {{ $t('common.confirm') }}
-                      </component>
-                    </div>
-                  </div>
-                </Teleport>
-                <component
-                  :is="components.DefaultButton"
-                  type="button"
-                  class="search-reset-trigger"
-                  @click="handleSearchReset"
-                >
-                  <template #icon>
-                    <RotateCcw class="size-4" />
-                  </template>
-                  {{ $t('common.reset') }}
-                </component>
-              </template>
-              <template #submit-before="slotProps">
-                <slot name="submit-before" v-bind="slotProps"></slot>
-              </template>
-              <template #expand-before="slotProps">
-                <slot name="expand-before" v-bind="slotProps"></slot>
-              </template>
-              <template #expand-after="slotProps">
-                <slot name="expand-after" v-bind="slotProps"></slot>
-              </template>
-            </Form>
-          </slot>
+                </template>
+                <template #submit-before="slotProps">
+                  <slot name="submit-before" v-bind="slotProps"></slot>
+                </template>
+                <template #expand-before="slotProps">
+                  <slot name="expand-before" v-bind="slotProps"></slot>
+                </template>
+                <template #expand-after="slotProps">
+                  <slot name="expand-after" v-bind="slotProps"></slot>
+                </template>
+              </Form>
+            </slot>
+          </div>
           <div
             v-if="isSeparator"
             :style="{
               ...(separatorBg ? { backgroundColor: separatorBg } : undefined),
             }"
-            class="absolute bottom-1 -left-2 z-100 h-2 w-[calc(100%+1rem)] overflow-hidden bg-background-deep md:bottom-2 md:h-3"
+            class="-mx-2 h-2 overflow-hidden bg-background-deep md:h-3"
           ></div>
         </div>
       </template>
