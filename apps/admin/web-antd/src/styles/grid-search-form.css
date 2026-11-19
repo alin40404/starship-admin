@@ -2,14 +2,14 @@
  * Grid 搜索表单：Ant Design 控件适配（浮动标签空态、下拉箭头旋转）
  * 空态隐藏字段名称、只显示 placeholder；聚焦/有值时标签骑在上边框
  *
- * 字号说明：主题 fontSize=16，Ant Design 会通过 --ant-font-size 继承到 Input/Button。
- * 搜索栏单独压到 13/12，必须改 CSS 变量 + !important，否则会被组件样式盖掉。
+ * 字号：相对 --font-size-base 动态计算（base=16 时为 13/12/11），
+ * 需覆盖 Ant Design token，否则会被组件样式盖掉。
  */
 .vxe-grid-search-toolbar {
-  --ant-font-size: 13px;
-  --ant-font-size-lg: 13px;
-  --ant-font-size-sm: 12px;
-  font-size: 13px;
+  --ant-font-size: var(--admin-font-search);
+  --ant-font-size-lg: var(--admin-font-search);
+  --ant-font-size-sm: var(--admin-font-search-sm);
+  font-size: var(--admin-font-search);
 }
 
 .vxe-grid-search-toolbar .search-float-form-item {
@@ -17,7 +17,7 @@
 }
 
 .vxe-grid-search-toolbar .search-float-label {
-  font-size: 13px !important;
+  font-size: var(--admin-font-search) !important;
 }
 
 /* 空态：先隐藏字段名称，只显示 placeholder；聚焦/有值后再上浮显示 */
@@ -27,7 +27,7 @@
 }
 
 .vxe-grid-search-toolbar .search-float-field.is-active .search-float-label {
-  font-size: 12px !important;
+  font-size: var(--admin-font-search-sm) !important;
   opacity: 1 !important;
   visibility: visible !important;
 }
@@ -38,7 +38,7 @@
 .vxe-grid-search-toolbar .search-float-field .ant-select-selector,
 .vxe-grid-search-toolbar .search-float-field .ant-picker {
   width: 100%;
-  font-size: 13px !important;
+  font-size: var(--admin-font-search) !important;
 }
 
 .vxe-grid-search-toolbar .search-float-field :is(
@@ -49,7 +49,7 @@
   .ant-select-selection-placeholder,
   .ant-picker-input input
 ) {
-  font-size: 13px !important;
+  font-size: var(--admin-font-search) !important;
 }
 
 .vxe-grid-search-toolbar .search-float-field :is(
@@ -58,7 +58,7 @@
   .ant-input-number-input::placeholder,
   .ant-picker-input input::placeholder
 ) {
-  font-size: 13px !important;
+  font-size: var(--admin-font-search) !important;
 }
 
 .vxe-grid-search-toolbar .search-float-field.is-focused :is(
@@ -95,8 +95,8 @@
   justify-content: center !important;
   width: auto !important;
   gap: 0; /* 避免与 .ant-btn-icon 自带 margin 叠间距 */
-  --ant-font-size: 13px;
-  font-size: 13px !important;
+  --ant-font-size: var(--admin-font-search);
+  font-size: var(--admin-font-search) !important;
   overflow: visible !important;
 }
 
@@ -114,7 +114,7 @@
   border-radius: 8px;
   background: hsl(var(--destructive));
   color: #fff;
-  font-size: 11px;
+  font-size: var(--admin-font-search-xs);
   line-height: 1;
   pointer-events: none;
 }
@@ -147,7 +147,7 @@
 }
 
 .search-filter-panel .search-filter-label {
-  font-size: 12px !important;
+  font-size: var(--admin-font-search-sm) !important;
   line-height: 1 !important;
   color: hsl(var(--muted-foreground));
 }

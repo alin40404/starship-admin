@@ -7,7 +7,10 @@
   color: inherit;
 }
 
-/** 表单控件字号：跟随 Tailwind --text-sm，随 html 根字号缩放（含 Modal/Drawer/Select 下拉 Portal 场景） */
+/**
+ * 表单控件字号：跟随 --admin-font-control（base×13/16，主题 16 → 13px）
+ * 含 Modal/Drawer/Select 下拉 Portal 场景
+ */
 .ant-input,
 .ant-input-affix-wrapper,
 textarea.ant-input,
@@ -41,14 +44,18 @@ textarea.ant-input,
 .ant-checkbox-wrapper,
 .ant-checkbox-label,
 .ant-checkbox-wrapper .ant-checkbox + span,
-/* 表单分组标题（如「其它设置」） */
+/* 表单 label / 分组标题 */
+.ant-form-item-label > label,
 .ant-divider-inner-text,
 .ant-picker .ant-picker-input > input,
 .ant-cascader-input,
 .ant-cascader-menu-item,
 .ant-cascader-menu-item-content,
 .ant-mentions textarea {
-  font-size: var(--text-sm, 0.875rem) !important;
+  font-size: var(
+    --admin-font-control,
+    var(--vben-button-font-size, calc(var(--font-size-base, 16px) * 13 / 16))
+  ) !important;
 }
 
 /**
@@ -153,6 +160,11 @@ textarea.ant-input,
 }
 
 .ant-tag {
+  font-size: var(
+    --admin-font-control,
+    var(--vben-button-font-size, calc(var(--font-size-base, 16px) * 13 / 16))
+  ) !important;
+
   > svg {
     display: inline-block;
   }

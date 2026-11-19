@@ -91,11 +91,17 @@
   --overlay: 0 0% 0% / 45%;
   --overlay-content: 0 0% 95% / 45%;
 
-  /* 基本文字大小 */
+  /* 基本文字大小（主题基准，preferences.theme.fontSize 默认同为 16） */
   --font-size-base: 16px;
   --menu-font-size: calc(var(--font-size-base) * 0.875);
-  /* 按钮字号：与表单控件、菜单一致，随系统字体配置缩放 */
-  --vben-button-font-size: calc(var(--font-size-base) * 0.875);
+  /* 按钮默认字号（动态，base=16 → 13px） */
+  --vben-button-font-size: calc(var(--font-size-base) * 13 / 16);
+  /* 列表搜索栏字号档（动态，base=16 时分别为 13 / 12 / 11） */
+  --admin-font-search: calc(var(--font-size-base) * 13 / 16);
+  --admin-font-search-sm: calc(var(--font-size-base) * 12 / 16);
+  --admin-font-search-xs: calc(var(--font-size-base) * 11 / 16);
+  /* 常规控件/按钮档，与按钮默认一致 → base=16 时 13px */
+  --admin-font-control: var(--vben-button-font-size);
 
   /* =============component & UI============= */
 
