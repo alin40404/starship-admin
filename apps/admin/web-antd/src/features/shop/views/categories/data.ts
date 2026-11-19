@@ -69,9 +69,14 @@ export function buildFormSchema(params: {
         placeholder: $t('platform.category.slugPlaceholder'),
       },
       fieldName: 'slug',
-      formItemClass: 'col-span-full',
       label: $t('platform.category.slug'),
       rules: 'required',
+    },
+    {
+      component: 'Input',
+      componentProps: { class: 'w-full' },
+      fieldName: 'keywords',
+      label: $t('platform.category.keywords'),
     },
     {
       component: 'PictureUploadField',
@@ -85,25 +90,10 @@ export function buildFormSchema(params: {
       label: $t('platform.category.image'),
     },
     {
-      component: 'Input',
-      componentProps: { class: 'w-full' },
-      fieldName: 'keywords',
-      formItemClass: 'col-span-full',
-      label: $t('platform.category.keywords'),
-    },
-    {
-      component: 'Textarea',
-      componentProps: { rows: 2 },
-      fieldName: 'description',
-      formItemClass: 'col-span-full items-start',
-      label: $t('platform.category.description'),
-    },
-    {
       component: 'InputNumber',
       componentProps: { class: 'w-full', min: 0 },
       defaultValue: 0,
       fieldName: 'sort',
-      formItemClass: 'col-span-full',
       label: $t('platform.category.sort'),
     },
     {
@@ -119,8 +109,14 @@ export function buildFormSchema(params: {
       },
       defaultValue: 'normal',
       fieldName: 'status',
-      formItemClass: 'col-span-full',
       label: $t('platform.category.status'),
+    },
+    {
+      component: 'Textarea',
+      componentProps: { rows: 2 },
+      fieldName: 'description',
+      formItemClass: 'col-span-full items-start',
+      label: $t('platform.category.description'),
     },
   ];
 }
