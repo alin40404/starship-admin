@@ -429,11 +429,30 @@ const showTableTitle = computed(() => {
   return !!slots[TABLE_TITLE] || !!tableTitle.value;
 });
 
+/** 是否配置了右侧内置工具（搜索/刷新/缩放/列设置等） */
+const hasBuiltinToolbarTools = computed(() => {
+  const tc = gridOptions.value?.toolbarConfig;
+  if (!tc || tc.enabled === false) {
+    return false;
+  }
+  return !!(
+    tc.refresh ||
+    tc.zoom ||
+    tc.custom ||
+    tc.export ||
+    tc.print ||
+    (Array.isArray(tc.tools) && tc.tools.length > 0) ||
+    (tc.search && formOptions.value)
+  );
+});
+
 const showToolbar = computed(() => {
   return (
     !!slots[TOOLBAR_ACTIONS] ||
     !!slots[TOOLBAR_TOOLS] ||
-    showTableTitle.value
+    showTableTitle.value ||
+    // 无左侧新增/批量时（如只读订单列表）仍要保留右侧按钮组
+    hasBuiltinToolbarTools.value
   );
 });
 
@@ -467,6 +486,8 @@ const toolbarOptions = computed(() => {
 
   // 强制使用固定的toolbar配置，不允许用户自定义
   // 减少配置的复杂度，以及后续维护的成本
+  // 仅左侧无操作时不挂 buttons 插槽，避免空占位；tools 插槽仅在有自定义 tools 时挂载，
+  // 否则走 toolbarConfig 内置 refresh/zoom/custom + tools 数组，保证右侧按钮组正常显示
   toolbarConfig.slots = {
     ...(hasActions ? { buttons: TOOLBAR_ACTIONS } : {}),
     ...(hasTools ? { tools: TOOLBAR_TOOLS } : {}),

@@ -19,6 +19,7 @@ alwaysApply: true
 - 已勾选：左侧显示批量操作组（`vxe-grid-batch-toolbar`），隐藏新增
 - 需要批量时：`checkboxConfig` + 列 `type: 'checkbox'`，并用 `selectedRows` / `clearSelection`
 - 启用/禁用数量按真实可操作行统计，为 0 时按钮 disabled、不显示 `(0)`（见 `batch-status` 工具）
+- **无新增/批量**的只读列表（如游戏订单）可不写 `#toolbar-actions`，但必须配置 `toolbarConfig`，**保留右侧按钮组**；`use-vxe-grid` 会按内置 tools 仍启用工具栏
 
 ## 示例骨架
 
