@@ -39,7 +39,7 @@ export interface ModalProps {
   closable?: boolean;
   /**
    * 点击弹窗遮罩是否关闭弹窗
-   * @default true
+   * @default false（添加/编辑等表单默认禁止点蒙层关闭，避免误关丢数据）
    */
   closeOnClickModal?: boolean;
   /**
