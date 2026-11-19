@@ -18,6 +18,8 @@ import {
 } from '../../ui';
 
 interface Props extends PopoverRootProps {
+  /** 箭头 left 额外偏移（px），正数往右 */
+  arrowOffsetX?: number;
   class?: ClassType;
   contentClass?: ClassType;
   contentProps?: PopoverContentProps;
@@ -27,6 +29,7 @@ interface Props extends PopoverRootProps {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  arrowOffsetX: 0,
   showArrow: false,
 });
 
@@ -34,6 +37,7 @@ const emits = defineEmits<PopoverRootEmits>();
 
 const delegatedProps = computed(() => {
   const {
+    arrowOffsetX: _arrowOffsetX,
     class: _cls,
     contentClass: _,
     contentProps: _cProps,
@@ -56,6 +60,16 @@ const mergedContentProps = computed(() => {
   }
   return base;
 });
+
+const contentStyle = computed(() => {
+  if (!props.showArrow || !props.arrowOffsetX) {
+    return undefined;
+  }
+  return {
+    // 作用到定位 span：自动 left + 该偏移
+    '--vben-popover-arrow-offset-x': `${props.arrowOffsetX}px`,
+  } as Record<string, string>;
+});
 </script>
 
 <template>
@@ -64,8 +78,12 @@ const mergedContentProps = computed(() => {
       <slot name="trigger"></slot>
 
       <PopoverContent
-        :class="contentClass"
+        :class="[
+          contentClass,
+          showArrow && arrowOffsetX ? 'vben-popover--arrow-offset-x' : '',
+        ]"
         class="side-content z-popup"
+        :style="contentStyle"
         v-bind="mergedContentProps"
       >
         <slot></slot>
@@ -79,3 +97,13 @@ const mergedContentProps = computed(() => {
     </PopoverTrigger>
   </PopoverRoot>
 </template>
+
+<style>
+/*
+ * PopoverArrow 的定位写在外层 span 的 inline left 上，
+ * class/style 只会落到内部 svg，所以用变量 + :has 给 span 加偏移。
+ */
+.vben-popover--arrow-offset-x > span:has(> svg.fill-popover) {
+  margin-left: var(--vben-popover-arrow-offset-x, 0);
+}
+</style>

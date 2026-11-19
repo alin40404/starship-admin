@@ -271,6 +271,7 @@ const panelBindings = computed(() => ({
   <VbenPopover
     v-else
     v-model:open="open"
+    :arrow-offset-x="5"
     content-class="relative right-2 w-90 overflow-visible p-0"
     :content-props="popoverContentProps"
     :modal="false"
