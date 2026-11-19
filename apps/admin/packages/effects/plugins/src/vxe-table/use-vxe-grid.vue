@@ -111,13 +111,61 @@ const filterPanelStyle = ref<Record<string, string>>({});
 const skipSearchSubmit = ref(false);
 const components = globalShareState.getComponents();
 
+/** Ant Design 下拉/日期面板挂在 body，点击选项不能当成面板外点击 */
+const FILTER_PANEL_POPUP_SELECTOR = [
+  '.ant-select-dropdown',
+  '.ant-tree-select-dropdown',
+  '.ant-cascader-dropdown',
+  '.ant-picker-dropdown',
+  '.ant-picker-panel-container',
+  '.ant-dropdown',
+  '.ant-modal',
+  '.ant-modal-root',
+  '.ant-popover',
+].join(',');
+
 onClickOutside(
   filterPanelRef,
-  () => {
+  (event) => {
+    const target = event.target as HTMLElement | null;
+    if (target?.closest?.(FILTER_PANEL_POPUP_SELECTOR)) {
+      return;
+    }
     filterPanelOpen.value = false;
   },
   { ignore: [filterTriggerRef] },
 );
+
+function getFilterPanelBoundary() {
+  // 优先限制在表格卡片内，避免盖住侧栏
+  const gridEl = (gridRef.value as { $el?: HTMLElement } | null)?.$el;
+  const host =
+    (gridEl?.closest?.('.bg-card') as HTMLElement | null) ||
+    (gridEl?.closest?.('[class*="rounded"]') as HTMLElement | null) ||
+    gridEl ||
+    null;
+  if (host) {
+    const r = host.getBoundingClientRect();
+    return { left: r.left + 8, right: r.right - 8 };
+  }
+  return { left: 8, right: window.innerWidth - 8 };
+}
+
+function getFilterPanelPreferredWidth() {
+  const fields = searchViews.value.pcPanel;
+  const count = Math.max(1, fields.length);
+  const cols = Math.min(3, count);
+  const hasWideField = fields.some((item) => {
+    const name = String(item.component ?? '');
+    return ['RangePicker', 'DatePicker', 'ApiTreeSelect', 'TreeSelect'].includes(
+      name,
+    );
+  });
+  const colWidth = hasWideField ? 280 : 220;
+  const gap = 16;
+  const padding = 32;
+  return cols * colWidth + (cols - 1) * gap + padding;
+}
 
 function updateFilterPanelPosition() {
   const trigger = filterTriggerRef.value;
@@ -125,20 +173,32 @@ function updateFilterPanelPosition() {
     return;
   }
   const rect = trigger.getBoundingClientRect();
-  const width = Math.min(780, window.innerWidth * 0.8);
-  const left = Math.max(
-    8,
-    Math.min(rect.right - width, window.innerWidth - width - 8),
-  );
-  // 箭头对准筛选按钮中心
-  const arrowLeft = Math.round(rect.left + rect.width / 2 - left);
+  const boundary = getFilterPanelBoundary();
+  const maxWidth = Math.max(220, boundary.right - boundary.left);
+  const width = Math.min(getFilterPanelPreferredWidth(), maxWidth, 780);
+  const cols = Math.min(3, Math.max(1, searchViews.value.pcPanel.length));
+
+  // 相对筛选按钮水平居中；贴边时再夹紧，避免越出内容区
+  let left = rect.left + rect.width / 2 - width / 2;
+  if (left < boundary.left) {
+    left = boundary.left;
+  }
+  if (left + width > boundary.right) {
+    left = boundary.right - width;
+  }
+
+  // 箭头对准按钮中心，并限制在面板内
+  let arrowLeft = rect.left + rect.width / 2 - left;
+  arrowLeft = Math.max(18, Math.min(width - 18, arrowLeft));
+
   filterPanelStyle.value = {
     position: 'fixed',
     top: `${Math.round(rect.bottom + 8)}px`,
     left: `${Math.round(left)}px`,
     width: `${Math.round(width)}px`,
     zIndex: '1100',
-    '--search-filter-arrow-left': `${arrowLeft}px`,
+    '--search-filter-arrow-left': `${Math.round(arrowLeft)}px`,
+    '--search-filter-cols': String(cols),
   };
 }
 

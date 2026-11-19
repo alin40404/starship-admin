@@ -139,10 +139,10 @@
   margin-inline-start: 0 !important;
 }
 
-/* 筛选面板：上标签 + 三列（对齐 CRM crm-filter-popper） */
+/* 筛选面板：上标签 + 按字段数自适应列数 */
 .search-filter-panel .search-filter-panel-grid {
   display: grid !important;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--search-filter-cols, 3), minmax(0, 1fr));
   gap: 12px 16px !important;
 }
 

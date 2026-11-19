@@ -399,7 +399,7 @@
 
 .search-filter-panel-grid {
   display: grid !important;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--search-filter-cols, 3), minmax(0, 1fr));
   gap: 12px 16px !important;
   width: 100%;
 }
