@@ -57,8 +57,88 @@ export function useGridFormSchema(
   ];
 }
 
-export function buildArticleFormSchema(
-  categoryOptions: { label: string; value: number }[],
+/** 标题区：标题 + slug（对齐商品表单「标题」卡片） */
+export function buildArticleTitleFormSchema(): VbenFormSchema[] {
+  return [
+    {
+      component: 'Input',
+      componentProps: {
+        class: 'w-full',
+        placeholder: '请输入文章标题',
+      },
+      fieldName: 'title',
+      formItemClass: 'col-span-full',
+      label: '标题',
+      rules: 'required',
+    },
+    {
+      component: 'Input',
+      componentProps: {
+        class: 'w-full',
+        placeholder: '唯一标识，用于 URL',
+      },
+      fieldName: 'slug',
+      formItemClass: 'col-span-full',
+      label: '标识 slug',
+      rules: 'required',
+    },
+  ];
+}
+
+/** 摘要 */
+export function buildArticleSummaryFormSchema(): VbenFormSchema[] {
+  return [
+    {
+      component: 'Textarea',
+      componentProps: {
+        class: 'w-full',
+        placeholder: '简短摘要，展示在列表或分享卡片',
+        rows: 3,
+      },
+      fieldName: 'summary',
+      formItemClass: 'col-span-full items-start',
+      hideLabel: true,
+      label: '摘要',
+    },
+  ];
+}
+
+/** 正文（富文本） */
+export function buildArticleContentFormSchema(): VbenFormSchema[] {
+  return [
+    {
+      component: 'RichEditor',
+      fieldName: 'content',
+      formItemClass: 'col-span-full items-start',
+      hideLabel: true,
+      label: '正文',
+    },
+  ];
+}
+
+/** 状态（侧栏按钮组） */
+export function buildArticleStatusFormSchema(): VbenFormSchema[] {
+  return [
+    {
+      component: 'RadioGroup',
+      componentProps: {
+        buttonStyle: 'solid',
+        class: 'w-full flex-wrap',
+        optionType: 'button',
+        options: getStatusOptions(),
+      },
+      defaultValue: 0,
+      fieldName: 'status',
+      formItemClass: 'col-span-full',
+      hideLabel: true,
+      label: '状态',
+    },
+  ];
+}
+
+/** 文章组织：栏目 */
+export function buildArticleOrgFormSchema(
+  categoryOptions: { label: string; value: number }[] = [],
 ): VbenFormSchema[] {
   return [
     {
@@ -67,32 +147,11 @@ export function buildArticleFormSchema(
         allowClear: true,
         class: 'w-full',
         options: categoryOptions,
+        placeholder: '选择栏目',
       },
       fieldName: 'category_id',
+      formItemClass: 'col-span-full',
       label: '栏目',
-    },
-    { component: 'Input', fieldName: 'title', label: '标题', rules: 'required' },
-    { component: 'Input', fieldName: 'slug', label: '标识 slug', rules: 'required' },
-    {
-      component: 'Textarea',
-      fieldName: 'summary',
-      formItemClass: 'col-span-full',
-      label: '摘要',
-    },
-    {
-      component: 'Textarea',
-      componentProps: { rows: 8 },
-      fieldName: 'content',
-      formItemClass: 'col-span-full',
-      label: '正文',
-    },
-    { component: 'Input', fieldName: 'cover', label: '封面图 URL' },
-    {
-      component: 'RadioGroup',
-      componentProps: { options: getStatusOptions() },
-      defaultValue: 0,
-      fieldName: 'status',
-      label: '状态',
     },
   ];
 }
