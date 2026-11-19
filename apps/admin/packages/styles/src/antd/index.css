@@ -114,9 +114,12 @@ textarea.ant-input,
   font-size: var(--text-sm, 0.875rem) !important;
 }
 
-/** Tooltip 提示文字：跟随 --text-sm，随 html 根字号缩放 */
+/** Tooltip 提示文字：跟随 --admin-font-control（base×13/16，主题 16 → 13px） */
 .ant-tooltip-inner {
-  font-size: var(--text-sm, 0.875rem) !important;
+  font-size: var(
+    --admin-font-control,
+    var(--vben-button-font-size, calc(var(--font-size-base, 16px) * 13 / 16))
+  ) !important;
 }
 
 /** Modal.confirm 内容文字 */

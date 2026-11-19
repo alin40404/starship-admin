@@ -13,6 +13,13 @@ const { formMessageId, name } = useFormField();
     :id="formMessageId"
     :name="toValue(name)"
     as="p"
-    class="text-destructive text-[0.8rem]"
+    class="text-destructive form-message-text"
   />
 </template>
+
+<style scoped>
+.form-message-text {
+  /* 校验错误单独档：base × 12/16（主题 16 → 12px） */
+  font-size: calc(var(--font-size-base, 16px) * 12 / 16);
+}
+</style>

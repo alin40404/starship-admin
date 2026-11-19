@@ -12,7 +12,7 @@
 | `--admin-font-search` | `base × 13/16` | **13px** | 搜索输入、筛选面板控件 |
 | `--admin-font-search-sm` | `base × 12/16` | **12px** | 浮动 label 上浮、筛选面板 label |
 | `--admin-font-search-xs` | `base × 11/16` | **11px** | 筛选角标 |
-| `--vben-button-font-size` / `--admin-font-control` | `base × 13/16` | **13px** | 默认按钮、表单字段/label、表格 Tag/Switch/操作链接 |
+| `--vben-button-font-size` / `--admin-font-control` | `base × 13/16` | **13px** | 默认按钮、表单字段/label、表格 Tag/Switch/操作链接/Tooltip |
 
 定义位置：`packages/@core/base/design/src/design-tokens/default.css`
 
@@ -57,6 +57,7 @@
 | 状态 Tag | 13px | 动态 | `--admin-font-control` |
 | 状态 Switch（已启用等） | 13px | 动态 | `--admin-font-control` |
 | 操作链接（修改/删除） | 13px | 动态 | `--vben-button-font-size`（ant-btn） |
+| Tooltip 提示 | 13px | 动态 | `--admin-font-control` |
 | 分页文案 | ≈13px | 动态 | VXE pager |
 
 表格档位配置：`adapter/vxe-table.ts` → `grid.size: 'small'`（不要再单独写死 13px）。
@@ -73,6 +74,7 @@
 | 输入框高度 | ≈32px | 动态 | Ant Input middle 高度仍 32 |
 | 数字输入 / Radio / 上传按钮 | 13px | 动态 | `--admin-font-control` / 按钮 token |
 | 底部取消 / 确认 | 13px / 高≈32px | 动态 | `--vben-button-font-size` |
+| 校验错误提示 | 12px | 动态 | `base × 12/16`（`FormMessage`，单独档） |
 
 ---
 
@@ -83,8 +85,9 @@
 | 搜索表单 | 13 / 12 / 11 | **动态** = `--admin-font-search*`（相对 16 的档位） |
 | 默认按钮（新增/批量/表单底栏等） | 13 | **动态** = `--vben-button-font-size` = base × 13/16 |
 | 表格表头/正文/分页 | ≈13 | **动态** = VXE `small` |
-| 表格 Tag / Switch / 操作链接 | 13 | **动态** = `--admin-font-control` / 按钮 token |
+| 表格 Tag / Switch / 操作链接 / Tooltip | 13 | **动态** = `--admin-font-control` / 按钮 token |
 | 添加/编辑表单字段 | 13（标题≈16） | **动态** = `--admin-font-control`；按钮同 13 |
+| 表单校验错误提示 | 12 | **动态** = `base × 12/16`（单独档） |
 
 ---
 
