@@ -440,6 +440,7 @@ export function buildAdminFormSchema(params: {
         rows: 2,
       },
       fieldName: 'remark',
+      formItemClass: 'w-full items-start',
       label: $t('permission.admin.remark'),
     },
   ];
