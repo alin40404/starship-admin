@@ -201,13 +201,13 @@ function buildSelectionColumn() {
   return props.multiple
     ? {
         align: 'center' as const,
-        fixed: 'left' as const,
+        fixed: 'right' as const,
         type: 'checkbox' as const,
         width: 48,
       }
     : {
         align: 'center' as const,
-        fixed: 'left' as const,
+        fixed: 'right' as const,
         type: 'radio' as const,
         width: 48,
       };
@@ -215,11 +215,11 @@ function buildSelectionColumn() {
 
 function buildPickerColumns() {
   return [
-    buildSelectionColumn(),
     ...usePickerColumns({
       onActionClick,
       showCategoryColumn: true,
     }),
+    buildSelectionColumn(),
   ];
 }
 
@@ -492,6 +492,34 @@ function handleConfirm() {
   confirmWithRows(selectedRows.value);
 }
 
+/** 单选：双击行直接选中并确认 */
+function pickRowByDblclick(row: AttachmentRow) {
+  if (props.multiple) {
+    return;
+  }
+  if (!isAttachmentAcceptable(row, props.accept)) {
+    return;
+  }
+  if (!isFlowMode.value) {
+    gridApi?.grid?.setRadioRow?.(row);
+  }
+  selectedRows.value = [row];
+  confirmWithRows([row]);
+}
+
+function onCellDblclick({
+  column,
+  row,
+}: {
+  column?: { field?: string };
+  row: AttachmentRow;
+}) {
+  if (column?.field === 'actions') {
+    return;
+  }
+  pickRowByDblclick(row);
+}
+
 function onOpenAttachment(row: AttachmentRow) {
   if (!row.file_url) {
     return;
@@ -577,6 +605,7 @@ const [Grid, gridApi] = useVbenVxeGrid<AttachmentRow>({
   class: 'h-full min-h-0',
   gridClass: 'p-0',
   gridEvents: {
+    cellDblclick: onCellDblclick,
     checkboxAll: syncSelection,
     checkboxChange: syncSelection,
     radioChange: syncSelection,
@@ -792,6 +821,7 @@ watch(
               :total="flowTotal"
               @load-more="loadMoreFlow"
               @open="onOpenAttachment"
+              @pick="pickRowByDblclick"
             />
           </Teleport>
         </div>
@@ -904,6 +934,7 @@ watch(
               :total="flowTotal"
               @load-more="loadMoreFlow"
               @open="onOpenAttachment"
+              @pick="pickRowByDblclick"
             />
           </Teleport>
         </div>

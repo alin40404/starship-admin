@@ -202,6 +202,10 @@ function onCardClick(row: AttachmentRow) {
   toggleSelect(row.id);
 }
 
+function onCardDblclick(row: AttachmentRow) {
+  emit('pick', row);
+}
+
 function onPreview(row: AttachmentRow) {
   if (!row.file_url) {
     return;
@@ -242,6 +246,7 @@ function onPreviewVisibleChange(visible: boolean) {
       class="attachment-flow-item"
       :class="{ 'is-selected': isSelected(row.id) }"
       @click="onCardClick(row)"
+      @dblclick="onCardDblclick(row)"
     >
       <div class="attachment-flow-item__thumb">
         <Image

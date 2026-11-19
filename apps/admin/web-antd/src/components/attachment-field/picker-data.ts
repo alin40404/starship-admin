@@ -109,13 +109,6 @@ export function usePickerColumns(options: {
       width: 96,
     },
     {
-      field: 'created_at',
-      formatter: 'formatDateTime',
-      minWidth: 170,
-      sortable: true,
-      title: $t('resource.attachment.columns.uploadedAt'),
-    },
-    {
       align: 'center',
       cellRender: {
         attrs: {
@@ -140,9 +133,15 @@ export function usePickerColumns(options: {
         ],
       },
       field: 'actions',
-      fixed: 'right',
       title: $t('resource.attachment.columns.link'),
       width: 150,
+    },
+    {
+      field: 'created_at',
+      formatter: 'formatDateTime',
+      minWidth: 170,
+      sortable: true,
+      title: $t('resource.attachment.columns.uploadedAt'),
     },
   );
 
