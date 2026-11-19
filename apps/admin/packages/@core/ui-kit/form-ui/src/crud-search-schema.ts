@@ -50,11 +50,34 @@ export function isSearchFieldEmpty(value: unknown): boolean {
   return false;
 }
 
+export type SearchFieldMappingTime = Array<
+  [string, [string, string], ...any[]]
+>;
+
+/**
+ * 统计已填筛选字段数。
+ * 注意：getValues 会把 RangePicker 等按 fieldMappingTime 拆成起止字段并删除原字段，
+ * 因此计数时需同时看映射后的 start/end。
+ */
 export function countFilledSearchFields(
   values: Record<string, any>,
   fields: Array<{ fieldName: string }>,
+  fieldMappingTime?: SearchFieldMappingTime | null,
 ): number {
   return fields.reduce((count, field) => {
-    return count + (isSearchFieldEmpty(values[field.fieldName]) ? 0 : 1);
+    if (!isSearchFieldEmpty(values[field.fieldName])) {
+      return count + 1;
+    }
+    const mapped = fieldMappingTime?.find((item) => item[0] === field.fieldName);
+    if (mapped) {
+      const [, [startKey, endKey]] = mapped;
+      if (
+        !isSearchFieldEmpty(values[startKey]) ||
+        !isSearchFieldEmpty(values[endKey])
+      ) {
+        return count + 1;
+      }
+    }
+    return count;
   }, 0);
 }

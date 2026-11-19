@@ -333,10 +333,16 @@
 
 .search-filter-trigger,
 .search-reset-trigger {
+  position: relative;
   width: auto;
 }
 
+/* 筛选按钮右上角徽章 */
 .search-filter-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -348,25 +354,84 @@
   color: #fff;
   font-size: 11px;
   line-height: 1;
+  pointer-events: none;
 }
 
+/* 对齐 CRM crm-filter-popper：Teleport 到 body 后用 fixed 定位，避免被工具栏裁切 */
 .search-filter-panel {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  z-index: 50;
-  width: min(780px, 80vw);
-  padding: 16px;
+  position: relative;
+  box-sizing: border-box;
+  padding: 16px 16px 12px;
   border: 1px solid hsl(var(--border));
   border-radius: 8px;
   background: hsl(var(--card));
   box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+  --ant-font-size: 13px;
+  --ant-font-size-sm: 12px;
+  --search-filter-arrow-left: 50%;
+  font-size: 13px;
+}
+
+/* 指向筛选按钮的指示箭头 */
+.search-filter-panel::before,
+.search-filter-panel::after {
+  content: '';
+  position: absolute;
+  left: var(--search-filter-arrow-left);
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  pointer-events: none;
+}
+
+.search-filter-panel::before {
+  top: -7px;
+  border-width: 0 7px 7px;
+  border-color: transparent transparent hsl(var(--border));
+}
+
+.search-filter-panel::after {
+  top: -6px;
+  border-width: 0 6px 6px;
+  border-color: transparent transparent hsl(var(--card, #fff));
 }
 
 .search-filter-panel-grid {
   display: grid !important;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px 16px;
+  gap: 12px 16px !important;
+  width: 100%;
+}
+
+.search-filter-panel-grid > .relative.flex {
+  min-width: 0;
+  align-items: stretch !important;
+  gap: 6px;
+  padding-bottom: 0 !important;
+  margin: 0;
+}
+
+.search-filter-panel .search-filter-label {
+  width: auto !important;
+  margin: 0 !important;
+  justify-content: flex-start !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  color: hsl(var(--muted-foreground));
+}
+
+.search-filter-panel :is(
+  .ant-input,
+  .ant-input-affix-wrapper,
+  .ant-input-number,
+  .ant-select,
+  .ant-select-selector,
+  .ant-picker
+) {
+  width: 100% !important;
+  max-width: 100% !important;
+  font-size: 13px !important;
 }
 
 .search-filter-footer {
@@ -376,4 +441,9 @@
   margin-top: 16px;
   padding-top: 12px;
   border-top: 1px solid hsl(var(--border));
+}
+
+.search-filter-footer .ant-btn {
+  --ant-font-size: 13px;
+  font-size: 13px !important;
 }

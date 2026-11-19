@@ -104,13 +104,57 @@ const showInlineSearchForm = computed(
 const searchDrawerOpen = ref(false);
 const filterPanelOpen = ref(false);
 const filterCount = ref(0);
+const filterTriggerRef = ref<HTMLElement | null>(null);
 const filterPanelRef = ref<HTMLElement | null>(null);
+const filterPanelStyle = ref<Record<string, string>>({});
 /** 重置表单时跳过 submitOnChange 触发的列表查询 */
 const skipSearchSubmit = ref(false);
 const components = globalShareState.getComponents();
 
-onClickOutside(filterPanelRef, () => {
-  filterPanelOpen.value = false;
+onClickOutside(
+  filterPanelRef,
+  () => {
+    filterPanelOpen.value = false;
+  },
+  { ignore: [filterTriggerRef] },
+);
+
+function updateFilterPanelPosition() {
+  const trigger = filterTriggerRef.value;
+  if (!trigger) {
+    return;
+  }
+  const rect = trigger.getBoundingClientRect();
+  const width = Math.min(780, window.innerWidth * 0.8);
+  const left = Math.max(
+    8,
+    Math.min(rect.right - width, window.innerWidth - width - 8),
+  );
+  // 箭头对准筛选按钮中心
+  const arrowLeft = Math.round(rect.left + rect.width / 2 - left);
+  filterPanelStyle.value = {
+    position: 'fixed',
+    top: `${Math.round(rect.bottom + 8)}px`,
+    left: `${Math.round(left)}px`,
+    width: `${Math.round(width)}px`,
+    zIndex: '1100',
+    '--search-filter-arrow-left': `${arrowLeft}px`,
+  };
+}
+
+function onFilterPanelReposition() {
+  if (!filterPanelOpen.value) {
+    return;
+  }
+  updateFilterPanelPosition();
+}
+
+watch(filterPanelOpen, async (open) => {
+  if (!open) {
+    return;
+  }
+  await nextTick();
+  updateFilterPanelPosition();
 });
 
 const isSearchDrawerOpen = computed(() => searchDrawerOpen.value);
@@ -176,6 +220,9 @@ async function refreshFilterCount() {
   filterCount.value = countFilledSearchFields(
     panelValues,
     searchViews.value.pcPanel,
+    formOptions.value?.fieldMappingTime as
+      | Array<[string, [string, string], ...any[]]>
+      | undefined,
   );
 }
 
@@ -212,18 +259,23 @@ const [Form, formApi] = useTableForm({
 });
 
 const [PanelForm, panelFormApi] = useTableForm({
+  // 对齐 CRM 筛选面板：上标签 + 控件纵向排列
   compact: true,
   commonConfig: {
     componentProps: {
       class: 'w-full',
     },
+    hideLabel: false,
+    labelClass: 'search-filter-label',
   },
+  floatLabel: false,
   handleValuesChange: async () => {
     await refreshFilterCount();
     if (formOptions.value?.submitOnChange !== false) {
       await reloadWithMergedValues(true);
     }
   },
+  layout: 'vertical',
   showCollapseButton: false,
   showDefaultActions: false,
   submitOnChange: false,
@@ -590,7 +642,16 @@ watch(
 
     panelFormApi.setState({
       compact: true,
+      commonConfig: {
+        componentProps: {
+          class: 'w-full',
+        },
+        hideLabel: false,
+        labelClass: 'search-filter-label',
+      },
       fieldMappingTime: formOptions.value?.fieldMappingTime,
+      floatLabel: false,
+      layout: 'vertical',
       schema: views.pcPanel,
       showDefaultActions: false,
       wrapperClass: 'search-filter-panel-grid',
@@ -610,9 +671,13 @@ const isCompactForm = computed(() => {
 onMounted(() => {
   props.api?.mount?.(gridRef.value, formApi);
   init();
+  window.addEventListener('resize', onFilterPanelReposition);
+  window.addEventListener('scroll', onFilterPanelReposition, true);
 });
 
 onUnmounted(() => {
+  window.removeEventListener('resize', onFilterPanelReposition);
+  window.removeEventListener('scroll', onFilterPanelReposition, true);
   formApi?.unmount?.();
   props.api?.unmount?.();
 });
@@ -702,7 +767,7 @@ onUnmounted(() => {
                 <slot name="reset-before" v-bind="slotProps"></slot>
                 <div
                   v-if="hasFilterPanel"
-                  ref="filterPanelRef"
+                  ref="filterTriggerRef"
                   class="search-filter-anchor"
                 >
                   <component
@@ -722,9 +787,13 @@ onUnmounted(() => {
                       {{ filterCount }}
                     </span>
                   </component>
+                </div>
+                <Teleport to="body">
                   <div
                     v-show="filterPanelOpen"
+                    ref="filterPanelRef"
                     class="search-filter-panel"
+                    :style="filterPanelStyle"
                     @mousedown.stop
                   >
                     <PanelForm />
@@ -745,7 +814,7 @@ onUnmounted(() => {
                       </component>
                     </div>
                   </div>
-                </div>
+                </Teleport>
                 <component
                   :is="components.DefaultButton"
                   type="button"
