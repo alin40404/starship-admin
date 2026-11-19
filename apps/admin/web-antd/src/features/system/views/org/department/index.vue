@@ -21,7 +21,7 @@ import {
 } from '#/features/system/api/department';
 import { DEPARTMENT_PERMISSIONS } from '#/features/system/constants/department-permissions';
 import { $t } from '#/locales';
-import { filterRowsForStatusChange } from '#/utils/batch-status';
+import { filterRowsForStatusChange, formatBatchActionLabel } from '#/utils/batch-status';
 
 import { useColumns } from './data';
 import DepartmentForm from './modules/form.vue';
@@ -252,7 +252,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
             :disabled="enableTargetRows.length === 0"
             @click="onBatchUpdateStatus(1)"
           >
-            {{ $t('system.shared.batchEnableWithCount', [enableTargetRows.length]) }}
+            {{ formatBatchActionLabel('system.shared.batchEnable', 'system.shared.batchEnableWithCount', enableTargetRows.length) }}
           </Button>
           <Button
             v-if="deptAccess.can(DEPARTMENT_PERMISSIONS.BATCH_STATUS)"
@@ -260,7 +260,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
             :disabled="disableTargetRows.length === 0"
             @click="onBatchUpdateStatus(0)"
           >
-            {{ $t('system.shared.batchDisableWithCount', [disableTargetRows.length]) }}
+            {{ formatBatchActionLabel('system.shared.batchDisable', 'system.shared.batchDisableWithCount', disableTargetRows.length) }}
           </Button>
           <Button class="ml-2" type="link" @click="clearSelection">
             {{ $t('system.shared.clearSelection') }}

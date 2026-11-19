@@ -21,7 +21,7 @@ import {
   updateShopCategoryStatus,
 } from '#/features/shop/api';
 import { SHOP_PERMISSIONS } from '#/features/shop/constants/shop-permissions';
-import { filterRowsForStatusChange } from '#/utils/batch-status';
+import { filterRowsForStatusChange, formatBatchActionLabel } from '#/utils/batch-status';
 
 import { useColumns, useGridFormSchema } from './data';
 import CategoryForm from './modules/form.vue';
@@ -266,7 +266,7 @@ const [Grid, gridApi] = useVbenVxeGrid<ShopCategoryTreeNode>({
               :disabled="normalTargetRows.length === 0"
               @click="onBatchUpdateStatus('normal')"
             >
-              {{ $t('system.shared.batchNormalWithCount', [normalTargetRows.length]) }}
+              {{ formatBatchActionLabel('system.shared.batchNormal', 'system.shared.batchNormalWithCount', normalTargetRows.length) }}
             </Button>
             <Button
               v-if="categoryAccess.can(SHOP_PERMISSIONS.CATEGORIES_BATCH_STATUS)"
@@ -274,7 +274,7 @@ const [Grid, gridApi] = useVbenVxeGrid<ShopCategoryTreeNode>({
               :disabled="hiddenTargetRows.length === 0"
               @click="onBatchUpdateStatus('hidden')"
             >
-              {{ $t('system.shared.batchHiddenWithCount', [hiddenTargetRows.length]) }}
+              {{ formatBatchActionLabel('system.shared.batchHidden', 'system.shared.batchHiddenWithCount', hiddenTargetRows.length) }}
             </Button>
             <Button class="ml-2" type="link" @click="clearSelection">
               {{ $t('system.shared.clearSelection') }}

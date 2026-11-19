@@ -29,7 +29,7 @@ import { MENU_PERMISSIONS } from '#/features/system/constants/menu-permissions';
 import {
   isDevOnlyModuleUnavailable,
 } from '#/features/system/utils/dev-only-module';
-import { filterRowsForStatusChange } from '#/utils/batch-status';
+import { filterRowsForStatusChange, formatBatchActionLabel } from '#/utils/batch-status';
 
 import { menuDisplayLabel, useColumns } from './data';
 import MenuForm from './modules/form.vue';
@@ -320,7 +320,7 @@ function onBatchUpdateStatus(status: 0 | 1) {
             :disabled="enableTargetRows.length === 0"
             @click="onBatchUpdateStatus(1)"
           >
-            {{ $t('system.shared.batchEnableWithCount', [enableTargetRows.length]) }}
+            {{ formatBatchActionLabel('system.shared.batchEnable', 'system.shared.batchEnableWithCount', enableTargetRows.length) }}
           </Button>
           <Button
             v-if="menuAccess.can(MENU_PERMISSIONS.BATCH_STATUS)"
@@ -328,7 +328,7 @@ function onBatchUpdateStatus(status: 0 | 1) {
             :disabled="disableTargetRows.length === 0"
             @click="onBatchUpdateStatus(0)"
           >
-            {{ $t('system.shared.batchDisableWithCount', [disableTargetRows.length]) }}
+            {{ formatBatchActionLabel('system.shared.batchDisable', 'system.shared.batchDisableWithCount', disableTargetRows.length) }}
           </Button>
           <Button class="ml-2" type="link" @click="clearSelection">
             {{ $t('system.shared.clearSelection') }}

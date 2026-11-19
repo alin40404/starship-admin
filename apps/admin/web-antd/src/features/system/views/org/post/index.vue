@@ -20,7 +20,7 @@ import {
 } from '#/features/system/api/post';
 import { POST_PERMISSIONS } from '#/features/system/constants/post-permissions';
 import { $t } from '#/locales';
-import { filterRowsForStatusChange } from '#/utils/batch-status';
+import { filterRowsForStatusChange, formatBatchActionLabel } from '#/utils/batch-status';
 
 import {
   buildPostMobileCrudConfig,
@@ -230,7 +230,7 @@ function onBatchUpdateStatus(status: 0 | 1) {
             :disabled="enableTargetRows.length === 0"
             @click="onBatchUpdateStatus(1)"
           >
-            {{ $t('system.shared.batchEnableWithCount', [enableTargetRows.length]) }}
+            {{ formatBatchActionLabel('system.shared.batchEnable', 'system.shared.batchEnableWithCount', enableTargetRows.length) }}
           </Button>
           <Button
             v-if="postAccess.can(POST_PERMISSIONS.BATCH_STATUS)"
@@ -238,7 +238,7 @@ function onBatchUpdateStatus(status: 0 | 1) {
             :disabled="disableTargetRows.length === 0"
             @click="onBatchUpdateStatus(0)"
           >
-            {{ $t('system.shared.batchDisableWithCount', [disableTargetRows.length]) }}
+            {{ formatBatchActionLabel('system.shared.batchDisable', 'system.shared.batchDisableWithCount', disableTargetRows.length) }}
           </Button>
           <Button class="ml-2" type="link" @click="clearSelection">
             {{ $t('system.shared.clearSelection') }}

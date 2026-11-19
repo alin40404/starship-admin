@@ -23,7 +23,7 @@ import {
   updateCategoryStatus,
 } from '#/features/system/api/category';
 import { CATEGORY_PERMISSIONS } from '#/features/system/constants/category-permissions';
-import { filterRowsForStatusChange } from '#/utils/batch-status';
+import { filterRowsForStatusChange, formatBatchActionLabel } from '#/utils/batch-status';
 
 import {
   DICT_TYPE_CODE,
@@ -376,7 +376,7 @@ const [Grid, gridApi] = useVbenVxeGrid<CategoryTreeNode>({
                     :disabled="normalTargetRows.length === 0"
                     @click="onBatchUpdateStatus('normal')"
                   >
-                    {{ $t('system.shared.batchNormalWithCount', [normalTargetRows.length]) }}
+                    {{ formatBatchActionLabel('system.shared.batchNormal', 'system.shared.batchNormalWithCount', normalTargetRows.length) }}
                   </Button>
                   <Button
                     v-if="categoryAccess.can(CATEGORY_PERMISSIONS.BATCH_STATUS)"
@@ -384,7 +384,7 @@ const [Grid, gridApi] = useVbenVxeGrid<CategoryTreeNode>({
                     :disabled="hiddenTargetRows.length === 0"
                     @click="onBatchUpdateStatus('hidden')"
                   >
-                    {{ $t('system.shared.batchHiddenWithCount', [hiddenTargetRows.length]) }}
+                    {{ formatBatchActionLabel('system.shared.batchHidden', 'system.shared.batchHiddenWithCount', hiddenTargetRows.length) }}
                   </Button>
                   <Button class="ml-2" type="link" @click="clearSelection">
                     {{ $t('system.shared.clearSelection') }}
