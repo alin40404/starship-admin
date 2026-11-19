@@ -43,6 +43,11 @@ const canAddMore = computed(
   () => !props.maxCount || innerFileList.value.length < props.maxCount,
 );
 
+/** 单选已选中时仍可打开选择器替换；多选达上限则隐藏 */
+const canSelectAttachment = computed(
+  () => !props.disabled && (canAddMore.value || props.maxCount === 1),
+);
+
 /** 多图/相册：流式换行；单图：封面等横向紧凑布局 */
 const isFlowLayout = computed(
   () => props.flowLayout === true || props.maxCount !== 1,
@@ -92,7 +97,7 @@ function onUploadChange(event: UploadChangeParam) {
 }
 
 function onSelectClick() {
-  if (props.disabled || !canAddMore.value) {
+  if (!canSelectAttachment.value) {
     return;
   }
   pickerOpen.value = true;
@@ -167,7 +172,7 @@ function onPickerConfirm(urls: string[]) {
       </Upload>
 
       <Button
-        v-if="canAddMore && !disabled"
+        v-if="canSelectAttachment"
         type="primary"
         class="picture-upload-field__select-btn"
         @click="onSelectClick"
