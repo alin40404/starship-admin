@@ -21,7 +21,11 @@
 @theme inline {
   /* Font */
   --font-sans: var(--font-family);
-  --text-sm: 0.875rem;
+  /* text-sm：跟随主题基准动态 13（base=16 → 13px），与 --admin-font-control 同档 */
+  --text-sm: var(
+    --admin-font-control,
+    calc(var(--font-size-base, 16px) * 13 / 16)
+  );
 
   /* Border Radius */
   --radius-sm: calc(var(--radius) - 4px);

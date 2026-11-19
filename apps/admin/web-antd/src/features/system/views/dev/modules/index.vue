@@ -50,7 +50,8 @@ const [Grid, gridApi] = useVbenVxeGrid<DevModuleRow>({
       },
     },
     rowConfig: { keyField: 'name' },
-    toolbarConfig: { custom: true, refresh: true, zoom: true },
+    // 模块列表无搜索/批量，不需要右侧刷新/缩放/列设置
+    toolbarConfig: { enabled: false },
   } as VxeTableGridOptions<DevModuleRow>,
 });
 </script>
