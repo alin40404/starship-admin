@@ -25,7 +25,8 @@
 | 输入框 / placeholder | 13px | 动态 | `--admin-font-search` |
 | Select 占位 / 选项框 | 13px | 动态 | `--admin-font-search` |
 | 浮动字段名（空态） | 13px | 动态 | `--admin-font-search` |
-| 浮动字段名（上浮） | 12px | 动态 | `--admin-font-search-sm` |
+| 浮动字段名（上浮） | 13px | 动态 | `--admin-font-search` |
+| Select 无数据（暂无数据） | 13px | 动态 | `--admin-font-control`（`antd/index.css`） |
 | 筛选 / 重置按钮文案 | 13px | 动态 | `--admin-font-search` |
 | 筛选角标数字 | 11px | 动态 | `--admin-font-search-xs` |
 | 筛选面板字段 label | 12px | 动态 | `--admin-font-search-sm` |

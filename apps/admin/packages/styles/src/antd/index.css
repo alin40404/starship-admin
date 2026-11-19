@@ -122,6 +122,18 @@ textarea.ant-input,
   ) !important;
 }
 
+/**
+ * Empty / Select 无数据文案（如「暂无数据」）：
+ * 下拉 Portal 渲染在 body，需单独覆盖
+ */
+.ant-empty-description,
+.ant-select-item-empty {
+  font-size: var(
+    --admin-font-control,
+    var(--vben-button-font-size, calc(var(--font-size-base, 16px) * 13 / 16))
+  ) !important;
+}
+
 /** Modal.confirm 内容文字 */
 .ant-modal-confirm-content {
   font-size: var(--text-sm, 0.875rem) !important;

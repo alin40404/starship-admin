@@ -14,7 +14,7 @@ alwaysApply: true
 | Token | 公式 | base=16 结果 | 用途 |
 |---|---|---|---|
 | `--admin-font-search` | `base × 13/16` | **13px** | 搜索输入、筛选面板控件 |
-| `--admin-font-search-sm` | `base × 12/16` | **12px** | 浮动 label 上浮、筛选面板字段 label |
+| `--admin-font-search-sm` | `base × 12/16` | **12px** | 筛选面板字段 label |
 | `--admin-font-search-xs` | `base × 11/16` | **11px** | 筛选角标 |
 | `--vben-button-font-size` / `--admin-font-control` | `base × 13/16` | **13px** | 默认按钮、表单字段/label、表格 Tag/Switch/操作链接/Tooltip |
 | 表单校验错误（`FormMessage`） | `base × 12/16` | **12px** | 错误提示单独档，勿用控件 13 |

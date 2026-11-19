@@ -361,7 +361,7 @@
 .search-float-field.is-active .search-float-label {
   top: 0;
   left: 8px;
-  font-size: var(--admin-font-search-sm); /* base=16 → 12px */
+  font-size: var(--admin-font-search); /* base=16 → 13px */
   transform: translateY(-50%);
 }
 

@@ -27,7 +27,7 @@
 }
 
 .vxe-grid-search-toolbar .search-float-field.is-active .search-float-label {
-  font-size: var(--admin-font-search-sm) !important;
+  font-size: var(--admin-font-search) !important;
   opacity: 1 !important;
   visibility: visible !important;
 }
