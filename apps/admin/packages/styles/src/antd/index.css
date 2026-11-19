@@ -44,6 +44,11 @@ textarea.ant-input,
 .ant-checkbox-wrapper,
 .ant-checkbox-label,
 .ant-checkbox-wrapper .ant-checkbox + span,
+/* Switch 内文案（如「已启用」） */
+.ant-switch,
+.ant-switch .ant-switch-inner,
+.ant-switch .ant-switch-inner-checked,
+.ant-switch .ant-switch-inner-unchecked,
 /* 表单 label / 分组标题 */
 .ant-form-item-label > label,
 .ant-divider-inner-text,

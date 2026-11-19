@@ -12,7 +12,7 @@
 | `--admin-font-search` | `base × 13/16` | **13px** | 搜索输入、筛选面板控件 |
 | `--admin-font-search-sm` | `base × 12/16` | **12px** | 浮动 label 上浮、筛选面板 label |
 | `--admin-font-search-xs` | `base × 11/16` | **11px** | 筛选角标 |
-| `--vben-button-font-size` / `--admin-font-control` | `base × 13/16` | **13px** | 默认按钮、表单字段/label、表格 Tag/操作链接 |
+| `--vben-button-font-size` / `--admin-font-control` | `base × 13/16` | **13px** | 默认按钮、表单字段/label、表格 Tag/Switch/操作链接 |
 
 定义位置：`packages/@core/base/design/src/design-tokens/default.css`
 
@@ -55,6 +55,7 @@
 | 表头 | ≈13px（字重 700） | 动态 | VXE `size: 'small'` |
 | 正文（各列） | ≈13px | 动态 | 同上 |
 | 状态 Tag | 13px | 动态 | `--admin-font-control` |
+| 状态 Switch（已启用等） | 13px | 动态 | `--admin-font-control` |
 | 操作链接（修改/删除） | 13px | 动态 | `--vben-button-font-size`（ant-btn） |
 | 分页文案 | ≈13px | 动态 | VXE pager |
 
@@ -82,7 +83,7 @@
 | 搜索表单 | 13 / 12 / 11 | **动态** = `--admin-font-search*`（相对 16 的档位） |
 | 默认按钮（新增/批量/表单底栏等） | 13 | **动态** = `--vben-button-font-size` = base × 13/16 |
 | 表格表头/正文/分页 | ≈13 | **动态** = VXE `small` |
-| 表格 Tag / 操作链接 | 13 | **动态** = `--admin-font-control` / 按钮 token |
+| 表格 Tag / Switch / 操作链接 | 13 | **动态** = `--admin-font-control` / 按钮 token |
 | 添加/编辑表单字段 | 13（标题≈16） | **动态** = `--admin-font-control`；按钮同 13 |
 
 ---
