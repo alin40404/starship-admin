@@ -134,6 +134,35 @@
   height: 34px;
 }
 
+/* 批量启用 / 禁用：仅非 disabled 时着色，数量为 0 时走 Ant 灰色不可点 */
+.vxe-grid .batch-btn-enable.ant-btn:not(:disabled),
+.mobile-crud-list .batch-btn-enable.ant-btn:not(:disabled) {
+  color: #fff;
+  background-color: #52c41a;
+  border-color: #52c41a;
+}
+
+.vxe-grid .batch-btn-enable.ant-btn:not(:disabled):hover,
+.mobile-crud-list .batch-btn-enable.ant-btn:not(:disabled):hover {
+  color: #fff;
+  background-color: #73d13d;
+  border-color: #73d13d;
+}
+
+.vxe-grid .batch-btn-disable.ant-btn:not(:disabled),
+.mobile-crud-list .batch-btn-disable.ant-btn:not(:disabled) {
+  color: #fff;
+  background-color: #fa8c16;
+  border-color: #fa8c16;
+}
+
+.vxe-grid .batch-btn-disable.ant-btn:not(:disabled):hover,
+.mobile-crud-list .batch-btn-disable.ant-btn:not(:disabled):hover {
+  color: #fff;
+  background-color: #ffa940;
+  border-color: #ffa940;
+}
+
 .vxe-toolbar:has(.vxe-grid-batch-toolbar) .vxe-tools--operate,
 .vxe-toolbar:has(.vxe-grid-batch-toolbar) .vxe-tools--wrapper {
   display: none !important;

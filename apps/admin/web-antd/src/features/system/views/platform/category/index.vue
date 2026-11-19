@@ -23,6 +23,7 @@ import {
   updateCategoryStatus,
 } from '#/features/system/api/category';
 import { CATEGORY_PERMISSIONS } from '#/features/system/constants/category-permissions';
+import { filterRowsForStatusChange } from '#/utils/batch-status';
 
 import {
   DICT_TYPE_CODE,
@@ -49,6 +50,13 @@ const categoryAccess = {
 const activeType = ref(ALL_TYPE_KEY);
 const typeOptions = ref<CategoryTypeOption[]>([]);
 const selectedRows = ref<CategoryTreeNode[]>([]);
+
+const normalTargetRows = computed(() =>
+  filterRowsForStatusChange(selectedRows.value, 'normal'),
+);
+const hiddenTargetRows = computed(() =>
+  filterRowsForStatusChange(selectedRows.value, 'hidden'),
+);
 
 const typeTagOptions = computed(() =>
   mapDictItemOptions(DICT_TYPE_CODE.categoryType, typeOptions.value),
@@ -197,7 +205,8 @@ function onBatchDelete() {
 }
 
 function onBatchUpdateStatus(status: CategoryTreeNode['status']) {
-  const ids = selectedRows.value.map((row) => row.id);
+  const targets = filterRowsForStatusChange(selectedRows.value, status);
+  const ids = targets.map((row) => row.id);
   if (ids.length === 0) return;
   const label =
     status === 'normal'
@@ -363,17 +372,19 @@ const [Grid, gridApi] = useVbenVxeGrid<CategoryTreeNode>({
                   </Button>
                   <Button
                     v-if="categoryAccess.can(CATEGORY_PERMISSIONS.BATCH_STATUS)"
-                    class="ml-2"
+                    class="batch-btn-enable ml-2"
+                    :disabled="normalTargetRows.length === 0"
                     @click="onBatchUpdateStatus('normal')"
                   >
-                    {{ $t('system.shared.batchNormal') }}
+                    {{ $t('system.shared.batchNormalWithCount', [normalTargetRows.length]) }}
                   </Button>
                   <Button
                     v-if="categoryAccess.can(CATEGORY_PERMISSIONS.BATCH_STATUS)"
-                    class="ml-2"
+                    class="batch-btn-disable ml-2"
+                    :disabled="hiddenTargetRows.length === 0"
                     @click="onBatchUpdateStatus('hidden')"
                   >
-                    {{ $t('system.shared.batchHidden') }}
+                    {{ $t('system.shared.batchHiddenWithCount', [hiddenTargetRows.length]) }}
                   </Button>
                   <Button class="ml-2" type="link" @click="clearSelection">
                     {{ $t('system.shared.clearSelection') }}

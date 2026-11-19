@@ -2,7 +2,7 @@
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { DepartmentTreeNode } from '#/features/system/api/department';
 
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { Page } from '@vben/common-ui';
@@ -21,6 +21,7 @@ import {
 } from '#/features/system/api/department';
 import { DEPARTMENT_PERMISSIONS } from '#/features/system/constants/department-permissions';
 import { $t } from '#/locales';
+import { filterRowsForStatusChange } from '#/utils/batch-status';
 
 import { useColumns } from './data';
 import DepartmentForm from './modules/form.vue';
@@ -37,6 +38,13 @@ const deptAccess = {
 
 const deptFormRef = ref<DepartmentFormExpose>();
 const selectedRows = ref<DepartmentTreeNode[]>([]);
+
+const enableTargetRows = computed(() =>
+  filterRowsForStatusChange(selectedRows.value, 1),
+);
+const disableTargetRows = computed(() =>
+  filterRowsForStatusChange(selectedRows.value, 0),
+);
 
 function syncSelection() {
   const records = gridApi?.grid?.getCheckboxRecords?.() ?? [];
@@ -133,7 +141,8 @@ function onBatchDelete() {
 }
 
 function onBatchUpdateStatus(status: 0 | 1) {
-  const ids = selectedRows.value.map((row) => row.id);
+  const targets = filterRowsForStatusChange(selectedRows.value, status);
+  const ids = targets.map((row) => row.id);
   if (ids.length === 0) return;
   const label =
     status === 1
@@ -239,17 +248,19 @@ const [Grid, gridApi] = useVbenVxeGrid({
           </Button>
           <Button
             v-if="deptAccess.can(DEPARTMENT_PERMISSIONS.BATCH_STATUS)"
-            class="org-batch-btn-enable ml-2"
+            class="batch-btn-enable ml-2"
+            :disabled="enableTargetRows.length === 0"
             @click="onBatchUpdateStatus(1)"
           >
-            {{ $t('system.shared.batchEnable') }}
+            {{ $t('system.shared.batchEnableWithCount', [enableTargetRows.length]) }}
           </Button>
           <Button
             v-if="deptAccess.can(DEPARTMENT_PERMISSIONS.BATCH_STATUS)"
-            class="org-batch-btn-disable ml-2"
+            class="batch-btn-disable ml-2"
+            :disabled="disableTargetRows.length === 0"
             @click="onBatchUpdateStatus(0)"
           >
-            {{ $t('system.shared.batchDisable') }}
+            {{ $t('system.shared.batchDisableWithCount', [disableTargetRows.length]) }}
           </Button>
           <Button class="ml-2" type="link" @click="clearSelection">
             {{ $t('system.shared.clearSelection') }}
@@ -273,15 +284,4 @@ const [Grid, gridApi] = useVbenVxeGrid({
   cursor: pointer;
 }
 
-.vxe-grid .org-batch-btn-enable.ant-btn {
-  color: #fff;
-  background-color: #52c41a;
-  border-color: #52c41a;
-}
-
-.vxe-grid .org-batch-btn-disable.ant-btn {
-  color: #fff;
-  background-color: #fa8c16;
-  border-color: #fa8c16;
-}
 </style>

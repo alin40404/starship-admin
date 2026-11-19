@@ -5,7 +5,7 @@ import type {
 } from '#/adapter/vxe-table';
 import type { MenuTreeNode } from '#/features/system/api/menu';
 
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { Page, useVbenDrawer } from '@vben/common-ui';
@@ -29,6 +29,7 @@ import { MENU_PERMISSIONS } from '#/features/system/constants/menu-permissions';
 import {
   isDevOnlyModuleUnavailable,
 } from '#/features/system/utils/dev-only-module';
+import { filterRowsForStatusChange } from '#/utils/batch-status';
 
 import { menuDisplayLabel, useColumns } from './data';
 import MenuForm from './modules/form.vue';
@@ -72,6 +73,13 @@ const [MenuFormDrawer, menuFormDrawerApi] = useVbenDrawer({
 });
 
 const selectedRows = ref<MenuTreeNode[]>([]);
+
+const enableTargetRows = computed(() =>
+  filterRowsForStatusChange(selectedRows.value, 1),
+);
+const disableTargetRows = computed(() =>
+  filterRowsForStatusChange(selectedRows.value, 0),
+);
 
 function syncSelection() {
   const records = gridApi?.grid?.getCheckboxRecords?.() ?? [];
@@ -263,7 +271,8 @@ function onBatchDelete() {
 }
 
 function onBatchUpdateStatus(status: 0 | 1) {
-  const ids = selectedRows.value.map((row) => row.id);
+  const targets = filterRowsForStatusChange(selectedRows.value, status);
+  const ids = targets.map((row) => row.id);
   if (ids.length === 0) {
     return;
   }
@@ -307,17 +316,19 @@ function onBatchUpdateStatus(status: 0 | 1) {
           </Button>
           <Button
             v-if="menuAccess.can(MENU_PERMISSIONS.BATCH_STATUS)"
-            class="menu-batch-btn-enable ml-2"
+            class="batch-btn-enable ml-2"
+            :disabled="enableTargetRows.length === 0"
             @click="onBatchUpdateStatus(1)"
           >
-            {{ $t('system.shared.batchEnable') }}
+            {{ $t('system.shared.batchEnableWithCount', [enableTargetRows.length]) }}
           </Button>
           <Button
             v-if="menuAccess.can(MENU_PERMISSIONS.BATCH_STATUS)"
-            class="menu-batch-btn-disable ml-2"
+            class="batch-btn-disable ml-2"
+            :disabled="disableTargetRows.length === 0"
             @click="onBatchUpdateStatus(0)"
           >
-            {{ $t('system.shared.batchDisable') }}
+            {{ $t('system.shared.batchDisableWithCount', [disableTargetRows.length]) }}
           </Button>
           <Button class="ml-2" type="link" @click="clearSelection">
             {{ $t('system.shared.clearSelection') }}
@@ -424,28 +435,4 @@ function onBatchUpdateStatus(status: 0 | 1) {
   cursor: pointer;
 }
 
-/** 批量启用 / 批量禁用（工具栏） */
-.vxe-grid .menu-batch-btn-enable.ant-btn {
-  color: #fff;
-  background-color: #52c41a;
-  border-color: #52c41a;
-}
-
-.vxe-grid .menu-batch-btn-enable.ant-btn:not(:disabled):hover {
-  color: #fff;
-  background-color: #73d13d;
-  border-color: #73d13d;
-}
-
-.vxe-grid .menu-batch-btn-disable.ant-btn {
-  color: #fff;
-  background-color: #fa8c16;
-  border-color: #fa8c16;
-}
-
-.vxe-grid .menu-batch-btn-disable.ant-btn:not(:disabled):hover {
-  color: #fff;
-  background-color: #ffa940;
-  border-color: #ffa940;
-}
 </style>

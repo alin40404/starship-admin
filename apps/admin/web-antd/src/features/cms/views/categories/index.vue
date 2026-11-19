@@ -2,7 +2,7 @@
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { CmsCategoryTreeNode } from '#/features/cms/api';
 
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { Page } from '@vben/common-ui';
@@ -21,6 +21,7 @@ import {
   updateCmsCategoryStatus,
 } from '#/features/cms/api';
 import { CMS_PERMISSIONS } from '#/features/cms/constants/cms-permissions';
+import { filterRowsForStatusChange } from '#/utils/batch-status';
 
 import { useColumns, useGridFormSchema } from './data';
 import CategoryForm from './modules/form.vue';
@@ -36,6 +37,13 @@ const categoryAccess = {
 
 const selectedRows = ref<CmsCategoryTreeNode[]>([]);
 const categoryFormRef = ref<CategoryFormExpose>();
+
+const normalTargetRows = computed(() =>
+  filterRowsForStatusChange(selectedRows.value, 'normal'),
+);
+const hiddenTargetRows = computed(() =>
+  filterRowsForStatusChange(selectedRows.value, 'hidden'),
+);
 
 function syncSelection() {
   const records = gridApi?.grid?.getCheckboxRecords?.() ?? [];
@@ -135,7 +143,8 @@ function onBatchDelete() {
 }
 
 function onBatchUpdateStatus(status: CmsCategoryTreeNode['status']) {
-  const ids = selectedRows.value.map((row) => row.id);
+  const targets = filterRowsForStatusChange(selectedRows.value, status);
+  const ids = targets.map((row) => row.id);
   if (ids.length === 0) return;
   const label =
     status === 'normal'
@@ -253,17 +262,19 @@ const [Grid, gridApi] = useVbenVxeGrid<CmsCategoryTreeNode>({
             </Button>
             <Button
               v-if="categoryAccess.can(CMS_PERMISSIONS.CATEGORIES_BATCH_STATUS)"
-              class="ml-2"
+              class="batch-btn-enable ml-2"
+              :disabled="normalTargetRows.length === 0"
               @click="onBatchUpdateStatus('normal')"
             >
-              {{ $t('system.shared.batchNormal') }}
+              {{ $t('system.shared.batchNormalWithCount', [normalTargetRows.length]) }}
             </Button>
             <Button
               v-if="categoryAccess.can(CMS_PERMISSIONS.CATEGORIES_BATCH_STATUS)"
-              class="ml-2"
+              class="batch-btn-disable ml-2"
+              :disabled="hiddenTargetRows.length === 0"
               @click="onBatchUpdateStatus('hidden')"
             >
-              {{ $t('system.shared.batchHidden') }}
+              {{ $t('system.shared.batchHiddenWithCount', [hiddenTargetRows.length]) }}
             </Button>
             <Button class="ml-2" type="link" @click="clearSelection">
               {{ $t('system.shared.clearSelection') }}

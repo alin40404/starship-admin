@@ -2,6 +2,8 @@
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { RoleRow } from '#/features/system/api/role';
 
+import { computed } from 'vue';
+
 import { useAccess } from '@vben/access';
 import { Page, useVbenDrawer } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
@@ -19,6 +21,7 @@ import {
   updateRoleStatus,
 } from '#/features/system/api/role';
 import { ROLE_PERMISSIONS } from '#/features/system/constants/role-permissions';
+import { filterRowsForStatusChange } from '#/utils/batch-status';
 
 import {
   buildRoleMobileCrudConfig,
@@ -171,6 +174,13 @@ const [CrudView, crudApi] = useResponsiveCrud<RoleRow>({
 
 const { clearSelection, reload, selectedRows } = crudApi;
 
+const enableTargetRows = computed(() =>
+  filterRowsForStatusChange(selectedRows.value, 1),
+);
+const disableTargetRows = computed(() =>
+  filterRowsForStatusChange(selectedRows.value, 0),
+);
+
 function onRefresh() {
   reload();
 }
@@ -203,7 +213,8 @@ function onBatchDelete() {
 }
 
 function onBatchUpdateStatus(status: 0 | 1) {
-  const ids = selectedRows.value.map((row) => row.id);
+  const targets = filterRowsForStatusChange(selectedRows.value, status);
+  const ids = targets.map((row) => row.id);
   if (ids.length === 0) {
     return;
   }
@@ -247,17 +258,19 @@ function onBatchUpdateStatus(status: 0 | 1) {
           </Button>
           <Button
             v-if="roleAccess.can(ROLE_PERMISSIONS.BATCH_STATUS)"
-            class="role-batch-btn-enable ml-2"
+            class="batch-btn-enable ml-2"
+            :disabled="enableTargetRows.length === 0"
             @click="onBatchUpdateStatus(1)"
           >
-            {{ $t('system.shared.batchEnable') }}
+            {{ $t('system.shared.batchEnableWithCount', [enableTargetRows.length]) }}
           </Button>
           <Button
             v-if="roleAccess.can(ROLE_PERMISSIONS.BATCH_STATUS)"
-            class="role-batch-btn-disable ml-2"
+            class="batch-btn-disable ml-2"
+            :disabled="disableTargetRows.length === 0"
             @click="onBatchUpdateStatus(0)"
           >
-            {{ $t('system.shared.batchDisable') }}
+            {{ $t('system.shared.batchDisableWithCount', [disableTargetRows.length]) }}
           </Button>
           <Button class="ml-2" type="link" @click="clearSelection">
             {{ $t('system.shared.clearSelection') }}
@@ -276,33 +289,3 @@ function onBatchUpdateStatus(status: 0 | 1) {
   </Page>
 </template>
 
-<style lang="scss">
-/** 批量启用 / 批量禁用（工具栏） */
-.vxe-grid .role-batch-btn-enable.ant-btn,
-.mobile-crud-list .role-batch-btn-enable.ant-btn {
-  color: #fff;
-  background-color: #52c41a;
-  border-color: #52c41a;
-}
-
-.vxe-grid .role-batch-btn-enable.ant-btn:not(:disabled):hover,
-.mobile-crud-list .role-batch-btn-enable.ant-btn:not(:disabled):hover {
-  color: #fff;
-  background-color: #73d13d;
-  border-color: #73d13d;
-}
-
-.vxe-grid .role-batch-btn-disable.ant-btn,
-.mobile-crud-list .role-batch-btn-disable.ant-btn {
-  color: #fff;
-  background-color: #fa8c16;
-  border-color: #fa8c16;
-}
-
-.vxe-grid .role-batch-btn-disable.ant-btn:not(:disabled):hover,
-.mobile-crud-list .role-batch-btn-disable.ant-btn:not(:disabled):hover {
-  color: #fff;
-  background-color: #ffa940;
-  border-color: #ffa940;
-}
-</style>
