@@ -56,6 +56,33 @@
   /* --vxe-ui-table-fixed-scrolling-box-shadow-color: rgb(0 0 0 / 80%); */
 }
 
+/**
+ * 表格 loading：只盖在 .vxe-table 上并居中，
+ * 不盖住搜索表单 / 工具栏 / 分页（VXE 默认 ::before 会盖住整个 grid）
+ */
+.vxe-grid.is--loading::before {
+  content: none !important;
+  display: none !important;
+}
+
+.vxe-grid .vxe-table {
+  position: relative;
+}
+
+.vxe-grid.is--loading .vxe-table .vxe-loading,
+.vxe-grid .vxe-table .vxe-table--loading.vxe-loading.is--visible {
+  background-color: hsl(var(--overlay-content)) !important;
+}
+
+.vxe-grid .vxe-table .vxe-loading > .vxe-loading--chunk,
+.vxe-grid .vxe-table .vxe-loading > .vxe-loading--wrapper {
+  top: 50%;
+  left: 50%;
+  width: auto;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
 .vxe-pager {
   .vxe-pager--prev-btn:not(.is--disabled):active,
   .vxe-pager--next-btn:not(.is--disabled):active,
