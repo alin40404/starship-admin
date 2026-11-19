@@ -1,0 +1,27 @@
+---
+description: 数据库迁移禁止使用外键约束
+globs: "**/database/migrations/**/*.php"
+alwaysApply: false
+---
+
+# 数据库：禁止外键
+
+本项目所有数据库表**一律不使用外键（FOREIGN KEY）**。
+
+## 要求
+
+- 迁移中不得使用 `$table->foreign()`、`->references()`、`->on()` 等外键定义
+- 关联字段使用普通列即可（如 `unsignedBigInteger('category_id')->nullable()`）
+- 需要查询性能时，仅为关联列添加**普通索引**（`$table->index('category_id')`）
+- 引用完整性在应用层（Model / Service / 业务逻辑）保证，不在数据库层约束
+
+## 示例
+
+```php
+// ❌ 禁止
+$table->foreign('category_id')->references('id')->on('categories')->nullOnDelete();
+
+// ✅ 正确
+$table->unsignedBigInteger('category_id')->nullable()->comment('分类ID');
+$table->index('category_id');
+```

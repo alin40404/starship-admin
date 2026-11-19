@@ -1,0 +1,26 @@
+---
+description: Admin 添加/编辑等表单弹窗禁止点击蒙层关闭
+alwaysApply: true
+---
+
+# Admin 表单弹窗关闭规则
+
+- **添加 / 编辑 / 修改信息**的 Modal、Drawer（`useVbenModal` / `useVbenDrawer`）**禁止**点击蒙层关闭
+- 默认：`closeOnClickModal: false`（已在 `popup-ui` 的 `modal-api` / `drawer-api` 默认态生效）
+- 新建或改表单弹窗时：**不要**再写成 `closeOnClickModal: true`
+- 仅预览、纯展示、无表单数据丢失风险的弹层，才可显式开启 `closeOnClickModal: true`
+- Ant Design 原生 `Modal` / `Drawer` 表单场景同样设 `maskClosable: false`
+
+## 正确写法
+
+```ts
+const [Modal, modalApi] = useVbenModal({
+  destroyOnClose: true,
+  // closeOnClickModal 默认 false，无需再写；禁止设为 true
+});
+```
+
+```ts
+// ❌ 表单弹窗不要这样
+useVbenModal({ closeOnClickModal: true });
+```

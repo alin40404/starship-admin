@@ -1,0 +1,36 @@
+---
+description: Admin 后台字号以主题 16px 为基准，统一动态计算
+alwaysApply: true
+---
+
+# Admin 字号基准
+
+- **主题基准**：`preferences.theme.fontSize = 16` → CSS `--font-size-base: 16px`
+- **禁止**在后台 UI 再写死无关的 `font-size: NNpx`（除非文档明确约定的特例）
+- **所有字号**用 `calc(var(--font-size-base) * n / 16)` 或已有 token，保证改主题字号时整体缩放
+
+## 目标档位（base=16 时的视觉结果）
+
+| Token | 公式 | base=16 结果 | 用途 |
+|---|---|---|---|
+| `--admin-font-search` | `base × 13/16` | **13px** | 搜索输入、筛选面板控件 |
+| `--admin-font-search-sm` | `base × 12/16` | **12px** | 浮动 label 上浮、筛选面板字段 label |
+| `--admin-font-search-xs` | `base × 11/16` | **11px** | 筛选角标 |
+| `--vben-button-font-size` / `--admin-font-control` | `base × 13/16` | **13px** | 默认按钮、表单字段/label、表格 Tag/Switch/操作链接/Tooltip |
+| 表单校验错误（`FormMessage`） | `base × 12/16` | **12px** | 错误提示单独档，勿用控件 13 |
+| 表格 `size: 'small'` | VXE 档位 | **≈13px** | 表头 / 正文 / 分页（勿再单独写死 13px） |
+
+## 写法
+
+```css
+/* ✅ */
+font-size: var(--admin-font-search);
+--ant-font-size: var(--admin-font-search);
+
+/* ❌ */
+font-size: 13px;
+```
+
+搜索表单改字号时：改 token 或比例，**算出来仍应对齐 13 / 12 / 11**（相对 16 的档位），不要直接改回写死 px。
+
+详见 `docs/ui/admin-font-size.md`。

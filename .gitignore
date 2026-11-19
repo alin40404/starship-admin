@@ -40,9 +40,11 @@ Desktop.ini
 .VSCodeCounter/
 .history/
 
-# Cursor / VS Code
+# Cursor / VS Code（保留可共享的 AI rules）
 /.vscode/
-.cursor/
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
 
 # AI (local)
 .agent/
