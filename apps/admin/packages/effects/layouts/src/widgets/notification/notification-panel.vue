@@ -192,7 +192,7 @@ function showCategoryIcon(item: NotificationItem) {
             </span>
             <div class="flex min-w-0 flex-1 flex-col gap-1 pr-12 leading-normal">
               <p
-                class="cursor-pointer truncate hover:underline"
+                class="notification-item-title cursor-pointer truncate hover:underline"
                 :class="
                   item.isRead
                     ? 'font-normal text-muted-foreground hover:text-muted-foreground'
@@ -281,6 +281,14 @@ function showCategoryIcon(item: NotificationItem) {
 </template>
 
 <style scoped>
+/* 通知标题：跟随控件字号（base×13/16，主题 16 → 13px） */
+.notification-item-title {
+  font-size: var(
+    --admin-font-control,
+    var(--vben-button-font-size, calc(var(--font-size-base, 16px) * 13 / 16))
+  );
+}
+
 .notification-category-tabs {
   display: flex;
   gap: 6px;

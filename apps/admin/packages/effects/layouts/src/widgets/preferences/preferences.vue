@@ -12,6 +12,8 @@ import { VbenButton } from '@vben-core/shadcn-ui';
 import PreferencesDrawer from './preferences-drawer.vue';
 
 const [Drawer, drawerApi] = useVbenDrawer({
+  // 偏好设置非表单编辑弹窗，允许点蒙层关闭
+  closeOnClickModal: true,
   connectedComponent: PreferencesDrawer,
 });
 
