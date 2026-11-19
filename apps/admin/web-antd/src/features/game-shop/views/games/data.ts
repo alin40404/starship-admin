@@ -61,6 +61,7 @@ export function useColumns(
   access: AccessChecker,
 ): CrudGridColumn<GameRow>[] {
   return [
+    { type: 'checkbox', width: 40 },
     { field: 'id', title: 'ID', width: 72 },
     { field: 'name', minWidth: 140, title: '游戏名称' },
     { field: 'code', minWidth: 100, title: '编码' },

@@ -2,7 +2,7 @@
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { GameRow } from '#/features/game-shop/api';
 
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { Page } from '@vben/common-ui';
@@ -11,9 +11,17 @@ import { Plus } from '@vben/icons';
 import { Button, message, Modal } from 'ant-design-vue';
 
 import { useResponsiveCrud } from '#/adapter/mobile-list';
-import { deleteGame, fetchGamePage } from '#/features/game-shop/api';
+import {
+  deleteGame,
+  fetchGamePage,
+  updateGameStatus,
+} from '#/features/game-shop/api';
 import { GAME_SHOP_PERMISSIONS } from '#/features/game-shop/constants/game-shop-permissions';
 import { $t } from '#/locales';
+import {
+  filterRowsForStatusChange,
+  formatBatchActionLabel,
+} from '#/utils/batch-status';
 
 import { useColumns, useGridFormSchema } from './data';
 import GameForm from './modules/form.vue';
@@ -37,18 +45,6 @@ function onActionClick({ code, row }: OnActionClickParams<GameRow>) {
   else if (code === 'delete') onDelete(row);
 }
 
-async function onDelete(row: GameRow) {
-  Modal.confirm({
-    title: $t('crud.confirmDelete'),
-    content: row.name,
-    async onOk() {
-      await deleteGame(row.id);
-      message.success($t('crud.deleted'));
-      crudApi.reload();
-    },
-  });
-}
-
 const columns = useColumns(onActionClick, access);
 
 const [CrudView, crudApi] = useResponsiveCrud<GameRow>({
@@ -58,8 +54,10 @@ const [CrudView, crudApi] = useResponsiveCrud<GameRow>({
     submitOnChange: true,
   },
   gridOptions: {
+    checkboxConfig: { highlight: true },
     columns: columns as VxeTableGridOptions<GameRow>['columns'],
     height: 'auto',
+    keepSource: true,
     proxyConfig: {
       ajax: {
         query: async ({ page }, formValues) =>
@@ -70,16 +68,128 @@ const [CrudView, crudApi] = useResponsiveCrud<GameRow>({
           }),
       },
     },
-  },
+    rowConfig: { keyField: 'id' },
+    toolbarConfig: { custom: true, refresh: true, search: true, zoom: true },
+  } as VxeTableGridOptions<GameRow>,
 });
+
+const { clearSelection, reload, selectedRows } = crudApi;
+
+const enableTargetRows = computed(() =>
+  filterRowsForStatusChange(selectedRows.value, 1),
+);
+const disableTargetRows = computed(() =>
+  filterRowsForStatusChange(selectedRows.value, 0),
+);
+
+function onRefresh() {
+  reload();
+}
+
+async function onDelete(row: GameRow) {
+  Modal.confirm({
+    title: $t('crud.confirmDelete'),
+    content: row.name,
+    okText: $t('common.delete'),
+    okType: 'danger',
+    cancelText: $t('common.cancel'),
+    async onOk() {
+      await deleteGame(row.id);
+      message.success($t('crud.deleted'));
+      clearSelection();
+      onRefresh();
+    },
+  });
+}
+
+function onBatchDelete() {
+  const ids = selectedRows.value.map((row) => row.id);
+  if (ids.length === 0) return;
+  Modal.confirm({
+    content: `确认删除选中的 ${ids.length} 个游戏？`,
+    okText: $t('common.delete'),
+    okType: 'danger',
+    cancelText: $t('common.cancel'),
+    title: $t('system.shared.batchDelete'),
+    async onOk() {
+      await Promise.all(ids.map((id) => deleteGame(id)));
+      message.success($t('crud.batchDeleted'));
+      clearSelection();
+      onRefresh();
+    },
+  });
+}
+
+function onBatchUpdateStatus(status: 0 | 1) {
+  const targets = filterRowsForStatusChange(selectedRows.value, status);
+  const ids = targets.map((row) => row.id);
+  if (ids.length === 0) return;
+  const label =
+    status === 1
+      ? $t('system.shared.status.enable')
+      : $t('system.shared.status.disable');
+  Modal.confirm({
+    content: `确认将选中的 ${ids.length} 个游戏设为「${label}」？`,
+    okText: $t('common.confirm'),
+    cancelText: $t('common.cancel'),
+    title: $t('system.shared.batchSet', [label]),
+    async onOk() {
+      await Promise.all(ids.map((id) => updateGameStatus(id, status)));
+      message.success($t('system.shared.batchStatusDone', [label]));
+      clearSelection();
+      onRefresh();
+    },
+  });
+}
 </script>
 
 <template>
   <Page auto-content-height>
-    <CrudView table-title="游戏管理">
-      <template #toolbar-tools>
+    <GameForm ref="formRef" @success="onRefresh" />
+    <CrudView>
+      <template #toolbar-actions>
+        <div v-if="selectedRows.length > 0" class="vxe-grid-batch-toolbar">
+          <Button
+            v-if="access.can(GAME_SHOP_PERMISSIONS.GAMES_DELETE)"
+            danger
+            @click="onBatchDelete"
+          >
+            {{ $t('system.shared.batchDeleteWithCount', [selectedRows.length]) }}
+          </Button>
+          <Button
+            v-if="access.can(GAME_SHOP_PERMISSIONS.GAMES_STATUS)"
+            class="batch-btn-enable ml-2"
+            :disabled="enableTargetRows.length === 0"
+            @click="onBatchUpdateStatus(1)"
+          >
+            {{
+              formatBatchActionLabel(
+                'system.shared.batchEnable',
+                'system.shared.batchEnableWithCount',
+                enableTargetRows.length,
+              )
+            }}
+          </Button>
+          <Button
+            v-if="access.can(GAME_SHOP_PERMISSIONS.GAMES_STATUS)"
+            class="batch-btn-disable ml-2"
+            :disabled="disableTargetRows.length === 0"
+            @click="onBatchUpdateStatus(0)"
+          >
+            {{
+              formatBatchActionLabel(
+                'system.shared.batchDisable',
+                'system.shared.batchDisableWithCount',
+                disableTargetRows.length,
+              )
+            }}
+          </Button>
+          <Button class="ml-2" type="link" @click="clearSelection">
+            {{ $t('system.shared.clearSelection') }}
+          </Button>
+        </div>
         <Button
-          v-if="access.can(GAME_SHOP_PERMISSIONS.GAMES_CREATE)"
+          v-else-if="access.can(GAME_SHOP_PERMISSIONS.GAMES_CREATE)"
           type="primary"
           @click="onCreate"
         >
@@ -88,6 +198,5 @@ const [CrudView, crudApi] = useResponsiveCrud<GameRow>({
         </Button>
       </template>
     </CrudView>
-    <GameForm ref="formRef" @success="crudApi.reload()" />
   </Page>
 </template>

@@ -1,0 +1,44 @@
+---
+description: Admin 模块列表页工具栏左右布局约定
+alwaysApply: true
+---
+
+# Admin 列表页工具栏布局
+
+模块列表页（PC `VxeGrid` / `useResponsiveCrud`）**默认**统一为：
+
+| 位置 | 内容 | 实现 |
+|---|---|---|
+| **左侧** `#toolbar-actions` | 新增按钮；有勾选时切换为批量操作组（删除/启用/禁用等 + 取消选择） | 插槽 `toolbar-actions` |
+| **右侧** 工具按钮组 | 搜索、刷新、缩放、列设置 | `toolbarConfig: { search: true, refresh: true, zoom: true, custom: true }` |
+
+## 要求
+
+- **禁止**把「新增」放进 `#toolbar-tools`（会跑到右侧，挤占工具按钮）
+- 未勾选：左侧显示「新增…」主按钮（有权限时）
+- 已勾选：左侧显示批量操作组（`vxe-grid-batch-toolbar`），隐藏新增
+- 需要批量时：`checkboxConfig` + 列 `type: 'checkbox'`，并用 `selectedRows` / `clearSelection`
+- 启用/禁用数量按真实可操作行统计，为 0 时按钮 disabled、不显示 `(0)`（见 `batch-status` 工具）
+
+## 示例骨架
+
+```vue
+<CrudView>
+  <template #toolbar-actions>
+    <div v-if="selectedRows.length > 0" class="vxe-grid-batch-toolbar">
+      <!-- 删除 / 启用 / 禁用 / 取消选择 -->
+    </div>
+    <Button v-else-if="canCreate" type="primary" @click="onCreate">
+      新增…
+    </Button>
+  </template>
+</CrudView>
+```
+
+```ts
+gridOptions: {
+  checkboxConfig: { highlight: true },
+  toolbarConfig: { custom: true, refresh: true, search: true, zoom: true },
+  // ...
+}
+```

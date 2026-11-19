@@ -6,7 +6,6 @@ import { Page } from '@vben/common-ui';
 
 import { useResponsiveCrud } from '#/adapter/mobile-list';
 import { fetchGameOrderPage } from '#/features/game-shop/api';
-import { $t } from '#/locales';
 
 import { useColumns, useGridFormSchema } from './data';
 
@@ -21,6 +20,7 @@ const [CrudView] = useResponsiveCrud<GameOrderRow>({
   gridOptions: {
     columns: columns as VxeTableGridOptions<GameOrderRow>['columns'],
     height: 'auto',
+    keepSource: true,
     proxyConfig: {
       ajax: {
         query: async ({ page }, formValues) =>
@@ -35,12 +35,14 @@ const [CrudView] = useResponsiveCrud<GameOrderRow>({
           }),
       },
     },
-  },
+    rowConfig: { keyField: 'id' },
+    toolbarConfig: { custom: true, refresh: true, search: true, zoom: true },
+  } as VxeTableGridOptions<GameOrderRow>,
 });
 </script>
 
 <template>
   <Page auto-content-height>
-    <CrudView table-title="游戏订单" />
+    <CrudView />
   </Page>
 </template>
