@@ -32,6 +32,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
         placeholder: '用户名',
       },
       fieldName: 'username',
+      inKeywordSearch: true,
       label: '用户名',
     },
     {
@@ -41,6 +42,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
         placeholder: '手机号',
       },
       fieldName: 'mobile',
+      inKeywordSearch: true,
       label: '手机号',
     },
     {
@@ -124,7 +126,6 @@ export function buildMemberMobileCrudConfig(params: {
     query: params.query,
     rowKey: 'id',
     search: {
-      filterSchema: useGridFormSchema(),
       keywordFields: ['username', 'nickname', 'mobile', 'email'],
       placeholder: '搜索用户名/昵称/手机/邮箱',
     },

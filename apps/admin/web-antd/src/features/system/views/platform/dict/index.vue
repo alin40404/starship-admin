@@ -68,7 +68,6 @@ const [CrudView, crudApi] = useResponsiveCrud<DictTypeRow>({
     commonConfig: { componentProps: { class: 'w-full' } },
     schema: useDictTypeGridFormSchema(),
     submitOnChange: true,
-    submitButtonOptions: { content: $t('common.query') },
   },
   gridOptions: {
     columns: columns as VxeTableGridOptions<DictTypeRow>['columns'],

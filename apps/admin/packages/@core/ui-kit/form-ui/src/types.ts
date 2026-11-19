@@ -254,6 +254,26 @@ interface FormSchemaBody extends Omit<FormCommonConfig, 'componentProps'> {
   help?: CustomParamsRenderType;
   /** 是否隐藏表单项 */
   hide?: boolean;
+  /**
+   * PC 搜索：放入筛选面板（不在工具栏）
+   * @default false
+   */
+  inFilterPanel?: boolean;
+  /**
+   * 参与移动端顶栏 keyword 搜索
+   * @default false
+   */
+  inKeywordSearch?: boolean;
+  /**
+   * 移动端 Drawer 不展示
+   * @default false
+   */
+  hideOnMobile?: boolean;
+  /**
+   * PC 搜索不展示（移动端可用）
+   * @default false
+   */
+  hideOnPc?: boolean;
   /** 表单项 */
   label?: CustomRenderType;
   // 自定义组件内部渲染
@@ -372,6 +392,11 @@ export interface FormRenderProps<
    */
   fieldMappingTime?: FieldMappingTime;
   /**
+   * 搜索工具栏浮动标签模式（空态标签居中，有值/聚焦上浮）
+   * @default false
+   */
+  floatLabel?: boolean;
+  /**
    * 表单实例
    */
   form?: FormContext<GenericObject>;
@@ -469,10 +494,32 @@ export interface VbenFormProps<
   scrollToFirstError?: boolean;
 
   /**
+   * 操作按钮是否显示图标（筛选/重置）
+   * @default false
+   */
+  showActionIcons?: boolean;
+
+  /**
    * 是否显示默认操作按钮
    * @default true
    */
   showDefaultActions?: boolean;
+
+  /**
+   * 是否显示筛选按钮（搜索工具栏）
+   * @default false
+   */
+  showFilterButton?: boolean;
+
+  /**
+   * 筛选面板已填条件数（角标）
+   */
+  filterCount?: number;
+
+  /**
+   * 筛选按钮点击
+   */
+  handleFilterClick?: () => void;
 
   /**
    * 提交按钮参数

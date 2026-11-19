@@ -93,7 +93,6 @@ export function buildInboxMessageMobileCrudConfig(params: {
     query: params.query,
     rowKey: 'id',
     search: {
-      filterSchema: useGridFormSchema(),
       keywordFields: ['title', 'content'],
       placeholder: $t('inbox.searchPlaceholder'),
     },

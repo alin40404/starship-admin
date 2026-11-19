@@ -68,7 +68,6 @@ export function buildLoginLogMobileCrudConfig(params: {
     query: params.query,
     rowKey: 'id',
     search: {
-      filterSchema: useGridFormSchema(),
       keywordFields: ['username', 'message', 'ip'],
       placeholder: $t('monitor.loginLog.searchPlaceholder'),
     },

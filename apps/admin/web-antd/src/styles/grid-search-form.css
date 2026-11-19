@@ -1,0 +1,82 @@
+/**
+ * Grid 搜索表单：Ant Design 控件适配（浮动标签空态、下拉箭头旋转）
+ */
+.vxe-grid-search-toolbar .search-float-field.is-focused :is(
+  .ant-input,
+  .ant-input-affix-wrapper,
+  .ant-input-number,
+  .ant-select-selector,
+  .ant-picker
+) {
+  border-color: hsl(var(--primary)) !important;
+}
+
+.vxe-grid-search-toolbar .search-float-field:not(.is-active) :is(
+  .ant-input::placeholder,
+  .ant-input-number-input::placeholder,
+  .ant-select-selection-placeholder,
+  .ant-picker-input input::placeholder
+) {
+  color: transparent !important;
+  opacity: 0;
+}
+
+.vxe-grid-search-toolbar .search-float-field:not(.is-active) :is(
+  .ant-picker-separator,
+  .ant-picker-input input
+) {
+  opacity: 0;
+}
+
+.vxe-grid-search-toolbar .search-float-field.is-active :is(
+  .ant-picker-separator,
+  .ant-picker-input input
+) {
+  opacity: 1;
+}
+
+.vxe-grid-search-toolbar .ant-btn.search-filter-trigger,
+.vxe-grid-search-toolbar .ant-btn.search-reset-trigger {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: auto !important;
+  gap: 0; /* 避免与 .ant-btn-icon 自带 margin 叠间距 */
+}
+
+.vxe-grid-search-toolbar .ant-btn.search-filter-trigger .ant-btn-icon,
+.vxe-grid-search-toolbar .ant-btn.search-reset-trigger .ant-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  margin-inline-end: 6px !important; /* 只保留一处图标间距 */
+  line-height: 0;
+}
+
+.vxe-grid-search-toolbar .ant-btn.search-filter-trigger .ant-btn-icon > svg,
+.vxe-grid-search-toolbar .ant-btn.search-reset-trigger .ant-btn-icon > svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Ant Design 还会给 icon 后的 span 再加 margin，这里清掉避免翻倍 */
+.vxe-grid-search-toolbar .ant-btn.search-filter-trigger .ant-btn-icon + span,
+.vxe-grid-search-toolbar .ant-btn.search-reset-trigger .ant-btn-icon + span {
+  margin-inline-start: 0 !important;
+}
+
+/* Select / TreeSelect / Cascader 箭头：展开向上 */
+.vxe-grid-search-toolbar :is(.ant-select-arrow, .ant-select-suffix),
+.search-filter-panel :is(.ant-select-arrow, .ant-select-suffix) {
+  transition: transform 0.3s;
+}
+
+.vxe-grid-search-toolbar .ant-select-open :is(.ant-select-arrow, .ant-select-suffix),
+.search-filter-panel .ant-select-open :is(.ant-select-arrow, .ant-select-suffix) {
+  transform: rotate(180deg);
+}
+
+.vxe-grid-search-toolbar .ant-select-open .ant-select-arrow .anticon,
+.search-filter-panel .ant-select-open .ant-select-arrow .anticon {
+  transform: none;
+}

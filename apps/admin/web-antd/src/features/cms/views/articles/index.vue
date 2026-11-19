@@ -63,7 +63,6 @@ const [CrudView, crudApi] = useResponsiveCrud<ArticleRow>({
     commonConfig: { componentProps: { class: 'w-full' } },
     schema: gridFormSchema.value,
     submitOnChange: true,
-    submitButtonOptions: { content: $t('common.query') },
   },
   gridOptions: {
     columns: columns as VxeTableGridOptions<ArticleRow>['columns'],

@@ -87,6 +87,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
         placeholder: $t('permission.role.searchName'),
       },
       fieldName: 'name',
+      inKeywordSearch: true,
       label: $t('permission.role.name'),
     },
     {
@@ -96,6 +97,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
         placeholder: $t('permission.role.code'),
       },
       fieldName: 'code',
+      inKeywordSearch: true,
       label: $t('permission.role.code'),
     },
     {
@@ -130,7 +132,6 @@ export function buildRoleMobileCrudConfig(params: {
     query: params.query,
     rowKey: 'id',
     search: {
-      filterSchema: useGridFormSchema(),
       keywordFields: ['name', 'code'],
       placeholder: $t('permission.role.searchKeyword'),
     },

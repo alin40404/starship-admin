@@ -104,9 +104,6 @@ const [CrudView, crudApi] = useResponsiveCrud<AdminRow>({
     ],
     schema: useGridFormSchema(),
     submitOnChange: true,
-    submitButtonOptions: {
-      content: $t('common.query'),
-    },
   },
   gridOptions: {
     checkboxConfig: {

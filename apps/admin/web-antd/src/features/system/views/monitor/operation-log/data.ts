@@ -55,6 +55,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
         placeholder: $t('monitor.operationLog.methodPlaceholder'),
       },
       fieldName: 'method',
+      inFilterPanel: true,
       label: $t('monitor.shared.method'),
     },
   ];
@@ -70,7 +71,6 @@ export function buildOperationLogMobileCrudConfig(params: {
     query: params.query,
     rowKey: 'id',
     search: {
-      filterSchema: useGridFormSchema(),
       keywordFields: ['title', 'admin_name', 'url', 'action'],
       placeholder: $t('monitor.operationLog.searchPlaceholder'),
     },

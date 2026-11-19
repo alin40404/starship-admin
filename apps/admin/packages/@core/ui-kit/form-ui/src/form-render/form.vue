@@ -43,8 +43,8 @@ const emits = defineEmits<{
 
 const wrapperClass = computed(() => {
   const cls = ['flex'];
-  if (props.layout === 'inline') {
-    cls.push('flex-wrap gap-x-2');
+  if (props.floatLabel || props.layout === 'inline') {
+    cls.push('flex-wrap items-center gap-x-2.5 gap-y-2');
   } else {
     cls.push(props.compact ? 'gap-x-2' : 'gap-x-4', 'flex-col grid');
   }

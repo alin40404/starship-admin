@@ -27,6 +27,7 @@ import {
 } from 'vue';
 
 import { usePriorityValues } from '@vben/hooks';
+import { Filter, RotateCcw } from '@vben/icons';
 import { $t } from '@vben/locales';
 import { usePreferences } from '@vben/preferences';
 import {
@@ -36,7 +37,12 @@ import {
   isEqual,
   mergeWithArrayOverride,
 } from '@vben/utils';
+import { onClickOutside } from '@vueuse/core';
 
+import {
+  countFilledSearchFields,
+  resolveCrudSearchViews,
+} from '@vben-core/form-ui';
 import { globalShareState } from '@vben-core/shared/global-state';
 import { VbenHelpTooltip } from '@vben-core/shadcn-ui';
 
@@ -96,9 +102,22 @@ const showInlineSearchForm = computed(
 );
 
 const searchDrawerOpen = ref(false);
+const filterPanelOpen = ref(false);
+const filterCount = ref(0);
+const filterPanelRef = ref<HTMLElement | null>(null);
+/** 重置表单时跳过 submitOnChange 触发的列表查询 */
+const skipSearchSubmit = ref(false);
 const components = globalShareState.getComponents();
 
+onClickOutside(filterPanelRef, () => {
+  filterPanelOpen.value = false;
+});
+
 const isSearchDrawerOpen = computed(() => searchDrawerOpen.value);
+const searchViews = computed(() =>
+  resolveCrudSearchViews(formOptions.value?.schema),
+);
+const hasFilterPanel = computed(() => searchViews.value.pcPanel.length > 0);
 
 const isSearchPanelActive = computed(() => {
   if (isMobile.value && formOptions.value) {
@@ -129,39 +148,92 @@ const separatorBg = computed(() => {
 });
 const slots: SetupContext['slots'] = useSlots();
 
+async function getMergedSearchValues() {
+  const inlineValues = (await formApi.getValues()) ?? {};
+  const panelValues = hasFilterPanel.value
+    ? ((await panelFormApi.getValues()) ?? {})
+    : {};
+  return {
+    ...inlineValues,
+    ...panelValues,
+  };
+}
+
+async function reloadWithMergedValues(force = false) {
+  const formValues = await getMergedSearchValues();
+  formApi.setLatestSubmissionValues(toRaw(formValues));
+  if (force || formOptions.value?.submitOnChange !== false) {
+    await props.api.reload(formValues);
+  }
+}
+
+async function refreshFilterCount() {
+  if (!hasFilterPanel.value) {
+    filterCount.value = 0;
+    return;
+  }
+  const panelValues = (await panelFormApi.getValues()) ?? {};
+  filterCount.value = countFilledSearchFields(
+    panelValues,
+    searchViews.value.pcPanel,
+  );
+}
+
 const [Form, formApi] = useTableForm({
   compact: true,
   handleSubmit: async () => {
-    const formValues = await formApi.getValues();
-    formApi.setLatestSubmissionValues(toRaw(formValues));
-    props.api.reload(formValues);
+    if (skipSearchSubmit.value) {
+      return;
+    }
+    await reloadWithMergedValues(true);
   },
   handleReset: async () => {
-    const prevValues = await formApi.getValues();
-    await formApi.resetForm();
-    const formValues = await formApi.getValues();
-    formApi.setLatestSubmissionValues(formValues);
-    // 如果值发生了变化，submitOnChange会触发刷新。所以只在submitOnChange为false或者值没有发生变化时，手动刷新
-    if (isEqual(prevValues, formValues) || !formOptions.value?.submitOnChange) {
-      props.api.reload(formValues);
-    }
+    await handleSearchReset();
   },
   commonConfig: {
     componentProps: {
       class: 'w-full',
     },
   },
-  showCollapseButton: true,
-  submitButtonOptions: {
-    content: computed(() => $t('common.search')),
+  floatLabel: true,
+  layout: 'inline',
+  resetButtonOptions: {
+    show: false,
   },
-  wrapperClass: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4',
+  showActionIcons: true,
+  showCollapseButton: false,
+  submitButtonOptions: {
+    show: false,
+  },
+  submitOnChange: true,
+  wrapperClass: 'vxe-grid-search-toolbar',
+});
+
+const [PanelForm, panelFormApi] = useTableForm({
+  compact: true,
+  commonConfig: {
+    componentProps: {
+      class: 'w-full',
+    },
+  },
+  handleValuesChange: async () => {
+    await refreshFilterCount();
+    if (formOptions.value?.submitOnChange !== false) {
+      await reloadWithMergedValues(true);
+    }
+  },
+  showCollapseButton: false,
+  showDefaultActions: false,
+  submitOnChange: false,
+  wrapperClass: 'search-filter-panel-grid',
 });
 
 watch(
   isMobile,
   (mobile) => {
+    const views = resolveCrudSearchViews(formOptions.value?.schema);
     formApi.setState({
+      actionLayout: 'inline',
       commonConfig: mobile
         ? {
             componentProps: { class: 'w-full' },
@@ -170,12 +242,15 @@ watch(
         : {
             componentProps: { class: 'w-full' },
           },
-      layout: mobile ? 'vertical' : 'horizontal',
-      showCollapseButton: !mobile,
+      floatLabel: !mobile,
+      layout: mobile ? 'vertical' : 'inline',
+      schema: mobile ? views.mobileDrawer : views.pcInline,
+      resetButtonOptions: { show: false },
+      showActionIcons: !mobile,
+      showCollapseButton: false,
       showDefaultActions: !mobile,
-      wrapperClass: mobile
-        ? 'grid-cols-1'
-        : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4',
+      submitButtonOptions: { show: false },
+      wrapperClass: mobile ? 'grid-cols-1' : 'vxe-grid-search-toolbar',
     });
   },
   { immediate: true },
@@ -183,8 +258,12 @@ watch(
 
 async function handleMobileSearchReset() {
   await formApi.resetForm();
-  const formValues = await formApi.getValues();
+  if (hasFilterPanel.value) {
+    await panelFormApi.resetForm();
+  }
+  const formValues = await getMergedSearchValues();
   formApi.setLatestSubmissionValues(formValues);
+  filterCount.value = 0;
   await props.api.reload(formValues);
 }
 
@@ -193,10 +272,40 @@ async function handleMobileSearchSubmit() {
   if (!valid) {
     return;
   }
-  const formValues = await formApi.getValues();
+  const formValues = await getMergedSearchValues();
   formApi.setLatestSubmissionValues(toRaw(formValues));
   searchDrawerOpen.value = false;
   await props.api.reload(formValues);
+}
+
+async function handleFilterPanelReset() {
+  await panelFormApi.resetForm();
+  await refreshFilterCount();
+  await reloadWithMergedValues(true);
+}
+
+async function handleSearchReset() {
+  const prevValues = await getMergedSearchValues();
+  // 拦住 submitOnChange，避免与下面手动 reload 重复请求
+  skipSearchSubmit.value = true;
+  try {
+    await formApi.resetForm();
+    if (hasFilterPanel.value) {
+      await panelFormApi.resetForm();
+    }
+    await nextTick();
+    const formValues = await getMergedSearchValues();
+    formApi.setLatestSubmissionValues(toRaw(formValues));
+    filterCount.value = 0;
+    // 字段确实变了才重新查表；没变就不请求
+    if (!isEqual(prevValues, formValues)) {
+      await props.api.reload(formValues);
+    }
+    // 等过值变更防抖后再恢复 submitOnChange
+    await new Promise((resolve) => setTimeout(resolve, 320));
+  } finally {
+    skipSearchSubmit.value = false;
+  }
 }
 
 const showTableTitle = computed(() => {
@@ -396,13 +505,15 @@ async function init() {
   const enableProxyConfig = options.value.proxyConfig?.enabled;
   if (enableProxyConfig && autoLoad) {
     const formValues = formOptions.value
-      ? ((await formApi.getValues()) ?? {})
+      ? await getMergedSearchValues()
       : {};
+    if (formOptions.value) {
+      formApi.setLatestSubmissionValues(toRaw(formValues));
+    }
     if (!gridRef.value) {
       return;
     }
     props.api.grid.commitProxy?.('query', formValues);
-    // props.api.reload(formApi.form?.values ?? {});
   }
 
   // form 由 vben-form代替，所以不适配formConfig，这里给出警告
@@ -421,21 +532,59 @@ async function init() {
   );
 }
 
-// formOptions支持响应式
+// formOptions支持响应式；PC 按 inFilterPanel 拆工具栏 / 筛选面板
 watch(
   formOptions,
   () => {
+    const views = resolveCrudSearchViews(formOptions.value?.schema);
+    const mobile = isMobile.value;
+
     formApi.setState((prev: Record<string, any>) => {
       const finalFormOptions: VbenFormProps = mergeWithArrayOverride(
         {},
         formOptions.value,
         prev,
       );
+      const schema = mobile
+        ? views.mobileDrawer
+        : views.pcInline.length > 0 || views.pcPanel.length > 0
+          ? views.pcInline
+          : finalFormOptions.schema;
+
       return {
         ...finalFormOptions,
-        collapseTriggerResize: !!finalFormOptions.showCollapseButton,
+        actionLayout: 'inline',
+        collapseTriggerResize: false,
+        floatLabel: !mobile,
+        layout: mobile ? 'vertical' : 'inline',
+        schema,
+        resetButtonOptions: {
+          ...finalFormOptions.resetButtonOptions,
+          show: false,
+        },
+        showActionIcons: !mobile,
+        showCollapseButton: false,
+        showDefaultActions: !mobile,
+        submitButtonOptions: {
+          ...finalFormOptions.submitButtonOptions,
+          show: false,
+        },
+        submitOnChange: finalFormOptions.submitOnChange ?? true,
+        wrapperClass: mobile
+          ? 'grid-cols-1'
+          : (finalFormOptions.wrapperClass ?? 'vxe-grid-search-toolbar'),
       };
     });
+
+    panelFormApi.setState({
+      compact: true,
+      fieldMappingTime: formOptions.value?.fieldMappingTime,
+      schema: views.pcPanel,
+      showDefaultActions: false,
+      wrapperClass: 'search-filter-panel-grid',
+    });
+
+    void refreshFilterCount();
   },
   {
     immediate: true,
@@ -539,6 +688,63 @@ onUnmounted(() => {
               </template>
               <template #reset-before="slotProps">
                 <slot name="reset-before" v-bind="slotProps"></slot>
+                <div
+                  v-if="hasFilterPanel"
+                  ref="filterPanelRef"
+                  class="search-filter-anchor"
+                >
+                  <component
+                    :is="components.DefaultButton"
+                    type="button"
+                    class="search-filter-trigger"
+                    @click="filterPanelOpen = !filterPanelOpen"
+                  >
+                    <template #icon>
+                      <Filter class="size-4" />
+                    </template>
+                    {{ $t('common.filter') }}
+                    <span
+                      v-if="filterCount > 0"
+                      class="search-filter-count"
+                    >
+                      {{ filterCount }}
+                    </span>
+                  </component>
+                  <div
+                    v-show="filterPanelOpen"
+                    class="search-filter-panel"
+                    @mousedown.stop
+                  >
+                    <PanelForm />
+                    <div class="search-filter-footer">
+                      <component
+                        :is="components.DefaultButton"
+                        type="button"
+                        @click="handleFilterPanelReset"
+                      >
+                        {{ $t('common.resetConditions') }}
+                      </component>
+                      <component
+                        :is="components.PrimaryButton"
+                        type="button"
+                        @click="filterPanelOpen = false"
+                      >
+                        {{ $t('common.confirm') }}
+                      </component>
+                    </div>
+                  </div>
+                </div>
+                <component
+                  :is="components.DefaultButton"
+                  type="button"
+                  class="search-reset-trigger"
+                  @click="handleSearchReset"
+                >
+                  <template #icon>
+                    <RotateCcw class="size-4" />
+                  </template>
+                  {{ $t('common.reset') }}
+                </component>
               </template>
               <template #submit-before="slotProps">
                 <slot name="submit-before" v-bind="slotProps"></slot>

@@ -141,7 +141,6 @@ const [Grid, gridApi] = useVbenVxeGrid<AreaTreeNode>({
     commonConfig: { componentProps: { class: 'w-full' } },
     schema: useAreaGridFormSchema(),
     submitOnChange: true,
-    submitButtonOptions: { content: $t('common.query') },
   },
   gridEvents: {
     checkboxAll: syncSelection,

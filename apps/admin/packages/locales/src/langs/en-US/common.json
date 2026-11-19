@@ -16,6 +16,8 @@
   "loadingMenu": "Loading Menu",
   "query": "Search",
   "search": "Search",
+  "filter": "Filter",
+  "resetConditions": "Reset filters",
   "enabled": "Enabled",
   "disabled": "Disabled",
   "edit": "Edit",

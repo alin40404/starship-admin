@@ -32,52 +32,6 @@ export function mapDeptForTreeSelect(
   }));
 }
 
-export function useAdminMobileFilterSchema(): VbenFormSchema[] {
-  return [
-    {
-      component: 'Input',
-      componentProps: {
-        class: 'w-full',
-        placeholder: $t('permission.admin.searchEmail'),
-      },
-      fieldName: 'email',
-      label: $t('permission.admin.email'),
-    },
-    {
-      component: 'Input',
-      componentProps: {
-        class: 'w-full',
-        placeholder: $t('permission.admin.searchMobile'),
-      },
-      fieldName: 'mobile',
-      label: $t('permission.admin.mobile'),
-    },
-    {
-      component: 'ApiTreeSelect',
-      componentProps: {
-        allowClear: true,
-        api: async () => mapDeptForTreeSelect(await fetchDepartmentOptionsTree()),
-        class: 'w-full',
-        fieldNames: { children: 'children', label: 'label', value: 'value' },
-        placeholder: $t('permission.admin.searchDept'),
-        treeIcon: false,
-        treeLine: false,
-      },
-      fieldName: 'dept_id',
-      label: $t('permission.admin.dept'),
-    },
-    {
-      component: 'RangePicker',
-      componentProps: {
-        allowClear: true,
-        class: 'w-full',
-      },
-      fieldName: 'updatedTime',
-      label: $t('permission.admin.updatedAt'),
-    },
-  ];
-}
-
 function formatAdminRoles(row: AdminRow) {
   return (row.roles ?? []).map((role) => role.name).join('、') || TABLE_CELL_EMPTY;
 }
@@ -100,8 +54,6 @@ export function buildAdminMobileCrudConfig(params: {
           ['YYYY-MM-DD', 'YYYY-MM-DD'],
         ],
       ],
-      filterSchema: useAdminMobileFilterSchema(),
-      keywordFields: ['username', 'name'],
       placeholder: $t('permission.admin.searchKeyword'),
     },
     selection: {
@@ -120,6 +72,8 @@ export function useGridFormSchema(): VbenFormSchema[] {
         placeholder: $t('permission.admin.searchUsername'),
       },
       fieldName: 'username',
+      hideOnMobile: true,
+      inKeywordSearch: true,
       label: $t('permission.admin.username'),
     },
     {
@@ -129,6 +83,8 @@ export function useGridFormSchema(): VbenFormSchema[] {
         placeholder: $t('permission.admin.searchName'),
       },
       fieldName: 'name',
+      hideOnMobile: true,
+      inKeywordSearch: true,
       label: $t('permission.admin.name'),
     },
     {
@@ -171,6 +127,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
         class: 'w-full',
       },
       fieldName: 'updatedTime',
+      inFilterPanel: true,
       label: $t('permission.admin.updatedAt'),
     },
   ];

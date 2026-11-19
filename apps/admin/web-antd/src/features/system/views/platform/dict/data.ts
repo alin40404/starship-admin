@@ -69,7 +69,6 @@ export function buildDictTypeMobileCrudConfig(params: {
     query: params.query,
     rowKey: 'id',
     search: {
-      filterSchema: useDictTypeGridFormSchema(),
       keywordFields: ['name', 'code'],
       placeholder: $t('platform.dict.searchKeyword'),
     },

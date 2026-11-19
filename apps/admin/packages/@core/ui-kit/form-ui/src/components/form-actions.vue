@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, toRaw, unref, watch } from 'vue';
 
+import { Filter, RotateCcw } from '@vben-core/icons';
 import { useSimpleLocale } from '@vben-core/composables';
 import { VbenExpandableArrow } from '@vben-core/shadcn-ui';
 import { cn, isFunction, triggerWindowResize } from '@vben-core/shared/utils';
@@ -30,9 +31,42 @@ const submitButtonOptions = computed(() => {
   };
 });
 
-// const isQueryForm = computed(() => {
-//   return !!unref(rootProps).showCollapseButton;
-// });
+const showActionIcons = computed(() => {
+  const props = unref(rootProps) as Record<string, any>;
+  const storeState = props.formApi?.store?.state as
+    | Record<string, any>
+    | undefined;
+  return !!(
+    props.showActionIcons ||
+    props.floatLabel ||
+    storeState?.showActionIcons ||
+    storeState?.floatLabel
+  );
+});
+const showFilterButton = computed(() => {
+  const props = unref(rootProps) as Record<string, any>;
+  const storeState = props.formApi?.store?.state as
+    | Record<string, any>
+    | undefined;
+  return !!(props.showFilterButton || storeState?.showFilterButton);
+});
+const filterCount = computed(() => {
+  const props = unref(rootProps) as Record<string, any>;
+  const storeState = props.formApi?.store?.state as
+    | Record<string, any>
+    | undefined;
+  return props.filterCount ?? storeState?.filterCount ?? 0;
+});
+
+const resetButtonBindProps = computed(() => {
+  const { content: _content, show: _show, ...rest } = resetButtonOptions.value;
+  return rest;
+});
+
+const submitButtonBindProps = computed(() => {
+  const { content: _content, show: _show, ...rest } = submitButtonOptions.value;
+  return rest;
+});
 
 async function handleSubmit(e: Event) {
   e?.preventDefault();
@@ -65,6 +99,12 @@ async function handleReset(e: Event) {
   }
 }
 
+function handleFilterClick(e: Event) {
+  e?.preventDefault();
+  e?.stopPropagation();
+  unref(rootProps).handleFilterClick?.();
+}
+
 watch(
   () => collapsed.value,
   () => {
@@ -85,8 +125,10 @@ const actionWrapperClass = computed(() => {
     'items-center',
     'gap-3',
     props.compact ? 'pb-2' : 'pb-4',
-    props.layout === 'vertical' ? 'self-end' : 'self-center',
-    props.layout === 'inline' ? '' : 'w-full',
+    props.floatLabel || props.layout === 'inline' ? 'self-center' : '',
+    props.layout === 'vertical' && !props.floatLabel ? 'self-end' : '',
+    props.layout === 'inline' || props.floatLabel ? '' : 'w-full',
+    props.floatLabel ? 'shrink-0 !pb-0' : '',
     props.actionWrapperClass,
   ];
 
@@ -96,10 +138,11 @@ const actionWrapperClass = computed(() => {
       break;
     }
     case 'rowEnd': {
-      cls.push('col-[-2/-1]');
+      if (!props.floatLabel && props.layout !== 'inline') {
+        cls.push('col-[-2/-1]');
+      }
       break;
     }
-    // 'inline' 不需要额外类名，保持默认
   }
 
   switch (actionPosition) {
@@ -112,7 +155,6 @@ const actionWrapperClass = computed(() => {
       break;
     }
     default: {
-      // case 'right': 默认右对齐
       cls.push('justify-end');
       break;
     }
@@ -129,49 +171,65 @@ defineExpose({
 <template>
   <div :class="cn(actionWrapperClass)">
     <template v-if="rootProps.actionButtonsReverse">
-      <!-- 提交按钮前 -->
       <slot name="submit-before"></slot>
 
       <component
         :is="COMPONENT_MAP.PrimaryButton"
         v-if="submitButtonOptions.show"
         type="button"
+        v-bind="submitButtonBindProps"
         @click="handleSubmit"
-        v-bind="submitButtonOptions"
       >
         {{ submitButtonOptions.content }}
       </component>
     </template>
 
-    <!-- 重置按钮前 -->
     <slot name="reset-before"></slot>
+
+    <component
+      :is="COMPONENT_MAP.DefaultButton"
+      v-if="showFilterButton"
+      type="button"
+      class="search-filter-trigger"
+      @click="handleFilterClick"
+    >
+      <template v-if="showActionIcons" #icon>
+        <Filter class="size-4" />
+      </template>
+      {{ $t('filter') }}
+      <span v-if="filterCount > 0" class="search-filter-count">
+        {{ filterCount }}
+      </span>
+    </component>
 
     <component
       :is="COMPONENT_MAP.DefaultButton"
       v-if="resetButtonOptions.show"
       type="button"
+      class="search-reset-trigger"
+      v-bind="resetButtonBindProps"
       @click="handleReset"
-      v-bind="resetButtonOptions"
     >
+      <template v-if="showActionIcons" #icon>
+        <RotateCcw class="size-4" />
+      </template>
       {{ resetButtonOptions.content }}
     </component>
 
     <template v-if="!rootProps.actionButtonsReverse">
-      <!-- 提交按钮前 -->
       <slot name="submit-before"></slot>
 
       <component
         :is="COMPONENT_MAP.PrimaryButton"
         v-if="submitButtonOptions.show"
         type="button"
+        v-bind="submitButtonBindProps"
         @click="handleSubmit"
-        v-bind="submitButtonOptions"
       >
         {{ submitButtonOptions.content }}
       </component>
     </template>
 
-    <!-- 展开按钮前 -->
     <slot name="expand-before"></slot>
 
     <VbenExpandableArrow
@@ -182,7 +240,6 @@ defineExpose({
       <span>{{ collapsed ? $t('expand') : $t('collapse') }}</span>
     </VbenExpandableArrow>
 
-    <!-- 展开按钮后 -->
     <slot name="expand-after"></slot>
   </div>
 </template>

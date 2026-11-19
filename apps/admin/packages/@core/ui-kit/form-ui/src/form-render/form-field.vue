@@ -22,8 +22,9 @@ import {
 import { cn, isFunction, isObject, isString } from '@vben-core/shared/utils';
 
 import { toTypedSchema } from '@vee-validate/zod';
-import { useFieldError, useFormValues } from 'vee-validate';
+import { useFieldError, useFieldValue, useFormValues } from 'vee-validate';
 
+import SearchFloatField from '../components/search-float-field.vue';
 import { injectComponentRefMap } from '../use-form-context';
 import { injectRenderFormProps, useFormContext } from './context';
 import useDependencies from './dependencies';
@@ -63,10 +64,33 @@ const { componentBindEventMap, componentMap, isVertical } = useFormContext();
 const formRenderProps = injectRenderFormProps();
 const values = useFormValues();
 const errors = useFieldError(fieldName);
+const fieldValue = useFieldValue(fieldName);
 const fieldComponentRef = useTemplateRef<HTMLInputElement>('fieldComponentRef');
 const formApi = formRenderProps.form;
 const compact = computed(() => formRenderProps.compact);
+const floatLabel = computed(() => !!formRenderProps.floatLabel);
 const isInValid = computed(() => errors.value?.length > 0);
+
+function isEmptyFieldValue(value: unknown) {
+  if (value === undefined || value === null) {
+    return true;
+  }
+  if (typeof value === 'string') {
+    return value.trim() === '';
+  }
+  if (Array.isArray(value)) {
+    return value.length === 0;
+  }
+  return false;
+}
+
+const isFloatFilled = computed(() => !isEmptyFieldValue(fieldValue.value));
+const floatWithIcon = computed(() => {
+  if (!isString(component)) {
+    return false;
+  }
+  return ['DatePicker', 'RangePicker', 'TimePicker'].includes(component);
+});
 
 function getFormApi(): FormActions {
   if (!formApi) {
@@ -319,16 +343,17 @@ onUnmounted(() => {
       :class="{
         'form-valid-error': isInValid,
         'form-is-required': shouldRequired,
-        'flex-col': isVertical,
-        'flex-row items-center': !isVertical,
-        'pb-4': !compact,
-        'pb-2': compact,
+        'flex-col': isVertical && !floatLabel,
+        'flex-row items-center': !isVertical && !floatLabel,
+        'pb-4': !compact && !floatLabel,
+        'pb-2': compact && !floatLabel,
+        'search-float-form-item': floatLabel,
       }"
       class="relative flex"
       v-bind="$attrs"
     >
       <FormLabel
-        v-if="!hideLabel"
+        v-if="!hideLabel && !floatLabel"
         :class="
           cn(
             'flex leading-6',
@@ -349,9 +374,73 @@ onUnmounted(() => {
           <VbenRenderContent :content="label" />
         </template>
       </FormLabel>
-      <div class="h-full w-full flex-auto overflow-hidden p-px">
+      <div
+        :class="
+          cn('h-full w-full flex-auto overflow-hidden p-px', {
+            'overflow-visible': floatLabel,
+          })
+        "
+      >
         <div :class="cn('relative flex h-full w-full items-center', wrapperClass)">
-          <FormControl :class="cn(controlClass)">
+          <SearchFloatField
+            v-if="floatLabel"
+            class="w-full"
+            :filled="isFloatFilled"
+            :label="label"
+            :with-icon="floatWithIcon"
+          >
+            <FormControl :class="cn(controlClass)">
+              <slot
+                v-bind="{
+                  ...slotProps,
+                  ...createComponentProps(slotProps),
+                  disabled: shouldDisabled,
+                  isInValid,
+                }"
+              >
+                <component
+                  :is="FieldComponent"
+                  ref="fieldComponentRef"
+                  :class="{
+                    'border-destructive hover:border-destructive/80 focus:border-destructive focus:shadow-[0_0_0_2px_rgba(255,38,5,0.06)]':
+                      isInValid,
+                  }"
+                  v-bind="createComponentProps(slotProps)"
+                  :disabled="shouldDisabled"
+                >
+                  <template
+                    v-for="name in renderContentKey"
+                    :key="name"
+                    #[name]="renderSlotProps"
+                  >
+                    <VbenRenderContent
+                      :content="customContentRender[name]"
+                      v-bind="{ ...renderSlotProps, formContext: slotProps }"
+                    />
+                  </template>
+                </component>
+                <VbenTooltip
+                  v-if="compact && isInValid"
+                  :delay-duration="300"
+                  side="left"
+                >
+                  <template #trigger>
+                    <slot name="trigger">
+                      <CircleAlert
+                        :class="
+                          cn(
+                            'inline-flex size-5 cursor-pointer text-foreground/80 hover:text-foreground',
+                          )
+                        "
+                      />
+                    </slot>
+                  </template>
+                  <FormMessage />
+                </VbenTooltip>
+              </slot>
+            </FormControl>
+          </SearchFloatField>
+          <FormControl v-else :class="cn(controlClass)">
             <slot
               v-bind="{
                 ...slotProps,
@@ -380,7 +469,6 @@ onUnmounted(() => {
                     v-bind="{ ...renderSlotProps, formContext: slotProps }"
                   />
                 </template>
-                <!-- <slot></slot> -->
               </component>
               <VbenTooltip
                 v-if="compact && isInValid"

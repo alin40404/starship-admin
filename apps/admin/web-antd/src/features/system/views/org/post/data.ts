@@ -74,7 +74,6 @@ export function buildPostMobileCrudConfig(params: {
     query: params.query,
     rowKey: 'id',
     search: {
-      filterSchema: useGridFormSchema(),
       keywordFields: ['name', 'code'],
       placeholder: $t('org.shared.searchNameCode'),
     },

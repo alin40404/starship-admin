@@ -56,7 +56,6 @@ const [CrudView, crudApi] = useResponsiveCrud<GameRow>({
     commonConfig: { componentProps: { class: 'w-full' } },
     schema: useGridFormSchema(),
     submitOnChange: true,
-    submitButtonOptions: { content: $t('common.query') },
   },
   gridOptions: {
     columns: columns as VxeTableGridOptions<GameRow>['columns'],

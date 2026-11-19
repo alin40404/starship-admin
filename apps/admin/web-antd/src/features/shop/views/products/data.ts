@@ -324,6 +324,7 @@ export function useGridFormSchema(
         options: categoryOptions,
       },
       fieldName: 'category_id',
+      inFilterPanel: true,
       label: '分类',
     },
     {
@@ -334,6 +335,7 @@ export function useGridFormSchema(
         options: getStatusOptions(),
       },
       fieldName: 'status',
+      inFilterPanel: true,
       label: $t('org.shared.status'),
     },
   ];

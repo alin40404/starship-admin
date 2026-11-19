@@ -712,9 +712,15 @@ async function initComponentAdapter() {
     CheckboxGroup,
     DatePicker,
     Drawer,
-    // 自定义默认按钮
+    // 自定义默认按钮（透传 default / icon 等插槽，供搜索表单图标按钮使用）
     DefaultButton: (props, { attrs, slots }) => {
-      return h(Button, { ...props, attrs, type: 'default' }, slots);
+      const buttonSlots: Record<string, () => unknown> = {
+        default: () => slots.default?.(),
+      };
+      if (slots.icon) {
+        buttonSlots.icon = () => slots.icon?.();
+      }
+      return h(Button, { ...attrs, ...props, type: 'default' }, buttonSlots);
     },
     Divider,
     IconPicker: withDefaultPlaceholder(IconPicker, 'select', {
@@ -728,7 +734,13 @@ async function initComponentAdapter() {
     Mentions: withDefaultPlaceholder(Mentions, 'input'),
     // 自定义主要按钮
     PrimaryButton: (props, { attrs, slots }) => {
-      return h(Button, { ...props, attrs, type: 'primary' }, slots);
+      const buttonSlots: Record<string, () => unknown> = {
+        default: () => slots.default?.(),
+      };
+      if (slots.icon) {
+        buttonSlots.icon = () => slots.icon?.();
+      }
+      return h(Button, { ...attrs, ...props, type: 'primary' }, buttonSlots);
     },
     Radio,
     RadioGroup,

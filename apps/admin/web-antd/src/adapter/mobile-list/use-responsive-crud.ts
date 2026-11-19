@@ -10,6 +10,10 @@ import { defineComponent, computed, h, ref, watch } from 'vue';
 
 import { usePreferences } from '@vben/preferences';
 
+import {
+  resolveCrudSearchViews,
+  type CrudSearchSchemaItem,
+} from '#/adapter/crud-search-schema';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 
 import MobileCrudList from './mobile-crud-list.vue';
@@ -45,17 +49,26 @@ export function useResponsiveCrud<T extends Record<string, any>>(
 
   const mobileConfig = computed(() => {
     const formOptions = gridOptions.formOptions;
-    if (!mobile?.search || !formOptions) {
+    if (!mobile?.search) {
       return mobile;
     }
+
+    const views = resolveCrudSearchViews(
+      formOptions?.schema as CrudSearchSchemaItem[] | undefined,
+    );
+
     return {
       ...mobile,
       search: {
         ...mobile.search,
         fieldMappingTime:
-          mobile.search.fieldMappingTime ?? formOptions.fieldMappingTime,
+          mobile.search.fieldMappingTime ?? formOptions?.fieldMappingTime,
+        filterSchema: mobile.search.filterSchema ?? views.mobileDrawer,
+        keywordFields:
+          mobile.search.keywordFields ??
+          (views.keywordFields.length > 0 ? views.keywordFields : undefined),
         submitOnChange:
-          mobile.search.submitOnChange ?? formOptions.submitOnChange ?? false,
+          mobile.search.submitOnChange ?? formOptions?.submitOnChange ?? true,
       },
     };
   });

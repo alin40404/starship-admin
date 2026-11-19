@@ -69,7 +69,6 @@ const [CrudView, crudApi] = useResponsiveCrud<MemberRow>({
     commonConfig: { componentProps: { class: 'w-full' } },
     schema: useGridFormSchema(),
     submitOnChange: true,
-    submitButtonOptions: { content: $t('common.query') },
   },
   gridOptions: {
     checkboxConfig: { highlight: true },

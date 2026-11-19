@@ -234,7 +234,6 @@ const [Grid, gridApi] = useVbenVxeGrid<CategoryTreeNode>({
     commonConfig: { componentProps: { class: 'w-full' } },
     schema: useGridFormSchema(),
     submitOnChange: true,
-    submitButtonOptions: { content: $t('common.query') },
   },
   gridEvents: {
     checkboxAll: syncSelection,

@@ -55,7 +55,6 @@ export function buildExceptionLogMobileCrudConfig(params: {
     query: params.query,
     rowKey: 'id',
     search: {
-      filterSchema: useGridFormSchema(),
       keywordFields: ['message', 'exception_class', 'trace_id', 'request_url'],
       placeholder: $t('monitor.exceptionLog.searchPlaceholder'),
     },
