@@ -194,6 +194,8 @@ const [Form, formApi] = useTableForm({
     componentProps: {
       class: 'w-full',
     },
+    // PC 浮动标签模式：不显示左侧外置 label
+    hideLabel: true,
   },
   floatLabel: true,
   layout: 'inline',
@@ -237,10 +239,12 @@ watch(
       commonConfig: mobile
         ? {
             componentProps: { class: 'w-full' },
+            hideLabel: false,
             labelClass: 'justify-start',
           }
         : {
             componentProps: { class: 'w-full' },
+            hideLabel: true,
           },
       floatLabel: !mobile,
       layout: mobile ? 'vertical' : 'inline',
@@ -555,6 +559,14 @@ watch(
         ...finalFormOptions,
         actionLayout: 'inline',
         collapseTriggerResize: false,
+        commonConfig: {
+          ...finalFormOptions.commonConfig,
+          componentProps: {
+            class: 'w-full',
+            ...finalFormOptions.commonConfig?.componentProps,
+          },
+          hideLabel: !mobile,
+        },
         floatLabel: !mobile,
         layout: mobile ? 'vertical' : 'inline',
         schema,

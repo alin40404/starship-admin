@@ -1,38 +1,89 @@
 /**
  * Grid 搜索表单：Ant Design 控件适配（浮动标签空态、下拉箭头旋转）
+ * 空态隐藏字段名称、只显示 placeholder；聚焦/有值时标签骑在上边框
+ *
+ * 字号说明：主题 fontSize=16，Ant Design 会通过 --ant-font-size 继承到 Input/Button。
+ * 搜索栏单独压到 13/12，必须改 CSS 变量 + !important，否则会被组件样式盖掉。
  */
+.vxe-grid-search-toolbar {
+  --ant-font-size: 13px;
+  --ant-font-size-lg: 13px;
+  --ant-font-size-sm: 12px;
+  font-size: 13px;
+}
+
+.vxe-grid-search-toolbar .search-float-form-item {
+  overflow: visible !important;
+}
+
+.vxe-grid-search-toolbar .search-float-label {
+  font-size: 13px !important;
+}
+
+/* 空态：先隐藏字段名称，只显示 placeholder；聚焦/有值后再上浮显示 */
+.vxe-grid-search-toolbar .search-float-field:not(.is-active) .search-float-label {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+.vxe-grid-search-toolbar .search-float-field.is-active .search-float-label {
+  font-size: 12px !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.vxe-grid-search-toolbar .search-float-field .ant-input,
+.vxe-grid-search-toolbar .search-float-field .ant-input-affix-wrapper,
+.vxe-grid-search-toolbar .search-float-field .ant-input-number,
+.vxe-grid-search-toolbar .search-float-field .ant-select-selector,
+.vxe-grid-search-toolbar .search-float-field .ant-picker {
+  width: 100%;
+  font-size: 13px !important;
+}
+
+.vxe-grid-search-toolbar .search-float-field :is(
+  .ant-input,
+  .ant-input-number-input,
+  .ant-select-selection-search-input,
+  .ant-select-selection-item,
+  .ant-select-selection-placeholder,
+  .ant-picker-input input
+) {
+  font-size: 13px !important;
+}
+
+.vxe-grid-search-toolbar .search-float-field :is(
+  .ant-input::placeholder,
+  .ant-input-affix-wrapper .ant-input::placeholder,
+  .ant-input-number-input::placeholder,
+  .ant-picker-input input::placeholder
+) {
+  font-size: 13px !important;
+}
+
 .vxe-grid-search-toolbar .search-float-field.is-focused :is(
   .ant-input,
   .ant-input-affix-wrapper,
   .ant-input-number,
   .ant-select-selector,
-  .ant-picker
+  .ant-picker,
+  .ant-select:not(.ant-select-disabled) .ant-select-selector
 ) {
   border-color: hsl(var(--primary)) !important;
+  box-shadow: none !important;
 }
 
-.vxe-grid-search-toolbar .search-float-field:not(.is-active) :is(
+/* 空态 / 上浮态都显示原生 placeholder（空态不再用 label 充当占位） */
+.vxe-grid-search-toolbar .search-float-field :is(
   .ant-input::placeholder,
+  .ant-input-affix-wrapper .ant-input::placeholder,
   .ant-input-number-input::placeholder,
   .ant-select-selection-placeholder,
   .ant-picker-input input::placeholder
 ) {
-  color: transparent !important;
-  opacity: 0;
-}
-
-.vxe-grid-search-toolbar .search-float-field:not(.is-active) :is(
-  .ant-picker-separator,
-  .ant-picker-input input
-) {
-  opacity: 0;
-}
-
-.vxe-grid-search-toolbar .search-float-field.is-active :is(
-  .ant-picker-separator,
-  .ant-picker-input input
-) {
-  opacity: 1;
+  color: hsl(var(--muted-foreground)) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 .vxe-grid-search-toolbar .ant-btn.search-filter-trigger,
@@ -43,6 +94,8 @@
   justify-content: center !important;
   width: auto !important;
   gap: 0; /* 避免与 .ant-btn-icon 自带 margin 叠间距 */
+  --ant-font-size: 13px;
+  font-size: 13px !important;
 }
 
 .vxe-grid-search-toolbar .ant-btn.search-filter-trigger .ant-btn-icon,

@@ -68,7 +68,10 @@ const fieldValue = useFieldValue(fieldName);
 const fieldComponentRef = useTemplateRef<HTMLInputElement>('fieldComponentRef');
 const formApi = formRenderProps.form;
 const compact = computed(() => formRenderProps.compact);
-const floatLabel = computed(() => !!formRenderProps.floatLabel);
+const floatLabel = computed(() => {
+  // 优先读渲染 props；setState 更新后由 vben-use-form 显式透传
+  return !!formRenderProps.floatLabel;
+});
 const isInValid = computed(() => errors.value?.length > 0);
 
 function isEmptyFieldValue(value: unknown) {

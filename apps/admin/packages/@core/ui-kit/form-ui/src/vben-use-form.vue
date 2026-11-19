@@ -113,10 +113,16 @@ onMounted(async () => {
     @keydown.enter="handleKeyDownEnter"
     v-bind="forward"
     :collapsed="state?.collapsed"
+    :common-config="state?.commonConfig ?? forward.commonConfig"
+    :compact="state?.compact ?? forward.compact"
     :component-bind-event-map="COMPONENT_BIND_EVENT_MAP"
     :component-map="COMPONENT_MAP"
+    :float-label="state?.floatLabel ?? forward.floatLabel"
     :form="form"
     :global-common-config="DEFAULT_FORM_COMMON_CONFIG"
+    :layout="state?.layout ?? forward.layout"
+    :schema="state?.schema ?? forward.schema"
+    :wrapper-class="state?.wrapperClass ?? forward.wrapperClass"
   >
     <template
       v-for="slotName in delegatedSlots"
@@ -128,7 +134,7 @@ onMounted(async () => {
     <template #default="slotProps">
       <slot v-bind="slotProps">
         <FormActions
-          v-if="forward.showDefaultActions"
+          v-if="(state?.showDefaultActions ?? forward.showDefaultActions) !== false"
           :model-value="state?.collapsed"
           @update:model-value="handleUpdateCollapsed"
         >

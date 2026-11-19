@@ -115,20 +115,30 @@ watch(
   },
 );
 
+const isFloatSearchToolbar = computed(() => {
+  const props = unref(rootProps) as Record<string, any>;
+  const storeState = props.formApi?.store?.state as
+    | Record<string, any>
+    | undefined;
+  return !!(props.floatLabel || storeState?.floatLabel);
+});
+
 const actionWrapperClass = computed(() => {
   const props = unref(rootProps);
   const actionLayout = props.actionLayout || 'rowEnd';
   const actionPosition = props.actionPosition || 'right';
+  const floatToolbar = isFloatSearchToolbar.value;
 
   const cls = [
     'flex',
     'items-center',
-    'gap-3',
+    'gap-2.5',
     props.compact ? 'pb-2' : 'pb-4',
-    props.floatLabel || props.layout === 'inline' ? 'self-center' : '',
-    props.layout === 'vertical' && !props.floatLabel ? 'self-end' : '',
-    props.layout === 'inline' || props.floatLabel ? '' : 'w-full',
-    props.floatLabel ? 'shrink-0 !pb-0' : '',
+    floatToolbar || props.layout === 'inline' ? 'self-center' : '',
+    props.layout === 'vertical' && !floatToolbar ? 'self-end' : '',
+    props.layout === 'inline' || floatToolbar ? '' : 'w-full',
+    // 紧挨字段，不要被 justify-end 拉到最右侧
+    floatToolbar ? 'shrink-0 !w-auto !pb-0 !justify-start' : '',
     props.actionWrapperClass,
   ];
 
@@ -138,25 +148,27 @@ const actionWrapperClass = computed(() => {
       break;
     }
     case 'rowEnd': {
-      if (!props.floatLabel && props.layout !== 'inline') {
+      if (!floatToolbar && props.layout !== 'inline') {
         cls.push('col-[-2/-1]');
       }
       break;
     }
   }
 
-  switch (actionPosition) {
-    case 'center': {
-      cls.push('justify-center');
-      break;
-    }
-    case 'left': {
-      cls.push('justify-start');
-      break;
-    }
-    default: {
-      cls.push('justify-end');
-      break;
+  if (!floatToolbar) {
+    switch (actionPosition) {
+      case 'center': {
+        cls.push('justify-center');
+        break;
+      }
+      case 'left': {
+        cls.push('justify-start');
+        break;
+      }
+      default: {
+        cls.push('justify-end');
+        break;
+      }
     }
   }
 

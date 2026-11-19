@@ -269,6 +269,8 @@
   align-items: center;
   gap: 10px;
   width: 100%;
+  /* 给上浮标签留出骑边空间，对齐 CRM 搜索工具栏 */
+  padding-top: 8px;
 }
 
 .vxe-grid-search-toolbar > .relative.flex,
@@ -278,6 +280,8 @@
   max-width: 240px;
   flex: 0 0 200px;
   margin: 0;
+  overflow: visible;
+  align-items: stretch !important;
 }
 
 .search-float-field {
@@ -290,12 +294,12 @@
   position: absolute;
   left: 10px;
   top: 50%;
-  z-index: 2;
+  z-index: 3;
   padding: 0 4px;
   font-size: 13px;
   line-height: 1;
   color: hsl(var(--muted-foreground));
-  background: hsl(var(--card));
+  background: hsl(var(--card, var(--background, #fff)));
   pointer-events: none;
   white-space: nowrap;
   transform: translateY(-50%);
