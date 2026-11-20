@@ -105,7 +105,7 @@ cd ../apps/admin && pnpm install && pnpm dev:antd
 
 - 内核在 `packages/core`，`backend` 通过 path `@dev` 引用
 - 改完内核可跑：`cd packages/core && composer test`
-- 发 Packagist 见 [packagist.md](docs/architecture/packagist.md)（脚本 `scripts/publish-core.ps1`）
+- 发 Packagist 见 [packagist.md](docs/architecture/packagist.md)
 - 刷新对外模板见 [release-as-template.md](docs/architecture/release-as-template.md)
 
 ### 1.5 分支速查
