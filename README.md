@@ -50,7 +50,7 @@ Starship Admin 框架内核包（Layer 1）。
 ### 方式 A：从本仓库发布分支创建（推荐）
 
 ```bash
-git clone -b release <starship-admin URL> my-admin
+git clone -b release git@gitee.com:allanchan004/starship-admin.git my-admin
 cd my-admin/backend
 composer install   # starship-admin/core 来自 Packagist
 cp .env.example .env
@@ -58,7 +58,7 @@ php artisan key:generate
 php artisan migrate --seed
 ```
 
-模板内 System / Generator 仍在 `modules/`（path），前端在 `apps/admin`。
+模板内底座为 System / Generator / Member（path）；前端在 `apps/admin`。详见 [release-as-template.md](../../docs/architecture/release-as-template.md)。
 
 ### 方式 B：已有 Laravel 项目手动接入
 
