@@ -15,7 +15,6 @@
         "league/flysystem-aws-s3-v3": "3.0",
         "overtrue/pinyin": "5.0",
         "php": "^8.3",
-        "starship/cms": "@dev",
         "starship-admin/core": "@dev",
         "starship/game-shop": "@dev",
         "starship/generator": "@dev",
@@ -62,10 +61,6 @@
         {
             "type": "path",
             "url": "../modules/GameShop"
-        },
-        {
-            "type": "path",
-            "url": "../modules/Cms"
         }
     ],
     "autoload-dev": {
@@ -75,7 +70,6 @@
             "Modules\\Member\\Tests\\": "../modules/Member/tests/",
             "Modules\\Shop\\Tests\\": "../modules/Shop/tests/",
             "Modules\\GameShop\\Tests\\": "../modules/GameShop/tests/",
-            "Modules\\Cms\\Tests\\": "../modules/Cms/tests/",
             "Modules\\Generator\\Tests\\": "../modules/Generator/tests/"
         }
     },

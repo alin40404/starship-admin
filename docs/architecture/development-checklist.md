@@ -119,7 +119,7 @@
 - [x] 前端插件动态加载（`registry.ts` 按需加载 panel；`VITE_PLUGIN_FRONTEND_DYNAMIC_ENABLED` 默认 false，true 时仅按 slug 加载）
 - [ ] 插件市场（可选）
 - [x] Contract 延后绑定：Config / Permission System 默认已绑；Notification 仍占位
-- [x] 业务 Module MVP：`modules/Shop`（商品/订单/prepay/notify/refund）、`modules/Cms`（栏目/文章）
+- [x] 业务 Module MVP：`modules/Shop`（商品/订单/prepay/notify/refund）；Cms 已拆至独立仓 `starship-cms`
 - [x] Shop 框架深化：分类（共用 categories）、品牌、SPU/SKU、履约/库存契约、订单行、卡密履约、购物车 API（见 [Starship_Shop_模块框架实现方案.md](./Starship_Shop_模块框架实现方案.md)）
 - [ ] Shop 前台 Theme 完整下单页（延后）
 - [ ] OA / CRM / ERP（明确延后）

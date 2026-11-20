@@ -63,8 +63,6 @@ const PERMISSION_PAGE_BY_PATH: Record<string, string> = {
   '/game-shop/games': 'views/game-shop/games/index.vue',
   '/game-shop/products': 'views/game-shop/products/index.vue',
   '/game-shop/orders': 'views/game-shop/orders/index.vue',
-  '/cms/categories': 'views/cms/categories/index.vue',
-  '/cms/articles': 'views/cms/articles/index.vue',
 };
 
 /** 路由 meta 用：库内为 Iconify `collection:name`（如 ep:menu），空则用占位 */
