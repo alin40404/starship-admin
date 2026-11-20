@@ -11,7 +11,113 @@ It combines the modern Laravel backend ecosystem with Vue 3 frontend tooling to 
 
 ---
 
-## 1. Capabilities
+## 1. Getting started
+
+Pick the right track:
+
+| Goal | Branch | Notes |
+|------|--------|-------|
+| **Build your own admin app** | `release` | Public template; core from Packagist |
+| **Work on the framework** (core / foundation / docs) | `master` | Dev branch; core via local path |
+
+For business projects, always start from **`release`**, not `master`.
+
+### 1.1 Requirements
+
+- PHP 8.3+, Composer 2.x
+- Node.js 20+, pnpm 9+
+- MySQL 8.0+ (Redis recommended)
+- Git
+
+### 1.2 Start from the template (recommended)
+
+**① Clone `release`**
+
+```bash
+# GitHub
+git clone -b release https://github.com/alin40404/starship-admin.git my-admin
+
+# or Gitee
+git clone -b release git@gitee.com:allanchan004/starship-admin.git my-admin
+```
+
+**② Backend**
+
+```bash
+cd my-admin/backend
+composer install
+cp .env.example .env          # Windows: copy .env.example .env
+php artisan key:generate
+# Edit .env (database, etc.)
+php artisan migrate --seed
+php artisan storage:link      # public disk for attachments
+php artisan serve             # http://127.0.0.1:8000
+```
+
+**③ Frontend**
+
+```bash
+cd ../apps/admin
+pnpm install
+pnpm dev:antd                 # http://localhost:5666
+```
+
+On Windows you can also double-click `start-dev.bat` at the repo root to start both.
+
+**④ Verify**
+
+| Service | URL |
+|---------|-----|
+| Admin UI | http://localhost:5666 |
+| Backend API | http://127.0.0.1:8000/admin-api |
+| Health check | `GET /admin-api/ping` |
+
+Sign in with the seeded admin account. If you can open the dashboard and see menus, you are ready.
+
+### 1.3 Start building features
+
+Put business code in **your own modules** — not in `backend/app/` or `packages/core`.
+
+```bash
+cd backend
+php artisan starship:module:make Demo
+```
+
+Then:
+
+1. Set `enabled: true` in `modules/Demo/module.json`
+2. Add migrations, APIs, menus, and permissions
+3. Add admin pages under `apps/admin` (or generate CRUD with Generator)
+4. For third-party adapters: `php artisan starship:plugin:make SmsDemo`
+
+See module/plugin sections below and the guides under `docs/deployment/`.
+
+### 1.4 Contribute to the framework (`master`)
+
+```bash
+git clone https://github.com/alin40404/starship-admin.git starship-admin
+cd starship-admin
+git checkout master
+cd backend && composer install
+# … same .env / migrate / storage:link / serve
+cd ../apps/admin && pnpm install && pnpm dev:antd
+```
+
+- Core lives in `packages/core` (path `@dev` from `backend`)
+- After core changes: `cd packages/core && composer test`
+- Publish to Packagist: [packagist.md](docs/architecture/packagist.md) (`scripts/publish-core.ps1`)
+- Refresh the public template: [release-as-template.md](docs/architecture/release-as-template.md)
+
+### 1.5 Branch cheat sheet
+
+| Branch | Purpose |
+|--------|---------|
+| `master` | Framework development: core path `@dev`; may include samples |
+| `release` | **Public template**: core Packagist `^1.0`; System + Generator + Member only |
+
+---
+
+## 2. Capabilities
 
 - Full admin foundation features
 - RBAC (roles, menus, button permissions)
@@ -26,7 +132,7 @@ It combines the modern Laravel backend ecosystem with Vue 3 frontend tooling to 
 
 ---
 
-## 2. Design principles
+## 3. Design principles
 
 - **Convention over configuration**
 - **Clear module boundaries**
@@ -38,9 +144,9 @@ It combines the modern Laravel backend ecosystem with Vue 3 frontend tooling to 
 
 ---
 
-## 3. Tech stack
+## 4. Tech stack
 
-### 3.1 Backend
+### 4.1 Backend
 
 - Laravel 13
 - PHP 8.3+
@@ -48,7 +154,7 @@ It combines the modern Laravel backend ecosystem with Vue 3 frontend tooling to 
 - Redis
 - Laravel Queue / Scheduler / Storage
 
-### 3.2 Frontend
+### 4.2 Frontend
 
 - Vue 3
 - TypeScript
@@ -58,7 +164,7 @@ It combines the modern Laravel backend ecosystem with Vue 3 frontend tooling to 
 - Vue Router
 - Axios
 
-### 3.3 Development environment
+### 4.3 Development environment
 
 - PHP 8.3+
 - Composer 2.x
@@ -71,11 +177,11 @@ It combines the modern Laravel backend ecosystem with Vue 3 frontend tooling to 
 
 ---
 
-## 4. Foundation modules and plugins
+## 5. Foundation modules and plugins
 
 The public template (`release`) ships **System**, **Generator**, and **Member**, plus a local plugin mechanism.
 
-### 4.1 System
+### 5.1 System
 
 Core admin capabilities:
 
@@ -90,7 +196,7 @@ Core admin capabilities:
 - **Monitor center**: operation / login / exception logs  
   (API prefix `/admin-api/monitor/*`, permissions `monitor.*`)
 
-### 4.2 Generator
+### 5.2 Generator
 
 CRUD generator that can produce from database tables:
 
@@ -100,11 +206,11 @@ CRUD generator that can produce from database tables:
 - Frontend API and TypeScript types
 - Field / search / column / form schemas
 
-### 4.3 Member
+### 5.3 Member
 
 Member foundation: member list/profile basics and auth-related contracts (depends on System).
 
-### 4.4 Plugins
+### 5.4 Plugins
 
 Plugins provide optional enhancements and third-party adapters (SMS, storage, payment channels, etc.). They are not foundation modules.
 
@@ -128,9 +234,9 @@ Extension boundaries:
 
 ---
 
-## 5. Plugin mechanism
+## 6. Plugin mechanism
 
-### 5.1 Directory layout
+### 6.1 Directory layout
 
 ```text
 plugins/
@@ -172,7 +278,7 @@ Config key: plugin.sms_aliyun
 Permission prefix: plugin.sms_aliyun
 ```
 
-### 5.2 Plugin types
+### 6.2 Plugin types
 
 | Type | Description | Examples |
 |------|-------------|----------|
@@ -182,7 +288,7 @@ Permission prefix: plugin.sms_aliyun
 | `payment` | Payment channel adapter | WeChat Pay, etc. |
 | `storage` | Storage channel adapter | OSS, COS, S3, Qiniu |
 
-### 5.3 `plugin.json`
+### 6.3 `plugin.json`
 
 ```json
 {
@@ -246,7 +352,7 @@ Permission prefix: plugin.sms_aliyun
 | `permissions` / `menus` | Permission and menu declarations |
 | `enabled` / `order` | Enable flag and load order |
 
-### 5.4 Lifecycle
+### 6.4 Lifecycle
 
 ```text
 discovered  →  installed  →  enabled
@@ -262,7 +368,7 @@ discovered  →  installed  →  enabled
 | Disable | Stop routes/menus; keep data by default |
 | Uninstall | Remove registration; deleting data requires confirmation |
 
-### 5.5 Persistence
+### 6.5 Persistence
 
 Core tables (affected by `DB_PREFIX`, default `sa_`):
 
@@ -273,7 +379,7 @@ plugin_configs
 
 Encrypt sensitive values (`access_key`, `secret_key`, `token`, …); never return raw secrets to the frontend.
 
-### 5.6 Backend loading
+### 6.6 Backend loading
 
 Handled by the plugin engine in `packages/core`:
 
@@ -286,7 +392,7 @@ packages/core/src/Models/PluginConfig.php
 
 Keep `backend/app/` as a thin Laravel shell.
 
-### 5.7 Frontend extension
+### 6.7 Frontend extension
 
 Plugin UI can live under `front/` and sync/link into the admin app:
 
@@ -297,7 +403,7 @@ apps/admin/.../plugins/sms-aliyun/
 
 See [docs/deployment/plugin-cli.md](docs/deployment/plugin-cli.md).
 
-### 5.8 Extension points
+### 6.8 Extension points
 
 Prefer Laravel Event / Listener. Common hooks:
 
@@ -311,7 +417,7 @@ generator.table.loaded / generator.code.generated
 config.updated
 ```
 
-### 5.9 Permissions and menus
+### 6.9 Permissions and menus
 
 ```text
 plugin.{plugin_slug}.{action}
@@ -319,7 +425,7 @@ plugin.{plugin_slug}.{action}
 
 Synced on install/enable; routes must use shared auth and permission middleware.
 
-### 5.10 Config
+### 6.10 Config
 
 Priority:
 
@@ -332,7 +438,7 @@ plugin_config('sms-aliyun.access_key');
 plugin_config('sms-aliyun.sign_name');
 ```
 
-### 5.11 Artisan
+### 6.11 Artisan
 
 ```bash
 php artisan starship:plugin:discover
@@ -344,7 +450,7 @@ php artisan starship:plugin:disable SmsAliyun
 php artisan starship:plugin:uninstall SmsAliyun
 ```
 
-### 5.12 Safety boundaries
+### 6.12 Safety boundaries
 
 - Do not patch `backend/app`, foundation modules, or `packages/core` source as a shortcut
 - Migrations must be trackable; validate deps/version before enable
@@ -354,7 +460,7 @@ php artisan starship:plugin:uninstall SmsAliyun
 
 ---
 
-## 6. Repository layout
+## 7. Repository layout
 
 ```text
 starship-admin/
@@ -379,17 +485,17 @@ starship-admin/
 
 ---
 
-## 7. Directory conventions
+## 8. Directory conventions
 
-### 7.1 `backend`
+### 8.1 `backend`
 
 Laravel host: bootstrap, config, artisan. No business Controllers/Services.
 
-### 7.2 `apps`
+### 8.2 `apps`
 
 Independently runnable frontend apps. Admin UI: `apps/admin/`.
 
-### 7.3 `modules`
+### 8.3 `modules`
 
 Foundation and your own modules, registered via `module.json`:
 
@@ -397,21 +503,21 @@ Foundation and your own modules, registered via `module.json`:
 php artisan starship:module:make Demo
 ```
 
-### 7.4 `plugins`
+### 8.4 `plugins`
 
 Optional plugins / adapters, separate from `modules`.
 
-### 7.5 `packages`
+### 8.5 `packages`
 
 Shared libraries. Core is `packages/core` (`starship-admin/core`).
 
-### 7.6 `themes`
+### 8.6 `themes`
 
 Frontend/rendering themes (`default`, `corporate`, …). Admin theme tokens/layout styles live inside the `apps/admin` project, not root `themes/`.
 
 ---
 
-## 8. Module directory layout
+## 9. Module directory layout
 
 Example for `System`:
 
@@ -435,7 +541,7 @@ modules/System/
 
 ---
 
-## 9. `module.json`
+## 10. `module.json`
 
 Authoritative fields follow modules in the repo; see [docs/api/permissions.md](docs/api/permissions.md).
 
@@ -480,7 +586,7 @@ Authoritative fields follow modules in the repo; see [docs/api/permissions.md](d
 
 ---
 
-## 10. Naming conventions
+## 11. Naming conventions
 
 ```text
 modules/System      →  name: system
@@ -505,7 +611,7 @@ Permission nodes: `{module}.{resource}.{action}` — see [docs/api/permissions.m
 
 ---
 
-## 11. Backend layering
+## 12. Backend layering
 
 ```text
 Controller → Request → Service → Model / Repository → Database
@@ -521,7 +627,7 @@ Controller → Request → Service → Model / Repository → Database
 
 ---
 
-## 12. API conventions
+## 13. API conventions
 
 Admin API prefix:
 
@@ -555,7 +661,7 @@ Common `code` values: `0` success, `400` bad request, `401` unauthorized, `403` 
 
 ---
 
-## 13. Permissions (RBAC)
+## 14. Permissions (RBAC)
 
 Core objects: admins, roles, menus, permission nodes, and their relations.
 
@@ -568,7 +674,7 @@ See [docs/api/permissions.md](docs/api/permissions.md) and the RBAC design doc u
 
 ---
 
-## 14. Database conventions
+## 15. Database conventions
 
 Default prefix:
 
@@ -584,7 +690,7 @@ Common columns: `id`, `created_by`, `updated_by`, `created_at`, `updated_at`, `d
 
 ---
 
-## 15. Foundation tables
+## 16. Foundation tables
 
 Logical names (plus `DB_PREFIX`):
 
@@ -598,7 +704,7 @@ Logical names (plus `DB_PREFIX`):
 
 ---
 
-## 16. CRUD generator
+## 17. CRUD generator
 
 Inputs: existing tables + field metadata + manual UI/search/form/validation config.
 
@@ -610,7 +716,7 @@ CLI: [docs/generator/cli.md](docs/generator/cli.md).
 
 ---
 
-## 17. Frontend architecture
+## 18. Frontend architecture
 
 Based on Vben Admin 5.x. Typical areas under `apps/admin/.../src/`: `api`, `components`, `layouts`, `router`, `store`, `utils`, `views`, `features`, `plugins`.
 
@@ -618,7 +724,7 @@ Font-size tokens: [docs/ui/admin-font-size.md](docs/ui/admin-font-size.md).
 
 ---
 
-## 18. Authentication
+## 19. Authentication
 
 Prefer **Laravel Sanctum** for SPA admin.
 
@@ -626,7 +732,7 @@ Supports password login (optional captcha), failure limits, token session, logou
 
 ---
 
-## 19. File upload
+## 20. File upload
 
 Managed by System. Drivers: `local` / `public` / `s3` and OSS/COS/Qiniu via plugins.
 
@@ -640,73 +746,13 @@ See [docs/deployment/public-storage-link.md](docs/deployment/public-storage-link
 
 ---
 
-## 20. Audit logging
+## 21. Audit logging
 
 Monitor center covers operation / login / exception logs. Mask sensitive fields (`password`, `token`, `secret`, `authorization`, …).
 
 ---
 
-## 21. Branches and template
-
-| Branch | Purpose |
-|--------|---------|
-| `master` | Framework development: core via path `@dev`; may include samples |
-| `release` | **Public template**: core via Packagist `^1.0`; System + Generator + Member only |
-
-- Root package: `starship/skeleton`
-- Core: Packagist `starship-admin/core`
-- Admin UI ships in-repo (`apps/admin`)
-
-See [release-as-template.md](docs/architecture/release-as-template.md) and [packagist.md](docs/architecture/packagist.md).
-
----
-
-## 22. Quick start
-
-### 22.1 Clone (`release`)
-
-```bash
-# GitHub
-git clone -b release https://github.com/alin40404/starship-admin.git my-admin
-
-# or Gitee
-git clone -b release git@gitee.com:allanchan004/starship-admin.git my-admin
-```
-
-### 22.2 Backend
-
-```bash
-cd my-admin/backend
-composer install
-cp .env.example .env          # Windows: copy .env.example .env
-php artisan key:generate
-# Configure .env
-php artisan migrate --seed
-php artisan storage:link
-php artisan serve             # http://127.0.0.1:8000
-```
-
-### 22.3 Frontend
-
-```bash
-cd ../apps/admin
-pnpm install
-pnpm dev:antd                 # http://localhost:5666
-```
-
-On Windows, `start-dev.bat` at the repo root can start both.
-
-### 22.4 URLs
-
-| Service | URL |
-|---------|-----|
-| Admin UI | http://localhost:5666 |
-| Backend API | http://127.0.0.1:8000/admin-api |
-| Health | `GET /admin-api/ping` |
-
----
-
-## 23. Documentation index
+## 22. Documentation index
 
 | Doc | Content |
 |-----|---------|
@@ -726,7 +772,7 @@ Core package: [packages/core/README.md](packages/core/README.md).
 
 ---
 
-## 24. Related repositories
+## 23. Related repositories
 
 | Repo | Purpose |
 |------|---------|

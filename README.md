@@ -11,7 +11,113 @@ Starship Admin 是一个基于 **Laravel + Vue 3** 的企业级后台开发框�
 
 ---
 
-## 1. 核心能力
+## 1. 如何开始工作
+
+先分清两条线：
+
+| 你想做什么 | 用哪个分支 | 说明 |
+|------------|------------|------|
+| **做自己的业务后台** | `release` | 对外模板；core 从 Packagist 安装 |
+| **改框架本身**（内核 / 底座 / 文档） | `master` | 研发分支；core 用本地 path |
+
+日常业务项目请走 **`release`**，不要直接以 `master` 当业务起点。
+
+### 1.1 环境要求
+
+- PHP 8.3+、Composer 2.x
+- Node.js 20+、pnpm 9+
+- MySQL 8.0+（建议再备 Redis）
+- Git
+
+### 1.2 基于模板开工（推荐）
+
+**① 克隆 `release`**
+
+```bash
+# GitHub
+git clone -b release https://github.com/alin40404/starship-admin.git my-admin
+
+# 或 Gitee
+git clone -b release git@gitee.com:allanchan004/starship-admin.git my-admin
+```
+
+**② 启动后端**
+
+```bash
+cd my-admin/backend
+composer install
+cp .env.example .env          # Windows: copy .env.example .env
+php artisan key:generate
+# 编辑 .env：配置数据库等
+php artisan migrate --seed
+php artisan storage:link      # 附件 public 磁盘
+php artisan serve             # http://127.0.0.1:8000
+```
+
+**③ 启动前端**
+
+```bash
+cd ../apps/admin
+pnpm install
+pnpm dev:antd                 # http://localhost:5666
+```
+
+Windows 也可在仓库根目录双击 `start-dev.bat`，同时拉起前后端。
+
+**④ 打开并确认**
+
+| 服务 | 地址 |
+|------|------|
+| 管理端 | http://localhost:5666 |
+| 后端 API | http://127.0.0.1:8000/admin-api |
+| 健康检查 | `GET /admin-api/ping` |
+
+用 seed 账号登录后台；能进首页、看到菜单，即环境就绪。
+
+### 1.3 开始写业务
+
+业务放在 **自己的模块**，不要写进 `backend/app/` 或 `packages/core`。
+
+```bash
+cd backend
+php artisan starship:module:make Demo
+```
+
+然后：
+
+1. 在 `modules/Demo/module.json` 确认 `enabled: true`
+2. 按模块规范补迁移、接口、菜单与权限
+3. 管理端在 `apps/admin` 对应目录加页面（或走 Generator 生成 CRUD）
+4. 需要第三方能力时用插件：`php artisan starship:plugin:make SmsDemo`
+
+模块 / 插件约定见下文「模块目录规范」「插件机制」，以及 `docs/deployment/` 下开发规范。
+
+### 1.4 参与框架开发（`master`）
+
+```bash
+git clone https://github.com/alin40404/starship-admin.git starship-admin
+cd starship-admin
+git checkout master
+cd backend && composer install
+# … 同样配置 .env、migrate、storage:link、serve
+cd ../apps/admin && pnpm install && pnpm dev:antd
+```
+
+- 内核在 `packages/core`，`backend` 通过 path `@dev` 引用
+- 改完内核可跑：`cd packages/core && composer test`
+- 发 Packagist 见 [packagist.md](docs/architecture/packagist.md)（脚本 `scripts/publish-core.ps1`）
+- 刷新对外模板见 [release-as-template.md](docs/architecture/release-as-template.md)
+
+### 1.5 分支速查
+
+| 分支 | 用途 |
+|------|------|
+| `master` | 框架研发：core path `@dev`；可含样例模块 |
+| `release` | **对外模板**：core Packagist `^1.0`；仅 System + Generator + Member |
+
+---
+
+## 2. 核心能力
 
 - 完整的后台基础能力
 - RBAC 权限管理
@@ -26,7 +132,7 @@ Starship Admin 是一个基于 **Laravel + Vue 3** 的企业级后台开发框�
 
 ---
 
-## 2. 设计原则
+## 3. 设计原则
 
 - **约定优于配置**
 - **模块边界清晰**
@@ -38,9 +144,9 @@ Starship Admin 是一个基于 **Laravel + Vue 3** 的企业级后台开发框�
 
 ---
 
-## 3. 技术栈
+## 4. 技术栈
 
-### 3.1 后端
+### 4.1 后端
 
 - Laravel 13
 - PHP 8.3+
@@ -48,7 +154,7 @@ Starship Admin 是一个基于 **Laravel + Vue 3** 的企业级后台开发框�
 - Redis
 - Laravel Queue / Scheduler / Storage
 
-### 3.2 前端
+### 4.2 前端
 
 - Vue 3
 - TypeScript
@@ -58,7 +164,7 @@ Starship Admin 是一个基于 **Laravel + Vue 3** 的企业级后台开发框�
 - Vue Router
 - Axios
 
-### 3.3 开发环境
+### 4.3 开发环境
 
 - PHP 8.3+
 - Composer 2.x
@@ -71,11 +177,11 @@ Starship Admin 是一个基于 **Laravel + Vue 3** 的企业级后台开发框�
 
 ---
 
-## 4. 底座模块与插件
+## 5. 底座模块与插件
 
 对外模板（`release`）内置底座模块：**System**、**Generator**、**Member**；并支持本地插件机制。
 
-### 4.1 System
+### 5.1 System
 
 系统基础模块，负责后台框架最核心的管理能力：
 
@@ -90,7 +196,7 @@ Starship Admin 是一个基于 **Laravel + Vue 3** 的企业级后台开发框�
 - **监控中心**：操作日志、登录日志、异常日志  
   （API 前缀 `/admin-api/monitor/*`，权限 `monitor.*`）
 
-### 4.2 Generator
+### 5.2 Generator
 
 CRUD 代码生成器，可根据数据表生成：
 
@@ -100,11 +206,11 @@ CRUD 代码生成器，可根据数据表生成：
 - 前端 API、TypeScript 类型
 - 字段 / 搜索项 / 表格列 / 表单项配置
 
-### 4.3 Member
+### 5.3 Member
 
 会员底座模块：会员列表与基础资料、认证相关契约等（依赖 System）。
 
-### 4.4 插件能力
+### 5.4 插件能力
 
 插件用于可选增强与第三方服务适配（短信、存储、支付通道等），不是底座模块。
 
@@ -128,9 +234,9 @@ CRUD 代码生成器，可根据数据表生成：
 
 ---
 
-## 5. 插件机制
+## 6. 插件机制
 
-### 5.1 插件目录结构
+### 6.1 插件目录结构
 
 ```text
 plugins/
@@ -172,7 +278,7 @@ plugins/
 权限前缀：plugin.sms_aliyun
 ```
 
-### 5.2 插件类型
+### 6.2 插件类型
 
 | 类型 | 说明 | 示例 |
 |------|------|------|
@@ -182,7 +288,7 @@ plugins/
 | `payment` | 支付通道适配 | 微信支付等 |
 | `storage` | 存储通道适配 | OSS、COS、S3、Qiniu |
 
-### 5.3 `plugin.json`
+### 6.3 `plugin.json`
 
 ```json
 {
@@ -246,7 +352,7 @@ plugins/
 | `permissions` / `menus` | 权限与菜单声明 |
 | `enabled` / `order` | 启用状态与加载顺序 |
 
-### 5.4 生命周期
+### 6.4 生命周期
 
 ```text
 discovered  →  installed  →  enabled
@@ -262,7 +368,7 @@ discovered  →  installed  →  enabled
 | 禁用 | 停止加载路由与菜单，默认不删除数据 |
 | 卸载 | 移除注册信息；删数据需二次确认 |
 
-### 5.5 持久化
+### 6.5 持久化
 
 内核使用表（受 `DB_PREFIX` 影响，默认前缀 `sa_`）：
 
@@ -273,7 +379,7 @@ plugin_configs       # 插件配置表
 
 敏感配置（`access_key`、`secret_key`、`token` 等）应加密存储，接口不向前端回传明文密钥。
 
-### 5.6 后端加载
+### 6.6 后端加载
 
 由 `packages/core` 中的插件引擎统一处理：
 
@@ -292,7 +398,7 @@ packages/core/src/Models/PluginConfig.php
 
 `backend/app/` 仅保留 Laravel 薄壳。
 
-### 5.7 前端扩展
+### 6.7 前端扩展
 
 插件前端文件可放在插件目录 `front/`，再同步或链接到管理端：
 
@@ -303,7 +409,7 @@ apps/admin/.../plugins/sms-aliyun/
 
 常用命令见 [docs/deployment/plugin-cli.md](docs/deployment/plugin-cli.md)。
 
-### 5.8 扩展点
+### 6.8 扩展点
 
 通过 Laravel Event / Listener 接入，避免修改核心代码。常见事件点：
 
@@ -317,7 +423,7 @@ generator.table.loaded / generator.code.generated
 config.updated
 ```
 
-### 5.9 权限与菜单
+### 6.9 权限与菜单
 
 插件权限节点建议：
 
@@ -327,7 +433,7 @@ plugin.{plugin_slug}.{action}
 
 安装或启用时同步到 System；路由必须走统一认证与权限中间件。
 
-### 5.10 配置读取
+### 6.10 配置读取
 
 优先级：
 
@@ -340,7 +446,7 @@ plugin_config('sms-aliyun.access_key');
 plugin_config('sms-aliyun.sign_name');
 ```
 
-### 5.11 Artisan 命令
+### 6.11 Artisan 命令
 
 ```bash
 php artisan starship:plugin:discover
@@ -352,7 +458,7 @@ php artisan starship:plugin:disable SmsAliyun
 php artisan starship:plugin:uninstall SmsAliyun
 ```
 
-### 5.12 安全边界
+### 6.12 安全边界
 
 - 不直接修改 `backend/app`、`modules/System`、`modules/Generator`、`packages/core` 源码来“打补丁”
 - 迁移可追踪；启用前校验依赖与版本
@@ -362,7 +468,7 @@ php artisan starship:plugin:uninstall SmsAliyun
 
 ---
 
-## 6. 仓库结构
+## 7. 仓库结构
 
 ```text
 starship-admin/
@@ -403,17 +509,17 @@ starship-admin/
 
 ---
 
-## 7. 目录约定
+## 8. 目录约定
 
-### 7.1 `backend`
+### 8.1 `backend`
 
 Laravel 宿主应用入口：bootstrap、config、artisan。不放业务 Controller / Service。
 
-### 7.2 `apps`
+### 8.2 `apps`
 
 可独立运行、构建、部署的前端应用。管理端为 `apps/admin/`。
 
-### 7.3 `modules`
+### 8.3 `modules`
 
 底座与自研业务模块目录。通过 `module.json` 注册。脚手架：
 
@@ -421,21 +527,21 @@ Laravel 宿主应用入口：bootstrap、config、artisan。不放业务 Control
 php artisan starship:module:make Demo
 ```
 
-### 7.4 `plugins`
+### 8.4 `plugins`
 
 可选插件与第三方适配器，与 `modules` 分离。
 
-### 7.5 `packages`
+### 8.5 `packages`
 
 代码级共享能力。当前核心为 `packages/core`（`starship-admin/core`）。
 
-### 7.6 `themes`
+### 8.6 `themes`
 
 前台 / 渲染主题（如 `default`、`corporate`）。管理端主题色、暗黑模式、布局样式放在 `apps/admin` 前端工程内，不占用根目录 `themes/`。
 
 ---
 
-## 8. 模块目录规范
+## 9. 模块目录规范
 
 以 `System` 为例：
 
@@ -471,7 +577,7 @@ modules/System/
 
 ---
 
-## 9. `module.json` 规范
+## 10. `module.json` 规范
 
 权威字段以仓库内模块为准；权限与菜单见 [docs/api/permissions.md](docs/api/permissions.md)。
 
@@ -516,9 +622,9 @@ modules/System/
 
 ---
 
-## 10. 模块命名规范
+## 11. 模块命名规范
 
-### 10.1 目录与标识
+### 11.1 目录与标识
 
 ```text
 modules/System      →  name: system
@@ -526,7 +632,7 @@ modules/Generator   →  name: generator
 modules/Member      →  name: member
 ```
 
-### 10.2 PHP 命名空间
+### 11.2 PHP 命名空间
 
 ```php
 Modules\System
@@ -534,7 +640,7 @@ Modules\Generator
 Modules\Member
 ```
 
-### 10.3 前端路由 path
+### 11.3 前端路由 path
 
 与菜单 `path` 一致，小写短横线：
 
@@ -554,7 +660,7 @@ Modules\Member
 
 监控中心页面路由为 `/monitor/*`，权限码为 `monitor.*`。
 
-### 10.4 权限节点
+### 11.4 权限节点
 
 点分结构 `{模块}.{资源}.{操作}`：
 
@@ -573,7 +679,7 @@ generator.codegen
 
 ---
 
-## 11. 后端架构分层
+## 12. 后端架构分层
 
 ```text
 Controller → Request → Service → Model / Repository → Database
@@ -589,9 +695,9 @@ Controller → Request → Service → Model / Repository → Database
 
 ---
 
-## 12. API 规范
+## 13. API 规范
 
-### 12.1 路由前缀
+### 13.1 路由前缀
 
 后台 API 统一：
 
@@ -614,7 +720,7 @@ GET    /admin-api/generator/tables
 
 完整路由见 [docs/api/routes.md](docs/api/routes.md)。
 
-### 12.2 统一响应
+### 13.2 统一响应
 
 成功：
 
@@ -651,7 +757,7 @@ GET    /admin-api/generator/tables
 }
 ```
 
-### 12.3 常用 code
+### 13.3 常用 code
 
 | code | 说明 |
 |---:|------|
@@ -665,15 +771,15 @@ GET    /admin-api/generator/tables
 
 ---
 
-## 13. 权限设计
+## 14. 权限设计
 
 采用 RBAC。
 
-### 13.1 核心对象
+### 14.1 核心对象
 
 管理员、角色、菜单、权限节点，以及管理员—角色、角色—菜单、角色—权限关系。
 
-### 13.2 权限层级
+### 14.2 权限层级
 
 | 类型 | 说明 | 示例 |
 |------|------|------|
@@ -681,7 +787,7 @@ GET    /admin-api/generator/tables
 | 菜单 | 页面入口 | 管理员管理 |
 | 按钮 | 操作权限 | 新增、编辑、删除 |
 
-### 13.3 前后端控制
+### 14.3 前后端控制
 
 - 前端：按权限节点控制路由、菜单、按钮
 - 后端：必须二次校验权限节点，不能只依赖前端隐藏
@@ -690,9 +796,9 @@ GET    /admin-api/generator/tables
 
 ---
 
-## 14. 数据库规范
+## 15. 数据库规范
 
-### 14.1 表前缀
+### 15.1 表前缀
 
 默认通过环境变量：
 
@@ -702,14 +808,14 @@ DB_PREFIX=sa_
 
 迁移中表名一般为逻辑名（如 `admins`、`roles`），实际物理表为 `sa_admins` 等。
 
-### 14.2 命名
+### 15.2 命名
 
 ```text
 {业务名}                 # 如 admins、roles、menus
 {模块}_{业务}            # 如 generator_tables、monitor_operation_logs
 ```
 
-### 14.3 通用字段
+### 15.3 通用字段
 
 ```sql
 `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -729,7 +835,7 @@ PRIMARY KEY (`id`)
 `remark` varchar(500) DEFAULT NULL COMMENT '备注'
 ```
 
-### 14.4 字段命名
+### 15.4 字段命名
 
 - 小写 + 下划线
 - 布尔优先 `is_` 前缀
@@ -737,7 +843,7 @@ PRIMARY KEY (`id`)
 
 ---
 
-## 15. 底座相关表
+## 16. 底座相关表
 
 逻辑表名（再加 `DB_PREFIX`）：
 
@@ -777,14 +883,14 @@ members
 
 ---
 
-## 16. CRUD 代码生成器
+## 17. CRUD 代码生成器
 
-### 16.1 输入
+### 17.1 输入
 
 - 选择已有数据表，读取字段 / 类型 / 注释 / 索引
 - 手动配置展示方式、搜索、表单、列表、验证规则
 
-### 16.2 字段配置项
+### 17.2 字段配置项
 
 | 配置项 | 说明 |
 |--------|------|
@@ -796,13 +902,13 @@ members
 | 字典绑定 | 可选 |
 | 排序 | 显示顺序 |
 
-### 16.3 生成内容
+### 17.3 生成内容
 
 后端：Model、Controller、Request、Service、Route、Permission、Menu（Migration / Seeder 可选）
 
 前端：`api.ts`、`types.ts`、列表 / 表单页、`columns` / `schema` 等
 
-### 16.4 原则
+### 17.4 原则
 
 - 只生成基础 CRUD；复杂逻辑在 Service 扩展
 - 默认不覆盖手写代码（除非明确确认）
@@ -813,7 +919,7 @@ CLI 见 [docs/generator/cli.md](docs/generator/cli.md)。
 
 ---
 
-## 17. 前端架构
+## 18. 前端架构
 
 管理端基于 Vben Admin 5.x。应用内常见目录：
 
@@ -834,7 +940,7 @@ apps/admin/.../src/
 
 ---
 
-## 18. 登录认证
+## 19. 登录认证
 
 推荐 **Laravel Sanctum**（SPA 前后端分离）。
 
@@ -847,7 +953,7 @@ apps/admin/.../src/
 
 ---
 
-## 19. 文件上传
+## 20. 文件上传
 
 由 System 统一管理附件。存储驱动可扩展：`local` / `public` / `s3` 及 OSS、COS、七牛等（可通过插件适配）。
 
@@ -863,7 +969,7 @@ php artisan storage:link
 
 ---
 
-## 20. 日志审计
+## 21. 日志审计
 
 监控中心记录操作 / 登录 / 异常。操作审计字段建议包含：
 
@@ -873,67 +979,7 @@ php artisan storage:link
 
 ---
 
-## 21. 分支与模板
-
-| 分支 | 用途 |
-|------|------|
-| `master` | 框架研发：core 用 path `@dev`；可含样例模块与完整文档 |
-| `release` | **对外模板**：core 用 Packagist `^1.0`；仅 System + Generator + Member |
-
-- 根 `composer.json` → `starship/skeleton`
-- `starship-admin/core` → Packagist
-- 前端随仓 `apps/admin`，不单独发包
-
-详见 [release-as-template.md](docs/architecture/release-as-template.md)、[packagist.md](docs/architecture/packagist.md)。
-
----
-
-## 22. 快速开始
-
-### 22.1 克隆（推荐 `release`）
-
-```bash
-# GitHub
-git clone -b release https://github.com/alin40404/starship-admin.git my-admin
-
-# 或 Gitee
-git clone -b release git@gitee.com:allanchan004/starship-admin.git my-admin
-```
-
-### 22.2 后端
-
-```bash
-cd my-admin/backend
-composer install
-cp .env.example .env          # Windows: copy .env.example .env
-php artisan key:generate
-# 配置 .env 数据库等
-php artisan migrate --seed
-php artisan storage:link
-php artisan serve             # http://127.0.0.1:8000
-```
-
-### 22.3 前端
-
-```bash
-cd ../apps/admin
-pnpm install
-pnpm dev:antd                 # http://localhost:5666
-```
-
-Windows 可在仓库根目录使用 `start-dev.bat` 同时启动前后端。
-
-### 22.4 常用地址
-
-| 服务 | 地址 |
-|------|------|
-| 管理端 | http://localhost:5666 |
-| 后端 API | http://127.0.0.1:8000/admin-api |
-| 健康检查 | `GET /admin-api/ping` |
-
----
-
-## 23. 文档索引
+## 22. 文档索引
 
 | 文档 | 内容 |
 |------|------|
@@ -955,7 +1001,7 @@ Windows 可在仓库根目录使用 `start-dev.bat` 同时启动前后端。
 
 ---
 
-## 24. 相关仓库
+## 23. 相关仓库
 
 | 仓库 | 用途 |
 |------|------|
