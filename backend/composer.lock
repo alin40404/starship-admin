@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d86ca7084f64f2ae6640d2dfb24bec53",
+    "content-hash": "266aa7a3e2a11a23882f9a943059cc75",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -4719,40 +4719,12 @@
             "time": "2023-09-03T09:24:00+00:00"
         },
         {
-            "name": "starship/cms",
-            "version": "0.1.0",
-            "dist": {
-                "type": "path",
-                "url": "../modules/Cms",
-                "reference": "7f83a827e3e492910d60cda8ac5cdb065d6ae530"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Modules\\Cms\\App\\": "app/",
-                    "Modules\\Cms\\Database\\Seeders\\": "database/seeders/"
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "Modules\\Cms\\Tests\\": "tests/"
-                }
-            },
-            "license": [
-                "MIT"
-            ],
-            "description": "Starship Admin 内容管理 module",
-            "transport-options": {
-                "relative": true
-            }
-        },
-        {
-            "name": "starship/core",
+            "name": "starship-admin/core",
             "version": "dev-master",
             "dist": {
                 "type": "path",
                 "url": "../packages/core",
-                "reference": "989fa7202c0f0544b1695d3d9ede6fc75fe0227b"
+                "reference": "38508216409931fd6aeeab175cde6a595742599e"
             },
             "require": {
                 "composer/composer": "^2.7",
@@ -4764,6 +4736,16 @@
                 "phpunit/phpunit": "^12.5.12"
             },
             "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Starship\\Core\\Providers\\CoreServiceProvider"
+                    ]
+                },
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Starship\\Core\\": "src/"
@@ -4792,6 +4774,47 @@
                 }
             ],
             "description": "Starship Admin framework kernel — module scanner, plugin engine, theme manager, contracts",
+            "homepage": "https://github.com/alin40404/starship-core",
+            "keywords": [
+                "admin",
+                "laravel",
+                "module",
+                "plugin",
+                "starship",
+                "theme"
+            ],
+            "support": {
+                "source": "https://github.com/alin40404/starship-core",
+                "issues": "https://github.com/alin40404/starship-core/issues"
+            },
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "starship/cms",
+            "version": "0.1.0",
+            "dist": {
+                "type": "path",
+                "url": "../modules/Cms",
+                "reference": "7f83a827e3e492910d60cda8ac5cdb065d6ae530"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Modules\\Cms\\App\\": "app/",
+                    "Modules\\Cms\\Database\\Seeders\\": "database/seeders/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Modules\\Cms\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Starship Admin 内容管理 module",
             "transport-options": {
                 "relative": true
             }
@@ -10110,7 +10133,7 @@
     "minimum-stability": "stable",
     "stability-flags": {
         "starship/cms": 20,
-        "starship/core": 20,
+        "starship-admin/core": 20,
         "starship/game-shop": 20,
         "starship/generator": 20,
         "starship/member": 20,

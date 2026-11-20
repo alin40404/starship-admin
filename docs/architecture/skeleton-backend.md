@@ -80,12 +80,12 @@ my-admin/
 |------|------|
 | `app/Http/Controllers/Controller.php` | Laravel 基类 |
 | `app/Models/User.php` | Laravel 默认 User（宿主用，非 Admin 业务用户） |
-| `app/Providers/AppServiceProvider.php` | Laravel 壳 Provider（通用 boot 已迁入 `starship/core`） |
+| `app/Providers/AppServiceProvider.php` | Laravel 壳 Provider（通用 boot 已迁入 `starship-admin/core`） |
 
 **禁止出现在 skeleton app/ 中：**
 
 - 业务 Controller / Service
-- Module / Plugin 引擎代码（已在 `vendor/starship/core`）
+- Module / Plugin 引擎代码（已在 `vendor/starship-admin/core`）
 - `helpers.php`（已迁入 core 包）
 
 ### 3.4 routes/
@@ -183,7 +183,7 @@ my-admin/
     { "type": "path", "url": "../modules/Generator" }
   ],
   "require": {
-    "starship/core": "@dev",
+    "starship-admin/core": "@dev",
     "starship/system": "@dev",
     "starship/generator": "@dev"
   }
@@ -198,7 +198,7 @@ my-admin/
     "php": "^8.3",
     "laravel/framework": "^13.0",
     "laravel/sanctum": "^4.3",
-    "starship/core": "^1.0",
+    "starship-admin/core": "^1.0",
     "starship/system": "@dev",
     "starship/generator": "@dev"
   },

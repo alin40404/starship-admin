@@ -7,8 +7,8 @@
   按 docs/architecture/packagist.md：
   1) （可选）在 packages/core 跑测试
   2) git subtree split --prefix=packages/core -b split/core
-  3) push 到一个或多个 remote 的 master，并推送正式 tag vX.Y.Z
-  4) 本仓额外打镜像 tag core-vX.Y.Z（仅本地/可选推 origin）
+  3) push 到一个或多个 remote 的主分支（默认 main），并推送正式 tag vX.Y.Z
+  4) 本仓额外打镜像 tag core-vX.Y.Z
 
   版本不写进 composer.json，以 git tag 为准。
   Packagist 建议注册 GitHub 仓；Gitee 可作为镜像同步。
@@ -19,6 +19,9 @@
 .PARAMETER Remotes
   独立仓 remote 名列表。默认 @('starship-core')（建议指向 GitHub）。
   可同时推多个，例如：-Remotes starship-core,starship-core-gitee
+
+.PARAMETER Branch
+  独立仓目标分支。默认 main（GitHub 空仓默认分支）
 
 .PARAMETER SkipTests
   跳过 composer test
@@ -44,6 +47,7 @@
 param(
     [string] $Version = '1.0.0',
     [string[]] $Remotes = @('starship-core'),
+    [string] $Branch = 'main',
     [switch] $SkipTests,
     [switch] $DryRun
 )
@@ -71,7 +75,7 @@ foreach ($dir in $phpCandidates) {
 }
 
 Write-Host "==> repo: $repoRoot"
-Write-Host "==> version: $Version  remotes: $($Remotes -join ', ')  dryRun: $DryRun"
+Write-Host "==> version: $Version  remotes: $($Remotes -join ', ')  branch: $Branch  dryRun: $DryRun"
 
 $status = git status --porcelain
 if ($status) {
@@ -108,7 +112,7 @@ foreach ($tagName in @($monoTag, $pkgTag)) {
         Write-Warning "本地已有 tag $tagName，将删除后重建"
         git tag -d $tagName | Out-Null
     }
-    git tag -a $tagName split/core -m "starship/core $Version"
+    git tag -a $tagName split/core -m "starship-admin/core $Version"
     if ($LASTEXITCODE -ne 0) { throw "打 tag $tagName 失败" }
 }
 
@@ -116,7 +120,7 @@ if ($DryRun) {
     Write-Host ''
     Write-Host 'DryRun 完成。未 push。后续：'
     foreach ($remote in $Remotes) {
-        Write-Host "  git push $remote split/core:master"
+        Write-Host "  git push $remote split/core:$Branch"
         Write-Host "  git push $remote $pkgTag"
         Write-Host "  git push $remote $monoTag"
     }
@@ -144,9 +148,9 @@ if ($missing.Count -gt 0) {
 }
 
 foreach ($remote in $Remotes) {
-    Write-Host "==> push $remote split/core:master"
-    git push $remote split/core:master
-    if ($LASTEXITCODE -ne 0) { throw "push $remote master 失败" }
+    Write-Host "==> push $remote split/core:$Branch"
+    git push $remote "split/core:${Branch}"
+    if ($LASTEXITCODE -ne 0) { throw "push $remote $Branch 失败" }
 
     Write-Host "==> push $remote tags $pkgTag $monoTag"
     git push $remote $pkgTag
@@ -159,6 +163,6 @@ Write-Host ''
 Write-Host '已推送。接下来：'
 Write-Host '  1. Packagist → Submit → 填 GitHub 仓 URL（https://github.com/alin40404/starship-core）'
 Write-Host '  2. 打开 GitHub → Packagist 自动更新（Service Hook / Packagist GitHub App）'
-Write-Host "  3. 下游：composer require starship/core:^$($Version.Split('.')[0]).0"
+Write-Host "  3. 下游：composer require starship-admin/core:^$($Version.Split('.')[0]).0"
 Write-Host ''
 Write-Host '说明：Gitee 镜像不参与 Packagist 注册亦可；Composer 只认 Packagist 上登记的那个 Git 源。'

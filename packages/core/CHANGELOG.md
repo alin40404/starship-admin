@@ -1,6 +1,6 @@
 # Changelog
 
-本文件记录 `starship/core` 的对外可见变更。版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)；**以 git tag 为准**（`composer.json` 不写死 `version`）。
+本文件记录 `starship-admin/core` 的对外可见变更。版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)；**以 git tag 为准**（`composer.json` 不写死 `version`）。
 
 ## [1.0.0] — 2026-11-20
 
@@ -14,5 +14,7 @@
 
 ### Notes
 
-- 首个稳定发行版；下游约束建议 `starship/core: ^1.0`
+- 首个稳定发行版；Composer 包名为 **`starship-admin/core`**（Packagist 上 `starship/*` vendor 已被第三方占用）
+- 下游约束建议 `starship-admin/core: ^1.0`
+- PHP 命名空间仍为 `Starship\Core\*`
 - 发布制品来自 monorepo `packages/core` 的 subtree 独立仓 tag `v1.0.0`

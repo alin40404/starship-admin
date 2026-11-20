@@ -1,4 +1,4 @@
-# starship/core
+# starship-admin/core
 
 Starship Admin 框架内核包（Layer 1）。
 
@@ -40,7 +40,7 @@ Starship Admin 框架内核包（Layer 1）。
 
 ### `require-dev`（仅维护 core 本身）
 
-`orchestra/testbench`、`phpunit/phpunit` 只在 `packages/core` 目录执行 `composer install` 时安装；下游 `composer require starship/core` **不会**安装这些包。
+`orchestra/testbench`、`phpunit/phpunit` 只在 `packages/core` 目录执行 `composer install` 时安装；下游 `composer require starship-admin/core` **不会**安装这些包。
 
 ## 安装
 
@@ -52,7 +52,7 @@ Starship Admin 框架内核包（Layer 1）。
 ```bash
 git clone -b release <starship-admin URL> my-admin
 cd my-admin/backend
-composer install   # starship/core 来自 Packagist
+composer install   # starship-admin/core 来自 Packagist
 cp .env.example .env
 php artisan key:generate
 php artisan migrate --seed
@@ -65,7 +65,7 @@ php artisan migrate --seed
 **1. 安装包**（需 Packagist 已上架或配置 VCS 仓库）
 
 ```bash
-composer require starship/core:^1.0
+composer require starship-admin/core:^1.0
 ```
 
 ```json
@@ -73,7 +73,7 @@ composer require starship/core:^1.0
   "require": {
     "php": "^8.3",
     "laravel/framework": "^13.0",
-    "starship/core": "^1.0"
+    "starship-admin/core": "^1.0"
   }
 }
 ```
@@ -127,7 +127,7 @@ composer require starship/system starship/generator
 ```json
 {
   "require": {
-    "starship/core": "@dev"
+    "starship-admin/core": "@dev"
   },
   "repositories": [
     { "type": "path", "url": "../packages/core" }
@@ -195,7 +195,7 @@ php artisan starship:plugin:uninstall sms-aliyun
 
 | 包 | 策略 |
 |----|------|
-| `starship/core` | SemVer `1.x`，公共 API 稳定后严格遵循 |
+| `starship-admin/core` | SemVer `1.x`，公共 API 稳定后严格遵循 |
 | `starship/system` 等 | 独立版本，与 core 解耦发布 |
 
 当前目标发行版为 **`1.0.0`**（本仓开发仍用 path `@dev`）；下游正式依赖使用 `^1.0`。

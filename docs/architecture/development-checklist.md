@@ -10,7 +10,7 @@
 
 | 项 | 决策 |
 |----|------|
-| 内核 | `packages/core` → Packagist `starship/core`（业务只读）；monorepo 开发期仍可用 path |
+| 内核 | `packages/core` → Packagist `starship-admin/core`（业务只读）；monorepo 开发期仍可用 path |
 | 底座模块 | `modules/System`、`modules/Generator`，源码在仓库内，**近期不走 Packagist** |
 | 业务模块 | 新建目录放 `modules/{Name}/`，通过 `module.json` 注册 |
 | 插件 | `plugins/`，完整生命周期（发现 / 安装 / 启用 / 禁用 / 卸载） |
@@ -74,7 +74,7 @@
 - [x] 框架级 Feature Test（`php artisan test` 冒烟，仅 backend 应用壳）
 - [x] `packages/core` 包测试（`cd packages/core && composer test`）
 - [x] 项目模板约定：开发仓兼发布（根 `composer.json` + [release-as-template.md](./release-as-template.md)）
-- [x] `starship/core` Packagist 约定（[packagist.md](./packagist.md)；**1.0.0 发包就绪**，待独立仓上架与 tag `v1.0.0`）
+- [x] `starship-admin/core` Packagist 约定（[packagist.md](./packagist.md)；**1.0.0 发包就绪**，待独立仓上架与 tag `v1.0.0`）
 - [ ] 对外发布分支 `release`：core 改版本约束 + clone 可起步 — **暂缓**（先完善插件 Contract）
 
 ### 阶段一补充：插件 / Contract 完善（当前优先，暂缓 Packagist）
@@ -261,4 +261,4 @@ php artisan starship:generator:crud {table}
 - [permissions.md](../api/permissions.md) — 权限码与 module.json 绑定
 - [routes.md](../api/routes.md) — 管理端 API 路由参考
 - [release-as-template.md](./release-as-template.md) — 开发仓兼发布仓约定
-- [packagist.md](./packagist.md) — starship/core Packagist 与 subtree
+- [packagist.md](./packagist.md) — starship-admin/core Packagist 与 subtree

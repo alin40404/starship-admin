@@ -1,7 +1,7 @@
 # 开发仓兼发布仓：`starship/skeleton` 发布约定
 
 > 本仓库同时承担：**框架研发**（`master`）与 **应用模板发布**（`release` / 版本 tag）。  
-> **内核 `starship/core` 走 Packagist**；前端随仓交付。详见 [packagist.md](./packagist.md)。
+> **内核 `starship-admin/core` 走 Packagist**；前端随仓交付。详见 [packagist.md](./packagist.md)。
 
 ---
 
@@ -19,7 +19,7 @@
 
 | 组件 | `master`（开发） | `release` / 下游 |
 |------|------------------|---------------------------|
-| `starship/core` | path `../packages/core` `@dev` | Packagist `^1.0`（无 path） |
+| `starship-admin/core` | path `../packages/core` `@dev` | Packagist `^1.0`（无 path） |
 | System / Generator | path `../modules/*` | 同仓 `modules/` + path（源码可改，不上 Packagist） |
 | 前端 `apps/admin` | 全集 | 同仓；可裁剪 playground / docs |
 
@@ -27,7 +27,7 @@
 
 ## 3. 下游怎么用
 
-**前提**：`starship/core` 已发布到 Packagist（见 [packagist.md](./packagist.md)）。
+**前提**：`starship-admin/core` 已发布到 Packagist（见 [packagist.md](./packagist.md)）。
 
 ```bash
 git clone -b release <本仓 URL> my-erp-admin
@@ -54,11 +54,11 @@ git checkout master && git pull
 git checkout -B release
 
 # 将 backend/composer.json 调整为（示例）：
-#   require: "starship/core": "^1.0"
+#   require: "starship-admin/core": "^1.0"
 #   repositories: 仅保留 System / Generator 的 path（去掉 core path）
 
 git add backend/composer.json
-git commit -m "chore(release): starship/core 改用 Packagist"
+git commit -m "chore(release): starship-admin/core 改用 Packagist"
 git push -u origin release
 ```
 
@@ -69,7 +69,7 @@ git push -u origin release
 ## 5. 发布前检查清单
 
 - [x] 根 `composer.json`：`name` = `starship/skeleton`
-- [ ] `starship/core` 已在 Packagist 可安装（`composer show starship/core`）
+- [ ] `starship-admin/core` 已在 Packagist 可安装（`composer show starship-admin/core`）
 - [ ] `release` 上 `backend` 已去掉 core 的 path，改为版本约束
 - [ ] System / Generator 仍可通过 path 或目录加载
 - [ ] `php artisan test`（FrameworkSmokeTest）通过
@@ -80,7 +80,7 @@ git push -u origin release
 
 ## 6. Packagist 分阶段
 
-1. **先发** `starship/core`（独立仓 + subtree）——见 [packagist.md](./packagist.md)  
+1. **先发** `starship-admin/core`（独立仓 + subtree）——见 [packagist.md](./packagist.md)  
 2. **再改** `release` 的 backend 依赖  
 3. **可选** 将本仓（模板）登记为 Packagist 的 `starship/skeleton`  
 4. System / Generator 上 Packagist：**非近期目标**（源码模块可改）

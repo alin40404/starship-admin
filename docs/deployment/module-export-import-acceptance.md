@@ -24,7 +24,7 @@
 
 ### 0.3 环境前提（导出方 A / 导入方 B 均需满足）
 
-- [ ] B 已有可运行底座：`starship/core` + `modules/System` 已启用  
+- [ ] B 已有可运行底座：`starship-admin/core` + `modules/System` 已启用  
 - [ ] B 管理端为同一代 `web-antd`（已含 `src/features` + `access.ts` 映射）  
 - [ ] PHP / Composer / Node / pnpm 版本与项目文档一致  
 - [ ] A 上 Member 功能本身已验收通过（CRUD、菜单、权限、前台登录可选）

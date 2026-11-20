@@ -111,7 +111,7 @@ Layer 0  Laravel 壳  backend/（bootstrap、config、artisan，尽量保持官�
 完整业务系统（商城、CMS、SaaS）应：
 
 - 使用**独立仓库**，或放在 monorepo 的 `solutions/` 下
-- 通过 Composer 引用 `starship/core`、`starship/system` 等
+- 通过 Composer 引用 `starship-admin/core`、`starship/system` 等
 - 自有的 `modules/Shop`、`plugins/PaymentWechat` 等
 
 **不要**把完整业务系统塞进 `modules/System`。
@@ -266,7 +266,7 @@ interface PluginConfigStoreInterface
 
 | 包 | 版本策略 | 说明 |
 |----|----------|------|
-| `starship/core` | SemVer；**Packagist** | monorepo 开发 path；发版 subtree → 独立仓 → Packagist |
+| `starship-admin/core` | SemVer；**Packagist** | monorepo 开发 path；发版 subtree → 独立仓 → Packagist |
 | `starship/system` 等 | 源码模块（近期） | 留在 `modules/`，不强制 Packagist |
 | `backend` Laravel 壳 | 跟随 Laravel | `laravel/framework: ^13.0` |
 | 业务项目 | 自有版本 | `composer.json` 锁定底座版本范围 |
@@ -278,7 +278,7 @@ interface PluginConfigStoreInterface
   "require": {
     "php": "^8.4",
     "laravel/framework": "^13.0",
-    "starship/core": "^1.0",
+    "starship-admin/core": "^1.0",
     "starship/system": "^1.0",
     "starship/generator": "^1.0"
   }

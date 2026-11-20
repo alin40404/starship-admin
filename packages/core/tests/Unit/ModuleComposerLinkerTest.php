@@ -34,7 +34,7 @@ class ModuleComposerLinkerTest extends TestCase
     "name": "laravel/laravel",
     "require": {
         "php": "^8.3",
-        "starship/core": "@dev"
+        "starship-admin/core": "@dev"
     },
     "repositories": [
         {
@@ -71,7 +71,7 @@ JSON);
             JSON_THROW_ON_ERROR,
         );
         $this->assertSame('@dev', $composer['require']['starship/shop'] ?? null);
-        $this->assertSame('@dev', $composer['require']['starship/core'] ?? null);
+        $this->assertSame('@dev', $composer['require']['starship-admin/core'] ?? null);
 
         $urls = collect($composer['repositories'])
             ->pluck('url')

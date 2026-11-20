@@ -807,7 +807,7 @@ starship-admin/
 │  └─ .gitkeep                        # 第一阶段可先保留空目录
 │
 ├─ packages/                          # 框架内核与共享包
-│  └─ core/                           # Layer 1 内核 starship/core（Module/Plugin 引擎）
+│  └─ core/                           # Layer 1 内核 starship-admin/core（Module/Plugin 引擎）
 │
 ├─ docs/                              # 项目文档
 │  ├─ architecture/                   # 架构设计（见 docs/architecture/framework.md）
@@ -1714,7 +1714,7 @@ php artisan migrate --seed
 ```
 
 - 根 `composer.json` → 包名 `starship/skeleton`（模板）  
-- `starship/core` → 独立 Packagist 包（subtree 发布）  
+- `starship-admin/core` → 独立 Packagist 包（subtree 发布）  
 - 前端不发包，随仓 `apps/admin`  
 
 见 [release-as-template.md](docs/architecture/release-as-template.md)、[packagist.md](docs/architecture/packagist.md)。
