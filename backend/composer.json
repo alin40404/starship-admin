@@ -15,12 +15,9 @@
         "league/flysystem-aws-s3-v3": "3.0",
         "overtrue/pinyin": "5.0",
         "php": "^8.3",
-        "starship/cms": "@dev",
-        "starship-admin/core": "@dev",
-        "starship/game-shop": "@dev",
+        "starship-admin/core": "^1.0",
         "starship/generator": "@dev",
         "starship/member": "@dev",
-        "starship/shop": "@dev",
         "starship/system": "@dev"
     },
     "require-dev": {
@@ -41,10 +38,6 @@
     "repositories": [
         {
             "type": "path",
-            "url": "../packages/core"
-        },
-        {
-            "type": "path",
             "url": "../modules/System"
         },
         {
@@ -54,18 +47,6 @@
         {
             "type": "path",
             "url": "../modules/Member"
-        },
-        {
-            "type": "path",
-            "url": "../modules/Shop"
-        },
-        {
-            "type": "path",
-            "url": "../modules/GameShop"
-        },
-        {
-            "type": "path",
-            "url": "../modules/Cms"
         }
     ],
     "autoload-dev": {
@@ -73,9 +54,6 @@
             "Tests\\": "tests/",
             "Modules\\System\\Tests\\": "../modules/System/tests/",
             "Modules\\Member\\Tests\\": "../modules/Member/tests/",
-            "Modules\\Shop\\Tests\\": "../modules/Shop/tests/",
-            "Modules\\GameShop\\Tests\\": "../modules/GameShop/tests/",
-            "Modules\\Cms\\Tests\\": "../modules/Cms/tests/",
             "Modules\\Generator\\Tests\\": "../modules/Generator/tests/"
         }
     },
