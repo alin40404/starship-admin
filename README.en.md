@@ -732,7 +732,7 @@ Core package: [packages/core/README.md](packages/core/README.md).
 |------|---------|
 | [alin40404/starship-admin](https://github.com/alin40404/starship-admin) | This repo (GitHub) |
 | [allanchan004/starship-admin](https://gitee.com/allanchan004/starship-admin) | This repo (Gitee) |
-| [alin40404/starship-core](https://github.com/alin40404/starship-core) | Core publish repo |
+| [alin40404/starship-core](https://github.com/alin40404/starship-core) | Core Packagist **publish repo** (subtree sync; do not develop here day-to-day) |
 
 ---
 

@@ -961,7 +961,7 @@ Windows 可在仓库根目录使用 `start-dev.bat` 同时启动前后端。
 |------|------|
 | [alin40404/starship-admin](https://github.com/alin40404/starship-admin) | 本仓（GitHub） |
 | [allanchan004/starship-admin](https://gitee.com/allanchan004/starship-admin) | 本仓（Gitee） |
-| [alin40404/starship-core](https://github.com/alin40404/starship-core) | 内核发布仓 |
+| [alin40404/starship-core](https://github.com/alin40404/starship-core) | 内核 Packagist **发布仓**（subtree 同步，不在此仓日常开发） |
 
 ---
 
