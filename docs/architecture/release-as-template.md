@@ -11,7 +11,7 @@
 |-------------|------|
 | `master`（或 `main`） | 日常开发：path `@dev` 调 core、完整文档与前端 |
 | `release` | 下游业务起点；**core 用 Packagist 版本约束** |
-| `v0.x.y` / `core-v0.x.y` | 模板 tag / core 镜像 tag（core 正式 tag 在独立发布仓） |
+| `v1.x.y` / `core-v1.x.y` | 模板 tag / core 镜像 tag（core 正式 tag 在独立发布仓） |
 
 ---
 
@@ -19,7 +19,7 @@
 
 | 组件 | `master`（开发） | `release` / 下游 |
 |------|------------------|---------------------------|
-| `starship/core` | path `../packages/core` `@dev` | Packagist `^0.1`（无 path） |
+| `starship/core` | path `../packages/core` `@dev` | Packagist `^1.0`（无 path） |
 | System / Generator | path `../modules/*` | 同仓 `modules/` + path（源码可改，不上 Packagist） |
 | 前端 `apps/admin` | 全集 | 同仓；可裁剪 playground / docs |
 
@@ -54,7 +54,7 @@ git checkout master && git pull
 git checkout -B release
 
 # 将 backend/composer.json 调整为（示例）：
-#   require: "starship/core": "^0.1"
+#   require: "starship/core": "^1.0"
 #   repositories: 仅保留 System / Generator 的 path（去掉 core path）
 
 git add backend/composer.json

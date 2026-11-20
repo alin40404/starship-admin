@@ -7,6 +7,12 @@ use Starship\Core\Theme\ThemeManager;
 
 class ThemeAssetPathTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->resetActiveThemesToDefault();
+    }
+
     public function test_resolves_assets_under_theme_and_blocks_traversal(): void
     {
         $theme = $this->app->make(ThemeManager::class)->findBySlug('default');

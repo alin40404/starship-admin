@@ -198,7 +198,7 @@ my-admin/
     "php": "^8.3",
     "laravel/framework": "^13.0",
     "laravel/sanctum": "^4.3",
-    "starship/core": "^0.1",
+    "starship/core": "^1.0",
     "starship/system": "@dev",
     "starship/generator": "@dev"
   },

@@ -21,60 +21,77 @@
 
 Packagist **一仓一包**。本仓是 monorepo，不能把整个 `starship-admin` 注册成 `starship/core`。
 
-推荐：
+推荐（**GitHub 为 Packagist 源仓**；Gitee 可选镜像）：
 
 ```text
-本仓 packages/core  ──subtree split──►  独立仓 starship-core
-                                              │
-                                              ▼
-                                         Packagist: starship/core
+本仓 packages/core
+        │ subtree split
+        ├──────────────────►  github.com/.../starship-core  ──► Packagist: starship/core
+        └──────────────────►  gitee.com/.../starship-core   （可选国内镜像，不注册 Packagist）
 ```
 
-日常仍在 monorepo 改 `packages/core`；发版时 split + tag + Packagist 更新。
+日常仍在 monorepo 改 `packages/core`；发版时 split + 推 GitHub tag + Packagist 更新。
+
+> Packagist 与 GitHub 集成最顺（App / webhook）。**只向 Packagist 提交一个 Git URL**（选 GitHub）；Gitee 仅作代码镜像即可。
 
 ---
 
 ## 3. 发布 `starship/core` 步骤
 
-### 3.1 一次性：独立仓库 + Packagist
+### 3.1 一次性：GitHub 独立仓 + Packagist（+ 可选 Gitee）
 
-1. 建空仓（例：`github.com/<org>/starship-core`），仅用于发布产物  
-2. Packagist → Submit → 填该仓 URL → 包名确认为 `starship/core`  
-3. 打开 GitHub Service Hook / Packagist 自动更新  
+1. GitHub（账号 `alin40404`）建空仓：`https://github.com/alin40404/starship-core`（Public，仅发布产物）  
+2. （可选）Gitee（账号 `allanchan004`）建同名空仓作镜像  
+3. 本仓添加 remote：
+
+```bash
+git remote add starship-core git@github.com:alin40404/starship-core.git
+# 可选镜像：
+git remote add starship-core-gitee git@gitee.com:allanchan004/starship-core.git
+```
+
+4. Packagist → [Submit](https://packagist.org/packages/submit) → 填 **GitHub** 仓 URL → 确认包名 `starship/core`  
+5. GitHub 仓库 → Settings / Integrations → 启用 Packagist 自动更新（或 Packagist 侧 GitHub App）
 
 ### 3.2 每次发版（在 monorepo 根）
 
 ```bash
-# 确认测试
+# 确认测试（需 PHP ^8.3）
 cd packages/core && composer test
 
 # 回到 monorepo 根，将 packages/core 拆到独立仓并推送 tag
 git subtree split --prefix=packages/core -b split/core
-git push <starship-core-remote> split/core:master
+git push starship-core split/core:master
+git tag -a v1.0.0 split/core -m "starship/core 1.0.0"
+git tag -a core-v1.0.0 split/core -m "starship/core 1.0.0"   # 本仓镜像 tag，可选
+git push starship-core v1.0.0 core-v1.0.0
 
-# 在 tags 上打 SemVer（不要在 composer.json 写死 version）
-git tag -a core-v0.1.0 split/core -m "starship/core 0.1.0"
-# 或在独立仓内：
-# git tag -a v0.1.0 -m "0.1.0" && git push --tags
-git push <starship-core-remote> --tags
+# 可选：同步 Gitee 镜像
+git push starship-core-gitee split/core:master
+git push starship-core-gitee v1.0.0 core-v1.0.0
 ```
 
-更稳妥的长期方案：在 **独立仓** 内打 `v0.1.0`，本仓用 subtree push：
+推荐直接跑脚本：
 
-```bash
-git subtree push --prefix=packages/core <starship-core-remote> master
-# 再到 starship-core 仓打 tag v0.1.0 并 push tags
+```powershell
+# 仅 GitHub
+./scripts/publish-core.ps1 -Version 1.0.0 -Remotes starship-core
+
+# GitHub + Gitee 同时推
+./scripts/publish-core.ps1 -Version 1.0.0 -Remotes starship-core,starship-core-gitee
 ```
 
-Tag 规范建议：独立仓用 `v0.1.0`；本仓若需镜像可用 `core-v0.1.0`，避免与模板 tag `v0.1.0` 冲突。
+Tag 规范：独立仓 / Packagist 用 `v1.0.0`；本仓若需镜像可用 `core-v1.0.0`，避免与模板 tag 冲突。
 
 ### 3.3 发包就绪检查（packages/core）
 
 - [x] `composer.json` **无** `"version"` 字段（版本来自 git tag）
 - [x] `name` = `starship/core`，`type` = `library`
-- [x] `.gitattributes` 导出时忽略 tests（可选）
+- [x] `extra.laravel.providers` 已声明 `CoreServiceProvider`
+- [x] `.gitattributes` 导出时忽略 tests / lock（可选）
+- [x] `CHANGELOG.md` 已写 `1.0.0`
 - [ ] 独立仓已创建并已在 Packagist 提交
-- [ ] 至少一个 SemVer tag（如 `v0.1.0`）
+- [ ] 至少一个 SemVer tag（如 `v1.0.0`）
 
 ---
 
@@ -104,7 +121,7 @@ Tag 规范建议：独立仓用 `v0.1.0`；本仓若需镜像可用 `core-v0.1.0
 ```json
 {
   "require": {
-    "starship/core": "^0.1"
+    "starship/core": "^1.0"
   },
   "repositories": [
     { "type": "path", "url": "../modules/System" },
@@ -126,7 +143,7 @@ Tag 规范建议：独立仓用 `v0.1.0`；本仓若需镜像可用 `core-v0.1.0
 | 步骤 | 说明 |
 |------|------|
 | 1 | 先发 `starship/core` 到 Packagist |
-| 2 | `release` 的 backend 改为 `require starship/core:^0.1` |
+| 2 | `release` 的 backend 改为 `require starship/core:^1.0` |
 | 3 | 业务：`git clone -b release` 或日后 `create-project starship/skeleton` |
 | 4 | （可选）再把整个模板仓挂上 Packagist |
 

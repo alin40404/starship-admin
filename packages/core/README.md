@@ -65,7 +65,7 @@ php artisan migrate --seed
 **1. 安装包**（需 Packagist 已上架或配置 VCS 仓库）
 
 ```bash
-composer require starship/core:^0.1
+composer require starship/core:^1.0
 ```
 
 ```json
@@ -73,7 +73,7 @@ composer require starship/core:^0.1
   "require": {
     "php": "^8.3",
     "laravel/framework": "^13.0",
-    "starship/core": "^0.1"
+    "starship/core": "^1.0"
   }
 }
 ```
@@ -198,7 +198,7 @@ php artisan starship:plugin:uninstall sms-aliyun
 | `starship/core` | SemVer `1.x`，公共 API 稳定后严格遵循 |
 | `starship/system` 等 | 独立版本，与 core 解耦发布 |
 
-当前 monorepo 内版本为 `0.1.0`（`@dev`）；正式发布后下游使用 `^1.0`。
+当前目标发行版为 **`1.0.0`**（本仓开发仍用 path `@dev`）；下游正式依赖使用 `^1.0`。
 
 ## 测试
 
@@ -217,6 +217,8 @@ composer test
 
 ## 相关文档
 
+- [CHANGELOG.md](./CHANGELOG.md) — 版本变更
+- [packagist.md](../../docs/architecture/packagist.md) — Packagist / subtree 发版
 - [framework.md](../../docs/architecture/framework.md) — 四层架构与演进路线
 - [development-checklist.md](../../docs/architecture/development-checklist.md) — 开发清单
 - [skeleton-backend.md](../../docs/architecture/skeleton-backend.md) — Laravel 壳与脚手架抽取说明

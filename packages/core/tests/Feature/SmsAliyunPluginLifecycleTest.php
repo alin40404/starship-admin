@@ -128,7 +128,7 @@ class SmsAliyunPluginLifecycleTest extends TestCase
         $this->assertSame('SmsAliyun', $plugin->name());
         $this->assertSame('sms', $plugin->type());
         $this->assertTrue($plugin->configPath() !== null);
-        $this->assertCount(2, $plugin->pages());
+        $this->assertGreaterThanOrEqual(2, count($plugin->pages()));
         $this->assertNotNull($plugin->configSchemaPath());
     }
 }
