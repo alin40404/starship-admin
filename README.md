@@ -44,13 +44,17 @@ Starship Admin 框架内核包（Layer 1）。
 
 ## 安装
 
-> Packagist 发布与 monorepo subtree 流程见仓库文档  
-> [`docs/architecture/packagist.md`](../../docs/architecture/packagist.md)。
+> Packagist / subtree 发版说明见开发仓  
+> [packagist.md](https://github.com/alin40404/starship-admin/blob/master/docs/architecture/packagist.md)。
 
-### 方式 A：从本仓库发布分支创建（推荐）
+### 方式 A：从应用模板仓 `release` 分支创建（推荐）
 
 ```bash
-git clone -b release git@gitee.com:allanchan004/starship-admin.git my-admin
+# GitHub
+git clone -b release https://github.com/alin40404/starship-admin.git my-admin
+# 或 Gitee
+# git clone -b release git@gitee.com:allanchan004/starship-admin.git my-admin
+
 cd my-admin/backend
 composer install   # starship-admin/core 来自 Packagist
 cp .env.example .env
@@ -58,7 +62,7 @@ php artisan key:generate
 php artisan migrate --seed
 ```
 
-模板内底座为 System / Generator / Member（path）；前端在 `apps/admin`。详见 [release-as-template.md](../../docs/architecture/release-as-template.md)。
+模板内底座为 System / Generator / Member（path）；前端在 `apps/admin`。详见 [release-as-template.md](https://github.com/alin40404/starship-admin/blob/master/docs/architecture/release-as-template.md)。
 
 ### 方式 B：已有 Laravel 项目手动接入
 
@@ -218,7 +222,15 @@ composer test
 ## 相关文档
 
 - [CHANGELOG.md](./CHANGELOG.md) — 版本变更
-- [packagist.md](../../docs/architecture/packagist.md) — Packagist / subtree 发版
-- [framework.md](../../docs/architecture/framework.md) — 四层架构与演进路线
-- [development-checklist.md](../../docs/architecture/development-checklist.md) — 开发清单
-- [skeleton-backend.md](../../docs/architecture/skeleton-backend.md) — Laravel 壳与脚手架抽取说明
+- [packagist.md](https://github.com/alin40404/starship-admin/blob/master/docs/architecture/packagist.md) — Packagist / subtree 发版
+- [framework.md](https://github.com/alin40404/starship-admin/blob/master/docs/architecture/framework.md) — 四层架构
+- [development-checklist.md](https://github.com/alin40404/starship-admin/blob/master/docs/architecture/development-checklist.md) — 开发清单
+- [skeleton-backend.md](https://github.com/alin40404/starship-admin/blob/master/docs/architecture/skeleton-backend.md) — Laravel 壳说明
+
+## 相关仓库
+
+| 仓库 | 说明 |
+|------|------|
+| [alin40404/starship-admin](https://github.com/alin40404/starship-admin) | 开发仓（monorepo，`packages/core` 源码） |
+| [alin40404/starship-core](https://github.com/alin40404/starship-core) | 本仓：Packagist 发布仓 |
+| [Packagist: starship-admin/core](https://packagist.org/packages/starship-admin/core) | Composer 包 |
