@@ -90,7 +90,7 @@ php artisan starship:module:make Demo
 3. 管理端在 `apps/admin` 对应目录加页面（或走 Generator 生成 CRUD）
 4. 需要第三方能力时用插件：`php artisan starship:plugin:make SmsDemo`
 
-模块 / 插件约定见下文「模块目录规范」「插件机制」，以及 `docs/deployment/` 下开发规范。
+模块 / 插件约定见下文「模块目录规范」「插件机制」；更细规范见文末「文档索引」（指向开发仓 `master`）。
 
 ### 1.4 参与框架开发（`master`）
 
@@ -105,8 +105,8 @@ cd ../apps/admin && pnpm install && pnpm dev:antd
 
 - 内核在 `packages/core`，`backend` 通过 path `@dev` 引用
 - 改完内核可跑：`cd packages/core && composer test`
-- 发 Packagist 见 [packagist.md](docs/architecture/packagist.md)
-- 刷新对外模板见 [release-as-template.md](docs/architecture/release-as-template.md)
+- 发 Packagist 见 [packagist.md](https://github.com/alin40404/starship-admin/blob/master/docs/architecture/packagist.md)
+- 刷新对外模板见 [release-as-template.md](https://github.com/alin40404/starship-admin/blob/master/docs/architecture/release-as-template.md)
 
 ### 1.5 分支速查
 
@@ -407,7 +407,7 @@ plugins/SmsAliyun/front/
 apps/admin/.../plugins/sms-aliyun/
 ```
 
-常用命令见 [docs/deployment/plugin-cli.md](docs/deployment/plugin-cli.md)。
+常用命令见 [docs/deployment/plugin-cli.md](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/plugin-cli.md)。
 
 ### 6.8 扩展点
 
@@ -495,17 +495,12 @@ starship-admin/
 │
 ├─ plugins/                 # 可选插件
 ├─ themes/                  # 主题
-│
-├─ packages/
-│  └─ core/                 # 内核（master 用 path；release 用 Packagist）
-│
-├─ docs/                    # 架构与部署文档
 ├─ README.md
 ├─ README.en.md
 └─ LICENSE
 ```
 
-> `master` 研发分支可能另含样例模块，**对外请以 `release` 为准**（仅 System + Generator + Member）。
+> 上表为 **`release` 对外模板**目录。`master` 另含 `packages/core`、`docs/` 及样例模块；下游请以 `release` 为准。
 
 ---
 
@@ -531,13 +526,11 @@ php artisan starship:module:make Demo
 
 可选插件与第三方适配器，与 `modules` 分离。
 
-### 8.5 `packages`
-
-代码级共享能力。当前核心为 `packages/core`（`starship-admin/core`）。
-
-### 8.6 `themes`
+### 8.5 `themes`
 
 前台 / 渲染主题（如 `default`、`corporate`）。管理端主题色、暗黑模式、布局样式放在 `apps/admin` 前端工程内，不占用根目录 `themes/`。
+
+> 框架内核 `starship-admin/core` 在 `release` 上由 Packagist 安装；仅在 `master` 的 `packages/core` 做 path 开发。
 
 ---
 
@@ -579,7 +572,7 @@ modules/System/
 
 ## 10. `module.json` 规范
 
-权威字段以仓库内模块为准；权限与菜单见 [docs/api/permissions.md](docs/api/permissions.md)。
+权威字段以仓库内模块为准；权限与菜单见 [docs/api/permissions.md](https://github.com/alin40404/starship-admin/blob/master/docs/api/permissions.md)。
 
 ```json
 {
@@ -675,7 +668,7 @@ member.members.query
 generator.codegen
 ```
 
-完整清单见 [docs/api/permissions.md](docs/api/permissions.md)。
+完整清单见 [docs/api/permissions.md](https://github.com/alin40404/starship-admin/blob/master/docs/api/permissions.md)。
 
 ---
 
@@ -718,7 +711,7 @@ GET    /admin-api/dev/plugins
 GET    /admin-api/generator/tables
 ```
 
-完整路由见 [docs/api/routes.md](docs/api/routes.md)。
+完整路由见 [docs/api/routes.md](https://github.com/alin40404/starship-admin/blob/master/docs/api/routes.md)。
 
 ### 13.2 统一响应
 
@@ -792,7 +785,7 @@ GET    /admin-api/generator/tables
 - 前端：按权限节点控制路由、菜单、按钮
 - 后端：必须二次校验权限节点，不能只依赖前端隐藏
 
-详见 [docs/api/permissions.md](docs/api/permissions.md)、[权限与菜单体系](docs/deployment/Starship_权限与菜单体系设计方案.md)。
+详见 [docs/api/permissions.md](https://github.com/alin40404/starship-admin/blob/master/docs/api/permissions.md)、[权限与菜单体系](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/Starship_权限与菜单体系设计方案.md)。
 
 ---
 
@@ -915,7 +908,7 @@ members
 - 生成记录可追踪；菜单与权限可自动创建
 - 生成结果符合模块目录规范
 
-CLI 见 [docs/generator/cli.md](docs/generator/cli.md)。
+CLI 见 [docs/generator/cli.md](https://github.com/alin40404/starship-admin/blob/master/docs/generator/cli.md)。
 
 ---
 
@@ -936,7 +929,7 @@ apps/admin/.../src/
 └─ plugins/               # 插件前端扩展
 ```
 
-具体以仓库内 `apps/admin` 工程为准。字号约定见 [docs/ui/admin-font-size.md](docs/ui/admin-font-size.md)。
+具体以仓库内 `apps/admin` 工程为准。字号约定见 [docs/ui/admin-font-size.md](https://github.com/alin40404/starship-admin/blob/master/docs/ui/admin-font-size.md)。
 
 ---
 
@@ -965,7 +958,7 @@ apps/admin/.../src/
 php artisan storage:link
 ```
 
-详见 [docs/deployment/public-storage-link.md](docs/deployment/public-storage-link.md)。
+详见 [docs/deployment/public-storage-link.md](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/public-storage-link.md)。
 
 ---
 
@@ -981,23 +974,25 @@ php artisan storage:link
 
 ## 22. 文档索引
 
+详细文档在开发仓 `master` 的 `docs/`（`release` 模板不含该目录）。链接如下：
+
 | 文档 | 内容 |
 |------|------|
-| [framework.md](docs/architecture/framework.md) | 分层架构与二开边界 |
-| [release-as-template.md](docs/architecture/release-as-template.md) | `release` 模板约定 |
-| [packagist.md](docs/architecture/packagist.md) | core 发包与 subtree |
-| [skeleton-backend.md](docs/architecture/skeleton-backend.md) | 后端骨架 |
-| [development-checklist.md](docs/architecture/development-checklist.md) | 开发清单 |
-| [Module 开发规范](docs/deployment/Starship_Module_开发规范.md) | 模块规范 |
-| [Plugin 开发规范](docs/deployment/Starship_Plugin_开发规范.md) | 插件规范 |
-| [Theme 开发规范](docs/deployment/Starship_Theme_开发规范.md) | 主题规范 |
-| [module-cli.md](docs/deployment/module-cli.md) / [plugin-cli.md](docs/deployment/plugin-cli.md) | CLI |
-| [generator/cli.md](docs/generator/cli.md) | 代码生成 CLI |
-| [权限与菜单](docs/deployment/Starship_权限与菜单体系设计方案.md) | RBAC |
-| [ui/admin-font-size.md](docs/ui/admin-font-size.md) | 管理端字号 |
-| [docs/api/](docs/api/) | 路由与权限码 |
+| [framework.md](https://github.com/alin40404/starship-admin/blob/master/docs/architecture/framework.md) | 分层架构与二开边界 |
+| [release-as-template.md](https://github.com/alin40404/starship-admin/blob/master/docs/architecture/release-as-template.md) | `release` 模板约定 |
+| [packagist.md](https://github.com/alin40404/starship-admin/blob/master/docs/architecture/packagist.md) | core 发包与 subtree |
+| [skeleton-backend.md](https://github.com/alin40404/starship-admin/blob/master/docs/architecture/skeleton-backend.md) | 后端骨架 |
+| [development-checklist.md](https://github.com/alin40404/starship-admin/blob/master/docs/architecture/development-checklist.md) | 开发清单 |
+| [Module 开发规范](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/Starship_Module_开发规范.md) | 模块规范 |
+| [Plugin 开发规范](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/Starship_Plugin_开发规范.md) | 插件规范 |
+| [Theme 开发规范](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/Starship_Theme_开发规范.md) | 主题规范 |
+| [module-cli.md](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/module-cli.md) / [plugin-cli.md](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/plugin-cli.md) | CLI |
+| [generator/cli.md](https://github.com/alin40404/starship-admin/blob/master/docs/generator/cli.md) | 代码生成 CLI |
+| [权限与菜单](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/Starship_权限与菜单体系设计方案.md) | RBAC |
+| [ui/admin-font-size.md](https://github.com/alin40404/starship-admin/blob/master/docs/ui/admin-font-size.md) | 管理端字号 |
+| [docs/api/](https://github.com/alin40404/starship-admin/blob/master/docs/api/) | 路由与权限码 |
 
-内核包说明：[packages/core/README.md](packages/core/README.md)。
+内核包说明：[packages/core/README.md](https://github.com/alin40404/starship-admin/blob/master/packages/core/README.md)。
 
 ---
 
