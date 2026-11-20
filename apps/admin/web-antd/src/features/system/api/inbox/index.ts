@@ -96,7 +96,7 @@ export function clearReadInboxMessages() {
 }
 
 export function deleteInboxMessage(id: number) {
-  return requestClient.delete(`/inbox/messages/${id}`);
+  return requestClient.post(`/inbox/messages/${id}/delete`);
 }
 
 export function batchDeleteInboxMessages(ids: number[]) {

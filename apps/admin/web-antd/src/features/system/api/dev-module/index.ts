@@ -27,5 +27,5 @@ export function fetchDevModule(name: string) {
 }
 
 export function updateDevModuleStatus(name: string, enabled: boolean) {
-  return requestClient.put<DevModuleRow>(`/dev/modules/${name}/status`, { enabled });
+  return requestClient.post<DevModuleRow>(`/dev/modules/${name}/status`, { enabled });
 }

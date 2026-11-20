@@ -15,19 +15,19 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
             ->middleware('admin.permission:'.ShopPermissions::CATEGORIES_QUERY);
         Route::post('categories/batch-destroy', [CategoryController::class, 'batchDestroy'])
             ->middleware('admin.permission:'.ShopPermissions::CATEGORIES_BATCH_DELETE);
-        Route::put('categories/batch-status', [CategoryController::class, 'batchUpdateStatus'])
+        Route::post('categories/batch-status', [CategoryController::class, 'batchUpdateStatus'])
             ->middleware('admin.permission:'.ShopPermissions::CATEGORIES_BATCH_STATUS);
         Route::post('categories', [CategoryController::class, 'store'])
             ->middleware('admin.permission:'.ShopPermissions::CATEGORIES_CREATE);
         Route::get('categories/{id}', [CategoryController::class, 'show'])
             ->middleware('admin.permission:'.ShopPermissions::CATEGORIES_QUERY);
-        Route::put('categories/{id}/status', [CategoryController::class, 'updateStatus'])
+        Route::post('categories/{id}/status', [CategoryController::class, 'updateStatus'])
             ->middleware('admin.permission:'.ShopPermissions::CATEGORIES_STATUS);
-        Route::put('categories/{id}/sort', [CategoryController::class, 'updateSort'])
+        Route::post('categories/{id}/sort', [CategoryController::class, 'updateSort'])
             ->middleware('admin.permission:'.ShopPermissions::CATEGORIES_SORT);
-        Route::put('categories/{id}', [CategoryController::class, 'update'])
+        Route::post('categories/{id}', [CategoryController::class, 'update'])
             ->middleware('admin.permission:'.ShopPermissions::CATEGORIES_UPDATE);
-        Route::delete('categories/{id}', [CategoryController::class, 'destroy'])
+        Route::post('categories/{id}/delete', [CategoryController::class, 'destroy'])
             ->middleware('admin.permission:'.ShopPermissions::CATEGORIES_DELETE);
 
         Route::get('brand-options', [BrandController::class, 'options']);
@@ -37,9 +37,9 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
             ->middleware('admin.permission:'.ShopPermissions::BRANDS_CREATE);
         Route::get('brands/{id}', [BrandController::class, 'show'])
             ->middleware('admin.permission:'.ShopPermissions::BRANDS_QUERY);
-        Route::put('brands/{id}', [BrandController::class, 'update'])
+        Route::post('brands/{id}', [BrandController::class, 'update'])
             ->middleware('admin.permission:'.ShopPermissions::BRANDS_UPDATE);
-        Route::delete('brands/{id}', [BrandController::class, 'destroy'])
+        Route::post('brands/{id}/delete', [BrandController::class, 'destroy'])
             ->middleware('admin.permission:'.ShopPermissions::BRANDS_DELETE);
 
         Route::get('products', [ProductController::class, 'index'])
@@ -48,11 +48,11 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
             ->middleware('admin.permission:'.ShopPermissions::PRODUCTS_CREATE);
         Route::get('products/{id}', [ProductController::class, 'show'])
             ->middleware('admin.permission:'.ShopPermissions::PRODUCTS_QUERY);
-        Route::put('products/{id}', [ProductController::class, 'update'])
+        Route::post('products/{id}', [ProductController::class, 'update'])
             ->middleware('admin.permission:'.ShopPermissions::PRODUCTS_UPDATE);
-        Route::put('products/{id}/status', [ProductController::class, 'updateStatus'])
+        Route::post('products/{id}/status', [ProductController::class, 'updateStatus'])
             ->middleware('admin.permission:'.ShopPermissions::PRODUCTS_STATUS);
-        Route::delete('products/{id}', [ProductController::class, 'destroy'])
+        Route::post('products/{id}/delete', [ProductController::class, 'destroy'])
             ->middleware('admin.permission:'.ShopPermissions::PRODUCTS_DELETE);
 
         Route::get('orders', [OrderController::class, 'index'])
@@ -69,7 +69,7 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
             ->middleware('admin.permission:'.ShopPermissions::ORDERS_REFUND);
         Route::post('orders/{id}/cancel', [OrderController::class, 'cancel'])
             ->middleware('admin.permission:'.ShopPermissions::ORDERS_CANCEL);
-        Route::delete('orders/{id}', [OrderController::class, 'destroy'])
+        Route::post('orders/{id}/delete', [OrderController::class, 'destroy'])
             ->middleware('admin.permission:'.ShopPermissions::ORDERS_DELETE);
     });
 });

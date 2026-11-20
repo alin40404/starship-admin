@@ -22,9 +22,9 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
             ->middleware('admin.permission:'.GeneratorPermissions::QUERY);
         Route::post('tables/import', [TableConfigController::class, 'import'])
             ->middleware('admin.permission:'.GeneratorPermissions::IMPORT);
-        Route::put('tables/{id}', [TableConfigController::class, 'update'])
+        Route::post('tables/{id}', [TableConfigController::class, 'update'])
             ->middleware('admin.permission:'.GeneratorPermissions::UPDATE);
-        Route::delete('tables/{id}', [TableConfigController::class, 'destroy'])
+        Route::post('tables/{id}/delete', [TableConfigController::class, 'destroy'])
             ->middleware('admin.permission:'.GeneratorPermissions::DELETE);
 
         Route::post('tables/{id}/preview', [CodegenController::class, 'preview'])

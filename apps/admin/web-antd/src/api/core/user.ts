@@ -74,9 +74,9 @@ export async function getMyProfileApi() {
 }
 
 export async function updateMyProfileApi(payload: UpdateProfilePayload) {
-  return requestClient.put<LaravelAdminMe>('/auth/profile', payload);
+  return requestClient.post<LaravelAdminMe>('/auth/profile', payload);
 }
 
 export async function updateMyPasswordApi(payload: UpdatePasswordPayload) {
-  return requestClient.put<null>('/auth/password', payload);
+  return requestClient.post<null>('/auth/password', payload);
 }

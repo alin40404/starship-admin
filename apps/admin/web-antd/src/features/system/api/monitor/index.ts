@@ -72,7 +72,7 @@ export function fetchOperationLog(id: number) {
 }
 
 export function deleteOperationLog(id: number) {
-  return requestClient.delete(`/monitor/operation-logs/${id}`);
+  return requestClient.post(`/monitor/operation-logs/${id}/delete`);
 }
 
 export function batchDeleteOperationLogs(ids: number[]) {
@@ -99,7 +99,7 @@ export function fetchLoginLog(id: number) {
 }
 
 export function deleteLoginLog(id: number) {
-  return requestClient.delete(`/monitor/login-logs/${id}`);
+  return requestClient.post(`/monitor/login-logs/${id}/delete`);
 }
 
 export function batchDeleteLoginLogs(ids: number[]) {
@@ -123,7 +123,7 @@ export function fetchExceptionLog(id: number) {
 }
 
 export function deleteExceptionLog(id: number) {
-  return requestClient.delete(`/monitor/exception-logs/${id}`);
+  return requestClient.post(`/monitor/exception-logs/${id}/delete`);
 }
 
 export function batchDeleteExceptionLogs(ids: number[]) {

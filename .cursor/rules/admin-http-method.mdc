@@ -1,0 +1,36 @@
+---
+description: Admin/API 请求方法仅允许 GET 与 POST
+alwaysApply: true
+---
+
+# Admin HTTP 方法约定
+
+- **仅允许**使用 `GET`、`POST`
+- **禁止**使用 `PUT`、`PATCH`、`DELETE`（以及其它非 GET/POST 的 HTTP 方法）作为业务接口方法
+- 写操作（创建 / 更新 / 删除 / 状态变更等）统一用 **POST**
+- 读操作（列表 / 详情 / 选项等）统一用 **GET**
+
+## 影响范围
+
+- 后端路由与控制器
+- 前端 API 请求（`requestClient.get` / `requestClient.post` 等）
+
+## 展示例外
+
+- 操作日志等方法列 / 筛选 Tag（`MONITOR_HTTP_METHOD_TAG_OPTIONS`）**可以保留** GET/POST/PUT/PATCH/DELETE，用于展示历史或其它来源数据
+- 例外仅限展示，**不要**据此再新写 PUT/PATCH/DELETE 业务接口
+
+## 示例
+
+```ts
+// ✅
+requestClient.get('/member/members', { params });
+requestClient.post('/member/members', payload);
+requestClient.post(`/member/members/${id}`, payload); // 更新
+requestClient.post(`/member/members/${id}/delete`); // 删除
+
+// ❌
+requestClient.put(`/member/members/${id}`, payload);
+requestClient.patch(`/member/members/${id}`, payload);
+requestClient.delete(`/member/members/${id}`);
+```

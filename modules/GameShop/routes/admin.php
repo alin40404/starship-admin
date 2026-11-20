@@ -16,11 +16,11 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
             ->middleware('admin.permission:'.GameShopPermissions::GAMES_CREATE);
         Route::get('games/{id}', [GameController::class, 'show'])
             ->middleware('admin.permission:'.GameShopPermissions::GAMES_QUERY);
-        Route::put('games/{id}', [GameController::class, 'update'])
+        Route::post('games/{id}', [GameController::class, 'update'])
             ->middleware('admin.permission:'.GameShopPermissions::GAMES_UPDATE);
-        Route::put('games/{id}/status', [GameController::class, 'updateStatus'])
+        Route::post('games/{id}/status', [GameController::class, 'updateStatus'])
             ->middleware('admin.permission:'.GameShopPermissions::GAMES_STATUS);
-        Route::delete('games/{id}', [GameController::class, 'destroy'])
+        Route::post('games/{id}/delete', [GameController::class, 'destroy'])
             ->middleware('admin.permission:'.GameShopPermissions::GAMES_DELETE);
 
         Route::get('products', [ProductController::class, 'index'])
@@ -29,11 +29,11 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
             ->middleware('admin.permission:'.GameShopPermissions::PRODUCTS_CREATE);
         Route::get('products/{id}', [ProductController::class, 'show'])
             ->middleware('admin.permission:'.GameShopPermissions::PRODUCTS_QUERY);
-        Route::put('products/{id}', [ProductController::class, 'update'])
+        Route::post('products/{id}', [ProductController::class, 'update'])
             ->middleware('admin.permission:'.GameShopPermissions::PRODUCTS_UPDATE);
-        Route::put('products/{id}/status', [ProductController::class, 'updateStatus'])
+        Route::post('products/{id}/status', [ProductController::class, 'updateStatus'])
             ->middleware('admin.permission:'.GameShopPermissions::PRODUCTS_STATUS);
-        Route::delete('products/{id}', [ProductController::class, 'destroy'])
+        Route::post('products/{id}/delete', [ProductController::class, 'destroy'])
             ->middleware('admin.permission:'.GameShopPermissions::PRODUCTS_DELETE);
 
         Route::get('orders', [OrderController::class, 'index'])

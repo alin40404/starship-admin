@@ -133,11 +133,11 @@ export function createArea(data: AreaSavePayload) {
 }
 
 export function updateArea(id: number, data: Partial<AreaSavePayload>) {
-  return requestClient.put<AreaTreeNode>(`/system/areas/${id}`, data);
+  return requestClient.post<AreaTreeNode>(`/system/areas/${id}`, data);
 }
 
 export function deleteArea(id: number) {
-  return requestClient.delete(`/system/areas/${id}`);
+  return requestClient.post(`/system/areas/${id}/delete`);
 }
 
 export function batchDeleteAreas(ids: number[]) {

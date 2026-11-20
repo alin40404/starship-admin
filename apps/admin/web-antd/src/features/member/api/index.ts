@@ -54,17 +54,17 @@ export function createMember(data: MemberSavePayload) {
 }
 
 export function updateMember(id: number, data: Partial<MemberSavePayload>) {
-  return requestClient.put<MemberRow>(`/member/members/${id}`, data);
+  return requestClient.post<MemberRow>(`/member/members/${id}`, data);
 }
 
 export function updateMemberStatus(id: number, status: number) {
-  return requestClient.put<MemberRow>(`/member/members/${id}/status`, {
+  return requestClient.post<MemberRow>(`/member/members/${id}/status`, {
     status,
   });
 }
 
 export function deleteMember(id: number) {
-  return requestClient.delete(`/member/members/${id}`);
+  return requestClient.post(`/member/members/${id}/delete`);
 }
 
 export function batchDeleteMembers(ids: number[]) {
@@ -75,7 +75,7 @@ export function batchDeleteMembers(ids: number[]) {
 }
 
 export function batchUpdateMemberStatus(ids: number[], status: 0 | 1) {
-  return requestClient.put<{ updated: number }>(
+  return requestClient.post<{ updated: number }>(
     '/member/members/batch-status',
     {
       ids,

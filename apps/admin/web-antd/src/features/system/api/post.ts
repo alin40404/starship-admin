@@ -43,11 +43,11 @@ export function createPost(data: PostSavePayload) {
 }
 
 export function updatePost(id: number, data: Partial<PostSavePayload>) {
-  return requestClient.put<PostRow>(`/system/posts/${id}`, data);
+  return requestClient.post<PostRow>(`/system/posts/${id}`, data);
 }
 
 export function deletePost(id: number) {
-  return requestClient.delete(`/system/posts/${id}`);
+  return requestClient.post(`/system/posts/${id}/delete`);
 }
 
 export function batchDeletePosts(ids: number[]) {
@@ -58,7 +58,7 @@ export function batchDeletePosts(ids: number[]) {
 }
 
 export function batchUpdatePostStatus(ids: number[], status: 0 | 1) {
-  return requestClient.put<{ updated: number }>('/system/posts/batch-status', {
+  return requestClient.post<{ updated: number }>('/system/posts/batch-status', {
     ids,
     status,
   });

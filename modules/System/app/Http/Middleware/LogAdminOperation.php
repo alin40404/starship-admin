@@ -15,6 +15,7 @@ class LogAdminOperation
         'admin-api/monitor/',
     ];
 
+    /** 业务写操作仅 POST（GET/POST 约定）；仍兼容历史 PUT/PATCH/DELETE 日志写入 */
     private const WRITE_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE'];
 
     public function __construct(
@@ -54,7 +55,7 @@ class LogAdminOperation
             'admin_name' => $this->writer->resolveAdminName($admin),
             'module' => $module,
             'action' => $actionCode,
-            'title' => $this->resolveTitle($request->method(), $module, $resource),
+            'title' => $this->resolveTitle($request->method(), $path, $module, $resource),
             'content' => $this->writer->sanitizePayload($request->all()),
             'method' => strtoupper($request->method()),
             'url' => $request->fullUrl(),
@@ -64,15 +65,37 @@ class LogAdminOperation
         ]);
     }
 
-    private function resolveTitle(string $method, ?string $module, string $resource): string
+    private function resolveTitle(string $method, string $path, ?string $module, string $resource): string
     {
-        $methodLabel = match (strtoupper($method)) {
-            'POST' => '新增',
-            'PUT', 'PATCH' => '更新',
-            'DELETE' => '删除',
+        $upper = strtoupper($method);
+        $methodLabel = match (true) {
+            $upper === 'DELETE'
+                || str_contains($path, '/delete/')
+                || str_contains($path, '/batch-destroy/')
+                || str_contains($path, '/uninstall/') => '删除',
+            $upper === 'PUT', $upper === 'PATCH' => '更新',
+            $upper === 'POST' && $this->isLikelyCreatePath($path) => '新增',
+            $upper === 'POST' => '更新',
             default => '操作',
         };
 
         return sprintf('%s %s/%s', $methodLabel, $module ?? 'system', $resource);
+    }
+
+    /** 集合级 POST（无 {id} 段）视为新增；带 /status|/sort|/config 等视为更新 */
+    private function isLikelyCreatePath(string $path): bool
+    {
+        $trimmed = trim($path, '/');
+        $parts = explode('/', $trimmed);
+        // admin-api/{module}/{resource}[/...]
+        if (($parts[0] ?? '') !== 'admin-api' || count($parts) < 3) {
+            return false;
+        }
+        $tail = array_slice($parts, 3);
+        if ($tail === []) {
+            return true;
+        }
+
+        return false;
     }
 }

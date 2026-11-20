@@ -125,7 +125,7 @@ export function importGeneratorTable(data: GeneratorImportPayload) {
 }
 
 export function deleteGeneratorTable(id: number) {
-  return requestClient.delete(`/generator/tables/${id}`);
+  return requestClient.post(`/generator/tables/${id}/delete`);
 }
 
 export function previewCodegen(id: number) {

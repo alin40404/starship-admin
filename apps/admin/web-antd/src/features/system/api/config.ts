@@ -33,11 +33,11 @@ export function fetchConfigs(groupName?: string) {
 }
 
 export function batchUpsertConfigs(items: ConfigUpsertItem[]) {
-  return requestClient.put('/system/configs', { items });
+  return requestClient.post('/system/configs', { items });
 }
 
 export function deleteConfig(id: number) {
-  return requestClient.delete(`/system/configs/${id}`);
+  return requestClient.post(`/system/configs/${id}/delete`);
 }
 
 export function batchDeleteConfigs(ids: number[]) {

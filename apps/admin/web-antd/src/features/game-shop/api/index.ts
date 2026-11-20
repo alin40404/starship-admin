@@ -97,15 +97,15 @@ export function createGame(data: GameSavePayload) {
 }
 
 export function updateGame(id: number, data: Partial<GameSavePayload>) {
-  return requestClient.put<GameRow>(`/game-shop/games/${id}`, data);
+  return requestClient.post<GameRow>(`/game-shop/games/${id}`, data);
 }
 
 export function updateGameStatus(id: number, status: number) {
-  return requestClient.put(`/game-shop/games/${id}/status`, { status });
+  return requestClient.post(`/game-shop/games/${id}/status`, { status });
 }
 
 export function deleteGame(id: number) {
-  return requestClient.delete(`/game-shop/games/${id}`);
+  return requestClient.post(`/game-shop/games/${id}/delete`);
 }
 
 export function fetchGameProductPage(params: Record<string, unknown>) {
@@ -127,15 +127,15 @@ export function updateGameProduct(
   id: number,
   data: Partial<GameProductSavePayload>,
 ) {
-  return requestClient.put<GameProductRow>(`/game-shop/products/${id}`, data);
+  return requestClient.post<GameProductRow>(`/game-shop/products/${id}`, data);
 }
 
 export function updateGameProductStatus(id: number, status: number) {
-  return requestClient.put(`/game-shop/products/${id}/status`, { status });
+  return requestClient.post(`/game-shop/products/${id}/status`, { status });
 }
 
 export function deleteGameProduct(id: number) {
-  return requestClient.delete(`/game-shop/products/${id}`);
+  return requestClient.post(`/game-shop/products/${id}/delete`);
 }
 
 export function fetchGameOrderPage(params: Record<string, unknown>) {

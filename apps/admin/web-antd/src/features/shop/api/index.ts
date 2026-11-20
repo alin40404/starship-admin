@@ -192,27 +192,27 @@ export function updateShopCategory(
   id: number,
   data: Partial<ShopCategorySavePayload>,
 ) {
-  return requestClient.put<ShopCategoryTreeNode>(`/shop/categories/${id}`, data);
+  return requestClient.post<ShopCategoryTreeNode>(`/shop/categories/${id}`, data);
 }
 
 export function updateShopCategoryStatus(
   id: number,
   status: ShopCategoryStatus,
 ) {
-  return requestClient.put<ShopCategoryTreeNode>(
+  return requestClient.post<ShopCategoryTreeNode>(
     `/shop/categories/${id}/status`,
     { status },
   );
 }
 
 export function updateShopCategorySort(id: number, sort: number) {
-  return requestClient.put<ShopCategoryTreeNode>(`/shop/categories/${id}/sort`, {
+  return requestClient.post<ShopCategoryTreeNode>(`/shop/categories/${id}/sort`, {
     sort,
   });
 }
 
 export function deleteShopCategory(id: number) {
-  return requestClient.delete(`/shop/categories/${id}`);
+  return requestClient.post(`/shop/categories/${id}/delete`);
 }
 
 export function batchDeleteShopCategories(ids: number[]) {
@@ -226,7 +226,7 @@ export function batchUpdateShopCategoryStatus(
   ids: number[],
   status: ShopCategoryStatus,
 ) {
-  return requestClient.put<{ updated: number }>(
+  return requestClient.post<{ updated: number }>(
     '/shop/categories/batch-status',
     { ids, status },
   );
@@ -267,11 +267,11 @@ export function createBrand(data: BrandSavePayload) {
 }
 
 export function updateBrand(id: number, data: Partial<BrandSavePayload>) {
-  return requestClient.put<BrandRow>(`/shop/brands/${id}`, data);
+  return requestClient.post<BrandRow>(`/shop/brands/${id}`, data);
 }
 
 export function deleteBrand(id: number) {
-  return requestClient.delete(`/shop/brands/${id}`);
+  return requestClient.post(`/shop/brands/${id}/delete`);
 }
 
 export function fetchProductPage(params: Record<string, unknown>) {
@@ -289,17 +289,17 @@ export function createProduct(data: ProductSavePayload) {
 }
 
 export function updateProduct(id: number, data: Partial<ProductSavePayload>) {
-  return requestClient.put<ProductRow>(`/shop/products/${id}`, data);
+  return requestClient.post<ProductRow>(`/shop/products/${id}`, data);
 }
 
 export function updateProductStatus(id: number, status: number) {
-  return requestClient.put<ProductRow>(`/shop/products/${id}/status`, {
+  return requestClient.post<ProductRow>(`/shop/products/${id}/status`, {
     status,
   });
 }
 
 export function deleteProduct(id: number) {
-  return requestClient.delete(`/shop/products/${id}`);
+  return requestClient.post(`/shop/products/${id}/delete`);
 }
 
 export function fetchOrderPage(params: Record<string, unknown>) {
@@ -332,5 +332,5 @@ export function cancelOrder(id: number) {
 }
 
 export function deleteOrder(id: number) {
-  return requestClient.delete(`/shop/orders/${id}`);
+  return requestClient.post(`/shop/orders/${id}/delete`);
 }

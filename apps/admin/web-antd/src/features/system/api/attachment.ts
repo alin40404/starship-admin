@@ -81,7 +81,7 @@ export async function uploadAttachment(file: any) {
 }
 
 export function deleteAttachment(id: number) {
-  return requestClient.delete(`/system/attachments/${id}`);
+  return requestClient.post(`/system/attachments/${id}/delete`);
 }
 
 export function batchDeleteAttachments(ids: number[]) {

@@ -110,21 +110,21 @@ export function createMenu(data: MenuSavePayload) {
 }
 
 export function updateMenu(id: number, data: MenuSavePayload) {
-  return requestClient.put<MenuTreeNode>(`/system/menus/${id}`, data);
+  return requestClient.post<MenuTreeNode>(`/system/menus/${id}`, data);
 }
 
 export function updateMenuStatus(id: number, status: 0 | 1) {
-  return requestClient.put<MenuTreeNode>(`/system/menus/${id}/status`, {
+  return requestClient.post<MenuTreeNode>(`/system/menus/${id}/status`, {
     status,
   });
 }
 
 export function updateMenuSort(id: number, sort: number) {
-  return requestClient.put<MenuTreeNode>(`/system/menus/${id}/sort`, { sort });
+  return requestClient.post<MenuTreeNode>(`/system/menus/${id}/sort`, { sort });
 }
 
 export function deleteMenu(id: number) {
-  return requestClient.delete(`/system/menus/${id}`);
+  return requestClient.post(`/system/menus/${id}/delete`);
 }
 
 export function batchDeleteMenus(ids: number[]) {
@@ -135,7 +135,7 @@ export function batchDeleteMenus(ids: number[]) {
 }
 
 export function batchUpdateMenuStatus(ids: number[], status: 0 | 1) {
-  return requestClient.put<{ updated: number }>(
+  return requestClient.post<{ updated: number }>(
     '/system/menus/batch-status',
     { ids, status },
   );

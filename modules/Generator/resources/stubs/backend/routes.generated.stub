@@ -23,11 +23,11 @@ Route::post('{{ $api_prefix }}/batch-destroy', [{{ $controller_class }}::class, 
 @endif
 @if($has_batch_status)
 
-Route::put('{{ $api_prefix }}/batch-status', [{{ $controller_class }}::class, 'batchUpdateStatus'])
+Route::post('{{ $api_prefix }}/batch-status', [{{ $controller_class }}::class, 'batchUpdateStatus'])
     ->middleware('admin.permission:'.{{ $permissions_class }}::BATCH_STATUS);
 @endif
 
-Route::put('{{ $api_prefix }}/{id}', [{{ $controller_class }}::class, 'update'])
-    ->middleware('admin.permission:'.{{ $permissions_class }}::UPDATE);
-Route::delete('{{ $api_prefix }}/{id}', [{{ $controller_class }}::class, 'destroy'])
+Route::post('{{ $api_prefix }}/{id}/delete', [{{ $controller_class }}::class, 'destroy'])
     ->middleware('admin.permission:'.{{ $permissions_class }}::DELETE);
+Route::post('{{ $api_prefix }}/{id}', [{{ $controller_class }}::class, 'update'])
+    ->middleware('admin.permission:'.{{ $permissions_class }}::UPDATE);

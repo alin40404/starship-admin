@@ -10,7 +10,7 @@ Route::middleware('api')->prefix('api/shop')->group(function () {
 
     Route::get('cart', [CartController::class, 'show']);
     Route::post('cart/items', [CartController::class, 'addItem']);
-    Route::put('cart/items/{itemId}', [CartController::class, 'updateItem']);
-    Route::delete('cart/items/{itemId}', [CartController::class, 'removeItem']);
+    Route::post('cart/items/{itemId}', [CartController::class, 'updateItem']);
+    Route::post('cart/items/{itemId}/delete', [CartController::class, 'removeItem']);
     Route::post('cart/checkout', [CartController::class, 'checkout']);
 });

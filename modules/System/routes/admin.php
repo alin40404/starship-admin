@@ -72,8 +72,8 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
         Route::post('logout', [AuthController::class, 'logout']);
         Route::middleware('auth:sanctum')->group(function () {
             Route::get('me', [AuthController::class, 'me']);
-            Route::put('profile', [AuthController::class, 'updateProfile']);
-            Route::put('password', [AuthController::class, 'updatePassword']);
+            Route::post('profile', [AuthController::class, 'updateProfile']);
+            Route::post('password', [AuthController::class, 'updatePassword']);
             Route::get('menus', [AuthController::class, 'menus']);
             Route::get('permissions', [AuthController::class, 'permissions']);
         });
@@ -111,15 +111,15 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
             ->middleware('admin.permission.department.store');
         Route::post('departments/batch-destroy', [DepartmentController::class, 'batchDestroy'])
             ->middleware('admin.permission:'.DepartmentPermissions::BATCH_DELETE);
-        Route::put('departments/batch-status', [DepartmentController::class, 'batchUpdateStatus'])
+        Route::post('departments/batch-status', [DepartmentController::class, 'batchUpdateStatus'])
             ->middleware('admin.permission:'.DepartmentPermissions::BATCH_STATUS);
-        Route::put('departments/{id}/status', [DepartmentController::class, 'updateStatus'])
+        Route::post('departments/{id}/status', [DepartmentController::class, 'updateStatus'])
             ->middleware('admin.permission:'.DepartmentPermissions::STATUS);
-        Route::put('departments/{id}/sort', [DepartmentController::class, 'updateSort'])
+        Route::post('departments/{id}/sort', [DepartmentController::class, 'updateSort'])
             ->middleware('admin.permission:'.DepartmentPermissions::SORT);
-        Route::put('departments/{id}', [DepartmentController::class, 'update'])
+        Route::post('departments/{id}', [DepartmentController::class, 'update'])
             ->middleware('admin.permission:'.DepartmentPermissions::UPDATE);
-        Route::delete('departments/{id}', [DepartmentController::class, 'destroy'])
+        Route::post('departments/{id}/delete', [DepartmentController::class, 'destroy'])
             ->middleware('admin.permission:'.DepartmentPermissions::DELETE);
 
         Route::get('posts', [PostController::class, 'index'])
@@ -128,11 +128,11 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
             ->middleware('admin.permission:'.PostPermissions::CREATE);
         Route::post('posts/batch-destroy', [PostController::class, 'batchDestroy'])
             ->middleware('admin.permission:'.PostPermissions::BATCH_DELETE);
-        Route::put('posts/batch-status', [PostController::class, 'batchUpdateStatus'])
+        Route::post('posts/batch-status', [PostController::class, 'batchUpdateStatus'])
             ->middleware('admin.permission:'.PostPermissions::BATCH_STATUS);
-        Route::put('posts/{id}', [PostController::class, 'update'])
+        Route::post('posts/{id}', [PostController::class, 'update'])
             ->middleware('admin.permission:'.PostPermissions::UPDATE);
-        Route::delete('posts/{id}', [PostController::class, 'destroy'])
+        Route::post('posts/{id}/delete', [PostController::class, 'destroy'])
             ->middleware('admin.permission:'.PostPermissions::DELETE);
 
         Route::get('user-groups', [UserGroupController::class, 'index'])
@@ -143,11 +143,11 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
             ->middleware('admin.permission:'.UserGroupPermissions::BATCH_DELETE);
         Route::get('user-groups/{id}', [UserGroupController::class, 'show'])
             ->middleware('admin.permission:'.UserGroupPermissions::QUERY);
-        Route::put('user-groups/{id}', [UserGroupController::class, 'update'])
+        Route::post('user-groups/{id}', [UserGroupController::class, 'update'])
             ->middleware('admin.permission:'.UserGroupPermissions::UPDATE);
-        Route::delete('user-groups/{id}', [UserGroupController::class, 'destroy'])
+        Route::post('user-groups/{id}/delete', [UserGroupController::class, 'destroy'])
             ->middleware('admin.permission:'.UserGroupPermissions::DELETE);
-        Route::put('user-groups/{id}/admins', [UserGroupController::class, 'syncAdmins'])
+        Route::post('user-groups/{id}/admins', [UserGroupController::class, 'syncAdmins'])
             ->middleware('admin.permission.any:'.UserGroupPermissions::CREATE.','.UserGroupPermissions::UPDATE);
 
         // 角色管理（/permission/roles）— 权限码见 RolePermissions
@@ -157,20 +157,20 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
             ->middleware('admin.permission:'.RolePermissions::CREATE);
         Route::post('roles/batch-destroy', [RoleController::class, 'batchDestroy'])
             ->middleware('admin.permission:'.RolePermissions::BATCH_DELETE);
-        Route::put('roles/batch-status', [RoleController::class, 'batchUpdateStatus'])
+        Route::post('roles/batch-status', [RoleController::class, 'batchUpdateStatus'])
             ->middleware('admin.permission:'.RolePermissions::BATCH_STATUS);
         Route::get('roles/{id}', [RoleController::class, 'show'])
             ->middleware('admin.permission:'.RolePermissions::QUERY);
-        Route::put('roles/{id}/status', [RoleController::class, 'updateStatus'])
+        Route::post('roles/{id}/status', [RoleController::class, 'updateStatus'])
             ->middleware('admin.permission:'.RolePermissions::STATUS);
-        Route::put('roles/{id}', [RoleController::class, 'update'])
+        Route::post('roles/{id}', [RoleController::class, 'update'])
             ->middleware('admin.permission:'.RolePermissions::UPDATE);
-        Route::delete('roles/{id}', [RoleController::class, 'destroy'])
+        Route::post('roles/{id}/delete', [RoleController::class, 'destroy'])
             ->middleware('admin.permission:'.RolePermissions::DELETE);
         // 同步角色菜单权限：新增或编辑角色时均可调用
-        Route::put('roles/{id}/menus', [RoleController::class, 'syncMenus'])
+        Route::post('roles/{id}/menus', [RoleController::class, 'syncMenus'])
             ->middleware('admin.permission.any:'.RolePermissions::CREATE.','.RolePermissions::UPDATE);
-        Route::put('roles/{id}/depts', [RoleController::class, 'syncDepts'])
+        Route::post('roles/{id}/depts', [RoleController::class, 'syncDepts'])
             ->middleware('admin.permission.any:'.RolePermissions::CREATE.','.RolePermissions::UPDATE);
 
         // 菜单管理（/permission/menus）— 权限码见 MenuPermissions
@@ -180,37 +180,37 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
             ->middleware('admin.permission:'.MenuPermissions::QUERY);
         Route::post('menus/batch-destroy', [MenuController::class, 'batchDestroy'])
             ->middleware('admin.permission:'.MenuPermissions::BATCH_DELETE);
-        Route::put('menus/batch-status', [MenuController::class, 'batchUpdateStatus'])
+        Route::post('menus/batch-status', [MenuController::class, 'batchUpdateStatus'])
             ->middleware('admin.permission:'.MenuPermissions::BATCH_STATUS);
         // 新增菜单：parent_id > 0 走 append，否则走 create（见 EnsureAdminMenuStorePermission）
         Route::post('menus', [MenuController::class, 'store'])
             ->middleware('admin.permission.menu.store');
-        Route::put('menus/{id}/status', [MenuController::class, 'updateStatus'])
+        Route::post('menus/{id}/status', [MenuController::class, 'updateStatus'])
             ->middleware('admin.permission:'.MenuPermissions::STATUS);
-        Route::put('menus/{id}/sort', [MenuController::class, 'updateSort'])
+        Route::post('menus/{id}/sort', [MenuController::class, 'updateSort'])
             ->middleware('admin.permission:'.MenuPermissions::SORT);
-        Route::put('menus/{id}', [MenuController::class, 'update'])
+        Route::post('menus/{id}', [MenuController::class, 'update'])
             ->middleware('admin.permission:'.MenuPermissions::UPDATE);
-        Route::delete('menus/{id}', [MenuController::class, 'destroy'])
+        Route::post('menus/{id}/delete', [MenuController::class, 'destroy'])
             ->middleware('admin.permission:'.MenuPermissions::DELETE);
         Route::get('admins', [AdminUserController::class, 'index'])
             ->middleware('admin.permission:'.AdminPermissions::QUERY);
         Route::post('admins/batch-destroy', [AdminUserController::class, 'batchDestroy'])
             ->middleware('admin.permission:'.AdminPermissions::BATCH_DELETE);
-        Route::put('admins/batch-status', [AdminUserController::class, 'batchUpdateStatus'])
+        Route::post('admins/batch-status', [AdminUserController::class, 'batchUpdateStatus'])
             ->middleware('admin.permission:'.AdminPermissions::BATCH_STATUS);
         Route::post('admins', [AdminUserController::class, 'store'])
             ->middleware('admin.permission:'.AdminPermissions::CREATE);
-        Route::put('admins/{id}/status', [AdminUserController::class, 'updateStatus'])
+        Route::post('admins/{id}/status', [AdminUserController::class, 'updateStatus'])
             ->middleware('admin.permission:'.AdminPermissions::STATUS);
-        Route::put('admins/{id}', [AdminUserController::class, 'update'])
+        Route::post('admins/{id}', [AdminUserController::class, 'update'])
             ->middleware('admin.permission:'.AdminPermissions::UPDATE);
-        Route::delete('admins/{id}', [AdminUserController::class, 'destroy'])
+        Route::post('admins/{id}/delete', [AdminUserController::class, 'destroy'])
             ->middleware('admin.permission:'.AdminPermissions::DELETE);
 
         Route::get('configs', [ConfigController::class, 'index'])
             ->middleware('admin.permission:'.ConfigPermissions::QUERY);
-        Route::put('configs', [ConfigController::class, 'batchUpsert'])
+        Route::post('configs', [ConfigController::class, 'batchUpsert'])
             ->middleware('admin.permission:'.ConfigPermissions::UPDATE);
         Route::post('configs/sms-test', [ConfigController::class, 'testSms'])
             ->middleware('admin.permission:'.ConfigPermissions::UPDATE);
@@ -218,25 +218,25 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
             ->middleware('admin.permission:'.ConfigPermissions::UPDATE);
         Route::post('configs/batch-destroy', [ConfigController::class, 'batchDestroy'])
             ->middleware('admin.permission:'.ConfigPermissions::BATCH_DELETE);
-        Route::delete('configs/{id}', [ConfigController::class, 'destroy'])
+        Route::post('configs/{id}/delete', [ConfigController::class, 'destroy'])
             ->middleware('admin.permission:'.ConfigPermissions::DELETE);
 
         Route::get('dict-types', [DictTypeController::class, 'index'])
             ->middleware('admin.permission:'.DictPermissions::QUERY);
         Route::post('dict-types', [DictTypeController::class, 'store'])
             ->middleware('admin.permission:'.DictPermissions::CREATE);
-        Route::put('dict-types/{id}', [DictTypeController::class, 'update'])
+        Route::post('dict-types/{id}', [DictTypeController::class, 'update'])
             ->middleware('admin.permission:'.DictPermissions::UPDATE);
-        Route::delete('dict-types/{id}', [DictTypeController::class, 'destroy'])
+        Route::post('dict-types/{id}/delete', [DictTypeController::class, 'destroy'])
             ->middleware('admin.permission:'.DictPermissions::DELETE);
 
         Route::get('dict-items', [DictItemController::class, 'index'])
             ->middleware('admin.permission:'.DictPermissions::QUERY);
         Route::post('dict-items', [DictItemController::class, 'store'])
             ->middleware('admin.permission:'.DictPermissions::CREATE);
-        Route::put('dict-items/{id}', [DictItemController::class, 'update'])
+        Route::post('dict-items/{id}', [DictItemController::class, 'update'])
             ->middleware('admin.permission:'.DictPermissions::UPDATE);
-        Route::delete('dict-items/{id}', [DictItemController::class, 'destroy'])
+        Route::post('dict-items/{id}/delete', [DictItemController::class, 'destroy'])
             ->middleware('admin.permission:'.DictPermissions::DELETE);
 
         Route::get('areas/tree', [AreaController::class, 'tree'])
@@ -255,9 +255,9 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
             ->middleware('admin.permission:'.AreaPermissions::QUERY);
         Route::post('areas', [AreaController::class, 'store'])
             ->middleware('admin.permission.area.store');
-        Route::put('areas/{id}', [AreaController::class, 'update'])
+        Route::post('areas/{id}', [AreaController::class, 'update'])
             ->middleware('admin.permission:'.AreaPermissions::UPDATE);
-        Route::delete('areas/{id}', [AreaController::class, 'destroy'])
+        Route::post('areas/{id}/delete', [AreaController::class, 'destroy'])
             ->middleware('admin.permission:'.AreaPermissions::DELETE);
 
         Route::get('attachments', [AttachmentController::class, 'index'])
@@ -266,7 +266,7 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
             ->middleware('admin.permission:'.AttachmentPermissions::UPLOAD);
         Route::post('attachments/batch-destroy', [AttachmentController::class, 'batchDestroy'])
             ->middleware('admin.permission:'.AttachmentPermissions::BATCH_DELETE);
-        Route::delete('attachments/{id}', [AttachmentController::class, 'destroy'])
+        Route::post('attachments/{id}/delete', [AttachmentController::class, 'destroy'])
             ->middleware('admin.permission:'.AttachmentPermissions::DELETE);
 
         Route::get('categories/tree', [CategoryController::class, 'tree'])
@@ -277,15 +277,15 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
             ->middleware('admin.permission:'.CategoryPermissions::CREATE);
         Route::post('categories/batch-destroy', [CategoryController::class, 'batchDestroy'])
             ->middleware('admin.permission:'.CategoryPermissions::BATCH_DELETE);
-        Route::put('categories/batch-status', [CategoryController::class, 'batchUpdateStatus'])
+        Route::post('categories/batch-status', [CategoryController::class, 'batchUpdateStatus'])
             ->middleware('admin.permission:'.CategoryPermissions::BATCH_STATUS);
-        Route::put('categories/{id}/status', [CategoryController::class, 'updateStatus'])
+        Route::post('categories/{id}/status', [CategoryController::class, 'updateStatus'])
             ->middleware('admin.permission:'.CategoryPermissions::STATUS);
-        Route::put('categories/{id}/sort', [CategoryController::class, 'updateSort'])
+        Route::post('categories/{id}/sort', [CategoryController::class, 'updateSort'])
             ->middleware('admin.permission:'.CategoryPermissions::SORT);
-        Route::put('categories/{id}', [CategoryController::class, 'update'])
+        Route::post('categories/{id}', [CategoryController::class, 'update'])
             ->middleware('admin.permission:'.CategoryPermissions::UPDATE);
-        Route::delete('categories/{id}', [CategoryController::class, 'destroy'])
+        Route::post('categories/{id}/delete', [CategoryController::class, 'destroy'])
             ->middleware('admin.permission:'.CategoryPermissions::DELETE);
     });
 
@@ -301,7 +301,7 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
             ->middleware('admin.permission:'.ModulePermissions::QUERY);
         Route::get('modules/{name}', [DevModuleController::class, 'show'])
             ->middleware('admin.permission:'.ModulePermissions::QUERY);
-        Route::put('modules/{name}/status', [DevModuleController::class, 'updateStatus'])
+        Route::post('modules/{name}/status', [DevModuleController::class, 'updateStatus'])
             ->middleware('admin.permission:'.ModulePermissions::UPDATE);
 
         Route::get('plugins', [PluginController::class, 'index'])
@@ -322,7 +322,7 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
             ->middleware('admin.permission:'.PluginPermissions::UNINSTALL);
         Route::get('plugins/{slug}/config', [PluginController::class, 'config'])
             ->middleware('admin.permission:'.PluginPermissions::CONFIG);
-        Route::put('plugins/{slug}/config', [PluginController::class, 'updateConfig'])
+        Route::post('plugins/{slug}/config', [PluginController::class, 'updateConfig'])
             ->middleware('admin.permission:'.PluginPermissions::CONFIG);
 
         Route::get('themes', [ThemeController::class, 'index'])
@@ -353,7 +353,7 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
             ->middleware('admin.permission:'.OperationLogPermissions::QUERY);
         Route::get('operation-logs/{id}', [OperationLogController::class, 'show'])
             ->middleware('admin.permission:'.OperationLogPermissions::QUERY);
-        Route::delete('operation-logs/{id}', [OperationLogController::class, 'destroy'])
+        Route::post('operation-logs/{id}/delete', [OperationLogController::class, 'destroy'])
             ->middleware('admin.permission:'.OperationLogPermissions::DELETE);
         Route::post('operation-logs/batch-destroy', [OperationLogController::class, 'batchDestroy'])
             ->middleware('admin.permission:'.OperationLogPermissions::BATCH_DELETE);
@@ -362,7 +362,7 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
             ->middleware('admin.permission:'.LoginLogPermissions::QUERY);
         Route::get('login-logs/{id}', [LoginLogController::class, 'show'])
             ->middleware('admin.permission:'.LoginLogPermissions::QUERY);
-        Route::delete('login-logs/{id}', [LoginLogController::class, 'destroy'])
+        Route::post('login-logs/{id}/delete', [LoginLogController::class, 'destroy'])
             ->middleware('admin.permission:'.LoginLogPermissions::DELETE);
         Route::post('login-logs/batch-destroy', [LoginLogController::class, 'batchDestroy'])
             ->middleware('admin.permission:'.LoginLogPermissions::BATCH_DELETE);
@@ -371,7 +371,7 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
             ->middleware('admin.permission:'.ExceptionLogPermissions::QUERY);
         Route::get('exception-logs/{id}', [ExceptionLogController::class, 'show'])
             ->middleware('admin.permission:'.ExceptionLogPermissions::QUERY);
-        Route::delete('exception-logs/{id}', [ExceptionLogController::class, 'destroy'])
+        Route::post('exception-logs/{id}/delete', [ExceptionLogController::class, 'destroy'])
             ->middleware('admin.permission:'.ExceptionLogPermissions::DELETE);
         Route::post('exception-logs/batch-destroy', [ExceptionLogController::class, 'batchDestroy'])
             ->middleware('admin.permission:'.ExceptionLogPermissions::BATCH_DELETE);
@@ -398,7 +398,7 @@ Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('a
             ->middleware('admin.permission:'.InboxPermissions::QUERY);
         Route::post('messages/{id}/read', [InboxMessageController::class, 'markRead'])
             ->middleware('admin.permission:'.InboxPermissions::QUERY);
-        Route::delete('messages/{id}', [InboxMessageController::class, 'destroy'])
+        Route::post('messages/{id}/delete', [InboxMessageController::class, 'destroy'])
             ->middleware('admin.permission:'.InboxPermissions::QUERY);
         Route::post('messages/batch-read', [InboxMessageController::class, 'batchMarkRead'])
             ->middleware('admin.permission:'.InboxPermissions::QUERY);

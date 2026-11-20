@@ -81,11 +81,11 @@ export function createDictType(data: DictTypeSavePayload) {
 }
 
 export function updateDictType(id: number, data: Partial<DictTypeSavePayload>) {
-  return requestClient.put<DictTypeRow>(`/system/dict-types/${id}`, data);
+  return requestClient.post<DictTypeRow>(`/system/dict-types/${id}`, data);
 }
 
 export function deleteDictType(id: number) {
-  return requestClient.delete(`/system/dict-types/${id}`);
+  return requestClient.post(`/system/dict-types/${id}/delete`);
 }
 
 export function fetchDictItemPage(params: DictItemPageQuery) {
@@ -99,9 +99,9 @@ export function createDictItem(data: DictItemSavePayload) {
 }
 
 export function updateDictItem(id: number, data: Partial<DictItemSavePayload>) {
-  return requestClient.put<DictItemRow>(`/system/dict-items/${id}`, data);
+  return requestClient.post<DictItemRow>(`/system/dict-items/${id}`, data);
 }
 
 export function deleteDictItem(id: number) {
-  return requestClient.delete(`/system/dict-items/${id}`);
+  return requestClient.post(`/system/dict-items/${id}/delete`);
 }

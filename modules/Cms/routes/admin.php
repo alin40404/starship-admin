@@ -14,19 +14,19 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
             ->middleware('admin.permission:'.CmsPermissions::CATEGORIES_QUERY);
         Route::post('categories/batch-destroy', [CategoryController::class, 'batchDestroy'])
             ->middleware('admin.permission:'.CmsPermissions::CATEGORIES_BATCH_DELETE);
-        Route::put('categories/batch-status', [CategoryController::class, 'batchUpdateStatus'])
+        Route::post('categories/batch-status', [CategoryController::class, 'batchUpdateStatus'])
             ->middleware('admin.permission:'.CmsPermissions::CATEGORIES_BATCH_STATUS);
         Route::post('categories', [CategoryController::class, 'store'])
             ->middleware('admin.permission:'.CmsPermissions::CATEGORIES_CREATE);
         Route::get('categories/{id}', [CategoryController::class, 'show'])
             ->middleware('admin.permission:'.CmsPermissions::CATEGORIES_QUERY);
-        Route::put('categories/{id}/status', [CategoryController::class, 'updateStatus'])
+        Route::post('categories/{id}/status', [CategoryController::class, 'updateStatus'])
             ->middleware('admin.permission:'.CmsPermissions::CATEGORIES_STATUS);
-        Route::put('categories/{id}/sort', [CategoryController::class, 'updateSort'])
+        Route::post('categories/{id}/sort', [CategoryController::class, 'updateSort'])
             ->middleware('admin.permission:'.CmsPermissions::CATEGORIES_SORT);
-        Route::put('categories/{id}', [CategoryController::class, 'update'])
+        Route::post('categories/{id}', [CategoryController::class, 'update'])
             ->middleware('admin.permission:'.CmsPermissions::CATEGORIES_UPDATE);
-        Route::delete('categories/{id}', [CategoryController::class, 'destroy'])
+        Route::post('categories/{id}/delete', [CategoryController::class, 'destroy'])
             ->middleware('admin.permission:'.CmsPermissions::CATEGORIES_DELETE);
 
         Route::get('articles', [ArticleController::class, 'index'])
@@ -35,11 +35,11 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
             ->middleware('admin.permission:'.CmsPermissions::ARTICLES_CREATE);
         Route::get('articles/{id}', [ArticleController::class, 'show'])
             ->middleware('admin.permission:'.CmsPermissions::ARTICLES_QUERY);
-        Route::put('articles/{id}', [ArticleController::class, 'update'])
+        Route::post('articles/{id}', [ArticleController::class, 'update'])
             ->middleware('admin.permission:'.CmsPermissions::ARTICLES_UPDATE);
-        Route::put('articles/{id}/status', [ArticleController::class, 'updateStatus'])
+        Route::post('articles/{id}/status', [ArticleController::class, 'updateStatus'])
             ->middleware('admin.permission:'.CmsPermissions::ARTICLES_STATUS);
-        Route::delete('articles/{id}', [ArticleController::class, 'destroy'])
+        Route::post('articles/{id}/delete', [ArticleController::class, 'destroy'])
             ->middleware('admin.permission:'.CmsPermissions::ARTICLES_DELETE);
     });
 });

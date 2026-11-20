@@ -34,11 +34,11 @@ export function create{{ $model_class }}(data: {{ $model_class }}SavePayload) {
 }
 
 export function update{{ $model_class }}(id: number, data: Partial<{{ $model_class }}SavePayload>) {
-  return requestClient.put<{{ $model_class }}Row>(`/{{ $api_route_prefix }}/{{ $api_prefix }}/${id}`, data);
+  return requestClient.post<{{ $model_class }}Row>(`/{{ $api_route_prefix }}/{{ $api_prefix }}/${id}`, data);
 }
 
 export function delete{{ $model_class }}(id: number) {
-  return requestClient.delete(`/{{ $api_route_prefix }}/{{ $api_prefix }}/${id}`);
+  return requestClient.post(`/{{ $api_route_prefix }}/{{ $api_prefix }}/${id}/delete`);
 }
 @if($has_batch_delete)
 
@@ -52,7 +52,7 @@ export function {{ $batch_delete_fn_name }}(ids: number[]) {
 @if($has_batch_status)
 
 export function batchUpdate{{ $model_class }}Status(ids: number[], status: {{ $status_ts_union }}) {
-  return requestClient.put<{ updated: number }>('/{{ $api_route_prefix }}/{{ $api_prefix }}/batch-status', {
+  return requestClient.post<{ updated: number }>('/{{ $api_route_prefix }}/{{ $api_prefix }}/batch-status', {
     ids,
     status,
   });

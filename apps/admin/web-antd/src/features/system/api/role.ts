@@ -52,17 +52,17 @@ export function createRole(data: RoleSavePayload) {
 }
 
 export function updateRole(id: number, data: Partial<RoleSavePayload>) {
-  return requestClient.put<RoleRow>(`/system/roles/${id}`, data);
+  return requestClient.post<RoleRow>(`/system/roles/${id}`, data);
 }
 
 export function updateRoleStatus(id: number, status: 0 | 1) {
-  return requestClient.put<RoleRow>(`/system/roles/${id}/status`, {
+  return requestClient.post<RoleRow>(`/system/roles/${id}/status`, {
     status,
   });
 }
 
 export function deleteRole(id: number) {
-  return requestClient.delete(`/system/roles/${id}`);
+  return requestClient.post(`/system/roles/${id}/delete`);
 }
 
 export function batchDeleteRoles(ids: number[]) {
@@ -73,21 +73,21 @@ export function batchDeleteRoles(ids: number[]) {
 }
 
 export function batchUpdateRoleStatus(ids: number[], status: 0 | 1) {
-  return requestClient.put<{ updated: number }>('/system/roles/batch-status', {
+  return requestClient.post<{ updated: number }>('/system/roles/batch-status', {
     ids,
     status,
   });
 }
 
 export function syncRoleMenus(id: number, menuIds: number[]) {
-  return requestClient.put<{ menu_ids: number[] }>(
+  return requestClient.post<{ menu_ids: number[] }>(
     `/system/roles/${id}/menus`,
     { menu_ids: menuIds },
   );
 }
 
 export function syncRoleDepts(id: number, deptIds: number[]) {
-  return requestClient.put<{ dept_ids: number[] }>(
+  return requestClient.post<{ dept_ids: number[] }>(
     `/system/roles/${id}/depts`,
     { dept_ids: deptIds },
   );

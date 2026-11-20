@@ -79,23 +79,23 @@ export function updateDepartment(
   id: number,
   data: Partial<DepartmentSavePayload>,
 ) {
-  return requestClient.put<DepartmentRow>(`/system/departments/${id}`, data);
+  return requestClient.post<DepartmentRow>(`/system/departments/${id}`, data);
 }
 
 export function updateDepartmentStatus(id: number, status: 0 | 1) {
-  return requestClient.put<DepartmentRow>(`/system/departments/${id}/status`, {
+  return requestClient.post<DepartmentRow>(`/system/departments/${id}/status`, {
     status,
   });
 }
 
 export function updateDepartmentSort(id: number, sort: number) {
-  return requestClient.put<DepartmentRow>(`/system/departments/${id}/sort`, {
+  return requestClient.post<DepartmentRow>(`/system/departments/${id}/sort`, {
     sort,
   });
 }
 
 export function deleteDepartment(id: number) {
-  return requestClient.delete(`/system/departments/${id}`);
+  return requestClient.post(`/system/departments/${id}/delete`);
 }
 
 export function batchDeleteDepartments(ids: number[]) {
@@ -106,7 +106,7 @@ export function batchDeleteDepartments(ids: number[]) {
 }
 
 export function batchUpdateDepartmentStatus(ids: number[], status: 0 | 1) {
-  return requestClient.put<{ updated: number }>(
+  return requestClient.post<{ updated: number }>(
     '/system/departments/batch-status',
     { ids, status },
   );

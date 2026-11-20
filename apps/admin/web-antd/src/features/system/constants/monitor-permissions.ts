@@ -38,7 +38,9 @@ export function getMonitorLoginActionTagOptions() {
   ] as const;
 }
 
+/** 操作日志等方法列/筛选展示用（含历史数据）；新接口约定仍仅 GET/POST，见 AI 规则 */
 export const MONITOR_HTTP_METHOD_TAG_OPTIONS = [
+  { color: 'processing', label: 'GET', value: 'GET' },
   { color: 'success', label: 'POST', value: 'POST' },
   { color: 'processing', label: 'PUT', value: 'PUT' },
   { color: 'processing', label: 'PATCH', value: 'PATCH' },

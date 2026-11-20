@@ -74,24 +74,24 @@ export function updateCategory(
   id: number,
   data: Partial<CategorySavePayload>,
 ) {
-  return requestClient.put<CategoryTreeNode>(`/system/categories/${id}`, data);
+  return requestClient.post<CategoryTreeNode>(`/system/categories/${id}`, data);
 }
 
 export function updateCategoryStatus(id: number, status: CategoryStatus) {
-  return requestClient.put<CategoryTreeNode>(
+  return requestClient.post<CategoryTreeNode>(
     `/system/categories/${id}/status`,
     { status },
   );
 }
 
 export function updateCategorySort(id: number, sort: number) {
-  return requestClient.put<CategoryTreeNode>(`/system/categories/${id}/sort`, {
+  return requestClient.post<CategoryTreeNode>(`/system/categories/${id}/sort`, {
     sort,
   });
 }
 
 export function deleteCategory(id: number) {
-  return requestClient.delete(`/system/categories/${id}`);
+  return requestClient.post(`/system/categories/${id}/delete`);
 }
 
 export function batchDeleteCategories(ids: number[]) {
@@ -105,7 +105,7 @@ export function batchUpdateCategoryStatus(
   ids: number[],
   status: CategoryStatus,
 ) {
-  return requestClient.put<{ updated: number }>(
+  return requestClient.post<{ updated: number }>(
     '/system/categories/batch-status',
     { ids, status },
   );

@@ -112,7 +112,7 @@ export function uninstallPlugin(slug: string) {
 }
 
 export function updatePluginConfig(slug: string, payload: Record<string, unknown>) {
-  return requestClient.put<Record<string, string | number | boolean | null>>(
+  return requestClient.post<Record<string, string | number | boolean | null>>(
     `/dev/plugins/${slug}/config`,
     payload,
   );

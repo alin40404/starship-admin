@@ -93,24 +93,24 @@ export function updateCmsCategory(
   id: number,
   data: Partial<CmsCategorySavePayload>,
 ) {
-  return requestClient.put<CmsCategoryTreeNode>(`/cms/categories/${id}`, data);
+  return requestClient.post<CmsCategoryTreeNode>(`/cms/categories/${id}`, data);
 }
 
 export function updateCmsCategoryStatus(id: number, status: CmsCategoryStatus) {
-  return requestClient.put<CmsCategoryTreeNode>(
+  return requestClient.post<CmsCategoryTreeNode>(
     `/cms/categories/${id}/status`,
     { status },
   );
 }
 
 export function updateCmsCategorySort(id: number, sort: number) {
-  return requestClient.put<CmsCategoryTreeNode>(`/cms/categories/${id}/sort`, {
+  return requestClient.post<CmsCategoryTreeNode>(`/cms/categories/${id}/sort`, {
     sort,
   });
 }
 
 export function deleteCmsCategory(id: number) {
-  return requestClient.delete(`/cms/categories/${id}`);
+  return requestClient.post(`/cms/categories/${id}/delete`);
 }
 
 export function batchDeleteCmsCategories(ids: number[]) {
@@ -124,7 +124,7 @@ export function batchUpdateCmsCategoryStatus(
   ids: number[],
   status: CmsCategoryStatus,
 ) {
-  return requestClient.put<{ updated: number }>(
+  return requestClient.post<{ updated: number }>(
     '/cms/categories/batch-status',
     { ids, status },
   );
@@ -169,15 +169,15 @@ export function createArticle(data: ArticleSavePayload) {
 }
 
 export function updateArticle(id: number, data: Partial<ArticleSavePayload>) {
-  return requestClient.put<ArticleRow>(`/cms/articles/${id}`, data);
+  return requestClient.post<ArticleRow>(`/cms/articles/${id}`, data);
 }
 
 export function updateArticleStatus(id: number, status: number) {
-  return requestClient.put<ArticleRow>(`/cms/articles/${id}/status`, {
+  return requestClient.post<ArticleRow>(`/cms/articles/${id}/status`, {
     status,
   });
 }
 
 export function deleteArticle(id: number) {
-  return requestClient.delete(`/cms/articles/${id}`);
+  return requestClient.post(`/cms/articles/${id}/delete`);
 }

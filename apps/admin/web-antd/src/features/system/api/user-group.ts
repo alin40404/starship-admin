@@ -53,11 +53,11 @@ export function createUserGroup(data: UserGroupSavePayload) {
 }
 
 export function updateUserGroup(id: number, data: Partial<UserGroupSavePayload>) {
-  return requestClient.put<UserGroupRow>(`/system/user-groups/${id}`, data);
+  return requestClient.post<UserGroupRow>(`/system/user-groups/${id}`, data);
 }
 
 export function deleteUserGroup(id: number) {
-  return requestClient.delete(`/system/user-groups/${id}`);
+  return requestClient.post(`/system/user-groups/${id}/delete`);
 }
 
 export function batchDeleteUserGroups(ids: number[]) {
@@ -68,7 +68,7 @@ export function batchDeleteUserGroups(ids: number[]) {
 }
 
 export function syncUserGroupAdmins(id: number, adminIds: number[]) {
-  return requestClient.put<{ admin_ids: number[] }>(
+  return requestClient.post<{ admin_ids: number[] }>(
     `/system/user-groups/${id}/admins`,
     { admin_ids: adminIds },
   );
