@@ -8,6 +8,13 @@ use Starship\Core\Theme\ThemeLoader;
 
 class ThemeLoaderTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->resetActiveThemesToDefault();
+        $this->registerThemeViewRoutes();
+    }
+
     public function test_registers_theme_namespace_with_default_fallback(): void
     {
         $loader = $this->app->make(ThemeLoader::class);
