@@ -90,7 +90,7 @@ Then:
 3. Add admin pages under `apps/admin` (or generate CRUD with Generator)
 4. For third-party adapters: `php artisan starship:plugin:make SmsDemo`
 
-See module/plugin sections below and the guides under `docs/deployment/`.
+See module/plugin sections below; detailed guides are in the Documentation index (links to the `master` develop repo).
 
 ### 1.4 Contribute to the framework (`master`)
 
@@ -105,8 +105,8 @@ cd ../apps/admin && pnpm install && pnpm dev:antd
 
 - Core lives in `packages/core` (path `@dev` from `backend`)
 - After core changes: `cd packages/core && composer test`
-- Publish to Packagist: [packagist.md](docs/architecture/packagist.md)
-- Refresh the public template: [release-as-template.md](docs/architecture/release-as-template.md)
+- Publish to Packagist: [packagist.md](https://github.com/alin40404/starship-admin/blob/master/docs/architecture/packagist.md)
+- Refresh the public template: [release-as-template.md](https://github.com/alin40404/starship-admin/blob/master/docs/architecture/release-as-template.md)
 
 ### 1.5 Branch cheat sheet
 
@@ -401,7 +401,7 @@ plugins/SmsAliyun/front/
 apps/admin/.../plugins/sms-aliyun/
 ```
 
-See [docs/deployment/plugin-cli.md](docs/deployment/plugin-cli.md).
+See [docs/deployment/plugin-cli.md](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/plugin-cli.md).
 
 ### 6.8 Extension points
 
@@ -473,15 +473,12 @@ starship-admin/
 │  └─ Member/
 ├─ plugins/
 ├─ themes/
-├─ packages/
-│  └─ core/                 # Core (path on master; Packagist on release)
-├─ docs/
 ├─ README.md
 ├─ README.en.md
 └─ LICENSE
 ```
 
-> `master` may include sample modules for framework development. **Use `release` for downstream projects** (System + Generator + Member only).
+> Layout above is the **`release` public template**. `master` also has `packages/core`, `docs/`, and sample modules; downstream projects should use `release`.
 
 ---
 
@@ -507,13 +504,11 @@ php artisan starship:module:make Demo
 
 Optional plugins / adapters, separate from `modules`.
 
-### 8.5 `packages`
-
-Shared libraries. Core is `packages/core` (`starship-admin/core`).
-
-### 8.6 `themes`
+### 8.5 `themes`
 
 Frontend/rendering themes (`default`, `corporate`, …). Admin theme tokens/layout styles live inside the `apps/admin` project, not root `themes/`.
+
+> On `release`, install core from Packagist (`starship-admin/core`). Path development of `packages/core` is only on `master`.
 
 ---
 
@@ -543,7 +538,7 @@ modules/System/
 
 ## 10. `module.json`
 
-Authoritative fields follow modules in the repo; see [docs/api/permissions.md](docs/api/permissions.md).
+Authoritative fields follow modules in the repo; see [docs/api/permissions.md](https://github.com/alin40404/starship-admin/blob/master/docs/api/permissions.md).
 
 ```json
 {
@@ -607,7 +602,7 @@ Frontend paths (kebab-case, aligned with menus):
 /member/members
 ```
 
-Permission nodes: `{module}.{resource}.{action}` — see [docs/api/permissions.md](docs/api/permissions.md).
+Permission nodes: `{module}.{resource}.{action}` — see [docs/api/permissions.md](https://github.com/alin40404/starship-admin/blob/master/docs/api/permissions.md).
 
 ---
 
@@ -645,7 +640,7 @@ POST   /admin-api/system/admins/{id}
 POST   /admin-api/system/admins/{id}/delete
 ```
 
-See [docs/api/routes.md](docs/api/routes.md).
+See [docs/api/routes.md](https://github.com/alin40404/starship-admin/blob/master/docs/api/routes.md).
 
 Unified response:
 
@@ -670,7 +665,7 @@ Levels: directory / menu / button.
 - Frontend: routes, menus, buttons by permission nodes
 - Backend: must re-check permission nodes (do not rely on UI hiding alone)
 
-See [docs/api/permissions.md](docs/api/permissions.md) and the RBAC design doc under `docs/deployment/`.
+See [docs/api/permissions.md](https://github.com/alin40404/starship-admin/blob/master/docs/api/permissions.md) and the RBAC design doc under `docs/deployment/`.
 
 ---
 
@@ -712,7 +707,7 @@ Outputs: backend Model/Controller/Request/Service/Route/Permission/Menu; fronten
 
 Principles: generate basic CRUD only; do not overwrite hand-written code unless confirmed; keep generation records; follow module layout.
 
-CLI: [docs/generator/cli.md](docs/generator/cli.md).
+CLI: [docs/generator/cli.md](https://github.com/alin40404/starship-admin/blob/master/docs/generator/cli.md).
 
 ---
 
@@ -720,7 +715,7 @@ CLI: [docs/generator/cli.md](docs/generator/cli.md).
 
 Based on Vben Admin 5.x. Typical areas under `apps/admin/.../src/`: `api`, `components`, `layouts`, `router`, `store`, `utils`, `views`, `features`, `plugins`.
 
-Font-size tokens: [docs/ui/admin-font-size.md](docs/ui/admin-font-size.md).
+Font-size tokens: [docs/ui/admin-font-size.md](https://github.com/alin40404/starship-admin/blob/master/docs/ui/admin-font-size.md).
 
 ---
 
@@ -742,7 +737,7 @@ For the **public** disk:
 php artisan storage:link
 ```
 
-See [docs/deployment/public-storage-link.md](docs/deployment/public-storage-link.md).
+See [docs/deployment/public-storage-link.md](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/public-storage-link.md).
 
 ---
 
@@ -754,21 +749,23 @@ Monitor center covers operation / login / exception logs. Mask sensitive fields 
 
 ## 22. Documentation index
 
+Detailed docs live under `docs/` on the develop branch `master` (not shipped in the `release` template):
+
 | Doc | Content |
 |-----|---------|
-| [framework.md](docs/architecture/framework.md) | Layered architecture |
-| [release-as-template.md](docs/architecture/release-as-template.md) | Release template |
-| [packagist.md](docs/architecture/packagist.md) | Core publish |
-| [skeleton-backend.md](docs/architecture/skeleton-backend.md) | Backend skeleton |
-| [development-checklist.md](docs/architecture/development-checklist.md) | Checklist |
-| [Module guide](docs/deployment/Starship_Module_开发规范.md) | Modules |
-| [Plugin guide](docs/deployment/Starship_Plugin_开发规范.md) | Plugins |
-| [Theme guide](docs/deployment/Starship_Theme_开发规范.md) | Themes |
-| [module-cli.md](docs/deployment/module-cli.md) / [plugin-cli.md](docs/deployment/plugin-cli.md) | CLI |
-| [generator/cli.md](docs/generator/cli.md) | Generator CLI |
-| [docs/api/](docs/api/) | Routes & permissions |
+| [framework.md](https://github.com/alin40404/starship-admin/blob/master/docs/architecture/framework.md) | Layered architecture |
+| [release-as-template.md](https://github.com/alin40404/starship-admin/blob/master/docs/architecture/release-as-template.md) | Release template |
+| [packagist.md](https://github.com/alin40404/starship-admin/blob/master/docs/architecture/packagist.md) | Core publish |
+| [skeleton-backend.md](https://github.com/alin40404/starship-admin/blob/master/docs/architecture/skeleton-backend.md) | Backend skeleton |
+| [development-checklist.md](https://github.com/alin40404/starship-admin/blob/master/docs/architecture/development-checklist.md) | Checklist |
+| [Module guide](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/Starship_Module_开发规范.md) | Modules |
+| [Plugin guide](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/Starship_Plugin_开发规范.md) | Plugins |
+| [Theme guide](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/Starship_Theme_开发规范.md) | Themes |
+| [module-cli.md](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/module-cli.md) / [plugin-cli.md](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/plugin-cli.md) | CLI |
+| [generator/cli.md](https://github.com/alin40404/starship-admin/blob/master/docs/generator/cli.md) | Generator CLI |
+| [docs/api/](https://github.com/alin40404/starship-admin/blob/master/docs/api/) | Routes & permissions |
 
-Core package: [packages/core/README.md](packages/core/README.md).
+Core package: [packages/core/README.md](https://github.com/alin40404/starship-admin/blob/master/packages/core/README.md).
 
 ---
 
