@@ -105,7 +105,7 @@ cd ../apps/admin && pnpm install && pnpm dev:antd
 
 - Core lives in `packages/core` (path `@dev` from `backend`)
 - After core changes: `cd packages/core && composer test`
-- Publish to Packagist: [packagist.md](docs/architecture/packagist.md) (`scripts/publish-core.ps1`)
+- Publish to Packagist: [packagist.md](docs/architecture/packagist.md)
 - Refresh the public template: [release-as-template.md](docs/architecture/release-as-template.md)
 
 ### 1.5 Branch cheat sheet
