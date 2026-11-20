@@ -116,25 +116,28 @@ Tag 规范：独立仓 / Packagist 用 `v1.0.0`；本仓若需镜像可用 `core
 }
 ```
 
-### 发布分支 / 下游业务项目（目标）
+### 发布分支 / 下游业务项目（`release`，已落地）
 
 ```json
 {
   "require": {
-    "starship-admin/core": "^1.0"
+    "starship-admin/core": "^1.0",
+    "starship/system": "@dev",
+    "starship/generator": "@dev",
+    "starship/member": "@dev"
   },
   "repositories": [
     { "type": "path", "url": "../modules/System" },
-    { "type": "path", "url": "../modules/Generator" }
+    { "type": "path", "url": "../modules/Generator" },
+    { "type": "path", "url": "../modules/Member" }
   ]
 }
 ```
 
-- **core**：只从 Packagist 装  
-- **System / Generator**：仍 path 到同仓 `modules/`（源码可改）  
+- **core**：只从 Packagist 装（`release` 无 `packages/core`）  
+- **System / Generator / Member**：path 到同仓 `modules/`（源码可改）  
 - **前端**：`apps/admin` 仍在仓内  
-
-`release` 合并前应把 `backend/composer.json` 调成「core 用版本约束、去掉 core 的 path」。
+- **Shop / Cms / GameShop**：不进 `release`
 
 ---
 

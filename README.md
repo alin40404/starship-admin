@@ -1701,12 +1701,12 @@ authorization
 
 | 分支 | 用途 |
 |------|------|
-| `master` | 框架研发（core 用 path） |
-| `release` | 业务起点（**core 用 Packagist**；模块/前端仍在仓内） |
+| `master` | 框架研发（core path `@dev`；含业务样例模块） |
+| `release` | 对外底座（**core 用 Packagist `^1.0`**；仅 System + Generator + Member） |
 
 ```bash
-git clone -b release <本仓 URL> my-erp-admin
-cd my-erp-admin/backend
+git clone -b release git@gitee.com:allanchan004/starship-admin.git my-admin
+cd my-admin/backend
 composer install
 cp .env.example .env
 php artisan key:generate
@@ -1714,7 +1714,7 @@ php artisan migrate --seed
 ```
 
 - 根 `composer.json` → 包名 `starship/skeleton`（模板）  
-- `starship-admin/core` → 独立 Packagist 包（subtree 发布）  
+- `starship-admin/core` → Packagist 已上架  
 - 前端不发包，随仓 `apps/admin`  
 
 见 [release-as-template.md](docs/architecture/release-as-template.md)、[packagist.md](docs/architecture/packagist.md)。

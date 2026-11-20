@@ -74,8 +74,8 @@
 - [x] 框架级 Feature Test（`php artisan test` 冒烟，仅 backend 应用壳）
 - [x] `packages/core` 包测试（`cd packages/core && composer test`）
 - [x] 项目模板约定：开发仓兼发布（根 `composer.json` + [release-as-template.md](./release-as-template.md)）
-- [x] `starship-admin/core` Packagist 约定（[packagist.md](./packagist.md)；**1.0.0 发包就绪**，待独立仓上架与 tag `v1.0.0`）
-- [ ] 对外发布分支 `release`：core 改版本约束 + clone 可起步 — **暂缓**（先完善插件 Contract）
+- [x] `starship-admin/core` Packagist 约定（[packagist.md](./packagist.md)；已上架 `v1.0.0`）
+- [x] 对外发布分支 `release`：core `^1.0` + 底座 System/Generator/Member；`git clone -b release` 可起步（见 [release-as-template.md](./release-as-template.md)）
 
 ### 阶段一补充：插件 / Contract 完善（当前优先，暂缓 Packagist）
 
