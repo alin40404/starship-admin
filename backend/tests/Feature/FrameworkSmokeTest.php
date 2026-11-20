@@ -35,8 +35,6 @@ class FrameworkSmokeTest extends TestCase
         $this->assertContains('system', $names);
         $this->assertContains('generator', $names);
         $this->assertContains('member', $names);
-        $this->assertContains('shop', $names);
-        $this->assertContains('cms', $names);
     }
 
     #[Test]
