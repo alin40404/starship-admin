@@ -39,6 +39,7 @@ const router = useRouter();
 
 const current = ref(0);
 const loading = ref(false);
+const requirementsLoading = ref(false);
 const requirements = ref<InstallApi.Requirements | null>(null);
 const adminUsername = ref('admin');
 
@@ -151,11 +152,11 @@ const directoryColumns = computed(() => [
 ]);
 
 async function loadRequirements() {
-  loading.value = true;
+  requirementsLoading.value = true;
   try {
     requirements.value = await fetchInstallRequirements();
   } finally {
-    loading.value = false;
+    requirementsLoading.value = false;
   }
 }
 
@@ -392,13 +393,15 @@ onMounted(() => {
 
           <div class="install-page__actions">
             <Space>
-              <Button :loading="loading" @click="loadRequirements">
+              <Button
+                :loading="requirementsLoading"
+                @click="loadRequirements"
+              >
                 {{ $t('install.requirements.reload') }}
               </Button>
               <Button
                 type="primary"
-                :disabled="!requirements?.passed"
-                :loading="loading"
+                :disabled="!requirements?.passed || requirementsLoading"
                 @click="onRequirementsNext"
               >
                 {{ $t('install.requirements.next') }}
@@ -571,6 +574,21 @@ onMounted(() => {
 
 .install-page__steps {
   margin-bottom: 1rem;
+}
+
+/* 已完成步骤：沿用 Steps 可点击态 hover 配色（标题/图标主色） */
+.install-page__steps :deep(.ant-steps-item-finish > .ant-steps-item-container .ant-steps-item-title),
+.install-page__steps :deep(.ant-steps-item-finish > .ant-steps-item-container .ant-steps-item-subtitle),
+.install-page__steps :deep(.ant-steps-item-finish > .ant-steps-item-container .ant-steps-item-description) {
+  color: hsl(var(--primary));
+}
+
+.install-page__steps :deep(.ant-steps-item-finish > .ant-steps-item-container .ant-steps-item-icon) {
+  border-color: hsl(var(--primary));
+}
+
+.install-page__steps :deep(.ant-steps-item-finish > .ant-steps-item-container .ant-steps-item-icon > .ant-steps-icon) {
+  color: hsl(var(--primary));
 }
 
 .install-page__card {
