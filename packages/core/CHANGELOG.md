@@ -2,6 +2,12 @@
 
 本文件记录 `starship-admin/core` 的对外可见变更。版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)；**以 git tag 为准**（`composer.json` 不写死 `version`）。
 
+## Unreleased
+
+### Added
+
+- 项目安装引导：`InstallService`、`starship:install` CLI、公开 API `admin-api/install/*`、安装锁 `storage/app/starship.installed`
+
 ## [1.0.0] — 2026-11-20
 
 ### Added

@@ -154,6 +154,14 @@ composer require starship/system starship/generator
 
 ## 常用 CLI
 
+### 项目安装
+
+| 命令 | 说明 |
+|------|------|
+| `php artisan starship:install` | 安装引导：环境检测、写库配置、migrate/seed、`storage:link`、写安装锁 |
+
+也可在管理端打开 `/install`（未安装时路由守卫会强制进入）。详见开发仓 [install-wizard.md](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/install-wizard.md)。
+
 ### 模块
 
 | 命令 | 说明 |

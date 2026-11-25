@@ -282,21 +282,23 @@ skeleton 的 `backend/` **不应**包含 System 的业务路由或 Controller。
 
 ## 9. 初始化流程（skeleton 使用者）
 
+推荐走安装引导（Web `/install` 或 CLI），详见 [install-wizard.md](../deployment/install-wizard.md)：
+
 ```bash
 cd my-admin/backend
 
 cp .env.example .env
 composer install
 php artisan key:generate
-php artisan migrate --seed
-php artisan storage:link
+php artisan starship:install
+# 或：php artisan starship:install --force --skip-database-config --admin-password=...
 
 # 插件（可选；安装会自动发现）
 php artisan starship:plugin:install sms-aliyun
 php artisan starship:plugin:enable sms-aliyun
 ```
 
-前端在 `apps/admin/` 单独 `pnpm install && pnpm dev`。
+前端在 `apps/admin/` 单独 `pnpm install && pnpm dev`；未安装时打开管理端会进入 `/install`。
 
 ---
 

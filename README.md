@@ -48,13 +48,10 @@ cd my-admin/backend
 composer install
 cp .env.example .env          # Windows: copy .env.example .env
 php artisan key:generate
-# 编辑 .env：配置数据库等
-php artisan migrate --seed
-php artisan storage:link      # 附件 public 磁盘
 php artisan serve             # http://127.0.0.1:8000
 ```
 
-**③ 启动前端**
+**③ 启动前端并完成安装引导**
 
 ```bash
 cd ../apps/admin
@@ -62,17 +59,28 @@ pnpm install
 pnpm dev:antd                 # http://localhost:5666
 ```
 
-Windows 也可在仓库根目录双击 `start-dev.bat`，同时拉起前后端。
+打开管理端会进入 **安装引导**（环境检测 → 数据库配置 → 初始化 → 完成）。也可用 CLI：
+
+```bash
+cd ../backend
+php artisan starship:install
+# 非交互（沿用当前 .env）：
+# php artisan starship:install --force --skip-database-config --admin-password=your-password
+```
+
+Windows 也可在仓库根目录双击 `start-dev.bat`，同时拉起前后端后再走安装引导。
+
+高级用户仍可手动 `php artisan migrate --seed && php artisan storage:link`，但需自行写入安装锁 `backend/storage/app/starship.installed`（见 [install-wizard.md](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/install-wizard.md)）。
 
 **④ 打开并确认**
 
 | 服务 | 地址 |
 |------|------|
-| 管理端 | http://localhost:5666 |
+| 管理端 / 安装引导 | http://localhost:5666 （未安装时自动进入 `/install`） |
 | 后端 API | http://127.0.0.1:8000/admin-api |
 | 健康检查 | `GET /admin-api/ping` |
 
-用 seed 账号登录后台；能进首页、看到菜单，即环境就绪。
+用安装时设置的超级管理员登录；能进首页、看到菜单，即环境就绪。
 
 ### 1.3 开始写业务
 
@@ -986,6 +994,7 @@ php artisan storage:link
 | [Module 开发规范](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/Starship_Module_开发规范.md) | 模块规范 |
 | [Plugin 开发规范](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/Starship_Plugin_开发规范.md) | 插件规范 |
 | [Theme 开发规范](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/Starship_Theme_开发规范.md) | 主题规范 |
+| [install-wizard.md](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/install-wizard.md) | 项目安装引导（Web + CLI） |
 | [module-cli.md](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/module-cli.md) / [plugin-cli.md](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/plugin-cli.md) | CLI |
 | [generator/cli.md](https://github.com/alin40404/starship-admin/blob/master/docs/generator/cli.md) | 代码生成 CLI |
 | [权限与菜单](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/Starship_权限与菜单体系设计方案.md) | RBAC |

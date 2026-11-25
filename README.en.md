@@ -48,13 +48,10 @@ cd my-admin/backend
 composer install
 cp .env.example .env          # Windows: copy .env.example .env
 php artisan key:generate
-# Edit .env (database, etc.)
-php artisan migrate --seed
-php artisan storage:link      # public disk for attachments
 php artisan serve             # http://127.0.0.1:8000
 ```
 
-**③ Frontend**
+**③ Frontend + install wizard**
 
 ```bash
 cd ../apps/admin
@@ -62,17 +59,28 @@ pnpm install
 pnpm dev:antd                 # http://localhost:5666
 ```
 
-On Windows you can also double-click `start-dev.bat` at the repo root to start both.
+Opening the admin UI starts the **install wizard** (requirements → database → initialize → done). Or use the CLI:
+
+```bash
+cd ../backend
+php artisan starship:install
+# Non-interactive (reuse current .env):
+# php artisan starship:install --force --skip-database-config --admin-password=your-password
+```
+
+On Windows you can also double-click `start-dev.bat` at the repo root, then finish the wizard.
+
+Advanced users may still run `php artisan migrate --seed && php artisan storage:link`, but must create the install lock at `backend/storage/app/starship.installed` (see [install-wizard.md](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/install-wizard.md)).
 
 **④ Verify**
 
 | Service | URL |
 |---------|-----|
-| Admin UI | http://localhost:5666 |
+| Admin UI / Install | http://localhost:5666 (auto `/install` when not installed) |
 | Backend API | http://127.0.0.1:8000/admin-api |
 | Health check | `GET /admin-api/ping` |
 
-Sign in with the seeded admin account. If you can open the dashboard and see menus, you are ready.
+Sign in with the admin account created during install. If you can open the dashboard and see menus, you are ready.
 
 ### 1.3 Start building features
 
@@ -761,6 +769,7 @@ Detailed docs live under `docs/` on the develop branch `master` (not shipped in 
 | [Module guide](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/Starship_Module_开发规范.md) | Modules |
 | [Plugin guide](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/Starship_Plugin_开发规范.md) | Plugins |
 | [Theme guide](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/Starship_Theme_开发规范.md) | Themes |
+| [install-wizard.md](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/install-wizard.md) | Install wizard (Web + CLI) |
 | [module-cli.md](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/module-cli.md) / [plugin-cli.md](https://github.com/alin40404/starship-admin/blob/master/docs/deployment/plugin-cli.md) | CLI |
 | [generator/cli.md](https://github.com/alin40404/starship-admin/blob/master/docs/generator/cli.md) | Generator CLI |
 | [docs/api/](https://github.com/alin40404/starship-admin/blob/master/docs/api/) | Routes & permissions |

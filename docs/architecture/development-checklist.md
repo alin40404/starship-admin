@@ -30,6 +30,7 @@
 | Module 依赖校验 | ✅ | `require.modules` 启动时校验 |
 | Plugin 发现 / 安装 / 启用 / 禁用 | ✅ | CLI + System 管理端 |
 | Plugin 卸载 CLI | ✅ | `starship:plugin:uninstall` |
+| `starship:install` / Web `/install` | ✅ | 项目安装引导（环境检测 / 库配置 / migrate+seed / 锁） |
 | `starship:module:make` | ✅ | 模块脚手架 |
 | `starship:plugin:make` | ✅ | 插件脚手架 |
 | Generator 端到端 Demo | ✅ | `sa_demo_products` 表 + CLI 全流程已验收 |

@@ -7,6 +7,9 @@ import { $t } from '#/locales';
 
 const BasicLayout = () => import('#/layouts/basic.vue');
 const AuthPageLayout = () => import('#/layouts/auth.vue');
+
+export const INSTALL_PATH = '/install';
+
 /** 全局404页面 */
 const fallbackNotFoundRoute: RouteRecordRaw = {
   component: () => import('#/views/_core/fallback/not-found.vue'),
@@ -49,6 +52,18 @@ const coreRoutes: RouteRecordRaw[] = [
         },
       },
     ],
+  },
+  {
+    name: 'Install',
+    path: INSTALL_PATH,
+    component: () => import('#/views/_core/install/index.vue'),
+    meta: {
+      hideInBreadcrumb: true,
+      hideInMenu: true,
+      hideInTab: true,
+      ignoreAccess: true,
+      title: $t('install.title'),
+    },
   },
   {
     component: AuthPageLayout,

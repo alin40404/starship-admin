@@ -78,7 +78,7 @@
             "composer install",
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
             "@php artisan key:generate",
-            "@php artisan migrate --force",
+            "@php artisan starship:install --force --skip-database-config",
             "npm install --ignore-scripts",
             "npm run build"
         ],

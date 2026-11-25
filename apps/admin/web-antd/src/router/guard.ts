@@ -6,7 +6,9 @@ import { useAccessStore, useUserStore } from '@vben/stores';
 import { startProgress, stopProgress } from '@vben/utils';
 
 import { accessRoutes, coreRouteNames } from '#/router/routes';
+import { INSTALL_PATH } from '#/router/routes/core';
 import { useAuthStore } from '#/store';
+import { resolveInstallStatus } from '#/utils/install-status';
 
 import { generateAccess } from './access';
 
@@ -41,6 +43,31 @@ function setupCommonGuard(router: Router) {
 }
 
 /**
+ * 未安装时强制进入安装引导；已安装则禁止再访问 /install。
+ */
+function setupInstallGuard(router: Router) {
+  router.beforeEach(async (to) => {
+    const installed = await resolveInstallStatus();
+
+    if (installed === false && to.path !== INSTALL_PATH) {
+      return {
+        path: INSTALL_PATH,
+        replace: true,
+      };
+    }
+
+    if (installed === true && to.path === INSTALL_PATH) {
+      return {
+        path: LOGIN_PATH,
+        replace: true,
+      };
+    }
+
+    return true;
+  });
+}
+
+/**
  * 权限访问守卫配置
  * @param router
  */
@@ -49,6 +76,11 @@ function setupAccessGuard(router: Router) {
     const accessStore = useAccessStore();
     const userStore = useUserStore();
     const authStore = useAuthStore();
+
+    // 安装页：跳过登录鉴权
+    if (to.path === INSTALL_PATH || to.name === 'Install') {
+      return true;
+    }
 
     // 基本路由，这些路由不需要进入权限拦截
     if (coreRouteNames.includes(to.name as string)) {
@@ -138,6 +170,8 @@ function setupAccessGuard(router: Router) {
 function createRouterGuard(router: Router) {
   /** 通用 */
   setupCommonGuard(router);
+  /** 安装引导 */
+  setupInstallGuard(router);
   /** 权限访问 */
   setupAccessGuard(router);
 }

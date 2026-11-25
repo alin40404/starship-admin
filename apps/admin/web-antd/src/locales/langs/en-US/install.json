@@ -1,0 +1,56 @@
+{
+  "title": "Installation",
+  "subtitle": "Check the environment, configure the database, and initialize data",
+  "steps": {
+    "requirements": "Requirements",
+    "database": "Database",
+    "install": "Install",
+    "done": "Done"
+  },
+  "requirements": {
+    "php": "PHP version",
+    "extensions": "PHP extensions",
+    "directories": "Writable directories",
+    "required": "Required",
+    "optional": "Optional",
+    "passed": "Passed",
+    "failed": "Failed",
+    "reload": "Recheck",
+    "next": "Next",
+    "hint": "Fix failed items before continuing"
+  },
+  "database": {
+    "connection": "Database driver",
+    "host": "Host",
+    "port": "Port",
+    "name": "Database name",
+    "sqlitePath": "SQLite file path",
+    "username": "Username",
+    "password": "Password",
+    "prefix": "Table prefix",
+    "appUrl": "App URL",
+    "cors": "CORS origins (optional, comma-separated)",
+    "testAndSave": "Save & test connection",
+    "back": "Back",
+    "mysql": "MySQL",
+    "sqlite": "SQLite",
+    "pgsql": "PostgreSQL"
+  },
+  "install": {
+    "adminUsername": "Admin username",
+    "adminPassword": "Admin password",
+    "adminPasswordConfirm": "Confirm password",
+    "adminEmail": "Admin email",
+    "run": "Start installation",
+    "running": "Installing, please wait…",
+    "back": "Back",
+    "passwordMismatch": "Passwords do not match",
+    "passwordMin": "Password must be at least 6 characters"
+  },
+  "done": {
+    "success": "Installation complete",
+    "desc": "The database and seed data are ready. Sign in with the admin account.",
+    "username": "Admin username",
+    "goLogin": "Go to login"
+  }
+}

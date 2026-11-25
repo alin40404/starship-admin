@@ -23,14 +23,16 @@ class AdminSeeder extends Seeder
         }
 
         $role = Role::query()->where('code', 'super_admin')->first();
+        $username = trim((string) env('SYSTEM_ADMIN_USERNAME', 'admin')) ?: 'admin';
         $password = (string) env('SYSTEM_ADMIN_PASSWORD', 'admin123');
+        $email = trim((string) env('SYSTEM_ADMIN_EMAIL', 'admin@starship.org')) ?: 'admin@starship.org';
 
         $admin = Admin::query()->updateOrCreate(
-            ['username' => 'admin'],
+            ['username' => $username],
             [
                 'nickname' => '超级管理员',
                 'password' => $password,
-                'email' => 'admin@starship.org',
+                'email' => $email,
                 'mobile' => '13800000000',
                 'dept_id' => $dept->id,
                 'status' => 1,
