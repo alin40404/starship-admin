@@ -30,16 +30,29 @@ class InstallController extends Controller
 
     public function database(Request $request, InstallService $install): JsonResponse
     {
+        $connection = strtolower((string) $request->input('connection', ''));
+        $serverRequired = in_array($connection, ['mysql', 'pgsql'], true);
+
         $validator = Validator::make($request->all(), [
             'connection' => ['required', 'string', 'in:mysql,sqlite,pgsql'],
-            'host' => ['nullable', 'string', 'max:255'],
-            'port' => ['nullable'],
-            'database' => ['nullable', 'string', 'max:255'],
-            'username' => ['nullable', 'string', 'max:255'],
+            'host' => [$serverRequired ? 'required' : 'nullable', 'string', 'max:255'],
+            'port' => [$serverRequired ? 'required' : 'nullable', 'numeric'],
+            'database' => ['required', 'string', 'max:255'],
+            'username' => [$serverRequired ? 'required' : 'nullable', 'string', 'max:255'],
             'password' => ['nullable', 'string', 'max:255'],
             'prefix' => ['nullable', 'string', 'max:32'],
-            'app_url' => ['nullable', 'string', 'max:255'],
+            'app_url' => ['required', 'string', 'url', 'max:255'],
             'cors_allowed_origins' => ['nullable', 'string', 'max:2000'],
+        ], [
+            'connection.required' => '请选择数据库类型',
+            'connection.in' => '不支持的数据库类型',
+            'host.required' => '请填写数据库主机',
+            'port.required' => '请填写数据库端口',
+            'port.numeric' => '数据库端口必须是数字',
+            'database.required' => $connection === 'sqlite' ? '请填写 SQLite 文件路径' : '请填写数据库名',
+            'username.required' => '请填写数据库用户名',
+            'app_url.required' => '请填写站点 URL',
+            'app_url.url' => '站点 URL 格式不正确',
         ]);
 
         if ($validator->fails()) {
@@ -60,9 +73,15 @@ class InstallController extends Controller
     public function run(Request $request, InstallService $install): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'username' => ['nullable', 'string', 'max:64'],
+            'username' => ['required', 'string', 'max:64'],
             'password' => ['required', 'string', 'min:6', 'max:64'],
-            'email' => ['nullable', 'email', 'max:255'],
+            'email' => ['required', 'email', 'max:255'],
+        ], [
+            'username.required' => '请填写超级管理员用户名',
+            'password.required' => '请填写超级管理员密码',
+            'password.min' => '超级管理员密码至少 6 位',
+            'email.required' => '请填写超级管理员邮箱',
+            'email.email' => '超级管理员邮箱格式不正确',
         ]);
 
         if ($validator->fails()) {

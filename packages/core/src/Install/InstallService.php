@@ -73,11 +73,19 @@ class InstallService
             throw new InvalidArgumentException('不支持的数据库类型：'.$connection);
         }
 
+        $appUrl = trim((string) ($config['app_url'] ?? ''));
+        if ($appUrl === '') {
+            throw new InvalidArgumentException('请填写站点 URL');
+        }
+        if (filter_var($appUrl, FILTER_VALIDATE_URL) === false) {
+            throw new InvalidArgumentException('站点 URL 格式不正确');
+        }
+
         $this->envWriter->ensureEnvFile();
 
         $values = [
             'DB_CONNECTION' => $connection,
-            'APP_URL' => (string) ($config['app_url'] ?? config('app.url', 'http://127.0.0.1:8000')),
+            'APP_URL' => $appUrl,
         ];
 
         if (! empty($config['cors_allowed_origins'])) {
@@ -85,7 +93,10 @@ class InstallService
         }
 
         if ($connection === 'sqlite') {
-            $database = (string) ($config['database'] ?? 'database/database.sqlite');
+            $database = trim((string) ($config['database'] ?? ''));
+            if ($database === '') {
+                throw new InvalidArgumentException('请填写 SQLite 文件路径');
+            }
             $absolute = $this->resolveSqlitePath($database);
             File::ensureDirectoryExists(dirname($absolute));
             if (! File::exists($absolute)) {
@@ -98,15 +109,31 @@ class InstallService
             $values['DB_USERNAME'] = null;
             $values['DB_PASSWORD'] = null;
         } else {
+            $host = trim((string) ($config['host'] ?? ''));
+            $port = trim((string) ($config['port'] ?? ''));
             $database = trim((string) ($config['database'] ?? ''));
+            $username = trim((string) ($config['username'] ?? ''));
+
+            if ($host === '') {
+                throw new InvalidArgumentException('请填写数据库主机');
+            }
+            if ($port === '') {
+                throw new InvalidArgumentException('请填写数据库端口');
+            }
+            if (! is_numeric($port)) {
+                throw new InvalidArgumentException('数据库端口必须是数字');
+            }
             if ($database === '') {
                 throw new InvalidArgumentException('请填写数据库名');
             }
+            if ($username === '') {
+                throw new InvalidArgumentException('请填写数据库用户名');
+            }
 
-            $values['DB_HOST'] = (string) ($config['host'] ?? '127.0.0.1');
-            $values['DB_PORT'] = (string) ($config['port'] ?? ($connection === 'pgsql' ? '5432' : '3306'));
+            $values['DB_HOST'] = $host;
+            $values['DB_PORT'] = $port;
             $values['DB_DATABASE'] = $database;
-            $values['DB_USERNAME'] = (string) ($config['username'] ?? 'root');
+            $values['DB_USERNAME'] = $username;
             $values['DB_PASSWORD'] = (string) ($config['password'] ?? '');
         }
 
@@ -144,7 +171,11 @@ class InstallService
             throw new RuntimeException('环境检测未通过，无法继续安装');
         }
 
-        $username = trim((string) ($admin['username'] ?? 'admin')) ?: 'admin';
+        $username = trim((string) ($admin['username'] ?? ''));
+        if ($username === '') {
+            throw new InvalidArgumentException('请填写超级管理员用户名');
+        }
+
         $password = (string) ($admin['password'] ?? '');
         if ($password === '') {
             throw new InvalidArgumentException('请设置超级管理员密码');
@@ -153,9 +184,12 @@ class InstallService
             throw new InvalidArgumentException('超级管理员密码至少 6 位');
         }
 
-        $email = trim((string) ($admin['email'] ?? 'admin@starship.org'));
+        $email = trim((string) ($admin['email'] ?? ''));
         if ($email === '') {
-            $email = 'admin@starship.org';
+            throw new InvalidArgumentException('请填写超级管理员邮箱');
+        }
+        if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+            throw new InvalidArgumentException('超级管理员邮箱格式不正确');
         }
 
         $this->ensureAppKey();

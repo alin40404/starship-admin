@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { InstallApi } from '#/api/core/install';
+import type { FormInstance, Rule } from 'ant-design-vue/es/form';
 
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -42,6 +43,8 @@ const loading = ref(false);
 const requirementsLoading = ref(false);
 const requirements = ref<InstallApi.Requirements | null>(null);
 const adminUsername = ref('admin');
+const dbFormRef = ref<FormInstance>();
+const adminFormRef = ref<FormInstance>();
 
 const dbForm = reactive({
   connection: 'mysql' as InstallApi.DatabaseParams['connection'],
@@ -76,6 +79,98 @@ const connectionOptions = computed(() => [
 ]);
 
 const isSqlite = computed(() => dbForm.connection === 'sqlite');
+
+const dbRules = computed<Record<string, Rule[]>>(() => {
+  const rules: Record<string, Rule[]> = {
+    connection: [
+      {
+        required: true,
+        message: $t('install.database.requiredConnection'),
+      },
+    ],
+    app_url: [
+      {
+        required: true,
+        message: $t('install.database.requiredAppUrl'),
+      },
+      {
+        type: 'url',
+        message: $t('install.database.invalidAppUrl'),
+      },
+    ],
+    database: [
+      {
+        required: true,
+        message: isSqlite.value
+          ? $t('install.database.requiredSqlitePath')
+          : $t('install.database.requiredName'),
+      },
+    ],
+  };
+
+  if (!isSqlite.value) {
+    rules.host = [
+      { required: true, message: $t('install.database.requiredHost') },
+    ];
+    rules.port = [
+      { required: true, message: $t('install.database.requiredPort') },
+      {
+        pattern: /^\d+$/,
+        message: $t('install.database.invalidPort'),
+      },
+    ];
+    rules.username = [
+      {
+        required: true,
+        message: $t('install.database.requiredUsername'),
+      },
+    ];
+  }
+
+  return rules;
+});
+
+const adminRules = computed<Record<string, Rule[]>>(() => ({
+  username: [
+    {
+      required: true,
+      message: $t('install.install.requiredUsername'),
+    },
+  ],
+  email: [
+    {
+      required: true,
+      message: $t('install.install.requiredEmail'),
+    },
+    {
+      type: 'email',
+      message: $t('install.install.invalidEmail'),
+    },
+  ],
+  password: [
+    {
+      required: true,
+      message: $t('install.install.requiredPassword'),
+    },
+    {
+      min: 6,
+      message: $t('install.install.passwordMin'),
+    },
+  ],
+  passwordConfirm: [
+    {
+      required: true,
+      message: $t('install.install.requiredPasswordConfirm'),
+    },
+    {
+      validator: async (_rule, value: string) => {
+        if (value !== adminForm.password) {
+          throw new Error($t('install.install.passwordMismatch'));
+        }
+      },
+    },
+  ],
+}));
 
 /** 上下表共用同一套百分比列宽（合计 100%），才能竖线对齐 */
 const REQUIREMENT_COL_WIDTHS = {
@@ -169,22 +264,28 @@ async function onRequirementsNext() {
 }
 
 async function onSaveDatabase() {
+  try {
+    await dbFormRef.value?.validate();
+  } catch {
+    return;
+  }
+
   loading.value = true;
   try {
     const payload: InstallApi.DatabaseParams = {
       connection: dbForm.connection,
-      app_url: dbForm.app_url,
+      app_url: dbForm.app_url.trim(),
       prefix: dbForm.prefix,
       cors_allowed_origins: dbForm.cors_allowed_origins || undefined,
     };
 
     if (dbForm.connection === 'sqlite') {
-      payload.database = dbForm.database || 'database/database.sqlite';
+      payload.database = dbForm.database.trim();
     } else {
-      payload.host = dbForm.host;
-      payload.port = dbForm.port;
-      payload.database = dbForm.database;
-      payload.username = dbForm.username;
+      payload.host = dbForm.host.trim();
+      payload.port = dbForm.port.trim();
+      payload.database = dbForm.database.trim();
+      payload.username = dbForm.username.trim();
       payload.password = dbForm.password;
     }
 
@@ -197,21 +298,18 @@ async function onSaveDatabase() {
 }
 
 async function onRunInstall() {
-  if (adminForm.password.length < 6) {
-    message.error($t('install.install.passwordMin'));
-    return;
-  }
-  if (adminForm.password !== adminForm.passwordConfirm) {
-    message.error($t('install.install.passwordMismatch'));
+  try {
+    await adminFormRef.value?.validate();
+  } catch {
     return;
   }
 
   loading.value = true;
   try {
     const result = await runInstall({
-      username: adminForm.username,
+      username: adminForm.username.trim(),
       password: adminForm.password,
-      email: adminForm.email,
+      email: adminForm.email.trim(),
     });
     adminUsername.value = result.admin_username;
     setCachedInstallStatus(true);
@@ -236,6 +334,7 @@ function onConnectionChange(value: InstallApi.DatabaseParams['connection']) {
       dbForm.database = 'starship_admin';
     }
   }
+  void dbFormRef.value?.clearValidate();
 }
 
 function goLogin() {
@@ -411,8 +510,17 @@ onMounted(() => {
         </template>
 
         <template v-else-if="current === 1">
-          <Form layout="vertical">
-            <FormItem :label="$t('install.database.connection')">
+          <Form
+            ref="dbFormRef"
+            layout="vertical"
+            :model="dbForm"
+            :rules="dbRules"
+          >
+            <FormItem
+              name="connection"
+              required
+              :label="$t('install.database.connection')"
+            >
               <Select
                 :options="connectionOptions"
                 :value="dbForm.connection"
@@ -426,21 +534,41 @@ onMounted(() => {
             </FormItem>
 
             <template v-if="isSqlite">
-              <FormItem :label="$t('install.database.sqlitePath')">
+              <FormItem
+                name="database"
+                required
+                :label="$t('install.database.sqlitePath')"
+              >
                 <Input v-model:value="dbForm.database" />
               </FormItem>
             </template>
             <template v-else>
-              <FormItem :label="$t('install.database.host')">
+              <FormItem
+                name="host"
+                required
+                :label="$t('install.database.host')"
+              >
                 <Input v-model:value="dbForm.host" />
               </FormItem>
-              <FormItem :label="$t('install.database.port')">
+              <FormItem
+                name="port"
+                required
+                :label="$t('install.database.port')"
+              >
                 <Input v-model:value="dbForm.port" />
               </FormItem>
-              <FormItem :label="$t('install.database.name')">
+              <FormItem
+                name="database"
+                required
+                :label="$t('install.database.name')"
+              >
                 <Input v-model:value="dbForm.database" />
               </FormItem>
-              <FormItem :label="$t('install.database.username')">
+              <FormItem
+                name="username"
+                required
+                :label="$t('install.database.username')"
+              >
                 <Input v-model:value="dbForm.username" />
               </FormItem>
               <FormItem :label="$t('install.database.password')">
@@ -451,7 +579,11 @@ onMounted(() => {
             <FormItem :label="$t('install.database.prefix')">
               <Input v-model:value="dbForm.prefix" />
             </FormItem>
-            <FormItem :label="$t('install.database.appUrl')">
+            <FormItem
+              name="app_url"
+              required
+              :label="$t('install.database.appUrl')"
+            >
               <Input v-model:value="dbForm.app_url" />
             </FormItem>
             <FormItem :label="$t('install.database.cors')">
@@ -480,17 +612,38 @@ onMounted(() => {
             :message="$t('install.install.running')"
           />
 
-          <Form layout="vertical">
-            <FormItem :label="$t('install.install.adminUsername')">
+          <Form
+            ref="adminFormRef"
+            layout="vertical"
+            :model="adminForm"
+            :rules="adminRules"
+          >
+            <FormItem
+              name="username"
+              required
+              :label="$t('install.install.adminUsername')"
+            >
               <Input v-model:value="adminForm.username" />
             </FormItem>
-            <FormItem :label="$t('install.install.adminEmail')">
+            <FormItem
+              name="email"
+              required
+              :label="$t('install.install.adminEmail')"
+            >
               <Input v-model:value="adminForm.email" />
             </FormItem>
-            <FormItem :label="$t('install.install.adminPassword')">
+            <FormItem
+              name="password"
+              required
+              :label="$t('install.install.adminPassword')"
+            >
               <InputPassword v-model:value="adminForm.password" />
             </FormItem>
-            <FormItem :label="$t('install.install.adminPasswordConfirm')">
+            <FormItem
+              name="passwordConfirm"
+              required
+              :label="$t('install.install.adminPasswordConfirm')"
+            >
               <InputPassword v-model:value="adminForm.passwordConfirm" />
             </FormItem>
           </Form>
@@ -594,6 +747,25 @@ onMounted(() => {
 .install-page__card {
   background: hsl(var(--card, var(--background)));
   box-shadow: 0 1px 2px hsl(var(--foreground) / 6%);
+}
+
+.install-page__card :deep(.ant-form-vertical .ant-form-item-label) {
+  padding: 0;
+}
+
+/* 必填星号：字段名前方，13px 档 */
+.install-page__card
+  :deep(
+    .ant-form-item-label
+      > label.ant-form-item-required:not(.ant-form-item-required-mark-optional)::before
+  ) {
+  font-size: var(--admin-font-control, calc(var(--font-size-base) * 13 / 16));
+}
+
+/* 校验错误提示：对齐 FormMessage 12px 档 */
+.install-page__card :deep(.ant-form-item-explain),
+.install-page__card :deep(.ant-form-item-extra) {
+  font-size: calc(var(--font-size-base) * 12 / 16);
 }
 
 .install-page__section-title {

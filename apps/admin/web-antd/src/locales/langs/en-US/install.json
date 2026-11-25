@@ -40,7 +40,16 @@
     "back": "Back",
     "mysql": "MySQL",
     "sqlite": "SQLite",
-    "pgsql": "PostgreSQL"
+    "pgsql": "PostgreSQL",
+    "requiredConnection": "Please select a database driver",
+    "requiredHost": "Please enter the host",
+    "requiredPort": "Please enter the port",
+    "requiredName": "Please enter the database name",
+    "requiredSqlitePath": "Please enter the SQLite file path",
+    "requiredUsername": "Please enter the username",
+    "requiredAppUrl": "Please enter the app URL",
+    "invalidAppUrl": "Invalid app URL",
+    "invalidPort": "Port must be a number"
   },
   "install": {
     "adminUsername": "Admin username",
@@ -51,7 +60,12 @@
     "running": "Installing, please wait…",
     "back": "Back",
     "passwordMismatch": "Passwords do not match",
-    "passwordMin": "Password must be at least 6 characters"
+    "passwordMin": "Password must be at least 6 characters",
+    "requiredUsername": "Please enter the admin username",
+    "requiredEmail": "Please enter the admin email",
+    "invalidEmail": "Invalid email address",
+    "requiredPassword": "Please enter the admin password",
+    "requiredPasswordConfirm": "Please confirm the password"
   },
   "done": {
     "success": "Installation complete",

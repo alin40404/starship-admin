@@ -40,7 +40,16 @@
     "back": "上一步",
     "mysql": "MySQL",
     "sqlite": "SQLite",
-    "pgsql": "PostgreSQL"
+    "pgsql": "PostgreSQL",
+    "requiredConnection": "请选择数据库类型",
+    "requiredHost": "请填写主机",
+    "requiredPort": "请填写端口",
+    "requiredName": "请填写数据库名",
+    "requiredSqlitePath": "请填写 SQLite 文件路径",
+    "requiredUsername": "请填写用户名",
+    "requiredAppUrl": "请填写站点 URL",
+    "invalidAppUrl": "站点 URL 格式不正确",
+    "invalidPort": "端口必须是数字"
   },
   "install": {
     "adminUsername": "超级管理员用户名",
@@ -51,7 +60,12 @@
     "running": "正在安装，请稍候…",
     "back": "上一步",
     "passwordMismatch": "两次输入的密码不一致",
-    "passwordMin": "密码至少 6 位"
+    "passwordMin": "密码至少 6 位",
+    "requiredUsername": "请填写超级管理员用户名",
+    "requiredEmail": "请填写超级管理员邮箱",
+    "invalidEmail": "邮箱格式不正确",
+    "requiredPassword": "请填写超级管理员密码",
+    "requiredPasswordConfirm": "请再次输入密码"
   },
   "done": {
     "success": "安装完成",

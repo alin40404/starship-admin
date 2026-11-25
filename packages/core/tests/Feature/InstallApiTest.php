@@ -57,10 +57,27 @@ class InstallApiTest extends TestCase
         $this->postJson('/admin-api/install/database', [
             'connection' => 'sqlite',
             'database' => ':memory:',
+            'app_url' => 'http://127.0.0.1:8000',
         ])->assertStatus(403);
 
         $this->postJson('/admin-api/install/run', [
+            'username' => 'admin',
             'password' => 'secret123',
+            'email' => 'admin@starship.org',
         ])->assertStatus(403);
+    }
+
+    public function test_database_requires_core_fields(): void
+    {
+        $this->postJson('/admin-api/install/database', [
+            'connection' => 'mysql',
+        ])->assertStatus(422);
+    }
+
+    public function test_run_requires_admin_fields(): void
+    {
+        $this->postJson('/admin-api/install/run', [
+            'password' => 'secret123',
+        ])->assertStatus(422);
     }
 }
