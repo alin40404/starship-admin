@@ -1,0 +1,34 @@
+---
+description: Git 提交说明须使用中文
+alwaysApply: true
+---
+
+# Git 提交说明（中文）
+
+本仓库 **commit message 一律使用中文**（含标题与正文）。用户明确要求英文时除外。
+
+## 格式
+
+- **标题**：一句概括「为什么改」，常用前缀 `feat:` / `fix:` / `refactor:` / `chore:` / `docs:`，前缀后可接中文
+- **正文**（可选）：补充背景、影响范围、注意事项
+- **禁止**：整段英文标题（如 `feat(i18n): add frontend menu locale keys`）
+
+## 示例
+
+```
+feat(i18n): 添加前端菜单 locale key
+
+菜单标题通过 system.menu.{name} 解析，无翻译时 fallback 到 DB title；代码生成时自动 merge 到 system.json。
+```
+
+```
+fix(monitor): 修复异常日志提示文案乱码
+
+恢复 UTF-8 中文并改用 monitor::messages.log_hint。
+```
+
+## Agent 执行提交时
+
+1. 先 `git status` / `git diff` 理解改动
+2. 用中文撰写 message（HEREDOC 或 PowerShell here-string 均可）
+3. 仅在用户明确要求时 `--amend` 或 `push`
