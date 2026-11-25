@@ -73,11 +73,14 @@ class InstallController extends Controller
     public function run(Request $request, InstallService $install): JsonResponse
     {
         $validator = Validator::make($request->all(), [
+            'step' => ['required', 'string', 'in:prepare,migrate,seed,finalize'],
             'site_name' => ['required', 'string', 'max:64'],
             'username' => ['required', 'string', 'max:64'],
             'password' => ['required', 'string', 'min:6', 'max:64'],
             'email' => ['required', 'email', 'max:255'],
         ], [
+            'step.required' => '请指定安装步骤',
+            'step.in' => '不支持的安装步骤',
             'site_name.required' => '请填写站点名称',
             'username.required' => '请填写超级管理员用户名',
             'password.required' => '请填写超级管理员密码',
@@ -90,10 +93,15 @@ class InstallController extends Controller
             return ApiResponse::error($validator->errors()->first(), 422);
         }
 
-        try {
-            $result = $install->runInstall($validator->validated());
+        $payload = $validator->validated();
+        $step = (string) $payload['step'];
+        unset($payload['step']);
 
-            return ApiResponse::success($result, '安装完成');
+        try {
+            $result = $install->runInstallStep($step, $payload);
+            $message = ($result['installed'] ?? false) ? '安装完成' : '步骤完成：'.$step;
+
+            return ApiResponse::success($result, $message);
         } catch (InvalidArgumentException|RuntimeException $exception) {
             return ApiResponse::error($exception->getMessage(), 422);
         } catch (Throwable $exception) {

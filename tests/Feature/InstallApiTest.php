@@ -61,6 +61,7 @@ class InstallApiTest extends TestCase
         ])->assertStatus(403);
 
         $this->postJson('/admin-api/install/run', [
+            'step' => 'prepare',
             'site_name' => 'Starship Admin',
             'username' => 'admin',
             'password' => 'secret123',
@@ -79,6 +80,16 @@ class InstallApiTest extends TestCase
     {
         $this->postJson('/admin-api/install/run', [
             'password' => 'secret123',
+        ])->assertStatus(422);
+    }
+
+    public function test_run_requires_step(): void
+    {
+        $this->postJson('/admin-api/install/run', [
+            'site_name' => 'Starship Admin',
+            'username' => 'admin',
+            'password' => 'secret123',
+            'email' => 'admin@starship.org',
         ])->assertStatus(422);
     }
 }
