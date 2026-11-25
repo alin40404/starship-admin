@@ -5,6 +5,7 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { LOGIN_PATH } from '@vben/constants';
+import { IconifyIcon } from '@vben/icons';
 import { preferences } from '@vben/preferences';
 
 import {
@@ -75,33 +76,79 @@ const connectionOptions = computed(() => [
 
 const isSqlite = computed(() => dbForm.connection === 'sqlite');
 
-const extensionColumns = [
+/** 上下表共用同一套百分比列宽（合计 100%），才能竖线对齐 */
+const REQUIREMENT_COL_WIDTHS = {
+  first: '40%',
+  second: '40%',
+  status: '20%',
+  path: '80%',
+} as const;
+
+const phpColumns = computed(() => [
   {
-    title: 'Extension',
+    title: $t('install.requirements.minVersion'),
+    dataIndex: 'required',
+    key: 'required',
+    width: REQUIREMENT_COL_WIDTHS.first,
+  },
+  {
+    title: $t('install.requirements.currentVersion'),
+    dataIndex: 'current',
+    key: 'current',
+    width: REQUIREMENT_COL_WIDTHS.second,
+  },
+  {
+    title: $t('install.requirements.status'),
+    key: 'status',
+    width: REQUIREMENT_COL_WIDTHS.status,
+  },
+]);
+
+const phpRows = computed(() =>
+  requirements.value
+    ? [
+        {
+          key: 'php',
+          required: requirements.value.php.required,
+          current: requirements.value.php.current,
+          passed: requirements.value.php.passed,
+        },
+      ]
+    : [],
+);
+
+const extensionColumns = computed(() => [
+  {
+    title: $t('install.requirements.extension'),
     dataIndex: 'name',
     key: 'name',
+    width: REQUIREMENT_COL_WIDTHS.first,
   },
   {
-    title: 'Type',
+    title: $t('install.requirements.type'),
     key: 'type',
+    width: REQUIREMENT_COL_WIDTHS.second,
   },
   {
-    title: 'Status',
+    title: $t('install.requirements.status'),
     key: 'status',
+    width: REQUIREMENT_COL_WIDTHS.status,
   },
-];
+]);
 
-const directoryColumns = [
+const directoryColumns = computed(() => [
   {
-    title: 'Path',
+    title: $t('install.requirements.path'),
     dataIndex: 'path',
     key: 'path',
+    width: REQUIREMENT_COL_WIDTHS.path,
   },
   {
-    title: 'Status',
+    title: $t('install.requirements.status'),
     key: 'status',
+    width: REQUIREMENT_COL_WIDTHS.status,
   },
-];
+]);
 
 async function loadRequirements() {
   loading.value = true;
@@ -228,23 +275,38 @@ onMounted(() => {
           />
 
           <div v-if="requirements" class="space-y-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <div class="install-page__section-title">
-                  {{ $t('install.requirements.php') }}
-                </div>
-                <div class="text-muted-foreground">
-                  {{ requirements.php.required }} /
-                  {{ requirements.php.current }}
-                </div>
+            <div>
+              <div class="install-page__section-title mb-2">
+                {{ $t('install.requirements.php') }}
               </div>
-              <Tag :color="requirements.php.passed ? 'success' : 'error'">
-                {{
-                  requirements.php.passed
-                    ? $t('install.requirements.passed')
-                    : $t('install.requirements.failed')
-                }}
-              </Tag>
+              <Table
+                class="install-page__table install-page__table--3col"
+                bordered
+                :columns="phpColumns"
+                :data-source="phpRows"
+                :pagination="false"
+                row-key="key"
+                size="small"
+              >
+                <template #bodyCell="{ column, record }">
+                  <template v-if="column.key === 'status'">
+                    <IconifyIcon
+                      class="size-4"
+                      :class="
+                        record.passed
+                          ? 'text-success'
+                          : 'text-destructive'
+                      "
+                      :icon="record.passed ? 'lucide:check' : 'lucide:x'"
+                      :title="
+                        record.passed
+                          ? $t('install.requirements.passed')
+                          : $t('install.requirements.failed')
+                      "
+                    />
+                  </template>
+                </template>
+              </Table>
             </div>
 
             <div>
@@ -252,6 +314,8 @@ onMounted(() => {
                 {{ $t('install.requirements.extensions') }}
               </div>
               <Table
+                class="install-page__table install-page__table--3col"
+                bordered
                 :columns="extensionColumns"
                 :data-source="requirements.extensions"
                 :pagination="false"
@@ -259,7 +323,10 @@ onMounted(() => {
                 size="small"
               >
                 <template #bodyCell="{ column, record }">
-                  <template v-if="column.key === 'type'">
+                  <template v-if="column.key === 'name'">
+                    <Tag>{{ record.name }}</Tag>
+                  </template>
+                  <template v-else-if="column.key === 'type'">
                     {{
                       record.required
                         ? $t('install.requirements.required')
@@ -267,13 +334,22 @@ onMounted(() => {
                     }}
                   </template>
                   <template v-else-if="column.key === 'status'">
-                    <Tag :color="record.loaded ? 'success' : record.required ? 'error' : 'default'">
-                      {{
+                    <IconifyIcon
+                      class="size-4"
+                      :class="
+                        record.loaded
+                          ? 'text-success'
+                          : record.required
+                            ? 'text-destructive'
+                            : 'text-muted-foreground'
+                      "
+                      :icon="record.loaded ? 'lucide:check' : 'lucide:x'"
+                      :title="
                         record.loaded
                           ? $t('install.requirements.passed')
                           : $t('install.requirements.failed')
-                      }}
-                    </Tag>
+                      "
+                    />
                   </template>
                 </template>
               </Table>
@@ -284,6 +360,8 @@ onMounted(() => {
                 {{ $t('install.requirements.directories') }}
               </div>
               <Table
+                class="install-page__table install-page__table--2col"
+                bordered
                 :columns="directoryColumns"
                 :data-source="requirements.directories"
                 :pagination="false"
@@ -292,13 +370,20 @@ onMounted(() => {
               >
                 <template #bodyCell="{ column, record }">
                   <template v-if="column.key === 'status'">
-                    <Tag :color="record.writable ? 'success' : 'error'">
-                      {{
+                    <IconifyIcon
+                      class="size-4"
+                      :class="
+                        record.writable
+                          ? 'text-success'
+                          : 'text-destructive'
+                      "
+                      :icon="record.writable ? 'lucide:check' : 'lucide:x'"
+                      :title="
                         record.writable
                           ? $t('install.requirements.passed')
                           : $t('install.requirements.failed')
-                      }}
-                    </Tag>
+                      "
+                    />
                   </template>
                 </template>
               </Table>
@@ -494,8 +579,52 @@ onMounted(() => {
 }
 
 .install-page__section-title {
-  font-size: var(--admin-font-control, calc(var(--font-size-base) * 13 / 16));
+  font-size: calc(var(--font-size-base) * 15 / 16);
   font-weight: 600;
+  line-height: 1.4;
+}
+
+.install-page__card :deep(.ant-table) {
+  width: 100%;
+  font-size: var(--admin-font-control, calc(var(--font-size-base) * 13 / 16));
+}
+
+.install-page__card :deep(.ant-table table) {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.install-page__table--3col :deep(.ant-table colgroup col:nth-child(1)),
+.install-page__table--3col :deep(.ant-table-thead > tr > th:nth-child(1)),
+.install-page__table--3col :deep(.ant-table-tbody > tr > td:nth-child(1)) {
+  width: 40% !important;
+}
+
+.install-page__table--3col :deep(.ant-table colgroup col:nth-child(2)),
+.install-page__table--3col :deep(.ant-table-thead > tr > th:nth-child(2)),
+.install-page__table--3col :deep(.ant-table-tbody > tr > td:nth-child(2)) {
+  width: 40% !important;
+}
+
+.install-page__table--3col :deep(.ant-table colgroup col:nth-child(3)),
+.install-page__table--3col :deep(.ant-table-thead > tr > th:nth-child(3)),
+.install-page__table--3col :deep(.ant-table-tbody > tr > td:nth-child(3)),
+.install-page__table--2col :deep(.ant-table colgroup col:nth-child(2)),
+.install-page__table--2col :deep(.ant-table-thead > tr > th:nth-child(2)),
+.install-page__table--2col :deep(.ant-table-tbody > tr > td:nth-child(2)) {
+  width: 20% !important;
+}
+
+.install-page__table--2col :deep(.ant-table colgroup col:nth-child(1)),
+.install-page__table--2col :deep(.ant-table-thead > tr > th:nth-child(1)),
+.install-page__table--2col :deep(.ant-table-tbody > tr > td:nth-child(1)) {
+  width: 80% !important;
+}
+
+.install-page__card :deep(.ant-table-thead > tr > th),
+.install-page__card :deep(.ant-table-tbody > tr > td),
+.install-page__card :deep(.ant-table .ant-tag) {
+  font-size: inherit;
 }
 
 .install-page__actions {
