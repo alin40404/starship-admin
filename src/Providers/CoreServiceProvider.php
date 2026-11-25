@@ -5,6 +5,7 @@ namespace Starship\Core\Providers;
 use Illuminate\Database\Console\Seeds\SeedCommand;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
+use Starship\Core\Console\Commands\InstallCommand;
 use Starship\Core\Console\Commands\ModuleExportCommand;
 use Starship\Core\Console\Commands\ModuleImportCommand;
 use Starship\Core\Console\Commands\ModuleMakeCommand;
@@ -32,6 +33,10 @@ use Starship\Core\Console\Commands\ThemeSwitchCommand;
 use Starship\Core\Console\Commands\ThemeUninstallCommand;
 use Starship\Core\Event\EventDispatcher;
 use Starship\Core\Event\EventDispatcherInterface;
+use Starship\Core\Install\EnvironmentChecker;
+use Starship\Core\Install\EnvWriter;
+use Starship\Core\Install\InstallLock;
+use Starship\Core\Install\InstallService;
 use Starship\Core\Module\ModuleLocator;
 use Starship\Core\Module\ModuleManager;
 use Starship\Core\Module\ModulePackageBuilder;
@@ -86,6 +91,11 @@ class CoreServiceProvider extends ServiceProvider
         $this->app->singleton(ThemeLoader::class);
         $this->app->singleton(ThemeAssetLinker::class);
 
+        $this->app->singleton(InstallLock::class);
+        $this->app->singleton(EnvironmentChecker::class);
+        $this->app->singleton(EnvWriter::class);
+        $this->app->singleton(InstallService::class);
+
         $this->registerModules();
     }
 
@@ -98,6 +108,7 @@ class CoreServiceProvider extends ServiceProvider
         $this->loadTranslationsFrom(__DIR__.'/../../resources/lang', 'core');
         $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
         $this->loadRoutesFrom(__DIR__.'/../../routes/web.php');
+        $this->loadRoutesFrom(__DIR__.'/../../routes/install.php');
 
         try {
             $this->app->make(ThemeLoader::class)->register('frontend');
@@ -112,6 +123,7 @@ class CoreServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->commands([
+                InstallCommand::class,
                 ModuleMakeCommand::class,
                 ModuleExportCommand::class,
                 ModuleImportCommand::class,
