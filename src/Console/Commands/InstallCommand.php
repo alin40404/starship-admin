@@ -21,6 +21,7 @@ class InstallCommand extends Command
                             {--db-password= : 数据库密码}
                             {--db-prefix= : 表前缀}
                             {--app-url= : 站点 URL}
+                            {--site-name= : 站点名称}
                             {--admin-username=admin : 超级管理员用户名}
                             {--admin-password= : 超级管理员密码}
                             {--admin-email=admin@starship.org : 超级管理员邮箱}';
@@ -177,16 +178,18 @@ class InstallCommand extends Command
     }
 
     /**
-     * @return array{username: string, password: string, email: string}
+     * @return array{site_name: string, username: string, password: string, email: string}
      */
     protected function resolveAdminConfig(): array
     {
         $force = (bool) $this->option('force');
+        $siteName = (string) ($this->option('site-name') ?: env('APP_NAME', 'Starship Admin'));
         $username = (string) ($this->option('admin-username') ?: 'admin');
         $email = (string) ($this->option('admin-email') ?: 'admin@starship.org');
         $password = (string) ($this->option('admin-password') ?: '');
 
         if (! $force) {
+            $siteName = (string) $this->ask('站点名称', $siteName);
             $username = (string) $this->ask('超级管理员用户名', $username);
             $email = (string) $this->ask('超级管理员邮箱', $email);
             $password = (string) ($password !== '' ? $password : $this->secret('超级管理员密码'));
@@ -200,6 +203,7 @@ class InstallCommand extends Command
         }
 
         return [
+            'site_name' => $siteName,
             'username' => $username,
             'password' => $password,
             'email' => $email,

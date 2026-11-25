@@ -73,10 +73,12 @@ class InstallController extends Controller
     public function run(Request $request, InstallService $install): JsonResponse
     {
         $validator = Validator::make($request->all(), [
+            'site_name' => ['required', 'string', 'max:64'],
             'username' => ['required', 'string', 'max:64'],
             'password' => ['required', 'string', 'min:6', 'max:64'],
             'email' => ['required', 'email', 'max:255'],
         ], [
+            'site_name.required' => '请填写站点名称',
             'username.required' => '请填写超级管理员用户名',
             'password.required' => '请填写超级管理员密码',
             'password.min' => '超级管理员密码至少 6 位',

@@ -156,6 +156,7 @@ class InstallService
 
     /**
      * @param  array{
+     *   site_name?: string,
      *   username?: string,
      *   password?: string,
      *   email?: string|null
@@ -169,6 +170,11 @@ class InstallService
         $requirements = $this->environmentChecker->check();
         if (! $requirements['passed']) {
             throw new RuntimeException('环境检测未通过，无法继续安装');
+        }
+
+        $siteName = trim((string) ($admin['site_name'] ?? ''));
+        if ($siteName === '') {
+            throw new InvalidArgumentException('请填写站点名称');
         }
 
         $username = trim((string) ($admin['username'] ?? ''));
@@ -194,21 +200,26 @@ class InstallService
 
         $this->ensureAppKey();
         $this->envWriter->setMany([
+            'APP_NAME' => $siteName,
             'SYSTEM_ADMIN_USERNAME' => $username,
             'SYSTEM_ADMIN_PASSWORD' => $password,
             'SYSTEM_ADMIN_EMAIL' => $email,
         ]);
 
         // 当前进程立即可见（供 Seeder 读取）
+        putenv('APP_NAME='.$siteName);
         putenv('SYSTEM_ADMIN_USERNAME='.$username);
         putenv('SYSTEM_ADMIN_PASSWORD='.$password);
         putenv('SYSTEM_ADMIN_EMAIL='.$email);
+        $_ENV['APP_NAME'] = $siteName;
         $_ENV['SYSTEM_ADMIN_USERNAME'] = $username;
         $_ENV['SYSTEM_ADMIN_PASSWORD'] = $password;
         $_ENV['SYSTEM_ADMIN_EMAIL'] = $email;
+        $_SERVER['APP_NAME'] = $siteName;
         $_SERVER['SYSTEM_ADMIN_USERNAME'] = $username;
         $_SERVER['SYSTEM_ADMIN_PASSWORD'] = $password;
         $_SERVER['SYSTEM_ADMIN_EMAIL'] = $email;
+        config(['app.name' => $siteName]);
 
         $wasProduction = app()->isProduction();
         $this->allowDestructiveCommands();
@@ -224,6 +235,8 @@ class InstallService
                 throw new RuntimeException('数据初始化失败：'.Artisan::output());
             }
 
+            $this->syncSiteNameSetting($siteName);
+
             Artisan::call('storage:link', ['--force' => true]);
         } catch (Throwable $exception) {
             throw new RuntimeException('安装失败：'.$exception->getMessage(), 0, $exception);
@@ -237,6 +250,19 @@ class InstallService
             'installed' => true,
             'admin_username' => $username,
         ];
+    }
+
+    protected function syncSiteNameSetting(string $siteName): void
+    {
+        try {
+            if (! \Illuminate\Support\Facades\Schema::hasTable('configs')) {
+                return;
+            }
+
+            DB::table('configs')->where('key', 'site.name')->update(['value' => $siteName]);
+        } catch (Throwable) {
+            // 忽略：无 configs 表或不在 System 模块场景
+        }
     }
 
     protected function ensureAppKey(): void
