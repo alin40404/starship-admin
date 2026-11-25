@@ -13,6 +13,17 @@ use Throwable;
 
 class InstallService
 {
+    /** @var list<string> */
+    public const INSTALL_STEPS = ['prepare', 'migrate', 'seed', 'finalize'];
+
+    /** @var array<string, int> */
+    public const INSTALL_STEP_PERCENT = [
+        'prepare' => 25,
+        'migrate' => 55,
+        'seed' => 85,
+        'finalize' => 100,
+    ];
+
     public function __construct(
         protected InstallLock $lock,
         protected EnvironmentChecker $environmentChecker,
@@ -155,6 +166,8 @@ class InstallService
     }
 
     /**
+     * 一次性跑完全部安装步骤（CLI）。
+     *
      * @param  array{
      *   site_name?: string,
      *   username?: string,
@@ -165,6 +178,44 @@ class InstallService
      */
     public function runInstall(array $admin = []): array
     {
+        $result = [
+            'installed' => false,
+            'admin_username' => '',
+        ];
+
+        foreach (self::INSTALL_STEPS as $step) {
+            $result = $this->runInstallStep($step, $admin);
+        }
+
+        return [
+            'installed' => (bool) ($result['installed'] ?? false),
+            'admin_username' => (string) ($result['admin_username'] ?? ''),
+        ];
+    }
+
+    /**
+     * 执行单个安装步骤，供 Web 端进度条分步调用。
+     *
+     * @param  array{
+     *   site_name?: string,
+     *   username?: string,
+     *   password?: string,
+     *   email?: string|null
+     * }  $admin
+     * @return array{
+     *   step: string,
+     *   percent: int,
+     *   next_step: string|null,
+     *   installed: bool,
+     *   admin_username: string
+     * }
+     */
+    public function runInstallStep(string $step, array $admin = []): array
+    {
+        if (! in_array($step, self::INSTALL_STEPS, true)) {
+            throw new InvalidArgumentException('不支持的安装步骤：'.$step);
+        }
+
         $this->lock->assertNotInstalled();
 
         $requirements = $this->environmentChecker->check();
@@ -172,6 +223,40 @@ class InstallService
             throw new RuntimeException('环境检测未通过，无法继续安装');
         }
 
+        $validated = $this->validateAdminPayload($admin);
+
+        match ($step) {
+            'prepare' => $this->installPrepare($validated),
+            'migrate' => $this->installMigrate(),
+            'seed' => $this->installSeed($validated),
+            'finalize' => $this->installFinalize($validated['site_name']),
+        };
+
+        $index = array_search($step, self::INSTALL_STEPS, true);
+        $next = is_int($index) && isset(self::INSTALL_STEPS[$index + 1])
+            ? self::INSTALL_STEPS[$index + 1]
+            : null;
+
+        return [
+            'step' => $step,
+            'percent' => self::INSTALL_STEP_PERCENT[$step],
+            'next_step' => $next,
+            'installed' => $step === 'finalize',
+            'admin_username' => $validated['username'],
+        ];
+    }
+
+    /**
+     * @param  array{
+     *   site_name?: string,
+     *   username?: string,
+     *   password?: string,
+     *   email?: string|null
+     * }  $admin
+     * @return array{site_name: string, username: string, password: string, email: string}
+     */
+    protected function validateAdminPayload(array $admin): array
+    {
         $siteName = trim((string) ($admin['site_name'] ?? ''));
         if ($siteName === '') {
             throw new InvalidArgumentException('请填写站点名称');
@@ -198,29 +283,33 @@ class InstallService
             throw new InvalidArgumentException('超级管理员邮箱格式不正确');
         }
 
+        return [
+            'site_name' => $siteName,
+            'username' => $username,
+            'password' => $password,
+            'email' => $email,
+        ];
+    }
+
+    /**
+     * @param  array{site_name: string, username: string, password: string, email: string}  $admin
+     */
+    protected function installPrepare(array $admin): void
+    {
         $this->ensureAppKey();
         $this->envWriter->setMany([
-            'APP_NAME' => $siteName,
-            'SYSTEM_ADMIN_USERNAME' => $username,
-            'SYSTEM_ADMIN_PASSWORD' => $password,
-            'SYSTEM_ADMIN_EMAIL' => $email,
+            'APP_NAME' => $admin['site_name'],
+            'SYSTEM_ADMIN_USERNAME' => $admin['username'],
+            'SYSTEM_ADMIN_PASSWORD' => $admin['password'],
+            'SYSTEM_ADMIN_EMAIL' => $admin['email'],
         ]);
 
-        // 当前进程立即可见（供 Seeder 读取）
-        putenv('APP_NAME='.$siteName);
-        putenv('SYSTEM_ADMIN_USERNAME='.$username);
-        putenv('SYSTEM_ADMIN_PASSWORD='.$password);
-        putenv('SYSTEM_ADMIN_EMAIL='.$email);
-        $_ENV['APP_NAME'] = $siteName;
-        $_ENV['SYSTEM_ADMIN_USERNAME'] = $username;
-        $_ENV['SYSTEM_ADMIN_PASSWORD'] = $password;
-        $_ENV['SYSTEM_ADMIN_EMAIL'] = $email;
-        $_SERVER['APP_NAME'] = $siteName;
-        $_SERVER['SYSTEM_ADMIN_USERNAME'] = $username;
-        $_SERVER['SYSTEM_ADMIN_PASSWORD'] = $password;
-        $_SERVER['SYSTEM_ADMIN_EMAIL'] = $email;
-        config(['app.name' => $siteName]);
+        $this->exposeAdminEnv($admin);
+        config(['app.name' => $admin['site_name']]);
+    }
 
+    protected function installMigrate(): void
+    {
         $wasProduction = app()->isProduction();
         $this->allowDestructiveCommands();
 
@@ -229,27 +318,68 @@ class InstallService
             if ($migrate !== 0) {
                 throw new RuntimeException('数据库迁移失败：'.Artisan::output());
             }
-
-            $seed = Artisan::call('db:seed', ['--force' => true]);
-            if ($seed !== 0) {
-                throw new RuntimeException('数据初始化失败：'.Artisan::output());
-            }
-
-            $this->syncSiteNameSetting($siteName);
-
-            Artisan::call('storage:link', ['--force' => true]);
         } catch (Throwable $exception) {
             throw new RuntimeException('安装失败：'.$exception->getMessage(), 0, $exception);
         } finally {
             $this->restoreDestructiveCommands($wasProduction);
         }
+    }
+
+    /**
+     * @param  array{site_name: string, username: string, password: string, email: string}  $admin
+     */
+    protected function installSeed(array $admin): void
+    {
+        // 分步请求时重新注入，避免仅依赖上一请求 putenv
+        $this->exposeAdminEnv($admin);
+        config(['app.name' => $admin['site_name']]);
+
+        $wasProduction = app()->isProduction();
+        $this->allowDestructiveCommands();
+
+        try {
+            $seed = Artisan::call('db:seed', ['--force' => true]);
+            if ($seed !== 0) {
+                throw new RuntimeException('数据初始化失败：'.Artisan::output());
+            }
+
+            $this->syncSiteNameSetting($admin['site_name']);
+        } catch (Throwable $exception) {
+            throw new RuntimeException('安装失败：'.$exception->getMessage(), 0, $exception);
+        } finally {
+            $this->restoreDestructiveCommands($wasProduction);
+        }
+    }
+
+    protected function installFinalize(string $siteName): void
+    {
+        try {
+            $this->syncSiteNameSetting($siteName);
+            Artisan::call('storage:link', ['--force' => true]);
+        } catch (Throwable $exception) {
+            throw new RuntimeException('安装失败：'.$exception->getMessage(), 0, $exception);
+        }
 
         $this->lock->lock();
+    }
 
-        return [
-            'installed' => true,
-            'admin_username' => $username,
-        ];
+    /**
+     * @param  array{site_name: string, username: string, password: string, email: string}  $admin
+     */
+    protected function exposeAdminEnv(array $admin): void
+    {
+        putenv('APP_NAME='.$admin['site_name']);
+        putenv('SYSTEM_ADMIN_USERNAME='.$admin['username']);
+        putenv('SYSTEM_ADMIN_PASSWORD='.$admin['password']);
+        putenv('SYSTEM_ADMIN_EMAIL='.$admin['email']);
+        $_ENV['APP_NAME'] = $admin['site_name'];
+        $_ENV['SYSTEM_ADMIN_USERNAME'] = $admin['username'];
+        $_ENV['SYSTEM_ADMIN_PASSWORD'] = $admin['password'];
+        $_ENV['SYSTEM_ADMIN_EMAIL'] = $admin['email'];
+        $_SERVER['APP_NAME'] = $admin['site_name'];
+        $_SERVER['SYSTEM_ADMIN_USERNAME'] = $admin['username'];
+        $_SERVER['SYSTEM_ADMIN_PASSWORD'] = $admin['password'];
+        $_SERVER['SYSTEM_ADMIN_EMAIL'] = $admin['email'];
     }
 
     protected function syncSiteNameSetting(string $siteName): void

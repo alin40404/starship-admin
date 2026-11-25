@@ -17,6 +17,7 @@ import {
   FormItem,
   Input,
   InputPassword,
+  Progress,
   Result,
   Select,
   Space,
@@ -45,6 +46,19 @@ const requirements = ref<InstallApi.Requirements | null>(null);
 const adminUsername = ref('admin');
 const dbFormRef = ref<FormInstance>();
 const adminFormRef = ref<FormInstance>();
+const installPercent = ref(0);
+const installProgressKey = ref('');
+const installFailed = ref(false);
+
+const INSTALL_STEPS: Array<{
+  step: InstallApi.InstallStep;
+  labelKey: string;
+}> = [
+  { step: 'prepare', labelKey: 'install.install.progressPrepare' },
+  { step: 'migrate', labelKey: 'install.install.progressMigrate' },
+  { step: 'seed', labelKey: 'install.install.progressSeed' },
+  { step: 'finalize', labelKey: 'install.install.progressFinalize' },
+];
 
 const dbForm = reactive({
   connection: 'mysql' as InstallApi.DatabaseParams['connection'],
@@ -311,17 +325,37 @@ async function onRunInstall() {
     return;
   }
 
+  const payload = {
+    site_name: adminForm.site_name.trim(),
+    username: adminForm.username.trim(),
+    password: adminForm.password,
+    email: adminForm.email.trim(),
+  };
+
   loading.value = true;
+  installFailed.value = false;
+  installPercent.value = 0;
+  installProgressKey.value = INSTALL_STEPS[0]?.labelKey ?? '';
+
   try {
-    const result = await runInstall({
-      site_name: adminForm.site_name.trim(),
-      username: adminForm.username.trim(),
-      password: adminForm.password,
-      email: adminForm.email.trim(),
-    });
-    adminUsername.value = result.admin_username;
+    let result: InstallApi.RunResult | null = null;
+    for (const item of INSTALL_STEPS) {
+      installProgressKey.value = item.labelKey;
+      result = await runInstall({
+        ...payload,
+        step: item.step,
+      });
+      installPercent.value = result.percent;
+      if (result.installed) {
+        break;
+      }
+    }
+
+    adminUsername.value = result?.admin_username || payload.username;
     setCachedInstallStatus(true);
     current.value = 3;
+  } catch {
+    installFailed.value = true;
   } finally {
     loading.value = false;
   }
@@ -612,19 +646,26 @@ onMounted(() => {
         </template>
 
         <template v-else-if="current === 2">
-          <Alert
-            v-if="loading"
-            class="mb-4"
-            type="info"
-            show-icon
-            :message="$t('install.install.running')"
-          />
+          <div v-if="loading || installPercent > 0" class="install-page__progress mb-4">
+            <div class="install-page__progress-label mb-2">
+              {{
+                installProgressKey
+                  ? $t(installProgressKey)
+                  : $t('install.install.running')
+              }}
+            </div>
+            <Progress
+              :percent="installPercent"
+              :status="installFailed ? 'exception' : loading ? 'active' : 'success'"
+            />
+          </div>
 
           <Form
             ref="adminFormRef"
             layout="vertical"
             :model="adminForm"
             :rules="adminRules"
+            :disabled="loading"
           >
             <FormItem
               name="site_name"
@@ -762,6 +803,11 @@ onMounted(() => {
 .install-page__card {
   background: hsl(var(--card, var(--background)));
   box-shadow: 0 1px 2px hsl(var(--foreground) / 6%);
+}
+
+.install-page__progress-label {
+  color: hsl(var(--muted-foreground));
+  font-size: var(--admin-font-control, calc(var(--font-size-base) * 13 / 16));
 }
 
 .install-page__card :deep(.ant-form-vertical .ant-form-item-label) {

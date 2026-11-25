@@ -67,7 +67,11 @@
     "requiredEmail": "Please enter the admin email",
     "invalidEmail": "Invalid email address",
     "requiredPassword": "Please enter the admin password",
-    "requiredPasswordConfirm": "Please confirm the password"
+    "requiredPasswordConfirm": "Please confirm the password",
+    "progressPrepare": "Writing environment config…",
+    "progressMigrate": "Running database migrations…",
+    "progressSeed": "Seeding initial data…",
+    "progressFinalize": "Finalizing and locking…"
   },
   "done": {
     "success": "Installation complete",

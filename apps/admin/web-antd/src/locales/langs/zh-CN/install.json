@@ -67,7 +67,11 @@
     "requiredEmail": "请填写超级管理员邮箱",
     "invalidEmail": "邮箱格式不正确",
     "requiredPassword": "请填写超级管理员密码",
-    "requiredPasswordConfirm": "请再次输入密码"
+    "requiredPasswordConfirm": "请再次输入密码",
+    "progressPrepare": "写入环境配置…",
+    "progressMigrate": "执行数据库迁移…",
+    "progressSeed": "初始化基础数据…",
+    "progressFinalize": "完成收尾与锁定…"
   },
   "done": {
     "success": "安装完成",

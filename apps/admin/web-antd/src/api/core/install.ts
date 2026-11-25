@@ -48,7 +48,10 @@ export namespace InstallApi {
     cors_allowed_origins?: string;
   }
 
+  export type InstallStep = 'prepare' | 'migrate' | 'seed' | 'finalize';
+
   export interface RunParams {
+    step: InstallStep;
     site_name?: string;
     username?: string;
     password: string;
@@ -56,6 +59,9 @@ export namespace InstallApi {
   }
 
   export interface RunResult {
+    step: InstallStep;
+    percent: number;
+    next_step: InstallStep | null;
     installed: boolean;
     admin_username: string;
   }
