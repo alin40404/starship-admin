@@ -59,6 +59,7 @@ const dbForm = reactive({
 });
 
 const adminForm = reactive({
+  site_name: preferences.app.name || 'Starship Admin',
   username: 'admin',
   password: '',
   passwordConfirm: '',
@@ -131,6 +132,12 @@ const dbRules = computed<Record<string, Rule[]>>(() => {
 });
 
 const adminRules = computed<Record<string, Rule[]>>(() => ({
+  site_name: [
+    {
+      required: true,
+      message: $t('install.install.requiredSiteName'),
+    },
+  ],
   username: [
     {
       required: true,
@@ -307,6 +314,7 @@ async function onRunInstall() {
   loading.value = true;
   try {
     const result = await runInstall({
+      site_name: adminForm.site_name.trim(),
       username: adminForm.username.trim(),
       password: adminForm.password,
       email: adminForm.email.trim(),
@@ -618,6 +626,13 @@ onMounted(() => {
             :model="adminForm"
             :rules="adminRules"
           >
+            <FormItem
+              name="site_name"
+              required
+              :label="$t('install.install.siteName')"
+            >
+              <Input v-model:value="adminForm.site_name" />
+            </FormItem>
             <FormItem
               name="username"
               required

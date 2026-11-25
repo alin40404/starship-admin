@@ -49,6 +49,7 @@ export namespace InstallApi {
   }
 
   export interface RunParams {
+    site_name?: string;
     username?: string;
     password: string;
     email?: string;

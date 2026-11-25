@@ -52,6 +52,7 @@
     "invalidPort": "端口必须是数字"
   },
   "install": {
+    "siteName": "站点名称",
     "adminUsername": "超级管理员用户名",
     "adminPassword": "超级管理员密码",
     "adminPasswordConfirm": "确认密码",
@@ -61,6 +62,7 @@
     "back": "上一步",
     "passwordMismatch": "两次输入的密码不一致",
     "passwordMin": "密码至少 6 位",
+    "requiredSiteName": "请填写站点名称",
     "requiredUsername": "请填写超级管理员用户名",
     "requiredEmail": "请填写超级管理员邮箱",
     "invalidEmail": "邮箱格式不正确",

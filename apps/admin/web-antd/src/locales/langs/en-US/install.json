@@ -52,6 +52,7 @@
     "invalidPort": "Port must be a number"
   },
   "install": {
+    "siteName": "Site name",
     "adminUsername": "Admin username",
     "adminPassword": "Admin password",
     "adminPasswordConfirm": "Confirm password",
@@ -61,6 +62,7 @@
     "back": "Back",
     "passwordMismatch": "Passwords do not match",
     "passwordMin": "Password must be at least 6 characters",
+    "requiredSiteName": "Please enter the site name",
     "requiredUsername": "Please enter the admin username",
     "requiredEmail": "Please enter the admin email",
     "invalidEmail": "Invalid email address",

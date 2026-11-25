@@ -61,6 +61,7 @@ class InstallApiTest extends TestCase
         ])->assertStatus(403);
 
         $this->postJson('/admin-api/install/run', [
+            'site_name' => 'Starship Admin',
             'username' => 'admin',
             'password' => 'secret123',
             'email' => 'admin@starship.org',
