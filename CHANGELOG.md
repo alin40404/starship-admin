@@ -2,6 +2,13 @@
 
 本文件记录 `starship-admin/core` 的对外可见变更。版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)；**以 git tag 为准**（`composer.json` 不写死 `version`）。
 
+## [1.2.5] — 2026-11-26
+
+### Changed
+
+- Web 安装向导在 PHP 内置开发服务器（`php artisan serve` / `php -S`）下禁用；`GET /install/status` 返回 `web_install_allowed` / `runtime`，请改用 `php artisan starship:install` 或正式 Web 服务
+- 移除安装流程中针对 `artisan serve` 的特殊兼容（`syncProcess`、读 `.env` 旁路等），安装逻辑简化
+
 ## [1.2.4] — 2026-11-26
 
 ### Fixed
