@@ -3,6 +3,7 @@
 namespace Starship\Core\Tests\Feature;
 
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Route;
 use Starship\Core\Install\InstallLock;
 use Starship\Core\Tests\TestCase;
 
@@ -24,6 +25,34 @@ class InstallApiTest extends TestCase
 
         $response->assertOk()
             ->assertJsonPath('code', 0)
+            ->assertJsonPath('data.installed', false);
+    }
+
+    public function test_business_admin_api_blocked_when_not_installed(): void
+    {
+        $lock = new InstallLock;
+        if (File::exists($lock->path())) {
+            File::delete($lock->path());
+        }
+
+        $this->assertFalse($lock->isInstalled());
+
+        Route::middleware(['api', 'admin.installed'])->get(
+            '/admin-api/__install_guard_probe',
+            static fn () => response()->json([
+                'code' => 0,
+                'message' => 'ok',
+                'data' => ['ok' => true],
+            ]),
+        );
+
+        $this->getJson('/admin-api/__install_guard_probe')
+            ->assertStatus(503)
+            ->assertJsonPath('code', 50301)
+            ->assertJsonPath('data.installed', false);
+
+        $this->getJson('/admin-api/install/status')
+            ->assertOk()
             ->assertJsonPath('data.installed', false);
     }
 
