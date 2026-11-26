@@ -89,8 +89,12 @@
   },
   "done": {
     "success": "Installation complete",
-    "desc": "The database and seed data are ready. Sign in with the admin account.",
-    "username": "Admin username",
+    "desc": "The database and seed data are ready. Sign in with the admin account. Please save the details below.",
+    "credentials": "Admin credentials",
+    "username": "Username",
+    "password": "Password",
+    "email": "Email",
+    "copyAll": "Copy all",
     "goLogin": "Go to login"
   }
 }

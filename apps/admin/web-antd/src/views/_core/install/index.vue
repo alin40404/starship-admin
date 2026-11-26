@@ -47,14 +47,22 @@ const webInstallAllowed = ref(true);
 const installRuntime = ref('');
 const requirementsLoading = ref(false);
 const requirements = ref<InstallApi.Requirements | null>(null);
-const adminUsername = ref('admin');
+const adminCredentials = reactive({
+  username: 'admin',
+  password: '',
+  email: 'admin@starship.org',
+});
 const dbFormRef = ref<FormInstance>();
 const adminFormRef = ref<FormInstance>();
 const installPercent = ref(0);
 const installProgressKey = ref('');
 const installFailed = ref(false);
 const commandCopied = ref(false);
+const credentialCopiedKey = ref('');
 let commandCopiedTimer: ReturnType<typeof setTimeout> | undefined;
+let credentialCopiedTimer: ReturnType<typeof setTimeout> | undefined;
+
+type CredentialField = 'username' | 'password' | 'email' | 'all';
 
 const INSTALL_STEPS: Array<{
   step: InstallApi.InstallStep;
@@ -376,7 +384,9 @@ async function onRunInstall() {
       }
     }
 
-    adminUsername.value = result?.admin_username || payload.username;
+    adminCredentials.username = result?.admin_username || payload.username;
+    adminCredentials.password = payload.password;
+    adminCredentials.email = payload.email;
     setCachedInstallStatus(true);
     current.value = 3;
   } catch {
@@ -418,6 +428,32 @@ async function copyInstallCommand() {
     }
     commandCopiedTimer = setTimeout(() => {
       commandCopied.value = false;
+    }, 1600);
+  } catch {
+    message.error($t('install.blocked.copyFailed'));
+  }
+}
+
+function credentialText(field: CredentialField): string {
+  if (field === 'all') {
+    return [
+      `${$t('install.done.username')}：${adminCredentials.username}`,
+      `${$t('install.done.password')}：${adminCredentials.password}`,
+      `${$t('install.done.email')}：${adminCredentials.email}`,
+    ].join('\n');
+  }
+  return adminCredentials[field];
+}
+
+async function copyCredential(field: CredentialField) {
+  try {
+    await navigator.clipboard.writeText(credentialText(field));
+    credentialCopiedKey.value = field;
+    if (credentialCopiedTimer) {
+      clearTimeout(credentialCopiedTimer);
+    }
+    credentialCopiedTimer = setTimeout(() => {
+      credentialCopiedKey.value = '';
     }, 1600);
   } catch {
     message.error($t('install.blocked.copyFailed'));
@@ -862,12 +898,62 @@ onMounted(() => {
             :sub-title="$t('install.done.desc')"
           >
             <template #extra>
-              <div class="mb-4 text-muted-foreground">
-                {{ $t('install.done.username') }}：{{ adminUsername }}
+              <div class="install-page__done">
+                <div class="install-page__done-card">
+                  <div class="install-page__done-card-head">
+                    <span class="install-page__done-card-title">
+                      {{ $t('install.done.credentials') }}
+                    </span>
+                    <button
+                      type="button"
+                      class="install-page__done-copy"
+                      :class="{
+                        'install-page__done-copy--done':
+                          credentialCopiedKey === 'all',
+                      }"
+                      :title="$t('install.done.copyAll')"
+                      :aria-label="$t('install.done.copyAll')"
+                      @click="copyCredential('all')"
+                    >
+                      <IconifyIcon
+                        class="size-3.5"
+                        :icon="
+                          credentialCopiedKey === 'all'
+                            ? 'lucide:check'
+                            : 'lucide:copy'
+                        "
+                      />
+                    </button>
+                  </div>
+                  <div class="install-page__done-row">
+                    <span class="install-page__done-label">{{
+                      $t('install.done.username')
+                    }}</span>
+                    <span class="install-page__done-value">{{
+                      adminCredentials.username
+                    }}</span>
+                  </div>
+                  <div class="install-page__done-row">
+                    <span class="install-page__done-label">{{
+                      $t('install.done.password')
+                    }}</span>
+                    <span class="install-page__done-value">{{
+                      adminCredentials.password
+                    }}</span>
+                  </div>
+                  <div class="install-page__done-row">
+                    <span class="install-page__done-label">{{
+                      $t('install.done.email')
+                    }}</span>
+                    <span class="install-page__done-value">{{
+                      adminCredentials.email
+                    }}</span>
+                  </div>
+                </div>
+                <Button type="primary" @click="goLogin">
+                  {{ $t('install.done.goLogin') }}
+                </Button>
               </div>
-              <Button type="primary" @click="goLogin">
-                {{ $t('install.done.goLogin') }}
-              </Button>
             </template>
           </Result>
         </template>
@@ -1103,6 +1189,93 @@ onMounted(() => {
   padding: 2rem 0;
   color: hsl(var(--muted-foreground));
   text-align: center;
+}
+
+.install-page__card :deep(.ant-result-extra) {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.install-page__done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: min(22rem, 100%);
+}
+
+.install-page__done-card {
+  width: 100%;
+  padding: 0.85rem 0.9rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 6px;
+  background: hsl(var(--background-deep, var(--background)));
+  text-align: left;
+}
+
+.install-page__done-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.install-page__done-card-title {
+  color: hsl(var(--foreground));
+  font-size: var(--admin-font-control, calc(var(--font-size-base) * 13 / 16));
+  font-weight: 600;
+}
+
+.install-page__done-row {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.install-page__done-label {
+  color: hsl(var(--muted-foreground));
+  font-size: var(--admin-font-search-sm, calc(var(--font-size-base) * 12 / 16));
+}
+
+.install-page__done-value {
+  min-width: 0;
+  color: hsl(var(--foreground));
+  font-size: var(--admin-font-control, calc(var(--font-size-base) * 13 / 16));
+  line-height: 1.45;
+  word-break: break-all;
+}
+
+.install-page__done-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 4px;
+  background: hsl(var(--card, var(--background)));
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.install-page__done-copy:hover {
+  border-color: hsl(var(--primary) / 45%);
+  color: hsl(var(--primary));
+}
+
+.install-page__done-copy--done,
+.install-page__done-copy--done:hover {
+  border-color: rgb(34 197 94 / 45%);
+  background: rgb(34 197 94 / 12%);
+  color: #22c55e;
 }
 
 .install-page__progress-label {
