@@ -4681,16 +4681,16 @@
         },
         {
             "name": "starship-admin/core",
-            "version": "v1.2.3",
+            "version": "v1.2.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/alin40404/starship-core.git",
-                "reference": "e476d82982f79138b4b467274a2e54bdb68faca4"
+                "reference": "907bf29c653426ce0aa0dc93ced1792de2ebc871"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/alin40404/starship-core/zipball/e476d82982f79138b4b467274a2e54bdb68faca4",
-                "reference": "e476d82982f79138b4b467274a2e54bdb68faca4",
+                "url": "https://api.github.com/repos/alin40404/starship-core/zipball/907bf29c653426ce0aa0dc93ced1792de2ebc871",
+                "reference": "907bf29c653426ce0aa0dc93ced1792de2ebc871",
                 "shasum": ""
             },
             "require": {
@@ -4745,7 +4745,7 @@
                 "issues": "https://github.com/alin40404/starship-core/issues",
                 "source": "https://github.com/alin40404/starship-core"
             },
-            "time": "2026-11-26T04:14:11+00:00"
+            "time": "2026-11-26T05:37:47+00:00"
         },
         {
             "name": "starship/generator",
