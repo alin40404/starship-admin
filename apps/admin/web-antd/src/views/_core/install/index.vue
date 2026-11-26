@@ -21,7 +21,6 @@ import {
   Result,
   Select,
   Space,
-  Spin,
   Steps,
   Table,
   Tag,
@@ -650,27 +649,23 @@ onMounted(() => {
         <template v-else-if="current === 2">
           <div v-if="loading || installPercent > 0" class="install-page__progress mb-4">
             <div class="install-page__progress-label mb-2">
-              {{
-                installProgressKey
-                  ? $t(installProgressKey)
-                  : $t('install.install.running')
-              }}
+              <IconifyIcon
+                v-if="loading && !installFailed"
+                icon="lucide:loader-circle"
+                class="install-page__progress-loading"
+              />
+              <span>
+                {{
+                  installProgressKey
+                    ? $t(installProgressKey)
+                    : $t('install.install.running')
+                }}
+              </span>
             </div>
             <Progress
               :percent="installPercent"
               :status="installFailed ? 'exception' : loading ? 'active' : 'success'"
-            >
-              <template #format="percent">
-                <span class="install-page__progress-percent">
-                  <span>{{ percent }}%</span>
-                  <Spin
-                    v-if="loading && !installFailed"
-                    size="small"
-                    class="install-page__progress-spin"
-                  />
-                </span>
-              </template>
-            </Progress>
+            />
           </div>
 
           <Form
@@ -819,24 +814,25 @@ onMounted(() => {
 }
 
 .install-page__progress-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   color: hsl(var(--muted-foreground));
   font-size: var(--admin-font-control, calc(var(--font-size-base) * 13 / 16));
 }
 
-.install-page__progress-percent {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: var(--admin-font-control, calc(var(--font-size-base) * 13 / 16));
+.install-page__progress-loading {
+  flex-shrink: 0;
+  width: 1em;
+  height: 1em;
+  color: hsl(var(--primary));
+  animation: install-page-spin 0.8s linear infinite;
 }
 
-.install-page__progress-spin {
-  display: inline-flex;
-  line-height: 1;
-}
-
-.install-page__progress-spin :deep(.ant-spin-dot) {
-  font-size: calc(var(--font-size-base) * 12 / 16);
+@keyframes install-page-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .install-page__card :deep(.ant-form-vertical .ant-form-item-label) {

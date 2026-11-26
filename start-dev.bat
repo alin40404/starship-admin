@@ -113,10 +113,9 @@ if not exist "%~dp0backend\.env.example" (
 )
 copy /Y "%~dp0backend\.env.example" "%~dp0backend\.env" >nul
 echo [提示] 未找到 backend/.env, 已从 .env.example 复制.
-echo        请先执行: php artisan key:generate
-echo        然后启动后打开管理端, 按 /install 安装引导完成配置.
+echo        按任意键继续.
 echo.
-pause
+pause >nul
 :EnvOk
 
 REM ---------- 启动后端 ----------
