@@ -18,15 +18,52 @@ async function viteInjectAppLoadingPlugin(
 ): Promise<PluginOption | undefined> {
   const { version } = await readPackageJSON(process.cwd());
   const envRaw = isBuild ? 'prod' : 'dev';
-  const cacheName = `'${env.VITE_APP_NAMESPACE}-${version}-${envRaw}-preferences-theme'`;
+  const namespace = String(env.VITE_APP_NAMESPACE || '');
+  const preferredCacheKey = namespace
+    ? `${namespace}-${version}-${envRaw}-preferences-theme`
+    : '';
 
-  // 获取缓存的主题
-  // 保证黑暗主题下，刷新页面时，loading也是黑暗主题
+  // 尽早根据 localStorage 偏好给 <html> 打上 dark，避免首屏 Loading 闪浅色
+  // StorageManager 存的是 JSON：{"value":"dark"|"light"|"auto"}
   const injectScript = `
   <script data-app-loading="inject-js">
-  var theme = localStorage.getItem(${cacheName});
-  document.documentElement.classList.toggle('dark', /dark/.test(theme));
-</script>
+  (function () {
+    try {
+      var preferredKey = ${JSON.stringify(preferredCacheKey)};
+      var raw = preferredKey ? localStorage.getItem(preferredKey) : null;
+      if (!raw) {
+        for (var i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i);
+          if (k && k.slice(-18) === '-preferences-theme') {
+            raw = localStorage.getItem(k);
+            if (raw) break;
+          }
+        }
+      }
+      var mode = raw;
+      if (raw) {
+        try {
+          var parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object' && 'value' in parsed) {
+            mode = parsed.value;
+          }
+        } catch (e) {}
+      }
+      var isDark = false;
+      if (mode === 'dark') {
+        isDark = true;
+      } else if (mode === 'light') {
+        isDark = false;
+      } else if (mode === 'auto' || mode == null || mode === '') {
+        isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      } else if (typeof mode === 'string' && /dark/.test(mode) && !/light/.test(mode)) {
+        // 兼容未解析到 value 的旧缓存串
+        isDark = true;
+      }
+      document.documentElement.classList.toggle('dark', isDark);
+    } catch (e) {}
+  })();
+  </script>
 `;
 
   let loadingHtml = '';
@@ -45,8 +82,16 @@ async function viteInjectAppLoadingPlugin(
         if (!loadingHtml) {
           return html;
         }
+        // 主题脚本放进 head，尽量赶在首次绘制前；Loading 节点仍注入 body
+        let result = html;
+        if (result.includes('</head>')) {
+          result = result.replace('</head>', `${injectScript}</head>`);
+        }
         const re = /<body\s*>/;
-        return html.replace(re, `<body>${injectScript}${loadingHtml}`);
+        if (re.test(result)) {
+          result = result.replace(re, `<body>${loadingHtml}`);
+        }
+        return result;
       },
       order: 'pre',
     },

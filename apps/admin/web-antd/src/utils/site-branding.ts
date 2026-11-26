@@ -83,7 +83,7 @@ export async function fetchSiteBranding(): Promise<SiteBranding | null> {
   }
 }
 
-/** 同步浏览器标题；Loading 仅更新站名文案，保留默认动画 */
+/** 同步浏览器标题（首屏 Loading 不再展示站名） */
 export function applySiteBrandingToDocument(name: string): void {
   const displayName = name.trim();
   if (!displayName) {
@@ -91,11 +91,6 @@ export function applySiteBrandingToDocument(name: string): void {
   }
 
   document.title = displayName;
-
-  const titleEl = document.querySelector('#__app-loading__ .title');
-  if (titleEl) {
-    titleEl.textContent = displayName;
-  }
 }
 
 function resolveDefaultBranding() {

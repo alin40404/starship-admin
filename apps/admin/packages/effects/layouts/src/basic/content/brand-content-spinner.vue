@@ -12,12 +12,12 @@ defineOptions({
 const props = withDefaults(
   defineProps<{
     class?: string;
-    /** Logo 图片地址，默认使用应用 public 下的全出血 Logo */
+    /** Logo 图片地址，默认使用应用 public 下的品牌 Logo */
     logoSrc?: string;
     minLoadingTime?: number;
   }>(),
   {
-    logoSrc: '/logo-fullbleed.png',
+    logoSrc: '/logo.png',
     minLoadingTime: 50,
   },
 );
@@ -65,25 +65,21 @@ function onTransitionEnd() {
     "
     @transitionend="onTransitionEnd"
   >
-    <div v-if="renderSpinner" class="brand-spinner">
-      <div class="brand-spinner__ring" aria-hidden="true"></div>
-      <div class="brand-spinner__logo-stack">
+    <div
+      v-if="renderSpinner"
+      class="brand-spinner"
+      role="status"
+      aria-label="加载中"
+    >
+      <div class="brand-spinner__group" aria-hidden="true">
         <img
-          class="brand-spinner__logo brand-spinner__logo--gray"
+          class="brand-spinner__logo"
           :src="logoSrc"
           alt=""
           width="48"
           height="48"
         />
-        <div class="brand-spinner__logo-color" aria-hidden="true">
-          <img
-            class="brand-spinner__logo"
-            :src="logoSrc"
-            alt=""
-            width="48"
-            height="48"
-          />
-        </div>
+        <span class="brand-spinner__track"></span>
       </div>
     </div>
   </div>
@@ -91,27 +87,23 @@ function onTransitionEnd() {
 
 <style scoped>
 .brand-spinner {
-  position: relative;
-  display: flex;
-  width: 84px;
-  height: 84px;
-  align-items: center;
-  justify-content: center;
+  --brand-spinner-track: #dbe4ee;
+  --brand-spinner-accent: #006fe6;
+
+  display: grid;
+  place-items: center;
 }
 
-.brand-spinner__ring {
-  position: absolute;
-  inset: 0;
-  border: 2px solid hsl(var(--primary) / 18%);
-  border-top-color: hsl(var(--primary));
-  border-radius: 50%;
-  animation: brand-spinner-spin 0.9s linear infinite;
+html.dark .brand-spinner,
+.dark .brand-spinner {
+  --brand-spinner-track: #2b3749;
+  --brand-spinner-accent: #5ba5ff;
 }
 
-.brand-spinner__logo-stack {
-  position: relative;
-  width: 48px;
-  height: 48px;
+.brand-spinner__group {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
 }
 
 .brand-spinner__logo {
@@ -119,53 +111,41 @@ function onTransitionEnd() {
   width: 48px;
   height: 48px;
   object-fit: contain;
-  background: transparent;
 }
 
-.brand-spinner__logo--gray {
-  filter: grayscale(1);
-  opacity: 0.42;
-}
-
-.brand-spinner__logo-color {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 0;
+.brand-spinner__track {
+  position: relative;
   overflow: hidden;
-  mask-image: linear-gradient(to top, #000 72%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to top, #000 72%, transparent 100%);
-  animation: brand-spinner-rise 2.4s ease-in-out infinite;
+  width: 64px;
+  height: 4px;
+  background: var(--brand-spinner-track);
+  clip-path: polygon(3px 0, 100% 0, calc(100% - 3px) 100%, 0 100%);
 }
 
-.brand-spinner__logo-color .brand-spinner__logo {
+.brand-spinner__track::before {
   position: absolute;
-  bottom: 0;
-  left: 0;
+  inset: 0 auto 0 0;
+  width: 22px;
+  background: var(--brand-spinner-accent);
+  clip-path: polygon(3px 0, 100% 0, calc(100% - 3px) 100%, 0 100%);
+  content: '';
+  animation: brand-spinner-pass 1500ms cubic-bezier(0.4, 0, 0.3, 1) infinite;
 }
 
-@keyframes brand-spinner-spin {
+@keyframes brand-spinner-pass {
+  from {
+    transform: translateX(-22px);
+  }
+
   to {
-    transform: rotate(360deg);
+    transform: translateX(64px);
   }
 }
 
-@keyframes brand-spinner-rise {
-  0% {
-    height: 0%;
-  }
-
-  45% {
-    height: 100%;
-  }
-
-  60% {
-    height: 100%;
-  }
-
-  100% {
-    height: 0%;
+@media (prefers-reduced-motion: reduce) {
+  .brand-spinner__track::before {
+    animation: none;
+    transform: translateX(21px);
   }
 }
 </style>

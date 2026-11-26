@@ -1,217 +1,111 @@
 <style data-app-loading="inject-css">
-  html {
-    line-height: 1.15;
-    /* 与设计 token 默认主色一致（HSL 分量），可被页面已写入的 --primary 覆盖 */
-    --primary: 212 100% 45%;
-  }
+  #__app-loading__ {
+    --loading-bg: #f4f7f9;
+    --loading-track: #dbe4ee;
+    --loading-accent: #006fe6;
+    --loading-logo-size: 72px;
 
-  .loading {
     position: fixed;
     inset: 0;
     z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    background:
-      radial-gradient(
-        ellipse 80% 60% at 50% 40%,
-        hsl(var(--primary) / 8%),
-        transparent 55%
-      ),
-      #f4f7f9;
+    display: grid;
+    place-items: center;
+    background: var(--loading-bg);
+    opacity: 1;
+    visibility: visible;
+    transition:
+      opacity 600ms ease-out,
+      visibility 0s linear 600ms;
   }
 
-  .loading.hidden {
-    pointer-events: none;
-    visibility: hidden;
+  /* 与 Vben 一致：主题脚本给 html 打 dark class */
+  html.dark #__app-loading__,
+  .dark #__app-loading__ {
+    --loading-bg: #101722;
+    --loading-track: #2b3749;
+    --loading-accent: #5ba5ff;
+  }
+
+  #__app-loading__.hidden {
     opacity: 0;
-    transition: opacity 0.65s ease-out, visibility 0.65s ease-out;
+    visibility: hidden;
+    pointer-events: none;
   }
 
-  .dark .loading {
-    background:
-      radial-gradient(
-        ellipse 80% 60% at 50% 40%,
-        hsl(var(--primary) / 12%),
-        transparent 55%
-      ),
-      #0d0d10;
+  #__app-loading__ .starship-loading__group {
+    display: grid;
+    justify-items: center;
+    gap: 20px;
+    /* 画面焦点略高于正中；矮屏限制上移幅度 */
+    transform: translateY(max(-42px, -5vh));
   }
 
-  .loading-brand {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 96px;
-    height: 96px;
-  }
-
-  .loading-ring {
-    position: absolute;
-    inset: 0;
-    border: 2px solid hsl(var(--primary) / 18%);
-    border-top-color: hsl(var(--primary));
-    border-radius: 50%;
-    animation: loading-spin 0.9s linear infinite;
-  }
-
-  .loading-logo-stack {
-    position: relative;
-    width: 56px;
-    height: 56px;
-  }
-
-  .loading-logo {
+  #__app-loading__ .starship-loading__logo {
     display: block;
-    width: 56px;
-    height: 56px;
-    object-fit: contain;
-    background: transparent;
+    inline-size: var(--loading-logo-size);
+    block-size: var(--loading-logo-size);
   }
 
-  .loading-logo--gray {
-    filter: grayscale(1);
-    opacity: 0.42;
-  }
-
-  .dark .loading-logo--gray {
-    opacity: 0.35;
-  }
-
-  /* 彩色层容器：高度从下往上展开，顶部用 mask 做软边渐变 */
-  .loading-logo-color {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    height: 0;
-    overflow: hidden;
-    -webkit-mask-image: linear-gradient(to top, #000 72%, transparent 100%);
-    mask-image: linear-gradient(to top, #000 72%, transparent 100%);
-    animation: logo-color-rise 2.4s ease-in-out infinite;
-  }
-
-  .loading-logo-color .loading-logo {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-  }
-
-  .loading-title-stack {
+  #__app-loading__ .starship-loading__track {
     position: relative;
-    margin-top: 28px;
-    line-height: 1.2;
-  }
-
-  .loading-title {
-    font-size: 22px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    white-space: nowrap;
-  }
-
-  .loading-title--gray {
-    color: rgb(0 0 0 / 28%);
-  }
-
-  .dark .loading-title--gray {
-    color: rgb(255 255 255 / 28%);
-  }
-
-  .loading-title--color {
-    color: hsl(var(--primary));
-  }
-
-  /* 标题彩色层：自左向右渐显 */
-  .loading-title-color {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width: 0;
     overflow: hidden;
-    -webkit-mask-image: linear-gradient(to right, #000 72%, transparent 100%);
-    mask-image: linear-gradient(to right, #000 72%, transparent 100%);
-    animation: title-color-sweep 2.4s ease-in-out infinite;
+    inline-size: 64px;
+    block-size: 4px;
+    background: var(--loading-track);
+    clip-path: polygon(3px 0, 100% 0, calc(100% - 3px) 100%, 0 100%);
   }
 
-  .loading-title-color .loading-title {
+  #__app-loading__ .starship-loading__track::before {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0 auto 0 0;
+    inline-size: 22px;
+    background: var(--loading-accent);
+    clip-path: polygon(3px 0, 100% 0, calc(100% - 3px) 100%, 0 100%);
+    content: '';
+    animation: starship-loading-pass 1500ms cubic-bezier(0.4, 0, 0.3, 1) infinite;
   }
 
-  @keyframes loading-spin {
+  @keyframes starship-loading-pass {
+    from {
+      transform: translateX(-22px);
+    }
+
     to {
-      transform: rotate(360deg);
+      transform: translateX(64px);
     }
   }
 
-  @keyframes logo-color-rise {
-    0% {
-      height: 0%;
+  @media (max-width: 480px), (max-height: 420px) {
+    #__app-loading__ {
+      --loading-logo-size: 60px;
     }
 
-    45% {
-      height: 100%;
-    }
-
-    60% {
-      height: 100%;
-    }
-
-    100% {
-      height: 0%;
+    #__app-loading__ .starship-loading__group {
+      gap: 16px;
     }
   }
 
-  @keyframes title-color-sweep {
-    0% {
-      width: 0%;
+  @media (prefers-reduced-motion: reduce) {
+    #__app-loading__ {
+      transition: none;
     }
 
-    45% {
-      width: 100%;
-    }
-
-    60% {
-      width: 100%;
-    }
-
-    100% {
-      width: 0%;
+    #__app-loading__ .starship-loading__track::before {
+      animation: none;
+      transform: translateX(21px);
     }
   }
 </style>
-<div class="loading" id="__app-loading__">
-  <div class="loading-brand">
-    <div class="loading-ring" aria-hidden="true"></div>
-    <div class="loading-logo-stack">
-      <img
-        class="loading-logo loading-logo--gray"
-        src="/logo-fullbleed.png"
-        alt=""
-        width="56"
-        height="56"
-      />
-      <div class="loading-logo-color" aria-hidden="true">
-        <img
-          class="loading-logo"
-          src="/logo-fullbleed.png"
-          alt=""
-          width="56"
-          height="56"
-        />
-      </div>
-    </div>
-  </div>
-  <div class="loading-title-stack">
-    <div class="loading-title loading-title--gray">%VITE_APP_TITLE%</div>
-    <div class="loading-title-color" aria-hidden="true">
-      <div class="loading-title loading-title--color">%VITE_APP_TITLE%</div>
-    </div>
+<div id="__app-loading__" class="loading" role="status" aria-label="系统正在加载">
+  <div class="starship-loading__group" aria-hidden="true">
+    <img
+      class="starship-loading__logo"
+      src="/logo.png"
+      alt=""
+      width="72"
+      height="72"
+      fetchpriority="high"
+    />
+    <span class="starship-loading__track"></span>
   </div>
 </div>
