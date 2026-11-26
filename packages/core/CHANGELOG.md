@@ -2,6 +2,12 @@
 
 本文件记录 `starship-admin/core` 的对外可见变更。版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)；**以 git tag 为准**（`composer.json` 不写死 `version`）。
 
+## [1.2.4] — 2026-11-26
+
+### Fixed
+
+- 安装 migrate/seed 改为直接读取 `.env` 刷新数据库配置，避免 `env()` 仍返回进程内旧的 `sqlite`
+
 ## [1.2.3] — 2026-11-26
 
 ### Fixed

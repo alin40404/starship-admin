@@ -424,21 +424,35 @@ class InstallService
      */
     protected function refreshDatabaseConfigFromEnv(): void
     {
-        $connection = strtolower((string) env('DB_CONNECTION', config('database.default', 'mysql')));
+        // 直接读 .env 文件：serve 同进程里 env() 可能仍是启动时的 sqlite
+        $fromFile = $this->envWriter->readMany([
+            'DB_CONNECTION',
+            'DB_HOST',
+            'DB_PORT',
+            'DB_DATABASE',
+            'DB_USERNAME',
+            'DB_PASSWORD',
+            'DB_PREFIX',
+        ]);
+
+        $connection = strtolower((string) ($fromFile['DB_CONNECTION'] ?? env('DB_CONNECTION', config('database.default', 'mysql'))));
         if (! in_array($connection, ['mysql', 'sqlite', 'pgsql'], true)) {
             $connection = 'mysql';
         }
 
         $values = [
-            'DB_HOST' => env('DB_HOST'),
-            'DB_PORT' => env('DB_PORT'),
-            'DB_DATABASE' => env('DB_DATABASE'),
-            'DB_USERNAME' => env('DB_USERNAME'),
-            'DB_PASSWORD' => env('DB_PASSWORD'),
-            'DB_PREFIX' => env('DB_PREFIX'),
+            'DB_CONNECTION' => $connection,
+            'DB_HOST' => $fromFile['DB_HOST'] ?? env('DB_HOST'),
+            'DB_PORT' => $fromFile['DB_PORT'] ?? env('DB_PORT'),
+            'DB_DATABASE' => $fromFile['DB_DATABASE'] ?? env('DB_DATABASE'),
+            'DB_USERNAME' => $fromFile['DB_USERNAME'] ?? env('DB_USERNAME'),
+            'DB_PASSWORD' => $fromFile['DB_PASSWORD'] ?? env('DB_PASSWORD'),
+            'DB_PREFIX' => $fromFile['DB_PREFIX'] ?? env('DB_PREFIX'),
         ];
 
+        $this->envWriter->syncProcess($values);
         $this->applyRuntimeDatabaseConfig($connection, $values);
+        DB::purge();
         DB::purge($connection);
     }
 
