@@ -1,9 +1,11 @@
 /**
- * Grid 搜索表单：Ant Design 控件适配（浮动标签空态、下拉箭头旋转）
+ * Grid 搜索表单：Ant Design 控件适配（浮动标签空态）
  * 空态隐藏字段名称、只显示 placeholder；聚焦/有值时标签骑在上边框
  *
  * 字号：相对 --font-size-base 动态计算（base=16 时为 13/12/11），
  * 需覆盖 Ant Design token，否则会被组件样式盖掉。
+ *
+ * Select 展开箭头旋转见 packages/styles 全局 antd 样式。
  */
 .vxe-grid-search-toolbar {
   --ant-font-size: var(--admin-font-search);
@@ -150,20 +152,4 @@
   font-size: var(--admin-font-search-sm) !important;
   line-height: 1 !important;
   color: hsl(var(--muted-foreground));
-}
-
-/* Select / TreeSelect / Cascader 箭头：展开向上 */
-.vxe-grid-search-toolbar :is(.ant-select-arrow, .ant-select-suffix),
-.search-filter-panel :is(.ant-select-arrow, .ant-select-suffix) {
-  transition: transform 0.3s;
-}
-
-.vxe-grid-search-toolbar .ant-select-open :is(.ant-select-arrow, .ant-select-suffix),
-.search-filter-panel .ant-select-open :is(.ant-select-arrow, .ant-select-suffix) {
-  transform: rotate(180deg);
-}
-
-.vxe-grid-search-toolbar .ant-select-open .ant-select-arrow .anticon,
-.search-filter-panel .ant-select-open .ant-select-arrow .anticon {
-  transform: none;
 }
