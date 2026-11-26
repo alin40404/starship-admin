@@ -29,6 +29,7 @@ import {
 
 import {
   fetchInstallRequirements,
+  fetchInstallStatus,
   runInstall,
   saveInstallDatabase,
 } from '#/api/core/install';
@@ -41,6 +42,9 @@ const router = useRouter();
 
 const current = ref(0);
 const loading = ref(false);
+const bootstrapping = ref(true);
+const webInstallAllowed = ref(true);
+const installRuntime = ref('');
 const requirementsLoading = ref(false);
 const requirements = ref<InstallApi.Requirements | null>(null);
 const adminUsername = ref('admin');
@@ -276,6 +280,25 @@ async function loadRequirements() {
   }
 }
 
+async function bootstrapInstallPage() {
+  bootstrapping.value = true;
+  try {
+    const status = await fetchInstallStatus();
+    webInstallAllowed.value = status.web_install_allowed !== false;
+    installRuntime.value = status.runtime || '';
+    if (!webInstallAllowed.value) {
+      return;
+    }
+    await loadRequirements();
+  } catch {
+    // status 失败时仍尝试拉 requirements，由接口错误提示
+    webInstallAllowed.value = true;
+    await loadRequirements();
+  } finally {
+    bootstrapping.value = false;
+  }
+}
+
 async function onRequirementsNext() {
   if (!requirements.value?.passed) {
     message.warning($t('install.requirements.hint'));
@@ -384,7 +407,7 @@ function goLogin() {
 }
 
 onMounted(() => {
-  void loadRequirements();
+  void bootstrapInstallPage();
 });
 </script>
 
@@ -399,9 +422,60 @@ onMounted(() => {
         <p class="install-page__subtitle">{{ $t('install.subtitle') }}</p>
       </div>
 
+      <Card
+        v-if="bootstrapping"
+        class="install-page__card"
+        :bordered="false"
+      >
+        <div class="install-page__blocked-loading">
+          {{ $t('install.install.running') }}
+        </div>
+      </Card>
+
+      <Card
+        v-else-if="!webInstallAllowed"
+        class="install-page__card"
+        :bordered="false"
+      >
+        <Result
+          status="warning"
+          :title="$t('install.blocked.title')"
+          :sub-title="$t('install.blocked.desc')"
+        >
+          <template #extra>
+            <div class="install-page__blocked">
+              <Alert
+                type="info"
+                show-icon
+                :message="$t('install.blocked.cliTitle')"
+                :description="`${$t('install.blocked.cliHint')} ${$t('install.blocked.cliCommand')}`"
+              />
+              <Alert
+                class="mt-3"
+                type="info"
+                show-icon
+                :message="$t('install.blocked.deployTitle')"
+                :description="$t('install.blocked.deployHint')"
+              />
+              <pre class="install-page__blocked-cmd">{{
+                $t('install.blocked.cliCommand')
+              }}</pre>
+              <p
+                v-if="installRuntime"
+                class="install-page__blocked-runtime"
+              >
+                {{ $t('install.blocked.runtime') }}：{{ installRuntime }}
+              </p>
+            </div>
+          </template>
+        </Result>
+      </Card>
+
+      <template v-else>
       <Steps
         :current="current"
         :items="stepItems"
+        :status="current >= 3 ? 'finish' : 'process'"
         class="install-page__steps"
         size="small"
       />
@@ -648,11 +722,18 @@ onMounted(() => {
         <template v-else-if="current === 2">
           <div v-if="loading || installPercent > 0" class="install-page__progress mb-4">
             <div class="install-page__progress-label mb-2">
-              {{
-                installProgressKey
-                  ? $t(installProgressKey)
-                  : $t('install.install.running')
-              }}
+              <IconifyIcon
+                v-if="loading && !installFailed"
+                icon="lucide:loader-circle"
+                class="install-page__progress-loading"
+              />
+              <span>
+                {{
+                  installProgressKey
+                    ? $t(installProgressKey)
+                    : $t('install.install.running')
+                }}
+              </span>
             </div>
             <Progress
               :percent="installPercent"
@@ -733,6 +814,7 @@ onMounted(() => {
           </Result>
         </template>
       </Card>
+      </template>
     </div>
   </div>
 </template>
@@ -805,9 +887,55 @@ onMounted(() => {
   box-shadow: 0 1px 2px hsl(var(--foreground) / 6%);
 }
 
+.install-page__blocked {
+  max-width: 36rem;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.install-page__blocked-cmd {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: hsl(var(--muted));
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: var(--admin-font-control, calc(var(--font-size-base) * 13 / 16));
+  text-align: center;
+}
+
+.install-page__blocked-runtime {
+  margin-top: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  font-size: var(--admin-font-search-sm, calc(var(--font-size-base) * 12 / 16));
+  text-align: center;
+}
+
+.install-page__blocked-loading {
+  padding: 2rem 0;
+  color: hsl(var(--muted-foreground));
+  text-align: center;
+}
+
 .install-page__progress-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   color: hsl(var(--muted-foreground));
   font-size: var(--admin-font-control, calc(var(--font-size-base) * 13 / 16));
+}
+
+.install-page__progress-loading {
+  flex-shrink: 0;
+  width: 1em;
+  height: 1em;
+  color: hsl(var(--primary));
+  animation: install-page-spin 0.8s linear infinite;
+}
+
+@keyframes install-page-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .install-page__card :deep(.ant-form-vertical .ant-form-item-label) {

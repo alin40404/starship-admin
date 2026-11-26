@@ -1,6 +1,16 @@
 {
   "title": "Installation",
   "subtitle": "Check the environment, configure the database, and initialize data",
+  "blocked": {
+    "title": "Web installer unavailable",
+    "desc": "The backend is running on PHP’s built-in server (php artisan serve / php -S). The web installer only works behind Nginx, Apache, or php-fpm.",
+    "cliTitle": "Option 1: CLI install",
+    "cliHint": "From the backend directory run:",
+    "cliCommand": "php artisan starship:install",
+    "deployTitle": "Option 2: Proper web server",
+    "deployHint": "Point the site document root to backend/public, serve with Nginx / Apache / php-fpm, then reopen this page.",
+    "runtime": "Current runtime"
+  },
   "steps": {
     "requirements": "Requirements",
     "database": "Database",

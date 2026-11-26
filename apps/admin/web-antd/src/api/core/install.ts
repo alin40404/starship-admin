@@ -4,6 +4,9 @@ export namespace InstallApi {
   export interface Status {
     installed: boolean;
     lock_path: string;
+    /** false 表示 PHP 内置开发服务器，禁止 Web 安装向导 */
+    web_install_allowed: boolean;
+    runtime: string;
   }
 
   export interface RequirementItem {
