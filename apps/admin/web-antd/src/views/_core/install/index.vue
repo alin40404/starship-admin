@@ -21,6 +21,7 @@ import {
   Result,
   Select,
   Space,
+  Spin,
   Steps,
   Table,
   Tag,
@@ -402,6 +403,7 @@ onMounted(() => {
       <Steps
         :current="current"
         :items="stepItems"
+        :status="current >= 3 ? 'finish' : 'process'"
         class="install-page__steps"
         size="small"
       />
@@ -657,7 +659,18 @@ onMounted(() => {
             <Progress
               :percent="installPercent"
               :status="installFailed ? 'exception' : loading ? 'active' : 'success'"
-            />
+            >
+              <template #format="percent">
+                <span class="install-page__progress-percent">
+                  <span>{{ percent }}%</span>
+                  <Spin
+                    v-if="loading && !installFailed"
+                    size="small"
+                    class="install-page__progress-spin"
+                  />
+                </span>
+              </template>
+            </Progress>
           </div>
 
           <Form
@@ -808,6 +821,22 @@ onMounted(() => {
 .install-page__progress-label {
   color: hsl(var(--muted-foreground));
   font-size: var(--admin-font-control, calc(var(--font-size-base) * 13 / 16));
+}
+
+.install-page__progress-percent {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: var(--admin-font-control, calc(var(--font-size-base) * 13 / 16));
+}
+
+.install-page__progress-spin {
+  display: inline-flex;
+  line-height: 1;
+}
+
+.install-page__progress-spin :deep(.ant-spin-dot) {
+  font-size: calc(var(--font-size-base) * 12 / 16);
 }
 
 .install-page__card :deep(.ant-form-vertical .ant-form-item-label) {
