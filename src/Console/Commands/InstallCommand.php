@@ -74,9 +74,11 @@ class InstallCommand extends Command
 
         try {
             $admin = $this->resolveAdminConfig();
-            $result = $install->runInstall($admin);
+            $result = $this->runInstallWithProgress($install, $admin);
+            $this->newLine();
             $this->components->info('安装完成');
             $this->components->twoColumnDetail('管理员账号', $result['admin_username']);
+            $this->components->twoColumnDetail('管理员邮箱', $admin['email']);
             $this->components->twoColumnDetail('安装锁', $status['lock_path']);
 
             return self::SUCCESS;
@@ -89,6 +91,47 @@ class InstallCommand extends Command
 
             return self::FAILURE;
         }
+    }
+
+    /**
+     * @param  array{site_name: string, username: string, password: string, email: string}  $admin
+     * @return array{installed: bool, admin_username: string, percent: int}
+     */
+    protected function runInstallWithProgress(InstallService $install, array $admin): array
+    {
+        $labels = [
+            'prepare' => '写入环境配置',
+            'migrate' => '执行数据库迁移',
+            'seed' => '初始化基础数据',
+            'finalize' => '完成收尾与锁定',
+        ];
+
+        $total = count(InstallService::INSTALL_STEPS);
+        $result = [
+            'installed' => false,
+            'admin_username' => $admin['username'],
+            'percent' => 0,
+        ];
+
+        $this->newLine();
+        $this->components->info('开始安装');
+
+        foreach (InstallService::INSTALL_STEPS as $index => $step) {
+            $label = $labels[$step] ?? $step;
+            $percent = InstallService::INSTALL_STEP_PERCENT[$step] ?? 0;
+            $title = sprintf('(%d/%d) %s [%d%%]', $index + 1, $total, $label, $percent);
+
+            $this->components->task($title, function () use ($install, $step, $admin, &$result): void {
+                $stepResult = $install->runInstallStep($step, $admin);
+                $result = [
+                    'installed' => (bool) ($stepResult['installed'] ?? false),
+                    'admin_username' => (string) ($stepResult['admin_username'] ?? ''),
+                    'percent' => (int) ($stepResult['percent'] ?? 0),
+                ];
+            });
+        }
+
+        return $result;
     }
 
     /**
@@ -162,7 +205,7 @@ class InstallCommand extends Command
                 : $this->ask('数据库用户名', env('DB_USERNAME') ?: 'root'))),
             'password' => (string) ($this->option('db-password') ?? ($force
                 ? (string) env('DB_PASSWORD', '')
-                : (string) $this->secret('数据库密码（可留空）'))),
+                : (string) $this->ask('数据库密码（可留空）', ''))),
             'prefix' => $this->option('db-prefix') !== null
                 ? (string) $this->option('db-prefix')
                 : ($force ? env('DB_PREFIX') : $this->ask('表前缀', env('DB_PREFIX') ?: 'sa_')),
@@ -186,20 +229,13 @@ class InstallCommand extends Command
         $siteName = (string) ($this->option('site-name') ?: env('APP_NAME', 'Starship Admin'));
         $username = (string) ($this->option('admin-username') ?: 'admin');
         $email = (string) ($this->option('admin-email') ?: 'admin@starship.org');
-        $password = (string) ($this->option('admin-password') ?: '');
+        $password = (string) ($this->option('admin-password') ?: 'admin123');
 
         if (! $force) {
             $siteName = (string) $this->ask('站点名称', $siteName);
             $username = (string) $this->ask('超级管理员用户名', $username);
             $email = (string) $this->ask('超级管理员邮箱', $email);
-            $password = (string) ($password !== '' ? $password : $this->secret('超级管理员密码'));
-        }
-
-        if ($password === '') {
-            $password = (string) env('SYSTEM_ADMIN_PASSWORD', 'admin123');
-            if ($force) {
-                $this->components->warn('未指定 --admin-password，使用 SYSTEM_ADMIN_PASSWORD 或默认 admin123');
-            }
+            $password = (string) $this->ask('超级管理员密码', $password);
         }
 
         return [

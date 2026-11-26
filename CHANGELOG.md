@@ -2,6 +2,13 @@
 
 本文件记录 `starship-admin/core` 的对外可见变更。版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)；**以 git tag 为准**（`composer.json` 不写死 `version`）。
 
+## [1.2.6] — 2026-11-26
+
+### Changed
+
+- `starship:install` 命令按 prepare / migrate / seed / finalize 分步显示进度与百分比
+- `starship:install` 交互输入数据库密码、超级管理员密码改为明文显示，超管密码默认 `admin123`（与账号/邮箱默认值写法一致）
+
 ## [1.2.5] — 2026-11-26
 
 ### Changed
