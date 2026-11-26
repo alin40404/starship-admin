@@ -159,6 +159,19 @@ textarea.ant-input,
   font-size: var(--font-size-base, 1rem) !important;
 }
 
+/** Select / TreeSelect / Cascader 后缀箭头：展开向上（全局，含表单与搜索） */
+.ant-select :is(.ant-select-arrow, .ant-select-suffix) {
+  transition: transform 0.3s;
+}
+
+.ant-select-open :is(.ant-select-arrow, .ant-select-suffix) {
+  transform: rotate(180deg);
+}
+
+.ant-select-open .ant-select-arrow .anticon {
+  transform: none;
+}
+
 .ant-btn {
   display: inline-flex;
   align-items: center;
