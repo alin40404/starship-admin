@@ -4,11 +4,15 @@
   "blocked": {
     "title": "Web installer unavailable",
     "desc": "The backend is running on PHP’s built-in server (php artisan serve / php -S). The web installer only works behind Nginx, Apache, or php-fpm.",
-    "cliTitle": "Option 1: CLI install",
-    "cliHint": "From the backend directory run:",
+    "cliTitle": "CLI install",
+    "cliHint": "From the backend directory, run:",
     "cliCommand": "php artisan starship:install",
-    "deployTitle": "Option 2: Proper web server",
+    "deployTitle": "Proper web server",
     "deployHint": "Point the site document root to backend/public, serve with Nginx / Apache / php-fpm, then reopen this page.",
+    "recommended": "Recommended",
+    "copy": "Copy",
+    "copied": "Command copied",
+    "copyFailed": "Copy failed. Please select the command manually.",
     "runtime": "Current runtime"
   },
   "steps": {

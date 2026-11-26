@@ -53,6 +53,8 @@ const adminFormRef = ref<FormInstance>();
 const installPercent = ref(0);
 const installProgressKey = ref('');
 const installFailed = ref(false);
+const commandCopied = ref(false);
+let commandCopiedTimer: ReturnType<typeof setTimeout> | undefined;
 
 const INSTALL_STEPS: Array<{
   step: InstallApi.InstallStep;
@@ -406,6 +408,22 @@ function goLogin() {
   router.replace(LOGIN_PATH);
 }
 
+async function copyInstallCommand() {
+  const command = $t('install.blocked.cliCommand');
+  try {
+    await navigator.clipboard.writeText(command);
+    commandCopied.value = true;
+    if (commandCopiedTimer) {
+      clearTimeout(commandCopiedTimer);
+    }
+    commandCopiedTimer = setTimeout(() => {
+      commandCopied.value = false;
+    }, 1600);
+  } catch {
+    message.error($t('install.blocked.copyFailed'));
+  }
+}
+
 onMounted(() => {
   void bootstrapInstallPage();
 });
@@ -434,7 +452,7 @@ onMounted(() => {
 
       <Card
         v-else-if="!webInstallAllowed"
-        class="install-page__card"
+        class="install-page__card install-page__card--blocked"
         :bordered="false"
       >
         <Result
@@ -444,27 +462,67 @@ onMounted(() => {
         >
           <template #extra>
             <div class="install-page__blocked">
-              <Alert
-                type="info"
-                show-icon
-                :message="$t('install.blocked.cliTitle')"
-                :description="`${$t('install.blocked.cliHint')} ${$t('install.blocked.cliCommand')}`"
-              />
-              <Alert
-                class="mt-3"
-                type="info"
-                show-icon
-                :message="$t('install.blocked.deployTitle')"
-                :description="$t('install.blocked.deployHint')"
-              />
-              <pre class="install-page__blocked-cmd">{{
-                $t('install.blocked.cliCommand')
-              }}</pre>
+              <ol class="install-page__blocked-options">
+                <li class="install-page__blocked-option">
+                  <div class="install-page__blocked-option-head">
+                    <span class="install-page__blocked-option-index">1</span>
+                    <div class="install-page__blocked-option-title-wrap">
+                      <div class="install-page__blocked-option-title">
+                        {{ $t('install.blocked.cliTitle') }}
+                      </div>
+                      <Tag color="processing">
+                        {{ $t('install.blocked.recommended') }}
+                      </Tag>
+                    </div>
+                  </div>
+                  <p class="install-page__blocked-option-desc">
+                    {{ $t('install.blocked.cliHint') }}
+                  </p>
+                  <div class="install-page__blocked-cmd-wrap">
+                    <code class="install-page__blocked-cmd">{{
+                      $t('install.blocked.cliCommand')
+                    }}</code>
+                    <button
+                      type="button"
+                      class="install-page__blocked-cmd-copy"
+                      :class="{
+                        'install-page__blocked-cmd-copy--done': commandCopied,
+                      }"
+                      :aria-label="$t('install.blocked.copy')"
+                      :title="
+                        commandCopied
+                          ? $t('install.blocked.copied')
+                          : $t('install.blocked.copy')
+                      "
+                      @click="copyInstallCommand"
+                    >
+                      <IconifyIcon
+                        class="size-3.5"
+                        :icon="
+                          commandCopied ? 'lucide:check' : 'lucide:copy'
+                        "
+                      />
+                    </button>
+                  </div>
+                </li>
+                <li class="install-page__blocked-option">
+                  <div class="install-page__blocked-option-head">
+                    <span class="install-page__blocked-option-index">2</span>
+                    <div class="install-page__blocked-option-title">
+                      {{ $t('install.blocked.deployTitle') }}
+                    </div>
+                  </div>
+                  <p class="install-page__blocked-option-desc">
+                    {{ $t('install.blocked.deployHint') }}
+                  </p>
+                </li>
+              </ol>
               <p
                 v-if="installRuntime"
                 class="install-page__blocked-runtime"
               >
-                {{ $t('install.blocked.runtime') }}：{{ installRuntime }}
+                {{ $t('install.blocked.runtime') }}：
+                <code>{{ installRuntime }}</code>
               </p>
             </div>
           </template>
@@ -887,27 +945,158 @@ onMounted(() => {
   box-shadow: 0 1px 2px hsl(var(--foreground) / 6%);
 }
 
-.install-page__blocked {
+.install-page__card--blocked :deep(.ant-result) {
+  padding: 1.25rem 0.5rem 0.25rem;
+}
+
+.install-page__card--blocked :deep(.ant-result-title) {
+  font-size: calc(var(--font-size-base) * 18 / 16);
+  line-height: 1.4;
+}
+
+.install-page__card--blocked :deep(.ant-result-subtitle) {
   max-width: 36rem;
-  margin: 0 auto;
+  margin-inline: auto;
+  color: hsl(var(--muted-foreground));
+  font-size: var(--admin-font-control, calc(var(--font-size-base) * 13 / 16));
+  line-height: 1.6;
+}
+
+.install-page__card--blocked :deep(.ant-result-extra) {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.install-page__blocked {
+  width: min(34rem, 100%);
+  margin: 1.25rem 0 0;
   text-align: left;
 }
 
+.install-page__blocked-options {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.install-page__blocked-option {
+  padding: 0.9rem 1rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 6px;
+  background: hsl(var(--background-deep, var(--background)));
+}
+
+.install-page__blocked-option-head {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.install-page__blocked-option-index {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font-size: var(--admin-font-search-sm, calc(var(--font-size-base) * 12 / 16));
+  font-weight: 600;
+  line-height: 1;
+}
+
+.install-page__blocked-option-title-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.55rem;
+  min-width: 0;
+}
+
+.install-page__blocked-option-title {
+  color: hsl(var(--foreground));
+  font-size: var(--admin-font-control, calc(var(--font-size-base) * 13 / 16));
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.install-page__blocked-option-desc {
+  margin: 0.45rem 0 0 2.15rem;
+  color: hsl(var(--muted-foreground));
+  font-size: var(--admin-font-search-sm, calc(var(--font-size-base) * 12 / 16));
+  line-height: 1.55;
+}
+
+.install-page__blocked-cmd-wrap {
+  position: relative;
+  margin: 0.65rem 0 0 2.15rem;
+}
+
 .install-page__blocked-cmd {
-  margin-top: 1rem;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  background: hsl(var(--muted));
+  display: block;
+  margin: 0;
+  padding: 0.65rem 2.25rem 0.65rem 0.75rem;
+  overflow-x: auto;
+  border-radius: 4px;
+  background: #111827;
+  color: #e5e7eb;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: var(--admin-font-control, calc(var(--font-size-base) * 13 / 16));
-  text-align: center;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.install-page__blocked-cmd-copy {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 4px;
+  background: rgb(255 255 255 / 8%);
+  color: #d1d5db;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.install-page__blocked-cmd-copy:hover {
+  border-color: rgb(255 255 255 / 28%);
+  background: rgb(255 255 255 / 16%);
+  color: #fff;
+}
+
+.install-page__blocked-cmd-copy--done,
+.install-page__blocked-cmd-copy--done:hover {
+  border-color: rgb(34 197 94 / 45%);
+  background: rgb(34 197 94 / 16%);
+  color: #22c55e;
 }
 
 .install-page__blocked-runtime {
-  margin-top: 0.75rem;
+  margin: 0.9rem 0 0;
   color: hsl(var(--muted-foreground));
-  font-size: var(--admin-font-search-sm, calc(var(--font-size-base) * 12 / 16));
+  font-size: var(--admin-font-search-xs, calc(var(--font-size-base) * 11 / 16));
   text-align: center;
+}
+
+.install-page__blocked-runtime code {
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  background: hsl(var(--muted));
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: inherit;
 }
 
 .install-page__blocked-loading {
