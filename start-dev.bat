@@ -143,24 +143,31 @@ if "!PORT_UP!"=="1" (
 )
 
 echo.
-echo 前后端在另外两个窗口里跑（Starship-Backend / Starship-Frontend）。
-echo 关掉本窗口不会停它们；要停止请双击 stop-dev.bat。
+echo 前后端在另外两个窗口里跑 [Starship-Backend / Starship-Frontend]
+echo 关掉本窗口不会停它们
+echo 要停止请双击 stop-dev.bat
 echo.
 echo 等待服务就绪...
 call :WaitPort %BACKEND_PORT% 30
-if "!PORT_UP!"=="1" (echo [就绪] 后端  %BACKEND_URL%) else (echo [超时] 后端尚未监听 %BACKEND_PORT%，请查看 Starship-Backend 窗口)
+if "!PORT_UP!"=="1" (
+  echo [就绪] 后端  %BACKEND_URL%
+) else (
+  echo [超时] 后端尚未监听 %BACKEND_PORT%
+  echo        请查看 Starship-Backend 窗口
+)
 call :WaitPort %FRONTEND_PORT% 90
 if "!PORT_UP!"=="1" (
   echo [就绪] 前端  %FRONTEND_URL%
   start "" "%FRONTEND_URL%"
 ) else (
-  echo [超时] 前端尚未监听 %FRONTEND_PORT%，请查看 Starship-Frontend 窗口
+  echo [超时] 前端尚未监听 %FRONTEND_PORT%
+  echo        请查看 Starship-Frontend 窗口
   echo        手动打开: %FRONTEND_URL%
 )
 
 echo.
-echo 启动步骤已结束。此窗口会保留，避免一闪而过。
-echo 输入 exit 后回车，或直接点关闭，即可关掉本窗口。
+echo 启动步骤已结束. 此窗口会保留, 避免一闪而过.
+echo 输入 exit 后回车, 或直接点关闭, 即可关掉本窗口.
 endlocal
 exit /b 0
 
