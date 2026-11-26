@@ -45,6 +45,7 @@ async function initApplication() {
 
   // Vben 会把偏好写入 localStorage；历史缓存可能仍保留旧值（defu 合并不覆盖已存在字段），
   // 启动后强制采用项目约定配置。
+  // 注意：不要覆盖 theme.mode，否则用户切换的深/浅色会在刷新后被打回 overrides 默认值。
   updatePreferences({
     app: {
       accessMode: overridesPreferences.app?.accessMode ?? 'backend',
@@ -54,7 +55,6 @@ async function initApplication() {
     },
     theme: {
       fontSize: overridesPreferences.theme?.fontSize ?? 16,
-      mode: overridesPreferences.theme?.mode ?? 'light',
       radius: overridesPreferences.theme?.radius ?? '0.5',
     },
   });
