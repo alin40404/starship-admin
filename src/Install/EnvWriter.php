@@ -46,6 +46,29 @@ class EnvWriter
         }
 
         File::put($envPath, $content);
+        // 同步到当前进程，避免 serve 同进程仍读旧环境变量
+        $this->applyToProcess($values);
+    }
+
+    /**
+     * @param  array<string, scalar|null>  $values
+     */
+    protected function applyToProcess(array $values): void
+    {
+        foreach ($values as $key => $value) {
+            $name = (string) $key;
+            if ($value === null) {
+                putenv($name);
+                unset($_ENV[$name], $_SERVER[$name]);
+
+                continue;
+            }
+
+            $raw = is_bool($value) ? ($value ? 'true' : 'false') : (string) $value;
+            putenv($name.'='.$raw);
+            $_ENV[$name] = $raw;
+            $_SERVER[$name] = $raw;
+        }
     }
 
     public function set(string $key, mixed $value): void

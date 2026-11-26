@@ -306,6 +306,8 @@ class InstallService
 
     protected function installMigrate(): void
     {
+        $this->refreshDatabaseConfigFromEnv();
+
         $wasProduction = app()->isProduction();
         $this->allowDestructiveCommands();
 
@@ -327,6 +329,7 @@ class InstallService
     protected function installSeed(array $admin): void
     {
         // 分步请求时重新注入，避免仅依赖上一请求 putenv
+        $this->refreshDatabaseConfigFromEnv();
         $this->exposeAdminEnv($admin);
         config(['app.name' => $admin['site_name']]);
 
@@ -414,6 +417,29 @@ class InstallService
         $key = 'base64:'.base64_encode(Str::random(32));
         $this->envWriter->set('APP_KEY', $key);
         config(['app.key' => $key]);
+    }
+
+    /**
+     * 从当前进程环境变量刷新 database 配置（安装分步请求 / serve 同进程场景）。
+     */
+    protected function refreshDatabaseConfigFromEnv(): void
+    {
+        $connection = strtolower((string) env('DB_CONNECTION', config('database.default', 'mysql')));
+        if (! in_array($connection, ['mysql', 'sqlite', 'pgsql'], true)) {
+            $connection = 'mysql';
+        }
+
+        $values = [
+            'DB_HOST' => env('DB_HOST'),
+            'DB_PORT' => env('DB_PORT'),
+            'DB_DATABASE' => env('DB_DATABASE'),
+            'DB_USERNAME' => env('DB_USERNAME'),
+            'DB_PASSWORD' => env('DB_PASSWORD'),
+            'DB_PREFIX' => env('DB_PREFIX'),
+        ];
+
+        $this->applyRuntimeDatabaseConfig($connection, $values);
+        DB::purge($connection);
     }
 
     /**

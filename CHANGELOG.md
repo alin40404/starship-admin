@@ -2,6 +2,12 @@
 
 本文件记录 `starship-admin/core` 的对外可见变更。版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)；**以 git tag 为准**（`composer.json` 不写死 `version`）。
 
+## [1.2.3] — 2026-11-26
+
+### Fixed
+
+- 安装写入数据库配置后同步进程环境变量，避免 `artisan serve` 同进程仍沿用启动时的 `DB_CONNECTION=sqlite`
+
 ## [1.2.2] — 2026-11-26
 
 ### Fixed
