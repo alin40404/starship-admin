@@ -13,10 +13,10 @@
 
 1. 后端：`composer install` → 复制 `.env` → `php artisan key:generate` → `php artisan serve`
 2. 前端：`pnpm install` → `pnpm dev:antd`
-3. 打开管理端；未安装时路由守卫强制进入 `/install`
+3. 打开管理端；启动时先探测 `/install/status`，未安装则**首先**进入 `/install`（路由守卫兜底）
 4. 按向导完成；安装成功后跳转登录
 
-API（均在 `admin-api` 前缀下，仅 `api` 中间件）：
+API（均在 `admin-api` 前缀下）：
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -25,7 +25,7 @@ API（均在 `admin-api` 前缀下，仅 `api` 中间件）：
 | POST | `/install/database` | 保存并测试数据库配置 |
 | POST | `/install/run` | 执行安装并写锁 |
 
-已安装时，除 `status` 外返回 403。
+已安装时，安装写接口返回 403。未安装时，业务 `admin-api`（登录、站点配置等）由 `EnsureInstalled`（`api` 组 + `admin.installed`）返回 503 / `code=50301`，避免未装完就进登录。
 
 ## CLI
 

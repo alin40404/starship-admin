@@ -12,6 +12,10 @@ import { resolveInstallStatus } from '#/utils/install-status';
 
 import { generateAccess } from './access';
 
+function isInstallRoute(path: string, name?: string | symbol | null): boolean {
+  return path === INSTALL_PATH || name === 'Install';
+}
+
 /**
  * 通用守卫配置
  * @param router
@@ -44,19 +48,21 @@ function setupCommonGuard(router: Router) {
 
 /**
  * 未安装时强制进入安装引导；已安装则禁止再访问 /install。
+ * 须在权限守卫之前注册，保证首跳优先进入安装页。
  */
 function setupInstallGuard(router: Router) {
   router.beforeEach(async (to) => {
     const installed = await resolveInstallStatus();
+    const onInstall = isInstallRoute(to.path, to.name as string | undefined);
 
-    if (installed === false && to.path !== INSTALL_PATH) {
+    if (installed === false && !onInstall) {
       return {
         path: INSTALL_PATH,
         replace: true,
       };
     }
 
-    if (installed === true && to.path === INSTALL_PATH) {
+    if (installed === true && onInstall) {
       return {
         path: LOGIN_PATH,
         replace: true,

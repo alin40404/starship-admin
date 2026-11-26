@@ -55,7 +55,7 @@ Route::middleware('api')->prefix('admin-api')->group(function () {
     });
 });
 
-Route::middleware(['api', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('admin-api')->group(function () {
+Route::middleware(['api', 'admin.installed', 'admin.forbidden_ip', 'admin.maintenance'])->prefix('admin-api')->group(function () {
     // --- start: 无需登录 ---
     Route::get('system/site', [ConfigController::class, 'site']);
     Route::get('system/runtime', [ConfigController::class, 'runtime']);

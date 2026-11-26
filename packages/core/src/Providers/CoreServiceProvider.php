@@ -33,6 +33,7 @@ use Starship\Core\Console\Commands\ThemeSwitchCommand;
 use Starship\Core\Console\Commands\ThemeUninstallCommand;
 use Starship\Core\Event\EventDispatcher;
 use Starship\Core\Event\EventDispatcherInterface;
+use Starship\Core\Http\Middleware\EnsureInstalled;
 use Starship\Core\Install\EnvironmentChecker;
 use Starship\Core\Install\EnvWriter;
 use Starship\Core\Install\InstallLock;
@@ -109,6 +110,9 @@ class CoreServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
         $this->loadRoutesFrom(__DIR__.'/../../routes/web.php');
         $this->loadRoutesFrom(__DIR__.'/../../routes/install.php');
+
+        // 路由别名；api 组挂载见应用 bootstrap/app.php（Laravel 11 appendToGroup）
+        $this->app['router']->aliasMiddleware('admin.installed', EnsureInstalled::class);
 
         try {
             $this->app->make(ThemeLoader::class)->register('frontend');
