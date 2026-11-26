@@ -229,7 +229,7 @@ class InstallService
             'prepare' => $this->installPrepare($validated),
             'migrate' => $this->installMigrate(),
             'seed' => $this->installSeed($validated),
-            'finalize' => $this->installFinalize($validated['site_name']),
+            'finalize' => $this->installFinalize($validated),
         };
 
         $index = array_search($step, self::INSTALL_STEPS, true);
@@ -296,14 +296,10 @@ class InstallService
      */
     protected function installPrepare(array $admin): void
     {
+        // 不在此处写 .env：
+        // 1) php artisan serve 监听 .env 会热重启，紧接着 migrate 会被掐断（前端 502）
+        // 2) SYSTEM_ADMIN_* 仅 seed 需要，由请求 payload + exposeAdminEnv 注入，勿落盘明文密码
         $this->ensureAppKey();
-        $this->envWriter->setMany([
-            'APP_NAME' => $admin['site_name'],
-            'SYSTEM_ADMIN_USERNAME' => $admin['username'],
-            'SYSTEM_ADMIN_PASSWORD' => $admin['password'],
-            'SYSTEM_ADMIN_EMAIL' => $admin['email'],
-        ]);
-
         $this->exposeAdminEnv($admin);
         config(['app.name' => $admin['site_name']]);
     }
@@ -351,10 +347,20 @@ class InstallService
         }
     }
 
-    protected function installFinalize(string $siteName): void
+    /**
+     * @param  array{site_name: string, username: string, password: string, email: string}  $admin
+     */
+    protected function installFinalize(array $admin): void
     {
         try {
-            $this->syncSiteNameSetting($siteName);
+            // 仅持久化站点名；超管已在 seed 写入数据库，不写 SYSTEM_ADMIN_*
+            $this->envWriter->setMany([
+                'APP_NAME' => $admin['site_name'],
+            ]);
+            $this->exposeAdminEnv($admin);
+            config(['app.name' => $admin['site_name']]);
+
+            $this->syncSiteNameSetting($admin['site_name']);
             Artisan::call('storage:link', ['--force' => true]);
         } catch (Throwable $exception) {
             throw new RuntimeException('安装失败：'.$exception->getMessage(), 0, $exception);

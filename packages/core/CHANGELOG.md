@@ -2,6 +2,17 @@
 
 本文件记录 `starship-admin/core` 的对外可见变更。版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)；**以 git tag 为准**（`composer.json` 不写死 `version`）。
 
+## [1.2.2] — 2026-11-26
+
+### Fixed
+
+- 安装 `prepare` 不再写 `.env`，避免 `php artisan serve` 热重启导致下一步 `migrate` 502
+- 安装不再把 `SYSTEM_ADMIN_*` 明文写入 `.env`（seed 仅用请求注入）
+
+### Changed
+
+- `APP_NAME` 改在 `finalize` 持久化到 `.env`
+
 ## [1.2.1] — 2026-11-26
 
 ### Added

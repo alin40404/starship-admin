@@ -12,7 +12,7 @@ chcp 65001 >nul
 
 REM ============================================================
 REM  开发启动命令（与下方实际执行保持一致）
-REM  后端:  php artisan serve --host=127.0.0.1 --port=8000
+REM  后端:  php artisan serve --host=127.0.0.1 --port=8000 --no-reload
 REM  前端:  pnpm dev:antd          （目录: apps\admin, 端口 5666）
 REM ============================================================
 set "BACKEND_HOST=127.0.0.1"
@@ -25,7 +25,7 @@ set "FRONTEND_URL=http://localhost:%FRONTEND_PORT%"
 echo ========================================
 echo   Starship 本地开发启动
 echo ========================================
-echo   后端命令: php artisan serve --host=%BACKEND_HOST% --port=%BACKEND_PORT%
+echo   后端命令: php artisan serve --host=%BACKEND_HOST% --port=%BACKEND_PORT% --no-reload
 echo   前端命令: %FRONTEND_CMD%
 echo   后端地址: %BACKEND_URL%
 echo   前端地址: %FRONTEND_URL%
@@ -125,9 +125,9 @@ if "!PORT_UP!"=="1" (
   echo [跳过] 后端已在运行: %BACKEND_URL%
 ) else (
   echo [启动] 后端
-  echo        命令: "%PHP_BIN%" artisan serve --host=%BACKEND_HOST% --port=%BACKEND_PORT%
+  echo        命令: "%PHP_BIN%" artisan serve --host=%BACKEND_HOST% --port=%BACKEND_PORT% --no-reload
   echo        目录: %~dp0backend
-  start "Starship-Backend" /D "%~dp0backend" cmd /k ""%PHP_BIN%" artisan serve --host=%BACKEND_HOST% --port=%BACKEND_PORT%"
+  start "Starship-Backend" /D "%~dp0backend" cmd /k ""%PHP_BIN%" artisan serve --host=%BACKEND_HOST% --port=%BACKEND_PORT% --no-reload"
 )
 
 REM ---------- 启动前端 ----------
