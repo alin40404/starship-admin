@@ -11,8 +11,10 @@
 
 ## Web
 
-1. 后端：`composer install` → 复制 `.env` → `php artisan key:generate` → `php artisan serve`
-2. 前端：`pnpm install` → `pnpm dev:antd`
+> **注意：** `php artisan serve` / `php -S`（`PHP_SAPI=cli-server`）下 **不支持** Web 安装向导。此时 `/install/status` 会返回 `web_install_allowed: false`，前端显示引导改用 CLI 或正式 Web 服务。请用 Nginx / Apache / php-fpm 部署 `backend/public` 后再走 Web 安装，或直接使用下方 CLI。
+
+1. 后端：`composer install` → 复制 `.env` → `php artisan key:generate` → 用正式 Web 服务指向 `backend/public`
+2. 前端：`pnpm install` → `pnpm dev:antd`（或构建后由 Web 服务托管）
 3. 打开管理端；启动时先探测 `/install/status`，未安装则**首先**进入 `/install`（路由守卫兜底）
 4. 按向导完成；安装成功后跳转登录
 
@@ -20,10 +22,10 @@ API（均在 `admin-api` 前缀下）：
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/install/status` | 是否已安装（始终可访问） |
-| GET | `/install/requirements` | 环境检测 |
-| POST | `/install/database` | 保存并测试数据库配置 |
-| POST | `/install/run` | 执行安装并写锁 |
+| GET | `/install/status` | 是否已安装、`web_install_allowed`、`runtime`（始终可访问） |
+| GET | `/install/requirements` | 环境检测（`cli-server` 下拒绝） |
+| POST | `/install/database` | 保存并测试数据库配置（`cli-server` 下拒绝） |
+| POST | `/install/run` | 分步执行安装并写锁（`cli-server` 下拒绝） |
 
 已安装时，安装写接口返回 403。未安装时，业务 `admin-api`（登录、站点配置等）由 `EnsureInstalled`（`api` 组 + `admin.installed`）返回 503 / `code=50301`，避免未装完就进登录。
 

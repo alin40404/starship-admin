@@ -31,14 +31,43 @@ class InstallService
     ) {}
 
     /**
-     * @return array{installed: bool, lock_path: string}
+     * @return array{
+     *   installed: bool,
+     *   lock_path: string,
+     *   web_install_allowed: bool,
+     *   runtime: string
+     * }
      */
     public function status(): array
     {
         return [
             'installed' => $this->lock->isInstalled(),
             'lock_path' => 'storage/app/starship.installed',
+            'web_install_allowed' => $this->isWebInstallAllowed(),
+            'runtime' => \PHP_SAPI,
         ];
+    }
+
+    /**
+     * Web 安装向导仅允许在正式 Web SAPI 下使用（排除 php artisan serve / php -S）。
+     */
+    public function isWebInstallAllowed(): bool
+    {
+        return \PHP_SAPI !== 'cli-server';
+    }
+
+    /**
+     * @throws RuntimeException
+     */
+    public function assertWebInstallAllowed(): void
+    {
+        if ($this->isWebInstallAllowed()) {
+            return;
+        }
+
+        throw new RuntimeException(
+            '当前后端由 PHP 内置开发服务器（php artisan serve / php -S）提供，不支持 Web 安装向导。请使用命令行安装：php artisan starship:install；或改用 Nginx / Apache / php-fpm 等正式 Web 服务后再打开安装页。'
+        );
     }
 
     /**
@@ -296,9 +325,7 @@ class InstallService
      */
     protected function installPrepare(array $admin): void
     {
-        // 不在此处写 .env：
-        // 1) php artisan serve 监听 .env 会热重启，紧接着 migrate 会被掐断（前端 502）
-        // 2) SYSTEM_ADMIN_* 仅 seed 需要，由请求 payload + exposeAdminEnv 注入，勿落盘明文密码
+        // SYSTEM_ADMIN_* 仅 seed 需要，由请求/CLI 注入，勿落盘明文密码
         $this->ensureAppKey();
         $this->exposeAdminEnv($admin);
         config(['app.name' => $admin['site_name']]);
@@ -306,7 +333,7 @@ class InstallService
 
     protected function installMigrate(): void
     {
-        $this->refreshDatabaseConfigFromEnv();
+        $this->purgeDatabaseConnections();
 
         $wasProduction = app()->isProduction();
         $this->allowDestructiveCommands();
@@ -328,8 +355,7 @@ class InstallService
      */
     protected function installSeed(array $admin): void
     {
-        // 分步请求时重新注入，避免仅依赖上一请求 putenv
-        $this->refreshDatabaseConfigFromEnv();
+        $this->purgeDatabaseConnections();
         $this->exposeAdminEnv($admin);
         config(['app.name' => $admin['site_name']]);
 
@@ -420,38 +446,11 @@ class InstallService
     }
 
     /**
-     * 从当前进程环境变量刷新 database 配置（安装分步请求 / serve 同进程场景）。
+     * 丢掉已解析的 PDO，使后续步骤使用当前 config（CLI 同进程刚 applyRuntime 过；Web 新请求已从 .env 启动）。
      */
-    protected function refreshDatabaseConfigFromEnv(): void
+    protected function purgeDatabaseConnections(): void
     {
-        // 直接读 .env 文件：serve 同进程里 env() 可能仍是启动时的 sqlite
-        $fromFile = $this->envWriter->readMany([
-            'DB_CONNECTION',
-            'DB_HOST',
-            'DB_PORT',
-            'DB_DATABASE',
-            'DB_USERNAME',
-            'DB_PASSWORD',
-            'DB_PREFIX',
-        ]);
-
-        $connection = strtolower((string) ($fromFile['DB_CONNECTION'] ?? env('DB_CONNECTION', config('database.default', 'mysql'))));
-        if (! in_array($connection, ['mysql', 'sqlite', 'pgsql'], true)) {
-            $connection = 'mysql';
-        }
-
-        $values = [
-            'DB_CONNECTION' => $connection,
-            'DB_HOST' => $fromFile['DB_HOST'] ?? env('DB_HOST'),
-            'DB_PORT' => $fromFile['DB_PORT'] ?? env('DB_PORT'),
-            'DB_DATABASE' => $fromFile['DB_DATABASE'] ?? env('DB_DATABASE'),
-            'DB_USERNAME' => $fromFile['DB_USERNAME'] ?? env('DB_USERNAME'),
-            'DB_PASSWORD' => $fromFile['DB_PASSWORD'] ?? env('DB_PASSWORD'),
-            'DB_PREFIX' => $fromFile['DB_PREFIX'] ?? env('DB_PREFIX'),
-        ];
-
-        $this->envWriter->syncProcess($values);
-        $this->applyRuntimeDatabaseConfig($connection, $values);
+        $connection = (string) config('database.default', 'mysql');
         DB::purge();
         DB::purge($connection);
     }

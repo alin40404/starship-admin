@@ -25,7 +25,9 @@ class InstallApiTest extends TestCase
 
         $response->assertOk()
             ->assertJsonPath('code', 0)
-            ->assertJsonPath('data.installed', false);
+            ->assertJsonPath('data.installed', false)
+            ->assertJsonPath('data.web_install_allowed', \PHP_SAPI !== 'cli-server')
+            ->assertJsonPath('data.runtime', \PHP_SAPI);
     }
 
     public function test_business_admin_api_blocked_when_not_installed(): void

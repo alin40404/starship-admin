@@ -22,6 +22,8 @@ class InstallController extends Controller
     public function requirements(InstallService $install): JsonResponse
     {
         try {
+            $install->assertWebInstallAllowed();
+
             return ApiResponse::success($install->checkEnvironment());
         } catch (RuntimeException $exception) {
             return ApiResponse::error($exception->getMessage(), 403);
@@ -30,6 +32,12 @@ class InstallController extends Controller
 
     public function database(Request $request, InstallService $install): JsonResponse
     {
+        try {
+            $install->assertWebInstallAllowed();
+        } catch (RuntimeException $exception) {
+            return ApiResponse::error($exception->getMessage(), 403);
+        }
+
         $connection = strtolower((string) $request->input('connection', ''));
         $serverRequired = in_array($connection, ['mysql', 'pgsql'], true);
 
@@ -72,6 +80,12 @@ class InstallController extends Controller
 
     public function run(Request $request, InstallService $install): JsonResponse
     {
+        try {
+            $install->assertWebInstallAllowed();
+        } catch (RuntimeException $exception) {
+            return ApiResponse::error($exception->getMessage(), 403);
+        }
+
         $validator = Validator::make($request->all(), [
             'step' => ['required', 'string', 'in:prepare,migrate,seed,finalize'],
             'site_name' => ['required', 'string', 'max:64'],
