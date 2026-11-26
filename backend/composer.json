@@ -16,7 +16,6 @@
         "overtrue/pinyin": "5.0",
         "php": "^8.3",
         "starship-admin/core": "@dev",
-        "starship/game-shop": "@dev",
         "starship/generator": "@dev",
         "starship/member": "@dev",
         "starship/system": "@dev"
@@ -52,10 +51,6 @@
         {
             "type": "path",
             "url": "../modules/Member"
-        },
-        {
-            "type": "path",
-            "url": "../modules/GameShop"
         }
     ],
     "autoload-dev": {
@@ -63,7 +58,6 @@
             "Tests\\": "tests/",
             "Modules\\System\\Tests\\": "../modules/System/tests/",
             "Modules\\Member\\Tests\\": "../modules/Member/tests/",
-            "Modules\\GameShop\\Tests\\": "../modules/GameShop/tests/",
             "Modules\\Generator\\Tests\\": "../modules/Generator/tests/"
         }
     },
