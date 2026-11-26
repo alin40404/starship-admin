@@ -159,12 +159,12 @@ textarea.ant-input,
   font-size: var(--font-size-base, 1rem) !important;
 }
 
-/** Select / TreeSelect / Cascader 后缀箭头：展开向上（全局，含表单与搜索） */
-.ant-select :is(.ant-select-arrow, .ant-select-suffix) {
+/** Select / TreeSelect / Cascader 后缀箭头：展开向上（搜索图标不旋转） */
+.ant-select .ant-select-arrow {
   transition: transform 0.3s;
 }
 
-.ant-select-open :is(.ant-select-arrow, .ant-select-suffix) {
+.ant-select-open .ant-select-arrow:has(.anticon-down) {
   transform: rotate(180deg);
 }
 
