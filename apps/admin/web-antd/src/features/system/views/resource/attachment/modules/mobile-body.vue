@@ -470,7 +470,7 @@ defineExpose({ clearSelection, reload });
 
       <div
         ref="flowScrollBodyRef"
-        class="mobile-crud-list__body vxe-table-like-scrollbar min-h-0 flex-1 overflow-y-auto"
+        class="mobile-crud-list__body min-h-0 flex-1 overflow-y-auto"
       >
         <Spin :spinning="loading" wrapper-class-name="mobile-crud-list__spin">
           <AttachmentFlowView
