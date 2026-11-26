@@ -2,6 +2,12 @@
 
 本文件记录 `starship-admin/core` 的对外可见变更。版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)；**以 git tag 为准**（`composer.json` 不写死 `version`）。
 
+## [1.2.1] — 2026-11-26
+
+### Added
+
+- `EnsureInstalled` 中间件与别名 `admin.installed`：未安装时拦截业务 `admin-api`（安装接口 / `ping` 放行）
+
 ## [1.2.0] — 2026-11-26
 
 ### Added
