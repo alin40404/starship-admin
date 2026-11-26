@@ -1,5 +1,5 @@
 @echo off
-REM 双击时资源管理器会用“跑完就关”的方式打开本文件，所以先换到 /k，窗口才会留下来
+REM 双击时资源管理器会用“跑完就关”的方式打开本文件, 所以先换到 /k, 窗口才会留下来
 if /I not "%~1"=="__run" (
   title Starship Dev
   cmd /k ""%~f0" __run"
@@ -13,7 +13,7 @@ chcp 65001 >nul
 REM ============================================================
 REM  开发启动命令（与下方实际执行保持一致）
 REM  后端:  php artisan serve --host=127.0.0.1 --port=8000
-REM  前端:  pnpm dev:antd          （目录: apps\admin，端口 5666）
+REM  前端:  pnpm dev:antd          （目录: apps\admin, 端口 5666）
 REM ============================================================
 set "BACKEND_HOST=127.0.0.1"
 set "BACKEND_PORT=8000"
@@ -43,15 +43,15 @@ for /f "delims=" %%P in ('where php 2^>nul') do (
   )
 )
 if not defined PHP_BIN (
-  echo [错误] 未找到 PHP 8.3+。当前 PATH 中的 php 版本过低或不存在。
-  echo        可设置环境变量 PHP_BIN 为 php8.3 的 php.exe 完整路径后重试。
+  echo [错误] 未找到 PHP 8.3+.当前 PATH 中的 php 版本过低或不存在.
+  echo        可设置环境变量 PHP_BIN 为 php8.3 的 php.exe 完整路径后重试.
   pause
   exit /b 1
 )
 :PhpReady
 "%PHP_BIN%" -r "exit(PHP_VERSION_ID>=80300?0:1);" >nul 2>&1
 if errorlevel 1 (
-  echo [错误] 需要 PHP 8.3+，当前为: %PHP_BIN%
+  echo [错误] 需要 PHP 8.3+, 当前为: %PHP_BIN%
   pause
   exit /b 1
 )
@@ -66,7 +66,7 @@ echo      %PHP_BIN%
 REM ---------- Node / pnpm ----------
 where node >nul 2>&1
 if errorlevel 1 (
-  echo [错误] 未找到 Node.js。请安装 Node.js 20+ 并加入 PATH。
+  echo [错误] 未找到 Node.js.请安装 Node.js 20+ 并加入 PATH.
   pause
   exit /b 1
 )
@@ -75,7 +75,7 @@ echo [OK] Node %NODE_VER%
 
 where pnpm >nul 2>&1
 if errorlevel 1 (
-  echo [错误] 未找到 pnpm。请执行: npm install -g pnpm
+  echo [错误] 未找到 pnpm.请执行: npm install -g pnpm
   pause
   exit /b 1
 )
@@ -85,39 +85,37 @@ echo.
 
 REM ---------- 目录 / 依赖 ----------
 if not exist "%~dp0backend\artisan" (
-  echo [错误] 未找到 backend\artisan。请把本文件放在仓库根目录。
+  echo [错误] 未找到 backend\artisan.请把本文件放在仓库根目录.
   pause
   exit /b 1
 )
 if not exist "%~dp0backend\vendor\autoload.php" (
-  echo [错误] 后端依赖未安装。请先在 backend 目录执行: composer install
+  echo [错误] 后端依赖未安装.请先在 backend 目录执行: composer install
   pause
   exit /b 1
 )
 if not exist "%~dp0apps\admin\package.json" (
-  echo [错误] 未找到 apps\admin\package.json。
+  echo [错误] 未找到 apps\admin\package.json.
   pause
   exit /b 1
 )
 if not exist "%~dp0apps\admin\node_modules\" (
-  echo [错误] 前端依赖未安装。请先在 apps\admin 目录执行: pnpm install
+  echo [错误] 前端依赖未安装.请先在 apps\admin 目录执行: pnpm install
   pause
   exit /b 1
 )
 
 if exist "%~dp0backend\.env" goto :EnvOk
 if not exist "%~dp0backend\.env.example" (
-  echo [错误] 未找到 backend/.env 与 backend/.env.example。
+  echo [错误] 未找到 backend/.env 与 backend/.env.example.
   pause
   exit /b 1
 )
 copy /Y "%~dp0backend\.env.example" "%~dp0backend\.env" >nul
-echo [提示] 未找到 backend/.env，已从 .env.example 复制。
-echo        请先配置数据库，再执行下列命令。
-echo          php artisan key:generate
-echo          php artisan migrate --seed
+echo [提示] 未找到 backend/.env, 已从 .env.example 复制.
+echo        按任意键继续.
 echo.
-pause
+pause >nul
 :EnvOk
 
 REM ---------- 启动后端 ----------
