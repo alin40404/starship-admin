@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ee6e452989919fdb01e90aca3288d483",
+    "content-hash": "a8cab68e7abed7d3db5b40803f0bdafb",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -4829,34 +4829,6 @@
                 "MIT"
             ],
             "description": "Starship Admin Member module",
-            "transport-options": {
-                "relative": true
-            }
-        },
-        {
-            "name": "starship/shop",
-            "version": "0.1.0",
-            "dist": {
-                "type": "path",
-                "url": "../modules/Shop",
-                "reference": "a9839ee6bec4d290e84d83fd8ea4a78e2cb0e5be"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Modules\\Shop\\App\\": "app/",
-                    "Modules\\Shop\\Database\\Seeders\\": "database/seeders/"
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "Modules\\Shop\\Tests\\": "tests/"
-                }
-            },
-            "license": [
-                "MIT"
-            ],
-            "description": "Starship Admin 商城 module",
             "transport-options": {
                 "relative": true
             }
@@ -10271,7 +10243,6 @@
         "starship/game-shop": 20,
         "starship/generator": 20,
         "starship/member": 20,
-        "starship/shop": 20,
         "starship/system": 20
     },
     "prefer-stable": true,
@@ -10279,6 +10250,6 @@
     "platform": {
         "php": "^8.3"
     },
-    "platform-dev": {},
+    "platform-dev": [],
     "plugin-api-version": "2.6.0"
 }

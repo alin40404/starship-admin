@@ -19,7 +19,6 @@
         "starship/game-shop": "@dev",
         "starship/generator": "@dev",
         "starship/member": "@dev",
-        "starship/shop": "@dev",
         "starship/system": "@dev"
     },
     "require-dev": {
@@ -56,10 +55,6 @@
         },
         {
             "type": "path",
-            "url": "../modules/Shop"
-        },
-        {
-            "type": "path",
             "url": "../modules/GameShop"
         }
     ],
@@ -68,7 +63,6 @@
             "Tests\\": "tests/",
             "Modules\\System\\Tests\\": "../modules/System/tests/",
             "Modules\\Member\\Tests\\": "../modules/Member/tests/",
-            "Modules\\Shop\\Tests\\": "../modules/Shop/tests/",
             "Modules\\GameShop\\Tests\\": "../modules/GameShop/tests/",
             "Modules\\Generator\\Tests\\": "../modules/Generator/tests/"
         }
