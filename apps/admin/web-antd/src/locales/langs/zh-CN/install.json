@@ -4,11 +4,15 @@
   "blocked": {
     "title": "当前环境不支持 Web 安装",
     "desc": "检测到后端由 PHP 内置开发服务器（php artisan serve / php -S）提供。Web 安装向导仅支持 Nginx、Apache、php-fpm 等正式部署方式。",
-    "cliTitle": "方式一：命令行安装",
-    "cliHint": "在 backend 目录执行：",
+    "cliTitle": "命令行安装",
+    "cliHint": "在 backend 目录执行以下命令完成安装：",
     "cliCommand": "php artisan starship:install",
-    "deployTitle": "方式二：正式 Web 服务",
+    "deployTitle": "正式 Web 服务",
     "deployHint": "将站点指向 backend/public，用 Nginx / Apache / php-fpm 启动后再打开本安装页。",
+    "recommended": "推荐",
+    "copy": "复制",
+    "copied": "命令已复制",
+    "copyFailed": "复制失败，请手动选择命令",
     "runtime": "当前运行时"
   },
   "steps": {
