@@ -8,6 +8,10 @@ import {
   applyAdminApiTimeout,
   initAdminRuntimeConfig,
 } from './utils/admin-runtime-config';
+import {
+  ensureBrowserOnInstallPath,
+  resolveInstallStatus,
+} from './utils/install-status';
 
 /**
  * 应用初始化完成之后再进行页面加载渲染
@@ -19,12 +23,22 @@ async function initApplication() {
   const appVersion = import.meta.env.VITE_APP_VERSION;
   const namespace = `${import.meta.env.VITE_APP_NAMESPACE}-${appVersion}-${env}`;
 
+  // 先探测安装状态：未安装时优先进入 /install，并跳过依赖库表的启动请求
+  const installed = await resolveInstallStatus(true);
+  if (installed === false) {
+    ensureBrowserOnInstallPath();
+  }
+
   // app偏好设置初始化
-  await Promise.all([initPreferences({
+  await initPreferences({
     extension: preferencesExtension,
     namespace,
     overrides: overridesPreferences,
-  }), initAdminRuntimeConfig()]);
+  });
+
+  if (installed !== false) {
+    await initAdminRuntimeConfig();
+  }
 
   const { requestClient, baseRequestClient } = await import('#/api/request');
   applyAdminApiTimeout(requestClient, baseRequestClient);
@@ -45,7 +59,9 @@ async function initApplication() {
     },
   });
 
-  await applySiteBranding();
+  if (installed !== false) {
+    await applySiteBranding();
+  }
 
   initTimezone();
 

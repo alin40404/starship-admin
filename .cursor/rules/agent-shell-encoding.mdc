@@ -1,0 +1,44 @@
+---
+description: Agent 批量改文件与 Shell 编码硬性约束（防 UTF-8 中文损坏）
+alwaysApply: true
+---
+
+# Agent Shell / 批量文件编辑约束
+
+## 禁止（违反即停止，换方案）
+
+- **禁止** PowerShell `Get-Content` / `Set-Content` / `Out-File` 批量读写 `.php`、`.md`、含中文的源码，且未显式 UTF-8
+- **禁止** PS 5.1 下无 `-Encoding UTF8` 的文件读写
+- **禁止** 递归 `Get-ChildItem *.php | ForEach-Object { Set-Content ... }` 作为 namespace / 批量替换手段
+- **禁止** 批量 refactor 时整文件重写——**只改 ASCII 行**（`use`、`namespace`、`import`）
+- **禁止** 用 cmd 重定向 `git show > file` 处理含中文的 PHP 再提交
+
+## 允许的方式（按优先级）
+
+1. **首选**：Cursor `StrReplace` / `Write` 单文件、小范围 diff（不动中文字符串行）
+2. **批量 ASCII 替换**：`rg` 定位 + 逐文件 `StrReplace`
+3. **必须用 PowerShell 时**：只用以下内联模板（禁止 Get-Content/Set-Content）：
+
+```powershell
+$utf8 = New-Object System.Text.UTF8Encoding $false
+$content = [System.IO.File]::ReadAllText($path, $utf8)
+# 仅 .Replace() ASCII 字符串
+[System.IO.File]::WriteAllText($path, $updated, $utf8)
+```
+
+4. **namespace 迁移**：Rector / PHP CS Fixer，或逐文件 `StrReplace`
+
+## 批量操作后必做（提交前）
+
+```bash
+# 1. 所有改动过的 PHP 语法
+php -l path/to/file.php
+
+# 2. diff 中不得出现中文/乱码变化（除非用户明确要求改文案）
+git diff -- '*.php' | rg "[\x{4e00}-\x{9fff}]|�|\?\?\?"
+# 有输出 → 停止，回滚，换方案
+```
+
+## 背景
+
+commit `2ab1a8f` 因 PS 5.1 默认 GBK 读写 UTF-8 PHP，导致 `modules/` 大量中文 API 文案损坏。根因是 Agent 批量 `Get-Content` + `Set-Content` 无编码参数。

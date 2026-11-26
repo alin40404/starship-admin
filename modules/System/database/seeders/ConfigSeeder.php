@@ -14,7 +14,7 @@ class ConfigSeeder extends Seeder
             [
                 'key' => 'site.name',
                 'name' => '系统名称',
-                'value' => 'Starship Admin',
+                'value' => (string) env('APP_NAME', 'Starship Admin'),
                 'group_name' => 'basic',
                 'type' => 'string',
                 'sort' => 10,

@@ -20,6 +20,11 @@ class DatabaseSeeder extends Seeder
 
         foreach ($manager->enabled() as $module) {
             foreach ($module->seeders() as $seeder) {
+                if (! class_exists($seeder)) {
+                    throw new \RuntimeException(
+                        "模块 [{$module->name()}] 的 Seeder 类不存在：{$seeder}。请在 backend 目录执行 composer update 安装对应模块包。"
+                    );
+                }
                 $this->call($seeder);
             }
         }
