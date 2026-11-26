@@ -54,70 +54,16 @@ const selectedIdSet = computed(() => new Set(props.selectedIds));
 const previewUrl = ref('');
 const previewVisible = ref(false);
 const bodyRef = ref<HTMLElement>();
-const handleRef = ref<HTMLElement>();
-const handleSpaceRef = ref<HTMLElement>();
 const sentinelRef = ref<HTMLElement>();
-const showScrollHandle = ref(false);
 const isExternalScroll = computed(() => !!props.scrollRoot);
 const showLoadFooter = computed(
   () => props.rows.length > 0 && props.total > 0,
 );
 
 let intersectionObserver: IntersectionObserver | null = null;
-let resizeObserver: ResizeObserver | null = null;
-let syncingScroll = false;
 
 function getObserverRoot() {
   return props.scrollRoot ?? bodyRef.value ?? null;
-}
-
-function syncHandleMetrics() {
-  if (isExternalScroll.value) {
-    showScrollHandle.value = false;
-    return;
-  }
-  const body = bodyRef.value;
-  const space = handleSpaceRef.value;
-  if (!body || !space) {
-    return;
-  }
-  space.style.height = `${body.scrollHeight}px`;
-  showScrollHandle.value = body.scrollHeight > body.clientHeight + 1;
-}
-
-function onBodyScroll() {
-  if (
-    isExternalScroll.value ||
-    syncingScroll ||
-    !handleRef.value ||
-    !bodyRef.value
-  ) {
-    return;
-  }
-  syncingScroll = true;
-  handleRef.value.scrollTop = bodyRef.value.scrollTop;
-  syncingScroll = false;
-}
-
-function onHandleScroll() {
-  if (syncingScroll || !handleRef.value || !bodyRef.value) {
-    return;
-  }
-  syncingScroll = true;
-  bodyRef.value.scrollTop = handleRef.value.scrollTop;
-  syncingScroll = false;
-}
-
-function setupResizeObserver() {
-  resizeObserver?.disconnect();
-  resizeObserver = null;
-  if (isExternalScroll.value || !bodyRef.value) {
-    return;
-  }
-  resizeObserver = new ResizeObserver(() => {
-    syncHandleMetrics();
-  });
-  resizeObserver.observe(bodyRef.value);
 }
 
 function setupAutoLoadObserver() {
@@ -161,7 +107,6 @@ watch(
   ],
   async () => {
     await nextTick();
-    syncHandleMetrics();
     setupAutoLoadObserver();
   },
   { flush: 'post' },
@@ -169,14 +114,11 @@ watch(
 
 onMounted(async () => {
   await nextTick();
-  syncHandleMetrics();
-  setupResizeObserver();
   setupAutoLoadObserver();
 });
 
 onBeforeUnmount(() => {
   intersectionObserver?.disconnect();
-  resizeObserver?.disconnect();
 });
 
 function toggleSelect(id: number, checked?: boolean) {
@@ -233,7 +175,6 @@ function onPreviewVisibleChange(visible: boolean) {
         ref="bodyRef"
         class="attachment-flow-view__body"
         :class="{ 'attachment-flow-view__body--external': isExternalScroll }"
-        @scroll="onBodyScroll"
       >
     <div v-if="loading" class="attachment-flow-loading">
       <Spin />
@@ -383,16 +324,6 @@ function onPreviewVisibleChange(visible: boolean) {
       }"
     />
       </div>
-
-      <div
-        v-if="!isExternalScroll"
-        v-show="showScrollHandle"
-        ref="handleRef"
-        class="attachment-flow-view__scroll-y-handle"
-        @scroll="onHandleScroll"
-      >
-        <div ref="handleSpaceRef" class="attachment-flow-view__scroll-y-space" />
-      </div>
     </div>
   </div>
 </template>
@@ -416,32 +347,20 @@ function onPreviewVisibleChange(visible: boolean) {
   min-height: 0;
 }
 
-/* 对齐 vxe-table：内容区隐藏原生滚动条 */
+/* 原生纵向滚动：避免双栏伪滚动在图片异步撑高后滚不到底 */
 .attachment-flow-view__body {
   flex: 1;
   min-width: 0;
   min-height: 0;
-  overflow: scroll;
-  scrollbar-width: none;
-}
-
-.attachment-flow-view__body::-webkit-scrollbar {
-  display: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-bottom: 8px;
+  overscroll-behavior: contain;
 }
 
 .attachment-flow-view__body--external {
   overflow: visible;
-}
-
-/* 对齐 vxe-table scroll-y-handle：右侧独立滚动槽 */
-.attachment-flow-view__scroll-y-handle {
-  flex-shrink: 0;
-  align-self: stretch;
-  overflow: hidden scroll;
-}
-
-.attachment-flow-view__scroll-y-space {
-  width: 1px;
+  padding-bottom: 0;
 }
 
 .attachment-flow-grid {
@@ -647,7 +566,7 @@ function onPreviewVisibleChange(visible: boolean) {
   align-items: center;
   justify-content: center;
   gap: 8px 12px;
-  padding: 12px 12px 4px;
+  padding: 12px;
 }
 
 .attachment-flow-loadmore__meta {
