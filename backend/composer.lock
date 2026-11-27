@@ -2382,16 +2382,16 @@
         },
         {
             "name": "league/commonmark",
-            "version": "2.10.9",
+            "version": "2.10.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/commonmark.git",
-                "reference": "ab5ff8c80fd69abaeb4d57d7711d389248f219e4"
+                "reference": "3e956235b26ea34ea721a302e27eae9a32cb9ef0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/ab5ff8c80fd69abaeb4d57d7711d389248f219e4",
-                "reference": "ab5ff8c80fd69abaeb4d57d7711d389248f219e4",
+                "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/3e956235b26ea34ea721a302e27eae9a32cb9ef0",
+                "reference": "3e956235b26ea34ea721a302e27eae9a32cb9ef0",
                 "shasum": ""
             },
             "require": {
@@ -2485,7 +2485,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-11-25T20:08:31+00:00"
+            "time": "2026-11-26T14:08:53+00:00"
         },
         {
             "name": "league/config",
@@ -4681,16 +4681,16 @@
         },
         {
             "name": "starship-admin/core",
-            "version": "v1.2.6",
+            "version": "v1.2.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/alin40404/starship-core.git",
-                "reference": "c3f54571dc0649bec729bc8d7f02c422f15d359f"
+                "reference": "51d748223e3fba522f00822a4667ad9843346658"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/alin40404/starship-core/zipball/c3f54571dc0649bec729bc8d7f02c422f15d359f",
-                "reference": "c3f54571dc0649bec729bc8d7f02c422f15d359f",
+                "url": "https://api.github.com/repos/alin40404/starship-core/zipball/51d748223e3fba522f00822a4667ad9843346658",
+                "reference": "51d748223e3fba522f00822a4667ad9843346658",
                 "shasum": ""
             },
             "require": {
@@ -4745,7 +4745,7 @@
                 "issues": "https://github.com/alin40404/starship-core/issues",
                 "source": "https://github.com/alin40404/starship-core"
             },
-            "time": "2026-11-26T07:23:22+00:00"
+            "time": "2026-11-27T02:54:20+00:00"
         },
         {
             "name": "starship/generator",

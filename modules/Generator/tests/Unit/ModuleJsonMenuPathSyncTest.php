@@ -32,7 +32,7 @@ class ModuleJsonMenuPathSyncTest extends TestCase
                     'paths' => ['/dev/codegen'],
                 ],
                 'permissions' => [
-                    'prefixes' => ['demo.'],
+                    'prefixes' => ['demo'],
                     'exact' => [],
                 ],
             ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n",
@@ -59,7 +59,7 @@ class ModuleJsonMenuPathSyncTest extends TestCase
         $manifest = $this->readManifest();
         $this->assertSame(['/dev/codegen', '/generator/products'], $manifest['menus']['paths']);
         $this->assertSame('demo', $manifest['name']);
-        $this->assertSame(['demo.'], $manifest['permissions']['prefixes']);
+        $this->assertSame(['demo'], $manifest['permissions']['prefixes']);
     }
 
     #[Test]
