@@ -14,22 +14,69 @@ function formatBadge(count: number): string | undefined {
   return count > 99 ? '99+' : String(count);
 }
 
+function menuContainsPath(menu: MenuRecordRaw, path: string): boolean {
+  if (menu.path === path) {
+    return true;
+  }
+  return Boolean(menu.children?.some((child) => menuContainsPath(child, path)));
+}
+
+function clearBadge(menu: MenuRecordRaw): MenuRecordRaw {
+  return {
+    ...menu,
+    badge: undefined,
+    badgeType: undefined,
+    badgeVariants: undefined,
+  };
+}
+
+/** 叶子显示未读数字；祖先（如「监控中心」）仅显示小红点 */
+function applyBadgeFields(
+  menu: MenuRecordRaw,
+  badge: string | undefined,
+  asDot: boolean,
+): MenuRecordRaw {
+  if (!badge) {
+    return clearBadge(menu);
+  }
+
+  if (asDot) {
+    return {
+      ...menu,
+      badge: undefined,
+      badgeType: 'dot',
+      badgeVariants: 'destructive',
+    };
+  }
+
+  return {
+    ...menu,
+    badge,
+    badgeType: 'normal',
+    badgeVariants: 'destructive',
+  };
+}
+
 function applyBadgeToMenus(
   menus: MenuRecordRaw[],
   badge: string | undefined,
 ): MenuRecordRaw[] {
   return menus.map((menu) => {
+    const children = menu.children
+      ? applyBadgeToMenus(menu.children, badge)
+      : undefined;
+
     const next: MenuRecordRaw = {
       ...menu,
-      children: menu.children
-        ? applyBadgeToMenus(menu.children, badge)
-        : undefined,
+      children,
     };
 
     if (menu.path === EXCEPTION_LOG_MENU_PATH) {
-      next.badge = badge;
-      next.badgeType = badge ? 'normal' : undefined;
-      next.badgeVariants = badge ? 'destructive' : undefined;
+      return applyBadgeFields(next, badge, false);
+    }
+
+    if (menuContainsPath(next, EXCEPTION_LOG_MENU_PATH)) {
+      return applyBadgeFields(next, badge, true);
     }
 
     return next;

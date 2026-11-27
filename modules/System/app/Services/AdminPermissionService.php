@@ -130,15 +130,43 @@ class AdminPermissionService
 
         $badge = $unread > 0 ? ($unread > 99 ? '99+' : (string) $unread) : null;
 
-        $walk = function (array &$nodes) use (&$walk, $badge): void {
-            foreach ($nodes as &$node) {
-                if (($node['path'] ?? null) === '/monitor/exception-logs') {
-                    $node['badge'] = $badge;
-                    $node['badge_type'] = $badge !== null ? 'normal' : null;
-                    $node['badge_variants'] = $badge !== null ? 'destructive' : null;
+        $containsExceptionLog = function (array $node) use (&$containsExceptionLog): bool {
+            if (($node['path'] ?? null) === '/monitor/exception-logs') {
+                return true;
+            }
+            foreach ($node['children'] ?? [] as $child) {
+                if (is_array($child) && $containsExceptionLog($child)) {
+                    return true;
                 }
+            }
+
+            return false;
+        };
+
+        $walk = function (array &$nodes) use (&$walk, $badge, $containsExceptionLog): void {
+            foreach ($nodes as &$node) {
                 if (! empty($node['children']) && is_array($node['children'])) {
                     $walk($node['children']);
+                }
+
+                $isSelf = ($node['path'] ?? null) === '/monitor/exception-logs';
+                if (! $isSelf && ! $containsExceptionLog($node)) {
+                    continue;
+                }
+
+                // 叶子显示未读数字；祖先（如「监控中心」）仅显示小红点
+                if ($badge === null) {
+                    $node['badge'] = null;
+                    $node['badge_type'] = null;
+                    $node['badge_variants'] = null;
+                } elseif ($isSelf) {
+                    $node['badge'] = $badge;
+                    $node['badge_type'] = 'normal';
+                    $node['badge_variants'] = 'destructive';
+                } else {
+                    $node['badge'] = null;
+                    $node['badge_type'] = 'dot';
+                    $node['badge_variants'] = 'destructive';
                 }
             }
             unset($node);
