@@ -18,7 +18,7 @@ final class SiteFaviconGenerator
     /** 本地 public 磁盘下的固定访问路径 */
     public const FIXED_STORAGE_PUBLIC_PATH = '/storage/uploads/favicon.ico';
 
-    private const FAVICON_SIZE = 32;
+    private const FAVICON_SIZE = 512;
 
     public static function isFixedUploadPath(string $url): bool
     {
