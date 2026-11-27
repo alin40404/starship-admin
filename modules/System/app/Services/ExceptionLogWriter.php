@@ -20,6 +20,10 @@ class ExceptionLogWriter
     public function record(Throwable $exception): void
     {
         try {
+            if (! config('system.monitor.exception_log_enabled', true)) {
+                return;
+            }
+
             if (! Exceptions::shouldReport($exception)) {
                 return;
             }

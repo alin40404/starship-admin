@@ -13,4 +13,21 @@ return [
 
     'locales' => ['zh_CN', 'en'],
 
+    /*
+    |--------------------------------------------------------------------------
+    | 监控中心
+    |--------------------------------------------------------------------------
+    |
+    | exception_log_enabled：是否将可上报异常写入异常日志表（及配套 Log::error）。
+    | 设为 false 可关闭入库，不影响 Laravel 默认日志通道。
+    |
+    */
+
+    'monitor' => [
+        'exception_log_enabled' => filter_var(
+            env('SYSTEM_MONITOR_EXCEPTION_LOG', true),
+            FILTER_VALIDATE_BOOLEAN
+        ),
+    ],
+
 ];
