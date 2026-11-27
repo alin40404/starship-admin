@@ -2,6 +2,13 @@
 
 本文件记录 `starship-admin/core` 的对外可见变更。版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)；**以 git tag 为准**（`composer.json` 不写死 `version`）。
 
+## [1.2.7] — 2026-11-27
+
+### Changed
+
+- `module.json` 的 `permissions.prefixes` 约定改为不带尾部 `.`（如 `member`）；`Module::permissions()` 读取时统一补齐为 `member.`，并兼容旧的带点写法
+- `starship:module:make` 脚手架生成的 prefixes 同步为无点形式
+
 ## [1.2.6] — 2026-11-26
 
 ### Changed

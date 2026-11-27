@@ -106,11 +106,21 @@ class Module
         $prefixes = $permissions['prefixes'] ?? [];
         $exact = $permissions['exact'] ?? [];
 
+        $normalizedPrefixes = [];
+        foreach (is_array($prefixes) ? $prefixes : [] as $prefix) {
+            if (! is_string($prefix) || $prefix === '') {
+                continue;
+            }
+            // 统一补齐尾部「.」，已带点的配置不会重复追加
+            $normalized = rtrim($prefix, '.');
+            if ($normalized === '') {
+                continue;
+            }
+            $normalizedPrefixes[] = $normalized.'.';
+        }
+
         return [
-            'prefixes' => array_values(array_filter(
-                is_array($prefixes) ? $prefixes : [],
-                static fn ($prefix) => is_string($prefix) && $prefix !== '',
-            )),
+            'prefixes' => array_values($normalizedPrefixes),
             'exact' => array_values(array_filter(
                 is_array($exact) ? $exact : [],
                 static fn ($permission) => is_string($permission) && $permission !== '',
