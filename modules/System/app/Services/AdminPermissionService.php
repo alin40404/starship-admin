@@ -5,6 +5,7 @@ namespace Modules\System\App\Services;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Modules\System\App\Models\Admin;
+use Modules\System\App\Models\ExceptionLog;
 use Modules\System\App\Models\Menu;
 
 class AdminPermissionService
@@ -112,7 +113,68 @@ class AdminPermissionService
             fn (Menu $m) => (int) data_get($m->mergedOtherSettings(), 'hide_menu', 0) !== 1
         );
 
-        return $this->buildTree($rows, 0);
+        return $this->applyExceptionLogUnreadBadge($this->buildTree($rows, 0));
+    }
+
+    /**
+     * @param  array<int, mixed>  $tree
+     * @return array<int, mixed>
+     */
+    private function applyExceptionLogUnreadBadge(array $tree): array
+    {
+        try {
+            $unread = ExceptionLog::query()->where('is_read', 0)->count();
+        } catch (\Throwable) {
+            return $tree;
+        }
+
+        $badge = $unread > 0 ? ($unread > 99 ? '99+' : (string) $unread) : null;
+
+        $containsExceptionLog = function (array $node) use (&$containsExceptionLog): bool {
+            if (($node['path'] ?? null) === '/monitor/exception-logs') {
+                return true;
+            }
+            foreach ($node['children'] ?? [] as $child) {
+                if (is_array($child) && $containsExceptionLog($child)) {
+                    return true;
+                }
+            }
+
+            return false;
+        };
+
+        $walk = function (array &$nodes) use (&$walk, $badge, $containsExceptionLog): void {
+            foreach ($nodes as &$node) {
+                if (! empty($node['children']) && is_array($node['children'])) {
+                    $walk($node['children']);
+                }
+
+                $isSelf = ($node['path'] ?? null) === '/monitor/exception-logs';
+                if (! $isSelf && ! $containsExceptionLog($node)) {
+                    continue;
+                }
+
+                // 叶子显示未读数字；祖先（如「监控中心」）仅显示小红点
+                if ($badge === null) {
+                    $node['badge'] = null;
+                    $node['badge_type'] = null;
+                    $node['badge_variants'] = null;
+                } elseif ($isSelf) {
+                    $node['badge'] = $badge;
+                    $node['badge_type'] = 'normal';
+                    $node['badge_variants'] = 'destructive';
+                } else {
+                    $node['badge'] = null;
+                    $node['badge_type'] = 'dot';
+                    $node['badge_variants'] = 'destructive';
+                }
+            }
+            unset($node);
+        };
+
+        $walk($tree);
+
+        return $tree;
     }
 
     /**

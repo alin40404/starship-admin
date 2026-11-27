@@ -20,6 +20,10 @@ class ExceptionLogWriter
     public function record(Throwable $exception): void
     {
         try {
+            if (! config('system.monitor.exception_log_enabled', true)) {
+                return;
+            }
+
             if (! Exceptions::shouldReport($exception)) {
                 return;
             }
@@ -63,6 +67,7 @@ class ExceptionLogWriter
                 'ip' => $request?->ip(),
                 'user_agent' => $request?->userAgent() ? Str::limit((string) $request->userAgent(), 500, '') : null,
                 'log_path' => Str::limit(ApplicationLogPath::displayHint(), 255, ''),
+                'is_read' => 0,
                 'created_at' => now(),
             ]);
         } catch (Throwable) {

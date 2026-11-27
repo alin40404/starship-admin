@@ -2,7 +2,7 @@
 import type { OnActionClickParams, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { ExceptionLogRow } from '#/features/system/api/monitor';
 
-import { ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 import { useAccess } from '@vben/access';
 import { Page } from '@vben/common-ui';
@@ -12,10 +12,13 @@ import { Alert, Button, message, Modal } from 'ant-design-vue';
 import { useResponsiveCrud } from '#/adapter/mobile-list';
 import {
   batchDeleteExceptionLogs,
+  batchUpdateExceptionLogRead,
   deleteExceptionLog,
   fetchExceptionLogPage,
+  markAllExceptionLogsRead,
 } from '#/features/system/api/monitor';
 import { MONITOR_EXCEPTION_LOG_PERMISSIONS } from '#/features/system/constants/monitor-permissions';
+import { refreshExceptionLogMenuBadge } from '#/features/system/utils/exception-log-menu-badge';
 import { $t } from '#/locales';
 
 import {
@@ -62,6 +65,10 @@ const [CrudView, crudApi] = useResponsiveCrud<ExceptionLogRow>({
             per_page: page.pageSize,
             keyword: formValues?.keyword || undefined,
             exception_class: formValues?.exception_class || undefined,
+            is_read:
+              formValues?.is_read === 0 || formValues?.is_read === 1
+                ? formValues.is_read
+                : undefined,
           }),
       },
     },
@@ -76,6 +83,10 @@ const [CrudView, crudApi] = useResponsiveCrud<ExceptionLogRow>({
         per_page: pageSize,
         keyword: keyword || undefined,
         exception_class: filters?.exception_class || undefined,
+        is_read:
+          filters?.is_read === 0 || filters?.is_read === 1
+            ? filters.is_read
+            : undefined,
       });
       return {
         data: result.data,
@@ -87,13 +98,60 @@ const [CrudView, crudApi] = useResponsiveCrud<ExceptionLogRow>({
 
 const { clearSelection, reload, selectedRows } = crudApi;
 
+const selectedUnreadIds = computed(() =>
+  selectedRows.value.filter((row) => row.is_read !== 1).map((row) => row.id),
+);
+const selectedReadIds = computed(() =>
+  selectedRows.value.filter((row) => row.is_read === 1).map((row) => row.id),
+);
+
+async function syncMenuBadge() {
+  await refreshExceptionLogMenuBadge((code) => access.can(code));
+}
+
 function onRefresh() {
   reload();
+  void syncMenuBadge();
 }
+
+onMounted(() => {
+  void syncMenuBadge();
+});
 
 async function onDelete(row: ExceptionLogRow) {
   await deleteExceptionLog(row.id);
   message.success($t('crud.deleted'));
+  clearSelection();
+  onRefresh();
+}
+
+async function onMarkAllRead() {
+  await markAllExceptionLogsRead();
+  message.success($t('monitor.exceptionLog.markAllReadDone'));
+  clearSelection();
+  onRefresh();
+}
+
+async function onMarkSelectedRead() {
+  const ids = selectedUnreadIds.value;
+  if (ids.length === 0) {
+    message.info($t('monitor.exceptionLog.markSelectedReadEmpty'));
+    return;
+  }
+  await batchUpdateExceptionLogRead(ids, 1);
+  message.success($t('monitor.exceptionLog.markSelectedReadDone'));
+  clearSelection();
+  onRefresh();
+}
+
+async function onMarkSelectedUnread() {
+  const ids = selectedReadIds.value;
+  if (ids.length === 0) {
+    message.info($t('monitor.exceptionLog.markSelectedUnreadEmpty'));
+    return;
+  }
+  await batchUpdateExceptionLogRead(ids, 0);
+  message.success($t('monitor.exceptionLog.markSelectedUnreadDone'));
   clearSelection();
   onRefresh();
 }
@@ -128,16 +186,38 @@ function onBatchDelete() {
         show-icon
         type="warning"
       />
-      <DetailDrawer ref="detailDrawerRef" />
+      <DetailDrawer ref="detailDrawerRef" @read="onRefresh" />
       <div class="min-h-0 flex-1">
         <CrudView class="h-full">
           <template #toolbar-actions>
             <div
-              v-show="selectedRows.length > 0"
-              :class="{ 'vxe-grid-batch-toolbar': selectedRows.length > 0 }"
+              v-if="selectedRows.length > 0"
+              class="vxe-grid-batch-toolbar"
             >
               <Button
+                v-if="access.can(MONITOR_EXCEPTION_LOG_PERMISSIONS.QUERY)"
+                :disabled="selectedUnreadIds.length === 0"
+                @click="onMarkSelectedRead"
+              >
+                {{ $t('monitor.exceptionLog.markSelectedRead') }}
+                <template v-if="selectedUnreadIds.length > 0">
+                  ({{ selectedUnreadIds.length }})
+                </template>
+              </Button>
+              <Button
+                v-if="access.can(MONITOR_EXCEPTION_LOG_PERMISSIONS.QUERY)"
+                class="ml-2"
+                :disabled="selectedReadIds.length === 0"
+                @click="onMarkSelectedUnread"
+              >
+                {{ $t('monitor.exceptionLog.markSelectedUnread') }}
+                <template v-if="selectedReadIds.length > 0">
+                  ({{ selectedReadIds.length }})
+                </template>
+              </Button>
+              <Button
                 v-if="access.can(MONITOR_EXCEPTION_LOG_PERMISSIONS.BATCH_DELETE)"
+                class="ml-2"
                 danger
                 @click="onBatchDelete"
               >
@@ -147,6 +227,12 @@ function onBatchDelete() {
                 {{ $t('system.shared.clearSelection') }}
               </Button>
             </div>
+            <Button
+              v-else-if="access.can(MONITOR_EXCEPTION_LOG_PERMISSIONS.QUERY)"
+              @click="onMarkAllRead"
+            >
+              {{ $t('monitor.exceptionLog.markAllRead') }}
+            </Button>
           </template>
         </CrudView>
       </div>

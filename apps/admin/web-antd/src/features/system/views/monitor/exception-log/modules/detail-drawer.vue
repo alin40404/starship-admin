@@ -9,9 +9,21 @@ import { fetchExceptionLog } from '#/features/system/api/monitor';
 import {
   formatExceptionClassLabel,
   getExceptionTypeColor,
+  getMonitorExceptionReadTagOptions,
 } from '#/features/system/constants/monitor-permissions';
 import { $t } from '#/locales';
 import { formatDateTime } from '@vben/utils';
+
+const emit = defineEmits<{
+  read: [];
+}>();
+
+function resolveTagOption<T extends { color: string; label: string; value: unknown }>(
+  options: readonly T[],
+  value: unknown,
+): T | null {
+  return options.find((item) => item.value === value) ?? null;
+}
 
 const descriptionsLabelStyle = {
   minWidth: '148px',
@@ -40,12 +52,22 @@ const exceptionTypeTag = computed(() => {
   };
 });
 
+const readStatusTag = computed(() =>
+  detail.value
+    ? resolveTagOption(getMonitorExceptionReadTagOptions(), detail.value.is_read)
+    : null,
+);
+
 async function show(id: number, preview?: ExceptionLogRow) {
   open.value = true;
   detail.value = preview?.id === id ? preview : null;
   loading.value = !detail.value;
   try {
+    const wasUnread = !(preview?.id === id && preview.is_read === 1);
     detail.value = await fetchExceptionLog(id);
+    if (wasUnread) {
+      emit('read');
+    }
   } finally {
     loading.value = false;
   }
@@ -91,6 +113,10 @@ defineExpose({ open: show });
       <Descriptions.Item :label="$t('monitor.shared.operator')">{{ detail.admin_name || '—' }}</Descriptions.Item>
       <Descriptions.Item label="IP">{{ detail.ip || '—' }}</Descriptions.Item>
       <Descriptions.Item label="User-Agent">{{ detail.user_agent || '—' }}</Descriptions.Item>
+      <Descriptions.Item :label="$t('monitor.exceptionLog.columnReadStatus')">
+        <Tag v-if="readStatusTag" :color="readStatusTag.color">{{ readStatusTag.label }}</Tag>
+        <span v-else>—</span>
+      </Descriptions.Item>
       <Descriptions.Item :label="$t('monitor.exceptionLog.columnOccurredAt')">
         {{ detail.created_at ? formatDateTime(detail.created_at) : '—' }}
       </Descriptions.Item>

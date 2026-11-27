@@ -28,6 +28,9 @@ class ExceptionLogController extends Controller
         if ($request->filled('exception_class')) {
             $query->where('exception_class', 'like', '%'.$request->get('exception_class').'%');
         }
+        if ($request->filled('is_read') && in_array((string) $request->get('is_read'), ['0', '1'], true)) {
+            $query->where('is_read', (int) $request->get('is_read'));
+        }
         if ($request->filled('date_from')) {
             $query->where('created_at', '>=', $request->get('date_from'));
         }
@@ -37,7 +40,7 @@ class ExceptionLogController extends Controller
 
         $sortField = $request->get('sort_field');
         $sortOrder = strtolower((string) $request->get('sort_order', 'desc')) === 'asc' ? 'asc' : 'desc';
-        $allowedSorts = ['id' => 'id', 'created_at' => 'created_at'];
+        $allowedSorts = ['id' => 'id', 'created_at' => 'created_at', 'is_read' => 'is_read'];
 
         if (is_string($sortField) && isset($allowedSorts[$sortField])) {
             $query->orderBy($allowedSorts[$sortField], $sortOrder)->orderByDesc('id');
@@ -52,6 +55,11 @@ class ExceptionLogController extends Controller
     {
         $log = ExceptionLog::query()->findOrFail($id);
 
+        if ((int) $log->is_read !== 1) {
+            $log->forceFill(['is_read' => 1])->save();
+            $log->refresh();
+        }
+
         return ApiResponse::success([
             ...$log->toArray(),
             'log_hint' => __('system::monitor.log_hint', [
@@ -59,6 +67,42 @@ class ExceptionLogController extends Controller
                 'trace_id' => $log->trace_id,
             ]),
         ]);
+    }
+
+    public function unreadCount(): JsonResponse
+    {
+        $count = ExceptionLog::query()->where('is_read', 0)->count();
+
+        return ApiResponse::success(['count' => $count]);
+    }
+
+    public function batchUpdateRead(Request $request): JsonResponse
+    {
+        $payload = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+            'is_read' => ['required', 'integer', 'in:0,1'],
+        ]);
+
+        $updated = ExceptionLog::query()
+            ->whereIn('id', $payload['ids'])
+            ->update(['is_read' => (int) $payload['is_read']]);
+
+        return ApiResponse::success(
+            ['updated' => $updated],
+            (int) $payload['is_read'] === 1
+                ? __('system::monitor.batch_marked_read')
+                : __('system::monitor.batch_marked_unread'),
+        );
+    }
+
+    public function markAllRead(): JsonResponse
+    {
+        ExceptionLog::query()
+            ->where('is_read', 0)
+            ->update(['is_read' => 1]);
+
+        return ApiResponse::success(null, __('system::monitor.all_marked_read'));
     }
 
     public function destroy(int $id): JsonResponse
