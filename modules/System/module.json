@@ -44,9 +44,9 @@
     },
     "permissions": {
         "prefixes": [
-            "system.",
-            "dashboard.",
-            "monitor."
+            "system",
+            "dashboard",
+            "monitor"
         ],
         "exact": []
     }

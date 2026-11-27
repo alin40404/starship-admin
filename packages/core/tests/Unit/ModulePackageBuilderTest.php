@@ -48,7 +48,7 @@ class ModulePackageBuilderTest extends TestCase
             'seeders' => ['Modules\\DemoShop\\Database\\Seeders\\DemoMenuSeeder'],
             'require' => ['modules' => ['system']],
             'menus' => ['paths' => ['/demo-shop', '/demo-shop/goods']],
-            'permissions' => ['prefixes' => ['demo-shop.'], 'exact' => []],
+            'permissions' => ['prefixes' => ['demo-shop'], 'exact' => []],
         ], JSON_THROW_ON_ERROR));
 
         $locator = new ModuleLocator($this->modulesPath);

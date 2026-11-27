@@ -22,7 +22,7 @@
   },
   "permissions": {
     "prefixes": [
-      "member."
+      "member"
     ],
     "exact": []
   }

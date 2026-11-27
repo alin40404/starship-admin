@@ -20,7 +20,7 @@
     },
     "permissions": {
         "prefixes": [
-            "generator."
+            "generator"
         ],
         "exact": []
     }

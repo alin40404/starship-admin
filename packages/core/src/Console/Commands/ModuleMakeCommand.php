@@ -189,7 +189,7 @@ class ModuleMakeCommand extends Command
                 'paths' => [],
             ],
             'permissions' => [
-                'prefixes' => ["{$slug}."],
+                'prefixes' => [$slug],
                 'exact' => [],
             ],
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES).PHP_EOL;
