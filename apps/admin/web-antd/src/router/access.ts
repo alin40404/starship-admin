@@ -20,8 +20,8 @@ const forbiddenComponent = () => import('#/views/_core/fallback/forbidden.vue');
  *
  * 同时注册两种 key，兼容不同模块的目录习惯：
  * - `features/system/views/permission/...` → `/permission/...`（system 不带模块名）
- * - `features/shop/views/products/...` → `/shop/products/...` 与 `/products/...`
  * - `features/member/views/member/...` → `/member/...`（相对路径已含模块名，不重复拼接）
+ * - 其它业务 feature（如 `features/xxx/views/...`）→ `/xxx/...` 与相对路径两种 key
  */
 function buildPageMap(): ComponentRecordType {
   const pageMap: ComponentRecordType = {
