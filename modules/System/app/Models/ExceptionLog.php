@@ -15,6 +15,7 @@ class ExceptionLog extends Model
 
     protected $casts = [
         'trace_id' => 'string',
+        'is_read' => 'integer',
     ];
 
     /**

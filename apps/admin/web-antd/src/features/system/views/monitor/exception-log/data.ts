@@ -13,6 +13,7 @@ import { formatDateTime } from '@vben/utils';
 import {
   formatExceptionClassLabel,
   getExceptionTypeColor,
+  getMonitorExceptionReadTagOptions,
   MONITOR_EXCEPTION_LOG_PERMISSIONS,
 } from '#/features/system/constants/monitor-permissions';
 import { TABLE_CELL_EMPTY } from '#/constants/table';
@@ -41,6 +42,17 @@ export function useGridFormSchema(): VbenFormSchema[] {
       },
       fieldName: 'exception_class',
       label: $t('monitor.shared.exceptionClass'),
+    },
+    {
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        class: 'w-full',
+        options: [...getMonitorExceptionReadTagOptions()],
+        placeholder: $t('monitor.exceptionLog.readStatusPlaceholder'),
+      },
+      fieldName: 'is_read',
+      label: $t('monitor.exceptionLog.columnReadStatus'),
     },
   ];
 }
@@ -120,6 +132,22 @@ export function useColumns(
       formatter: ({ cellValue }) => cellValue ?? TABLE_CELL_EMPTY,
       minWidth: 280,
       title: 'Trace ID',
+    },
+    {
+      align: 'center',
+      cellRender: {
+        name: 'CellTag',
+        options: [...getMonitorExceptionReadTagOptions()],
+      },
+      field: 'is_read',
+      mobile: {
+        format: (row) =>
+          row.is_read === 1
+            ? $t('monitor.exceptionLog.readRead')
+            : $t('monitor.exceptionLog.readUnread'),
+      },
+      title: $t('monitor.exceptionLog.columnReadStatus'),
+      width: 90,
     },
     {
       align: 'left',

@@ -31,6 +31,13 @@ export function getMonitorLoginStatusTagOptions() {
   ] as const;
 }
 
+export function getMonitorExceptionReadTagOptions() {
+  return [
+    { color: 'warning', label: $t('monitor.exceptionLog.readUnread'), value: 0 },
+    { color: 'success', label: $t('monitor.exceptionLog.readRead'), value: 1 },
+  ] as const;
+}
+
 export function getMonitorLoginActionTagOptions() {
   return [
     { color: 'processing', label: $t('monitor.shared.actionLogin'), value: 'login' },

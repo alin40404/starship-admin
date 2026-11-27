@@ -43,6 +43,8 @@ import { CONFIG_PERMISSIONS } from '#/features/system/constants/config-permissio
 import { $t } from '#/locales';
 import { useAuthStore } from '#/store';
 import { useInboxStore } from '#/features/system/store/inbox';
+import { MONITOR_EXCEPTION_LOG_PERMISSIONS } from '#/features/system/constants/monitor-permissions';
+import { refreshExceptionLogMenuBadge } from '#/features/system/utils/exception-log-menu-badge';
 import LoginForm from '#/views/_core/authentication/login.vue';
 import DetailDrawer from '#/features/system/views/inbox/message/modules/detail-drawer.vue';
 
@@ -65,6 +67,12 @@ const authStore = useAuthStore();
 const accessStore = useAccessStore();
 const { hasAccessByCodes } = useAccess();
 const canUseInbox = computed(() => hasAccessByCodes([INBOX_MENU_PERMISSION]));
+const canUseExceptionLog = computed(() =>
+  hasAccessByCodes([
+    MONITOR_EXCEPTION_LOG_PERMISSIONS.MANAGE,
+    MONITOR_EXCEPTION_LOG_PERMISSIONS.QUERY,
+  ]),
+);
 const canUpdateSiteTimezone = computed(() =>
   hasAccessByCodes([CONFIG_PERMISSIONS.UPDATE]),
 );
@@ -143,14 +151,34 @@ async function loadInboxNotifications() {
   await inboxStore.refresh();
 }
 
+async function loadExceptionLogMenuBadge() {
+  if (!accessStore.accessToken || !canUseExceptionLog.value) {
+    return;
+  }
+  await refreshExceptionLogMenuBadge((code) => hasAccessByCodes([code]));
+}
+
 onMounted(() => {
   loadInboxNotifications();
+  loadExceptionLogMenuBadge();
 });
 
 watch(
   () => [accessStore.accessToken, canUseInbox.value] as const,
   () => {
     loadInboxNotifications();
+  },
+);
+
+watch(
+  () =>
+    [
+      accessStore.accessToken,
+      canUseExceptionLog.value,
+      accessStore.isAccessChecked,
+    ] as const,
+  () => {
+    loadExceptionLogMenuBadge();
   },
 );
 

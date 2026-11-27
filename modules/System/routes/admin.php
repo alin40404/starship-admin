@@ -369,6 +369,12 @@ Route::middleware(['api', 'admin.installed', 'admin.forbidden_ip', 'admin.mainte
 
         Route::get('exception-logs', [ExceptionLogController::class, 'index'])
             ->middleware('admin.permission:'.ExceptionLogPermissions::QUERY);
+        Route::get('exception-logs/unread-count', [ExceptionLogController::class, 'unreadCount'])
+            ->middleware('admin.permission:'.ExceptionLogPermissions::QUERY);
+        Route::post('exception-logs/batch-read', [ExceptionLogController::class, 'batchUpdateRead'])
+            ->middleware('admin.permission:'.ExceptionLogPermissions::QUERY);
+        Route::post('exception-logs/mark-all-read', [ExceptionLogController::class, 'markAllRead'])
+            ->middleware('admin.permission:'.ExceptionLogPermissions::QUERY);
         Route::get('exception-logs/{id}', [ExceptionLogController::class, 'show'])
             ->middleware('admin.permission:'.ExceptionLogPermissions::QUERY);
         Route::post('exception-logs/{id}/delete', [ExceptionLogController::class, 'destroy'])

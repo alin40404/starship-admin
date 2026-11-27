@@ -5,6 +5,7 @@ namespace Modules\System\App\Services;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Modules\System\App\Models\Admin;
+use Modules\System\App\Models\ExceptionLog;
 use Modules\System\App\Models\Menu;
 
 class AdminPermissionService
@@ -112,7 +113,40 @@ class AdminPermissionService
             fn (Menu $m) => (int) data_get($m->mergedOtherSettings(), 'hide_menu', 0) !== 1
         );
 
-        return $this->buildTree($rows, 0);
+        return $this->applyExceptionLogUnreadBadge($this->buildTree($rows, 0));
+    }
+
+    /**
+     * @param  array<int, mixed>  $tree
+     * @return array<int, mixed>
+     */
+    private function applyExceptionLogUnreadBadge(array $tree): array
+    {
+        try {
+            $unread = ExceptionLog::query()->where('is_read', 0)->count();
+        } catch (\Throwable) {
+            return $tree;
+        }
+
+        $badge = $unread > 0 ? ($unread > 99 ? '99+' : (string) $unread) : null;
+
+        $walk = function (array &$nodes) use (&$walk, $badge): void {
+            foreach ($nodes as &$node) {
+                if (($node['path'] ?? null) === '/monitor/exception-logs') {
+                    $node['badge'] = $badge;
+                    $node['badge_type'] = $badge !== null ? 'normal' : null;
+                    $node['badge_variants'] = $badge !== null ? 'destructive' : null;
+                }
+                if (! empty($node['children']) && is_array($node['children'])) {
+                    $walk($node['children']);
+                }
+            }
+            unset($node);
+        };
+
+        $walk($tree);
+
+        return $tree;
     }
 
     /**

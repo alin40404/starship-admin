@@ -53,6 +53,7 @@ export interface ExceptionLogRow {
   admin_name: string | null;
   ip: string | null;
   user_agent: string | null;
+  is_read: number;
   created_at: string;
   log_path?: string | null;
   log_hint?: string;
@@ -110,7 +111,7 @@ export function batchDeleteLoginLogs(ids: number[]) {
 }
 
 export function fetchExceptionLogPage(
-  params: MonitorLogPageQuery & { exception_class?: string },
+  params: MonitorLogPageQuery & { exception_class?: string; is_read?: number },
 ) {
   return requestClient.get<LaravelPaginate<ExceptionLogRow>>(
     '/monitor/exception-logs',
@@ -120,6 +121,23 @@ export function fetchExceptionLogPage(
 
 export function fetchExceptionLog(id: number) {
   return requestClient.get<ExceptionLogRow>(`/monitor/exception-logs/${id}`);
+}
+
+export function fetchExceptionLogUnreadCount() {
+  return requestClient.get<{ count: number }>(
+    '/monitor/exception-logs/unread-count',
+  );
+}
+
+export function batchUpdateExceptionLogRead(ids: number[], isRead: 0 | 1) {
+  return requestClient.post<{ updated: number }>(
+    '/monitor/exception-logs/batch-read',
+    { ids, is_read: isRead },
+  );
+}
+
+export function markAllExceptionLogsRead() {
+  return requestClient.post('/monitor/exception-logs/mark-all-read');
 }
 
 export function deleteExceptionLog(id: number) {
